@@ -1,0 +1,41 @@
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace ECommerce.Core.Entities;
+
+public class Product : BaseEntity
+{
+    public string Name { get; set; }
+    public string Slug { get; set; }
+    public string? Description { get; set; }
+    public string? ShortDescription { get; set; }
+    public string Sku { get; set; }
+    public string? ImageUrl { get; set; } // Main image URL for quick access
+    public decimal Price { get; set; }
+    public decimal? CompareAtPrice { get; set; } // Renamed from SalePrice to match usage
+    public decimal? PurchaseRate { get; set; }
+    public int StockQuantity { get; set; } // Renamed from Stock
+    public bool IsActive { get; set; } = true;
+    public bool IsFeatured { get; set; } = false;
+    public bool IsNew { get; set; } = false;
+    
+    // Meta Info
+    public string? MetaTitle { get; set; }
+    public string? MetaDescription { get; set; }
+    public string? FabricAndCare { get; set; }
+    public string? ShippingAndReturns { get; set; }
+
+    // Foreign Keys
+    public int CategoryId { get; set; }
+    public Category Category { get; set; }
+
+    public int? SubCategoryId { get; set; }
+    public SubCategory? SubCategory { get; set; }
+
+    public int? CollectionId { get; set; }
+    public Collection? Collection { get; set; }
+    
+    public ICollection<ProductImage> Images { get; set; } = new List<ProductImage>();
+    public ICollection<ProductVariant> Variants { get; set; } = new List<ProductVariant>();
+    public ICollection<Review> Reviews { get; set; } = new List<Review>();
+}

@@ -1,0 +1,112 @@
+using ECommerce.Core.DTOs;
+using ECommerce.Core.Entities;
+using ECommerce.Infrastructure.Data;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+
+namespace ECommerce.API.Controllers;
+
+[ApiController]
+[Route("api/admin/settings")]
+[Authorize(Roles = "Admin")]
+public class AdminSettingsController : ControllerBase
+{
+    private readonly ApplicationDbContext _context;
+    private readonly IWebHostEnvironment _environment;
+
+    public AdminSettingsController(ApplicationDbContext context, IWebHostEnvironment environment)
+    {
+        _context = context;
+        _environment = environment;
+    }
+
+    [HttpGet]
+    [AllowAnonymous]
+    public async Task<ActionResult<SiteSettingsDto>> GetSettings()
+    {
+        var settings = await _context.SiteSettings.FirstOrDefaultAsync();
+        
+        if (settings == null)
+        {
+            // Create default settings if not exists
+            settings = new SiteSetting();
+            _context.SiteSettings.Add(settings);
+            await _context.SaveChangesAsync();
+        }
+        else if (settings.WebsiteName == "Arza" || settings.WebsiteName == "E-Commerce Store")
+        {
+            settings.WebsiteName = "SheraShopBD24";
+            await _context.SaveChangesAsync();
+        }
+
+        return Ok(new SiteSettingsDto
+        {
+            WebsiteName = settings.WebsiteName,
+            LogoUrl = settings.LogoUrl,
+            ContactEmail = settings.ContactEmail,
+            ContactPhone = settings.ContactPhone,
+            Address = settings.Address,
+            FacebookUrl = settings.FacebookUrl,
+            InstagramUrl = settings.InstagramUrl,
+            TwitterUrl = settings.TwitterUrl,
+            YoutubeUrl = settings.YoutubeUrl,
+            WhatsAppNumber = settings.WhatsAppNumber,
+            Currency = settings.Currency,
+            FreeShippingThreshold = settings.FreeShippingThreshold,
+            ShippingCharge = settings.ShippingCharge
+        });
+    }
+
+    [HttpPut]
+    public async Task<ActionResult<SiteSettingsDto>> UpdateSettings([FromBody] SiteSettingsDto dto)
+    {
+        var settings = await _context.SiteSettings.FirstOrDefaultAsync();
+        
+        if (settings == null)
+        {
+            settings = new SiteSetting();
+            _context.SiteSettings.Add(settings);
+        }
+
+        settings.WebsiteName = dto.WebsiteName;
+        settings.LogoUrl = dto.LogoUrl;
+        settings.ContactEmail = dto.ContactEmail;
+        settings.ContactPhone = dto.ContactPhone;
+        settings.Address = dto.Address;
+        settings.FacebookUrl = dto.FacebookUrl;
+        settings.InstagramUrl = dto.InstagramUrl;
+        settings.TwitterUrl = dto.TwitterUrl;
+        settings.YoutubeUrl = dto.YoutubeUrl;
+        settings.WhatsAppNumber = dto.WhatsAppNumber;
+        settings.Currency = dto.Currency;
+        settings.FreeShippingThreshold = dto.FreeShippingThreshold;
+        settings.ShippingCharge = dto.ShippingCharge;
+        settings.UpdatedAt = DateTime.UtcNow;
+
+        await _context.SaveChangesAsync();
+
+        return Ok(dto);
+    }
+
+    [HttpPost("media")]
+    public async Task<ActionResult<object>> UploadLogo(IFormFile file)
+    {
+        if (file == null || file.Length == 0)
+            return BadRequest("No file uploaded");
+
+        var uploadsFolder = Path.Combine(_environment.WebRootPath, "uploads", "settings");
+        Directory.CreateDirectory(uploadsFolder);
+
+        var fileExtension = Path.GetExtension(file.FileName);
+        var fileName = $"logo_{DateTime.UtcNow.Ticks}{fileExtension}";
+        var filePath = Path.Combine(uploadsFolder, fileName);
+
+        using (var stream = new FileStream(filePath, FileMode.Create))
+        {
+            await file.CopyToAsync(stream);
+        }
+
+        return Ok(new { url = $"/uploads/settings/{fileName}" });
+    }
+}

@@ -1,0 +1,38 @@
+[DEBUG] Product 3
+Raw Variants: {"Colors":[{"Name":"Red","Hex":"#111827","Selected":true}],"Sizes":[{"Label":"M","Stock":5,"Selected":true}]}
+Deserialized Colors: 1, Sizes: 1
+
+[DEBUG] Product 3
+Raw Variants: {"colors":[{"name":"Red","hex":"#111827","selected":true}],"sizes":[{"label":"M","stock":5,"selected":true},{"label":"S","stock":5,"selected":false}]}
+Deserialized Colors: 1, Sizes: 2
+
+[DEBUG] Product 3
+Raw Variants: {"colors":[{"name":"Red","hex":"#111827","selected":true},{"name":"Red","hex":"#ff0000","selected":false}],"sizes":[{"label":"M","stock":5,"selected":true},{"label":"S","stock":5,"selected":false}]}
+Deserialized Colors: 2, Sizes: 2
+
+[DEBUG] Product 3
+Raw Variants: {"colors":[{"name":"Red","hex":"#111827","selected":true},{"name":"Red","hex":"#ff0000","selected":false}],"sizes":[{"label":"M","stock":5,"selected":true},{"label":"S","stock":5,"selected":false}]}
+Deserialized Colors: 2, Sizes: 2
+
+[DEBUG] Product 3
+Raw Variants: {"colors":[{"name":"Red","hex":"#111827","selected":true},{"name":"Red","hex":"#ff0000","selected":false}],"sizes":[{"label":"M","stock":5,"selected":true},{"label":"S","stock":5,"selected":false}]}
+Deserialized Colors: 2, Sizes: 2
+
+[DEBUG] Product 3
+Raw Variants: {"colors":[{"name":"Red","hex":"#111827","selected":true},{"name":"Red","hex":"#ff0000","selected":false}],"sizes":[{"label":"M","stock":5,"selected":true},{"label":"S","stock":5,"selected":false}]}
+Deserialized Colors: 2, Sizes: 2
+
+[DEBUG] Product 3
+Raw Variants: {"colors":[{"name":"Red","hex":"#111827","selected":true},{"name":"Red","hex":"#ff0000","selected":false}],"sizes":[{"label":"M","stock":5,"selected":true},{"label":"S","stock":5,"selected":false}]}
+Deserialized Colors: 2, Sizes: 2
+
+[DEBUG] Product 2
+Raw Variants: {"Colors":[{"Name":"Blue","Hex":"#111827","Selected":true}],"Sizes":[{"Label":"M","Stock":4,"Selected":true}]}
+Deserialized Colors: 1, Sizes: 1
+
+[DEBUG] Product 3
+Raw Variants: {"colors":[{"name":"Red","hex":"#111827","selected":true},{"name":"Red","hex":"#ff0000","selected":false}],"sizes":[{"label":"M","stock":5,"selected":true},{"label":"S","stock":5,"selected":false}]}
+Deserialized Colors: 2, Sizes: 2
+
+[DEBUG] CreateProduct Incoming Variants - Colors: 2, Sizes: 2
+

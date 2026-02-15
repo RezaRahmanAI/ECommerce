@@ -1,0 +1,14 @@
+C:\Users\User\Documents\Personal\Ecommarce\backend\src\ECommerce.API\Controllers\AdminCategoryController.cs(36,17): error CS1912: Duplicate initialization of member 'ImageUrl' [C:\Users\User\Documents\Personal\Ecommarce\backend\src\ECommerce.API\ECommerce.API.csproj]
+C:\Users\User\Documents\Personal\Ecommarce\backend\src\ECommerce.API\Controllers\AdminCategoryController.cs(37,17): error CS0117: 'CategoryDto' does not contain a definition for 'IsActive' [C:\Users\User\Documents\Personal\Ecommarce\backend\src\ECommerce.API\ECommerce.API.csproj]
+C:\Users\User\Documents\Personal\Ecommarce\backend\src\ECommerce.API\Controllers\AdminCategoryController.cs(94,13): error CS1912: Duplicate initialization of member 'ImageUrl' [C:\Users\User\Documents\Personal\Ecommarce\backend\src\ECommerce.API\ECommerce.API.csproj]
+C:\Users\User\Documents\Personal\Ecommarce\backend\src\ECommerce.API\Controllers\AdminCategoryController.cs(108,13): error CS1912: Duplicate initialization of member 'ImageUrl' [C:\Users\User\Documents\Personal\Ecommarce\backend\src\ECommerce.API\ECommerce.API.csproj]
+C:\Users\User\Documents\Personal\Ecommarce\backend\src\ECommerce.API\Controllers\AdminCategoryController.cs(109,13): error CS0117: 'CategoryDto' does not contain a definition for 'IsActive' [C:\Users\User\Documents\Personal\Ecommarce\backend\src\ECommerce.API\ECommerce.API.csproj]
+C:\Users\User\Documents\Personal\Ecommarce\backend\src\ECommerce.API\Controllers\AdminCategoryController.cs(153,13): error CS1912: Duplicate initialization of member 'ImageUrl' [C:\Users\User\Documents\Personal\Ecommarce\backend\src\ECommerce.API\ECommerce.API.csproj]
+C:\Users\User\Documents\Personal\Ecommarce\backend\src\ECommerce.API\Controllers\AdminCategoryController.cs(154,13): error CS0117: 'CategoryDto' does not contain a definition for 'IsActive' [C:\Users\User\Documents\Personal\Ecommarce\backend\src\ECommerce.API\ECommerce.API.csproj]
+C:\Users\User\Documents\Personal\Ecommarce\backend\src\ECommerce.API\Controllers\AdminProductsController.cs(157,44): error CS1503: Argument 1: cannot convert from 'System.Collections.Generic.ICollection<ECommerce.Core.Entities.ProductVariant>' to 'string?' [C:\Users\User\Documents\Personal\Ecommarce\backend\src\ECommerce.API\ECommerce.API.csproj]
+
+Build FAILED.
+    1 Warning(s)
+    8 Error(s)
+
+Time Elapsed 00:00:01.26

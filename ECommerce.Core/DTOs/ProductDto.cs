@@ -1,0 +1,72 @@
+namespace ECommerce.Core.DTOs;
+
+public class ProductDto
+{
+    public int Id { get; set; }
+    public string Name { get; set; }
+    public string Slug { get; set; }
+    public string? Description { get; set; }
+    public string? ShortDescription { get; set; }
+    public string Sku { get; set; }
+    public decimal Price { get; set; }
+    public decimal? CompareAtPrice { get; set; }
+    public decimal? PurchaseRate { get; set; }
+    public int StockQuantity { get; set; }
+    public bool IsActive { get; set; }
+    public bool IsFeatured { get; set; }
+    public bool IsNew { get; set; }
+    
+    // Category Info
+    public int CategoryId { get; set; }
+    public string CategoryName { get; set; }
+    public int? SubCategoryId { get; set; }
+    public string? SubCategoryName { get; set; }
+    public int? CollectionId { get; set; }
+    public string? CollectionName { get; set; }
+    
+    // Media
+    public string? ImageUrl { get; set; }
+    public IEnumerable<ProductImageDto> Images { get; set; } = new List<ProductImageDto>();
+    
+    // Variants
+    public IEnumerable<ProductVariantDto> Variants { get; set; } = new List<ProductVariantDto>();
+    
+    // Meta
+    public string? MetaTitle { get; set; }
+    public string? MetaDescription { get; set; }
+    public string? FabricAndCare { get; set; }
+    public string? ShippingAndReturns { get; set; }
+}
+
+public class ProductImageDto
+{
+    public int Id { get; set; }
+    public string ImageUrl { get; set; }
+    public string? AltText { get; set; }
+    public bool IsPrimary { get; set; }
+}
+
+public class ProductVariantDto
+{
+    public int Id { get; set; }
+    public string? Sku { get; set; }
+    public string? Size { get; set; }
+    public string? Color { get; set; }
+    public decimal? Price { get; set; }
+    public int StockQuantity { get; set; }
+}
+
+public class ProductListDto
+{
+    public int Id { get; set; }
+    public string Name { get; set; }
+    public string Slug { get; set; }
+    public decimal Price { get; set; }
+    public decimal? CompareAtPrice { get; set; }
+    public string ImageUrl { get; set; }
+    public string CategoryName { get; set; }
+    public bool IsNew { get; set; }
+
+    public bool IsFeatured { get; set; }
+    public bool IsActive { get; set; }
+}
