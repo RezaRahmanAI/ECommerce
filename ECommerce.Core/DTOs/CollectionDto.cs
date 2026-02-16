@@ -7,6 +7,7 @@ public class CollectionDto
     public string Slug { get; set; } = string.Empty;
     public string? Description { get; set; }
     public string? ImageUrl { get; set; }
+    public int SubCategoryId { get; set; }
     public bool IsActive { get; set; }
 }
 

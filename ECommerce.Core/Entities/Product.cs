@@ -24,6 +24,12 @@ public class Product : BaseEntity
     public string? MetaDescription { get; set; }
     public string? FabricAndCare { get; set; }
     public string? ShippingAndReturns { get; set; }
+    
+    // ilyn.global Design Fields
+    public string? Tier { get; set; } // Premium, Luxury, Platinum, Sahara
+    public string? Tags { get; set; } // Comma-separated tags for categorization
+    public int SortOrder { get; set; } = 0; // Manual sorting order
+
 
     // Foreign Keys
     public int CategoryId { get; set; }

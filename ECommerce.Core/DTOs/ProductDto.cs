@@ -31,11 +31,16 @@ public class ProductDto
     // Variants
     public IEnumerable<ProductVariantDto> Variants { get; set; } = new List<ProductVariantDto>();
     
-    // Meta
     public string? MetaTitle { get; set; }
     public string? MetaDescription { get; set; }
     public string? FabricAndCare { get; set; }
     public string? ShippingAndReturns { get; set; }
+    
+    // ilyn.global Design Fields
+    public string? Tier { get; set; }
+    public string? Tags { get; set; }
+    public int SortOrder { get; set; }
+
 }
 
 public class ProductImageDto
@@ -69,4 +74,7 @@ public class ProductListDto
 
     public bool IsFeatured { get; set; }
     public bool IsActive { get; set; }
+    public string? Tier { get; set; }
+    public string? CollectionName { get; set; }
+
 }

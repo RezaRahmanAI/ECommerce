@@ -38,14 +38,62 @@ public static class DataSeeder
             }
         }
         
-        // Seed Categories
         if (!await context.Categories.AnyAsync())
         {
             var categories = new List<Category>
             {
-                new Category { Name = "Men", Slug = "men", DisplayOrder = 1 },
-                new Category { Name = "Women", Slug = "women", DisplayOrder = 2 },
-                new Category { Name = "Kids", Slug = "kids", DisplayOrder = 3 }
+                new Category 
+                { 
+                    Name = "Men", 
+                    Slug = "men", 
+                    DisplayOrder = 1,
+                    SubCategories = new List<SubCategory>
+                    {
+                        new SubCategory { Name = "Sherwani", Slug = "sherwani" },
+                        new SubCategory { Name = "Thobe", Slug = "thobe" },
+                        new SubCategory { Name = "Kabli", Slug = "kabli" },
+                        new SubCategory { Name = "Panjabi", Slug = "panjabi" }
+                    }
+                },
+                new Category 
+                { 
+                    Name = "Women", 
+                    Slug = "women", 
+                    DisplayOrder = 2,
+                    SubCategories = new List<SubCategory>
+                    {
+                        new SubCategory { Name = "Abaya", Slug = "abaya" },
+                        new SubCategory { Name = "Tops", Slug = "tops" },
+                        new SubCategory { Name = "Co-ords Dress Set", Slug = "coords" },
+                        new SubCategory { Name = "Scarf", Slug = "scarf" }
+                    }
+                },
+                new Category 
+                { 
+                    Name = "Kids", 
+                    Slug = "kids", 
+                    DisplayOrder = 3,
+                    SubCategories = new List<SubCategory>
+                    {
+                        new SubCategory { Name = "Girls", Slug = "girls" },
+                        new SubCategory { Name = "Boys", Slug = "boys" },
+                        new SubCategory { Name = "Mother & Daughter", Slug = "mother-daughter" },
+                        new SubCategory { Name = "Father & Son", Slug = "father-son" }
+                    }
+                },
+                new Category 
+                { 
+                    Name = "Accessories", 
+                    Slug = "accessories", 
+                    DisplayOrder = 4,
+                    SubCategories = new List<SubCategory>
+                    {
+                        new SubCategory { Name = "Bags", Slug = "bags" },
+                        new SubCategory { Name = "Home Decor", Slug = "home-decor" },
+                        new SubCategory { Name = "Watches", Slug = "watches" },
+                        new SubCategory { Name = "Wallets", Slug = "wallets" }
+                    }
+                }
             };
             
             await context.Categories.AddRangeAsync(categories);

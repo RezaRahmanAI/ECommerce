@@ -25,7 +25,8 @@ public class AdminCategoryController : ControllerBase
     public async Task<ActionResult<List<CategoryDto>>> GetAllCategories()
     {
         var categories = await _context.Categories
-            .Include(c => c.Products)
+            .Include(c => c.SubCategories)
+            .ThenInclude(sc => sc.Collections)
             .OrderBy(c => c.DisplayOrder)
             .Select(c => new CategoryDto
             {
@@ -37,7 +38,23 @@ public class AdminCategoryController : ControllerBase
                 DisplayOrder = c.DisplayOrder,
                 ProductCount = c.Products.Count,
                 ParentId = c.ParentId,
-                CreatedAt = c.CreatedAt
+                CreatedAt = c.CreatedAt,
+                SubCategories = c.SubCategories.Select(sc => new SubCategoryDto
+                {
+                    Id = sc.Id,
+                    Name = sc.Name,
+                    Slug = sc.Slug,
+                    CategoryId = sc.CategoryId,
+                    IsActive = sc.IsActive,
+                    Collections = sc.Collections.Select(col => new CollectionDto
+                    {
+                        Id = col.Id,
+                        Name = col.Name,
+                        Slug = col.Slug,
+                        SubCategoryId = col.SubCategoryId,
+                        IsActive = col.IsActive
+                    }).ToList()
+                }).ToList()
             })
             .ToListAsync();
 

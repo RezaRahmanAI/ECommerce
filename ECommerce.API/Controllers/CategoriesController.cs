@@ -2,6 +2,7 @@ using AutoMapper;
 using ECommerce.Core.DTOs;
 using ECommerce.Core.Entities;
 using ECommerce.Core.Interfaces;
+using ECommerce.Core.Specifications;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ECommerce.API.Controllers;
@@ -22,7 +23,8 @@ public class CategoriesController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<IReadOnlyList<CategoryDto>>> GetCategories()
     {
-        var categories = await _categoryRepo.ListAllAsync();
+        var spec = new CategoriesWithSubCategoriesSpec();
+        var categories = await _categoryRepo.ListAsync(spec);
         return Ok(_mapper.Map<IReadOnlyList<CategoryDto>>(categories));
     }
 }
