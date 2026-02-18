@@ -32,7 +32,7 @@ public class ProductCreateDto
     [Range(0, 1000000, ErrorMessage = "Purchase rate must be between 0 and 1,000,000")]
     public decimal PurchaseRate { get; set; }
     
-    public bool Featured { get; set; }
+
     public bool NewArrival { get; set; }
     public bool IsPopupOffer { get; set; }
     
@@ -79,7 +79,7 @@ public class ProductUpdateDto
     [Range(0, 1000000, ErrorMessage = "Purchase rate must be between 0 and 1,000,000")]
     public decimal PurchaseRate { get; set; }
     
-    public bool Featured { get; set; }
+
     public bool NewArrival { get; set; }
     public bool IsPopupOffer { get; set; }
     
@@ -117,6 +117,7 @@ public class ProductMediaImageDto
     public string Label { get; set; } = string.Empty;
     public string Url { get; set; } = string.Empty;
     public string Alt { get; set; } = string.Empty;
+    public string Color { get; set; } = string.Empty;
 }
 
 public class ProductColorDto

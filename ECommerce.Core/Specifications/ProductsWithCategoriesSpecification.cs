@@ -35,6 +35,12 @@ public class ProductsWithCategoriesSpecification : BaseSpecification<Product>
                 case "priceDesc":
                     AddOrderByDescending(p => p.Price);
                     break;
+                case "sortOrder":
+                    AddOrderBy(p => p.SortOrder);
+                    break;
+                case "sortOrderDesc":
+                    AddOrderByDescending(p => p.SortOrder);
+                    break;
                 default:
                     AddOrderBy(n => n.Name);
                     break;
@@ -45,7 +51,23 @@ public class ProductsWithCategoriesSpecification : BaseSpecification<Product>
     public ProductsWithCategoriesSpecification(int id) 
         : base(x => x.Id == id)
     {
+        AddIncludes();
+    }
+
+    public ProductsWithCategoriesSpecification(string slug) 
+        : base(x => x.Slug == slug)
+    {
+        AddIncludes();
+    }
+
+
+
+    private void AddIncludes()
+    {
         AddInclude(x => x.Category);
+        AddInclude(x => x.SubCategory!);
+        AddInclude(x => x.Collection!);
         AddInclude(x => x.Images);
+        AddInclude(x => x.Variants);
     }
 }

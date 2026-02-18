@@ -1,4 +1,5 @@
 using ECommerce.Core.DTOs;
+using ECommerce.Core.Interfaces;
 using ECommerce.Core.Entities;
 using ECommerce.Infrastructure.Data;
 using Microsoft.AspNetCore.Authorization;
@@ -14,11 +15,13 @@ public class AdminProductsController : ControllerBase
 {
     private readonly ApplicationDbContext _context;
     private readonly IWebHostEnvironment _environment;
+    private readonly IProductService _productService;
 
-    public AdminProductsController(ApplicationDbContext context, IWebHostEnvironment environment)
+    public AdminProductsController(ApplicationDbContext context, IWebHostEnvironment environment, IProductService productService)
     {
         _context = context;
         _environment = environment;
+        _productService = productService;
     }
 
     [HttpPost("media")]
@@ -136,11 +139,16 @@ public class AdminProductsController : ControllerBase
             CategoryId = product.CategoryId,
             MediaUrls = product.Images.Select(i => i.Url).ToList(),
             product.CreatedAt,
-            product.IsFeatured,
+
             product.IsNew,
             Variants = new ProductVariantsDto
             {
-               Colors = product.Variants.Select(v => v.Color).Distinct().Select(c => new ProductColorDto { Name = c ?? "" }).ToList(),
+               Colors = product.Images
+                   .Where(i => !string.IsNullOrEmpty(i.Color))
+                   .Select(i => i.Color!)
+                   .Distinct()
+                   .Select(c => new ProductColorDto { Name = c })
+                   .ToList(),
                Sizes = product.Variants.Select(v => new ProductSizeDto { Label = v.Size ?? "", Stock = v.StockQuantity }).ToList()
             }, 
             Meta = new ProductMetaDto 
@@ -188,70 +196,16 @@ public class AdminProductsController : ControllerBase
     [HttpPost]
     public async Task<ActionResult> CreateProduct([FromBody] ProductCreateDto dto)
     {
-        try 
-        {
-            var logPath = Path.Combine(_environment.WebRootPath, "debug_log.txt");
-            var logMsg = $"[DEBUG] CreateProduct Incoming Variants - Colors: {dto.Variants?.Colors?.Count}, Sizes: {dto.Variants?.Sizes?.Count}\n\n";
-            System.IO.File.AppendAllText(logPath, logMsg);
-        } catch {}
-
         try
         {
-            // Find existing category - DO NOT create new ones
-            var category = await _context.Categories.FirstOrDefaultAsync(c => c.Name == dto.Category);
-            if (category == null)
-            {
-                return BadRequest(new { message = $"Category '{dto.Category}' does not exist. Please create it first in Category Management." });
-            }
+            var result = await _productService.CreateProductAsync(dto);
+            if (result == null) return BadRequest(new { message = "Error creating product" });
 
-            // Generate SKU if not provided
-            var sku = $"PRD-{DateTime.UtcNow.Ticks}";
-
-            // Get main image URL from media
-            string? mainImageUrl = dto.Media?.MainImage?.Url;
-
-            var product = new Product
-            {
-                Name = dto.Name,
-                Description = dto.Description,
-                Sku = sku,
-                Price = dto.Price,
-                CompareAtPrice = dto.SalePrice,
-                PurchaseRate = dto.PurchaseRate,
-                StockQuantity = dto.Variants.Sizes.Sum(v => v.Stock),
-                IsActive = dto.StatusActive,
-                CategoryId = category.Id,
-                ImageUrl = mainImageUrl,
-                IsFeatured = dto.Featured,
-                IsNew = dto.NewArrival,
-                MetaTitle = dto.Meta?.FabricAndCare,
-                MetaDescription = dto.Meta?.ShippingAndReturns
-            };
-
-            _context.Products.Add(product);
-            await _context.SaveChangesAsync();
-
-            // ... (Image handling remains similar) ...
-
-            // Return result
-             var result = new
-            {
-                product.Id,
-                product.Name,
-                product.Description,
-                product.Sku,
-                product.Price,
-                SalePrice = product.CompareAtPrice,
-                product.PurchaseRate,
-                Stock = product.StockQuantity,
-                Status = product.IsActive ? "Active" : "Draft",
-                product.ImageUrl,
-                Category = category.Name,
-                CategoryId = product.CategoryId,
-                product.CreatedAt
-            };
-
-            return CreatedAtAction(nameof(GetProductById), new { id = product.Id }, result);
+            return CreatedAtAction(nameof(GetProductById), new { id = result.Id }, result);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return BadRequest(new { message = ex.Message });
         }
         catch (Exception ex)
         {
@@ -264,60 +218,14 @@ public class AdminProductsController : ControllerBase
     {
         try
         {
-            var product = await _context.Products
-                .Include(p => p.Images)
-                .FirstOrDefaultAsync(p => p.Id == id);
-
-            if (product == null)
-                return NotFound();
-
-            // Update basic fields
-            product.Name = dto.Name;
-            product.Description = dto.Description;
-            product.Price = dto.Price;
-            product.CompareAtPrice = dto.SalePrice;
-            product.PurchaseRate = dto.PurchaseRate;
-            product.IsActive = dto.StatusActive;
-            product.IsFeatured = dto.Featured;
-            product.IsNew = dto.NewArrival;
-            product.StockQuantity = dto.Variants.Sizes.Sum(v => v.Stock);
-
-            product.UpdatedAt = DateTime.UtcNow;
-
-            // Update category if changed
-            var category = await _context.Categories.FirstOrDefaultAsync(c => c.Name == dto.Category);
-            if (category != null)
-            {
-                product.CategoryId = category.Id;
-            }
-
-            // Update main image if provided
-            if (!string.IsNullOrEmpty(dto.Media?.MainImage?.Url))
-            {
-                product.ImageUrl = dto.Media.MainImage.Url;
-            }
-
-            await _context.SaveChangesAsync();
-
-            var result = new
-            {
-                product.Id,
-                product.Name,
-                product.Description,
-                product.Sku,
-                product.Price,
-                SalePrice = product.CompareAtPrice,
-                product.PurchaseRate,
-                Stock = product.StockQuantity,
-                Status = product.IsActive ? "Active" : "Draft",
-                product.ImageUrl,
-                Category = category?.Name ?? "",
-                CategoryId = product.CategoryId,
-                MediaUrls = product.Images.Select(i => i.Url).ToList(),
-                product.CreatedAt
-            };
+            var result = await _productService.UpdateProductAsync(id, dto);
+            if (result == null) return BadRequest(new { message = "Error updating product" });
 
             return Ok(result);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
         }
         catch (Exception ex)
         {

@@ -11,11 +11,13 @@ public class GlobalExceptionMiddleware
 {
     private readonly RequestDelegate _next;
     private readonly ILogger<GlobalExceptionMiddleware> _logger;
+    private readonly IHostEnvironment _env;
 
-    public GlobalExceptionMiddleware(RequestDelegate next, ILogger<GlobalExceptionMiddleware> logger)
+    public GlobalExceptionMiddleware(RequestDelegate next, ILogger<GlobalExceptionMiddleware> logger, IHostEnvironment env)
     {
         _next = next;
         _logger = logger;
+        _env = env;
     }
 
     public async Task InvokeAsync(HttpContext context)
@@ -26,67 +28,50 @@ public class GlobalExceptionMiddleware
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "An unhandled exception occurred");
-            await HandleExceptionAsync(context, ex);
+            _logger.LogError(ex, "An unhandled exception occurred: {Message}", ex.Message);
+            await HandleExceptionAsync(context, ex, _env);
         }
     }
 
-    private static async Task HandleExceptionAsync(HttpContext context, Exception exception)
+    private static async Task HandleExceptionAsync(HttpContext context, Exception exception, IHostEnvironment env)
     {
         context.Response.ContentType = "application/json";
         
-        var response = new
-        {
-            success = false,
-            message = "An error occurred processing your request",
-            error = exception.Message,
-            stackTrace = exception.StackTrace // Remove in production
-        };
-
-
+        var statusCode = HttpStatusCode.InternalServerError;
+        var message = "An error occurred processing your request";
+        var detail = exception.Message;
 
         switch (exception)
         {
             case ArgumentNullException:
             case ArgumentException:
-                context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
-                response = new
-                {
-                    success = false,
-                    message = "Invalid request",
-                    error = exception.Message,
-                    stackTrace = (string?)null
-                };
+                statusCode = HttpStatusCode.BadRequest;
+                message = "Invalid request parameters";
                 break;
             
             case UnauthorizedAccessException:
-                context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
-                response = new
-                {
-                    success = false,
-                    message = "Unauthorized access",
-                    error = exception.Message,
-                    stackTrace = (string?)null
-                };
+                statusCode = HttpStatusCode.Unauthorized;
+                message = "Unauthorized access attempt";
                 break;
             
             case KeyNotFoundException:
-                context.Response.StatusCode = (int)HttpStatusCode.NotFound;
-                response = new
-                {
-                    success = false,
-                    message = "Resource not found",
-                    error = exception.Message,
-                    stackTrace = (string?)null
-                };
-                break;
-            
-            default:
-                context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+                statusCode = HttpStatusCode.NotFound;
+                message = "Requested resource not found";
                 break;
         }
 
-        var jsonResponse = JsonSerializer.Serialize(response);
+        context.Response.StatusCode = (int)statusCode;
+
+        var response = new
+        {
+            success = false,
+            message = message,
+            error = env.IsDevelopment() ? detail : null,
+            stackTrace = env.IsDevelopment() ? exception.StackTrace : null
+        };
+
+        var options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+        var jsonResponse = JsonSerializer.Serialize(response, options);
         await context.Response.WriteAsync(jsonResponse);
     }
 }

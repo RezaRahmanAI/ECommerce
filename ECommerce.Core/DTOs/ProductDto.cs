@@ -13,7 +13,7 @@ public class ProductDto
     public decimal? PurchaseRate { get; set; }
     public int StockQuantity { get; set; }
     public bool IsActive { get; set; }
-    public bool IsFeatured { get; set; }
+
     public bool IsNew { get; set; }
     
     // Category Info
@@ -48,7 +48,10 @@ public class ProductImageDto
     public int Id { get; set; }
     public string ImageUrl { get; set; }
     public string? AltText { get; set; }
+    public string? Label { get; set; }
     public bool IsPrimary { get; set; }
+    public string Type { get; set; }
+    public string? Color { get; set; }
 }
 
 public class ProductVariantDto
@@ -56,7 +59,6 @@ public class ProductVariantDto
     public int Id { get; set; }
     public string? Sku { get; set; }
     public string? Size { get; set; }
-    public string? Color { get; set; }
     public decimal? Price { get; set; }
     public int StockQuantity { get; set; }
 }
@@ -72,7 +74,7 @@ public class ProductListDto
     public string CategoryName { get; set; }
     public bool IsNew { get; set; }
 
-    public bool IsFeatured { get; set; }
+
     public bool IsActive { get; set; }
     public string? Tier { get; set; }
     public string? CollectionName { get; set; }

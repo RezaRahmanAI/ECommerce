@@ -51,12 +51,7 @@ public class ProductsController : ControllerBase
         return Ok(product);
     }
     
-    [HttpGet("featured")]
-    public async Task<ActionResult<IReadOnlyList<ProductListDto>>> GetFeaturedProducts()
-    {
-        var products = await _productService.GetFeaturedProductsAsync();
-        return Ok(products);
-    }
+
 
     // Removed manual JSON parsing methods as they are handled in Service
 

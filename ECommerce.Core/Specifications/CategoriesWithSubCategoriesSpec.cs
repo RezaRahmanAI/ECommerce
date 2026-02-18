@@ -15,4 +15,10 @@ public class CategoriesWithSubCategoriesSpec : BaseSpecification<Category>
     {
         AddInclude(x => x.SubCategories);
     }
+
+    public CategoriesWithSubCategoriesSpec(string name) 
+        : base(x => x.Name == name)
+    {
+        AddInclude(x => x.SubCategories);
+    }
 }

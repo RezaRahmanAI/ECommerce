@@ -6,7 +6,19 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
+using Serilog;
+
 var builder = WebApplication.CreateBuilder(args);
+
+// Configure Serilog
+Log.Logger = new LoggerConfiguration()
+    .ReadFrom.Configuration(builder.Configuration)
+    .Enrich.FromLogContext()
+    .WriteTo.Console()
+    .WriteTo.File("../Logs/log-.txt", rollingInterval: RollingInterval.Day)
+    .CreateLogger();
+
+builder.Host.UseSerilog();
 
 // Add services to the container.
 builder.Services.AddControllers();
@@ -66,13 +78,15 @@ builder.Services.ConfigureApplicationCookie(options =>
 });
 
 builder.Services.AddScoped<ECommerce.Core.Interfaces.ITokenService, ECommerce.Infrastructure.Services.TokenService>();
+builder.Services.AddScoped<ECommerce.Core.Interfaces.IUnitOfWork, ECommerce.Infrastructure.Data.UnitOfWork>();
 builder.Services.AddScoped(typeof(ECommerce.Core.Interfaces.IGenericRepository<>), typeof(ECommerce.Infrastructure.Data.GenericRepository<>));
-builder.Services.AddScoped<ECommerce.Infrastructure.Services.OrderService>(); // Register OrderService
+builder.Services.AddScoped<ECommerce.Core.Interfaces.IOrderService, ECommerce.Infrastructure.Services.OrderService>();
 builder.Services.AddScoped<ECommerce.Infrastructure.Services.CustomerService>(); // Register CustomerService
 builder.Services.AddScoped<ECommerce.Core.Interfaces.IDashboardService, ECommerce.Infrastructure.Services.DashboardService>();
 builder.Services.AddScoped<ECommerce.Core.Interfaces.IBlogService, ECommerce.Infrastructure.Services.BlogService>();
 builder.Services.AddScoped<ECommerce.Core.Interfaces.INavigationService, ECommerce.Infrastructure.Services.NavigationService>();
 builder.Services.AddScoped<ECommerce.Core.Interfaces.IProductService, ECommerce.Infrastructure.Services.ProductService>();
+builder.Services.AddScoped<ECommerce.Core.Interfaces.IReviewService, ECommerce.Infrastructure.Services.ReviewService>();
 builder.Services.AddHttpContextAccessor(); // Add HttpContextAccessor
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
@@ -94,12 +108,10 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+
+app.UseSwagger();
+ app.UseSwaggerUI();
+
 
 app.UseHttpsRedirection();
 
@@ -126,7 +138,7 @@ using (var scope = app.Services.CreateScope())
         
         var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
         var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
-        await DataSeeder.SeedAsync(userManager, roleManager, context);
+        DataSeeder.SeedAsync(userManager, roleManager, context).GetAwaiter().GetResult();
     }
     catch (Exception ex)
     {

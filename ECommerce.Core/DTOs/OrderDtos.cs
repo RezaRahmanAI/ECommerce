@@ -33,7 +33,11 @@ public class OrderDto
     public string CustomerPhone { get; set; }
     public string ShippingAddress { get; set; }
     public string? DeliveryDetails { get; set; }
+    public decimal SubTotal { get; set; }
+    public decimal Tax { get; set; }
+    public decimal ShippingCost { get; set; }
     public decimal Total { get; set; }
+    public int ItemsCount { get; set; }
     public string Status { get; set; }
     public DateTime CreatedAt { get; set; }
     public List<OrderItemDto> Items { get; set; }

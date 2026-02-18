@@ -1,3 +1,5 @@
+using ECommerce.Core.DTOs;
+using ECommerce.Core.Interfaces;
 using ECommerce.Core.Entities;
 using ECommerce.Infrastructure.Data;
 using Microsoft.AspNetCore.Authorization;
@@ -11,212 +13,45 @@ namespace ECommerce.API.Controllers;
 [Authorize(Roles = "Admin")]
 public class AdminOrdersController : ControllerBase
 {
-    private readonly ApplicationDbContext _context;
+    private readonly IOrderService _orderService;
 
-    public AdminOrdersController(ApplicationDbContext context)
+    public AdminOrdersController(IOrderService orderService)
     {
-        _context = context;
+        _orderService = orderService;
     }
 
     [HttpGet]
-    public async Task<ActionResult<object>> GetOrders(
-        [FromQuery] string? searchTerm,
-        [FromQuery] string? status,
-        [FromQuery] string? dateRange,
-        [FromQuery] int page = 1,
-        [FromQuery] int pageSize = 10)
+    public async Task<ActionResult<IEnumerable<OrderDto>>> GetOrders()
     {
-        var query = _context.Orders
-            .Include(o => o.Items)
-            .AsQueryable();
-
-        // Apply search filter
-        if (!string.IsNullOrEmpty(searchTerm))
-        {
-            query = query.Where(o => 
-                o.OrderNumber.Contains(searchTerm) || 
-                o.CustomerName.Contains(searchTerm));
-        }
-
-        // Apply status filter
-        if (!string.IsNullOrEmpty(status) && status != "All")
-        {
-            if (Enum.TryParse<OrderStatus>(status, true, out var orderStatus))
-            {
-                query = query.Where(o => o.Status == orderStatus);
-            }
-        }
-
-        // Apply date range filter
-        if (!string.IsNullOrEmpty(dateRange) && dateRange != "All")
-        {
-            var now = DateTime.UtcNow;
-            DateTime? startDate = dateRange switch
-            {
-                "Last 7 Days" => now.AddDays(-7),
-                "Last 30 Days" => now.AddDays(-30),
-                "Last 90 Days" => now.AddDays(-90),
-                _ => null
-            };
-
-            if (startDate.HasValue)
-            {
-                query = query.Where(o => o.CreatedAt >= startDate.Value);
-            }
-        }
-
-        var total = await query.CountAsync();
-        var orders = await query
-            .OrderByDescending(o => o.CreatedAt)
-            .Skip((page - 1) * pageSize)
-            .Take(pageSize)
-            .Select(o => new
-            {
-                o.Id,
-                o.OrderNumber,
-                o.CustomerName,
-                o.CustomerPhone,
-                o.ShippingAddress,
-                o.SubTotal,
-                o.Tax,
-                o.ShippingCost,
-                o.Total,
-                Status = o.Status.ToString(),
-                PaymentStatus = "Paid", // Placeholder
-                o.CreatedAt,
-                o.UpdatedAt,
-                ItemCount = o.Items.Count
-            })
-            .ToListAsync();
-
-        return Ok(new { items = orders, total });
+        var orders = await _orderService.GetOrdersAsync();
+        return Ok(orders);
     }
 
     [HttpGet("filtered")]
-    public async Task<ActionResult<List<object>>> GetFilteredOrders(
+    public async Task<ActionResult<IEnumerable<OrderDto>>> GetFilteredOrders(
         [FromQuery] string? searchTerm,
         [FromQuery] string? status,
         [FromQuery] string? dateRange)
     {
-        var query = _context.Orders
-            .Include(o => o.Items)
-            .AsQueryable();
-
-        if (!string.IsNullOrEmpty(searchTerm))
-        {
-            query = query.Where(o => 
-                o.OrderNumber.Contains(searchTerm) || 
-                o.CustomerName.Contains(searchTerm));
-        }
-
-        // Apply status filter
-        if (!string.IsNullOrEmpty(status) && status != "All")
-        {
-            if (Enum.TryParse<OrderStatus>(status, true, out var orderStatus))
-            {
-                query = query.Where(o => o.Status == orderStatus);
-            }
-        }
-
-        // Apply date range filter
-        if (!string.IsNullOrEmpty(dateRange) && dateRange != "All")
-        {
-            var now = DateTime.UtcNow;
-            DateTime? startDate = dateRange switch
-            {
-                "Last 7 Days" => now.AddDays(-7),
-                "Last 30 Days" => now.AddDays(-30),
-                "Last 90 Days" => now.AddDays(-90),
-                _ => null
-            };
-
-            if (startDate.HasValue)
-            {
-                query = query.Where(o => o.CreatedAt >= startDate.Value);
-            }
-        }
-
-        var orders = await query
-            .OrderByDescending(o => o.CreatedAt)
-            .Select(o => new
-            {
-                o.Id,
-                o.OrderNumber,
-                o.CustomerName,
-                o.CustomerPhone,
-                o.ShippingAddress,
-                o.SubTotal,
-                o.Tax,
-                o.ShippingCost,
-                o.Total,
-                Status = o.Status.ToString(),
-                PaymentStatus = "Paid",
-                o.CreatedAt,
-                o.UpdatedAt,
-                ItemCount = o.Items.Count
-            })
-            .ToListAsync();
-
+        var orders = await _orderService.GetOrdersForAdminAsync(searchTerm, status, dateRange);
         return Ok(orders);
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult> GetOrderById(int id)
+    public async Task<ActionResult<OrderDto>> GetOrderById(int id)
     {
-        var order = await _context.Orders
-            .Include(o => o.Items)
-                .ThenInclude(i => i.Product)
-            .FirstOrDefaultAsync(o => o.Id == id);
-
-        if (order == null)
-            return NotFound();
-
-        var result = new
-        {
-            order.Id,
-            order.OrderNumber,
-            order.CustomerName,
-            order.CustomerPhone,
-            order.ShippingAddress,
-            order.SubTotal,
-            order.Tax,
-            order.ShippingCost,
-            order.Total,
-            Status = order.Status.ToString(),
-            PaymentStatus = "Paid",
-            order.CreatedAt,
-            order.UpdatedAt,
-            Items = order.Items.Select(i => new
-            {
-                i.Id,
-                i.ProductId,
-                ProductName = i.Product.Name,
-                ProductImage = i.Product.ImageUrl,
-                i.Quantity,
-                i.UnitPrice,
-                Total = i.Quantity * i.UnitPrice
-            }).ToList()
-        };
-
-        return Ok(result);
+        var order = await _orderService.GetOrderByIdAsync(id);
+        if (order == null) return NotFound();
+        return Ok(order);
     }
 
     [HttpPut("{id}/status")]
     public async Task<ActionResult> UpdateOrderStatus(int id, [FromBody] UpdateOrderStatusDto dto)
     {
-        var order = await _context.Orders.FindAsync(id);
-        if (order == null)
-            return NotFound();
+        var success = await _orderService.UpdateOrderStatusAsync(id, dto.Status);
+        if (!success) return BadRequest(new { message = "Error updating order status" });
 
-        if (Enum.TryParse<OrderStatus>(dto.Status, true, out var orderStatus))
-        {
-            order.Status = orderStatus;
-            order.UpdatedAt = DateTime.UtcNow;
-            await _context.SaveChangesAsync();
-            return Ok(new { message = "Order status updated successfully" });
-        }
-
-        return BadRequest("Invalid status");
+        return Ok(new { message = "Order status updated successfully" });
     }
 }
 

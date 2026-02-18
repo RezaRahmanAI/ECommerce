@@ -16,7 +16,7 @@ public class Product : BaseEntity
     public decimal? PurchaseRate { get; set; }
     public int StockQuantity { get; set; } // Renamed from Stock
     public bool IsActive { get; set; } = true;
-    public bool IsFeatured { get; set; } = false;
+
     public bool IsNew { get; set; } = false;
     
     // Meta Info

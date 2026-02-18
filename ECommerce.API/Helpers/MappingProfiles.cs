@@ -17,14 +17,16 @@ public class MappingProfiles : Profile
                 Id = i.Id,
                 ImageUrl = i.Url,
                 AltText = i.AltText,
-                IsPrimary = i.IsMain
+                Label = i.Label,
+                IsPrimary = i.IsMain,
+                Type = i.MediaType ?? "image",
+                Color = i.Color
             })))
             .ForMember(d => d.Variants, o => o.MapFrom(s => s.Variants.Select(v => new ProductVariantDto
             {
                 Id = v.Id,
                 Sku = v.Sku,
                 Size = v.Size,
-                Color = v.Color,
                 Price = v.Price,
                 StockQuantity = v.StockQuantity
             })));
@@ -38,5 +40,9 @@ public class MappingProfiles : Profile
         
         CreateMap<Order, OrderDto>();
         CreateMap<OrderItem, OrderItemDto>();
+
+        CreateMap<Review, ReviewDto>()
+            .ForMember(d => d.ProductName, o => o.MapFrom(s => s.Product != null ? s.Product.Name : ""));
+        CreateMap<CreateReviewDto, Review>();
     }
 }

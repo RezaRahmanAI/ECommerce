@@ -2,6 +2,7 @@ using AutoMapper;
 using ECommerce.Core.DTOs;
 using ECommerce.Core.Entities;
 using ECommerce.Core.Interfaces;
+using ECommerce.Core.Specifications;
 using ECommerce.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
@@ -9,101 +10,175 @@ namespace ECommerce.Infrastructure.Services;
 
 public class ProductService : IProductService
 {
-    private readonly ApplicationDbContext _context;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
 
-    public ProductService(ApplicationDbContext context, IMapper mapper)
+    public ProductService(IUnitOfWork unitOfWork, IMapper mapper)
     {
-        _context = context;
+        _unitOfWork = unitOfWork;
         _mapper = mapper;
     }
 
     public async Task<ProductDto> GetProductBySlugAsync(string slug)
     {
-        var product = await _context.Products
-            .Include(p => p.Category)
-            .Include(p => p.SubCategory)
-            .Include(p => p.Collection)
-            .Include(p => p.Images)
-            .Include(p => p.Variants)
-            .FirstOrDefaultAsync(p => p.Slug == slug);
+        var spec = new ProductsWithCategoriesSpecification(slug);
+        var product = await _unitOfWork.Repository<Product>().GetEntityWithSpec(spec);
 
         if (product == null) return null;
 
-        // Manual mapping or AutoMapper can be used. 
-        // For complex logic like Variant grouping, manual mapping might be cleaner here 
-        // until AutoMapper profile is set up.
-        
-        var dto = new ProductDto
-        {
-            Id = product.Id,
-            Name = product.Name,
-            Slug = product.Slug,
-            Description = product.Description,
-            ShortDescription = product.ShortDescription,
-            Sku = product.Sku,
-            Price = product.Price,
-            CompareAtPrice = product.CompareAtPrice,
-            PurchaseRate = product.PurchaseRate,
-            StockQuantity = product.StockQuantity,
-            IsActive = product.IsActive,
-            IsFeatured = product.IsFeatured,
-            IsNew = product.IsNew,
-            
-            CategoryId = product.CategoryId,
-            CategoryName = product.Category?.Name ?? "",
-            SubCategoryId = product.SubCategoryId,
-            SubCategoryName = product.SubCategory?.Name,
-            CollectionId = product.CollectionId,
-            CollectionName = product.Collection?.Name,
-            
-            ImageUrl = product.ImageUrl,
-            Images = product.Images.Select(i => new ProductImageDto 
-            {
-                Id = i.Id,
-                ImageUrl = i.Url,
-                AltText = i.AltText,
-                IsPrimary = i.IsMain
-            }).ToList(),
-            
-            Variants = product.Variants.Select(v => new ProductVariantDto
-            {
-                Id = v.Id,
-                Sku = v.Sku,
-                Size = v.Size,
-                Color = v.Color,
-                Price = v.Price,
-                StockQuantity = v.StockQuantity
-            }).ToList(),
-            
-            MetaTitle = product.MetaTitle,
-            MetaDescription = product.MetaDescription,
-            FabricAndCare = product.FabricAndCare,
-            ShippingAndReturns = product.ShippingAndReturns
-        };
-
-        return dto;
+        return _mapper.Map<Product, ProductDto>(product);
     }
 
-    public async Task<IReadOnlyList<ProductListDto>> GetFeaturedProductsAsync()
-    {
-        var products = await _context.Products
-            .Include(p => p.Category)
-            .Where(p => p.IsActive && p.IsFeatured)
-            .Take(8)
-            .ToListAsync();
 
-        return products.Select(p => new ProductListDto
+
+    public async Task<ProductDto> CreateProductAsync(ProductCreateDto dto)
+    {
+        var categorySpec = new CategoriesWithSubCategoriesSpec(dto.Category);
+        var category = await _unitOfWork.Repository<Category>().GetEntityWithSpec(categorySpec);
+        
+        if (category == null) throw new KeyNotFoundException($"Category {dto.Category} not found");
+
+        var product = new Product
         {
-            Id = p.Id,
-            Name = p.Name,
-            Slug = p.Slug,
-            Price = p.Price,
-            CompareAtPrice = p.CompareAtPrice,
-            ImageUrl = p.ImageUrl,
-            CategoryName = p.Category.Name,
-            IsNew = p.IsNew,
-            IsFeatured = p.IsFeatured
-        }).ToList();
+            Name = dto.Name,
+            Description = dto.Description,
+            Price = dto.Price,
+            CompareAtPrice = dto.SalePrice,
+            PurchaseRate = dto.PurchaseRate,
+            StockQuantity = dto.InventoryVariants.Sum(v => v.Inventory),
+            IsActive = dto.StatusActive,
+            CategoryId = category.Id,
+            ImageUrl = dto.Media?.MainImage?.Url,
+
+            IsNew = dto.NewArrival,
+            Slug = GenerateSlug(dto.Name),
+            Sku = $"PRD-{DateTime.UtcNow.Ticks}",
+            FabricAndCare = dto.Meta?.FabricAndCare,
+            ShippingAndReturns = dto.Meta?.ShippingAndReturns
+        };
+
+        _unitOfWork.Repository<Product>().Add(product);
+        
+        // Handle Images
+        if (dto.Media?.MainImage != null)
+        {
+            product.Images.Add(new ProductImage {
+                Url = dto.Media.MainImage.Url,
+                AltText = dto.Media.MainImage.Alt,
+                Label = dto.Media.MainImage.Label,
+                MediaType = dto.Media.MainImage.Type ?? "image",
+                IsMain = true,
+                Color = dto.Media.MainImage.Color
+            });
+        }
+
+        foreach (var thumb in dto.Media?.Thumbnails ?? new())
+        {
+            product.Images.Add(new ProductImage {
+                Url = thumb.Url,
+                AltText = thumb.Alt,
+                Label = thumb.Label,
+                MediaType = thumb.Type ?? "image",
+                IsMain = false,
+                Color = thumb.Color
+            });
+        }
+
+        // Handle Variants — each variant = one size with its own stock
+        foreach (var v in dto.InventoryVariants)
+        {
+            product.Variants.Add(new ProductVariant {
+                Sku = v.Sku,
+                Price = v.Price,
+                StockQuantity = v.Inventory,
+                Size = v.Label
+            });
+        }
+
+        var result = await _unitOfWork.Complete();
+        if (result <= 0) return null;
+
+        return _mapper.Map<Product, ProductDto>(product);
+    }
+
+    public async Task<ProductDto> UpdateProductAsync(int id, ProductUpdateDto dto)
+    {
+        var spec = new ProductsWithCategoriesSpecification(id);
+        var product = await _unitOfWork.Repository<Product>().GetEntityWithSpec(spec);
+
+        if (product == null) throw new KeyNotFoundException("Product not found");
+
+        var categorySpec = new CategoriesWithSubCategoriesSpec(dto.Category);
+        var category = await _unitOfWork.Repository<Category>().GetEntityWithSpec(categorySpec);
+        if (category == null) throw new KeyNotFoundException($"Category {dto.Category} not found");
+
+        // Update basic props
+        product.Name = dto.Name;
+        product.Description = dto.Description;
+        product.Price = dto.Price;
+        product.CompareAtPrice = dto.SalePrice;
+        product.PurchaseRate = dto.PurchaseRate;
+        product.IsActive = dto.StatusActive;
+        product.CategoryId = category.Id;
+        product.ImageUrl = dto.Media?.MainImage?.Url;
+
+        product.IsNew = dto.NewArrival;
+        product.FabricAndCare = dto.Meta?.FabricAndCare;
+        product.ShippingAndReturns = dto.Meta?.ShippingAndReturns;
+
+        // Sync images
+        foreach (var img in product.Images.ToList())
+        {
+            _unitOfWork.Repository<ProductImage>().Delete(img);
+        }
+
+        if (dto.Media?.MainImage != null)
+        {
+            product.Images.Add(new ProductImage {
+                Url = dto.Media.MainImage.Url,
+                AltText = dto.Media.MainImage.Alt,
+                Label = dto.Media.MainImage.Label,
+                MediaType = dto.Media.MainImage.Type ?? "image",
+                IsMain = true,
+                Color = dto.Media.MainImage.Color
+            });
+        }
+
+        foreach (var thumb in dto.Media?.Thumbnails ?? new())
+        {
+            product.Images.Add(new ProductImage {
+                Url = thumb.Url,
+                AltText = thumb.Alt,
+                Label = thumb.Label,
+                MediaType = thumb.Type ?? "image",
+                IsMain = false,
+                Color = thumb.Color
+            });
+        }
+
+        // Sync variants
+        foreach (var v in product.Variants.ToList())
+        {
+            _unitOfWork.Repository<ProductVariant>().Delete(v);
+        }
+        foreach (var v in dto.InventoryVariants)
+        {
+            product.Variants.Add(new ProductVariant {
+                Sku = v.Sku,
+                Price = v.Price,
+                StockQuantity = v.Inventory,
+                Size = v.Label
+            });
+        }
+
+        _unitOfWork.Repository<Product>().Update(product);
+        await _unitOfWork.Complete();
+
+        return _mapper.Map<Product, ProductDto>(product);
+    }
+
+    private string GenerateSlug(string name)
+    {
+        return name.ToLower().Trim().Replace(" ", "-").Replace("/", "-");
     }
 }

@@ -1,9 +1,0 @@
-C:\Users\User\Documents\Personal\Ecommarce\backend\src\ECommerce.Infrastructure\Services\ProductService.cs(1,7): error CS0246: The type or namespace name 'AutoMapper' could not be found (are you missing a using directive or an assembly reference?) [C:\Users\User\Documents\Personal\Ecommarce\backend\src\ECommerce.Infrastructure\ECommerce.Infrastructure.csproj]
-C:\Users\User\Documents\Personal\Ecommarce\backend\src\ECommerce.Infrastructure\Services\ProductService.cs(13,22): error CS0246: The type or namespace name 'IMapper' could not be found (are you missing a using directive or an assembly reference?) [C:\Users\User\Documents\Personal\Ecommarce\backend\src\ECommerce.Infrastructure\ECommerce.Infrastructure.csproj]
-C:\Users\User\Documents\Personal\Ecommarce\backend\src\ECommerce.Infrastructure\Services\ProductService.cs(15,57): error CS0246: The type or namespace name 'IMapper' could not be found (are you missing a using directive or an assembly reference?) [C:\Users\User\Documents\Personal\Ecommarce\backend\src\ECommerce.Infrastructure\ECommerce.Infrastructure.csproj]
-
-Build FAILED.
-    4 Warning(s)
-    3 Error(s)
-
-Time Elapsed 00:00:01.10

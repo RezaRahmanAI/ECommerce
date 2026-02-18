@@ -1,4 +1,5 @@
 using ECommerce.Core.DTOs;
+using ECommerce.Core.Interfaces;
 using ECommerce.Infrastructure.Services;
 using Microsoft.AspNetCore.Mvc;
 using System.Linq;
@@ -9,9 +10,9 @@ namespace ECommerce.API.Controllers;
 [Route("api/[controller]")]
 public class OrdersController : ControllerBase
 {
-    private readonly OrderService _orderService;
+    private readonly IOrderService _orderService;
 
-    public OrdersController(OrderService orderService)
+    public OrdersController(IOrderService orderService)
     {
         _orderService = orderService;
     }
@@ -52,7 +53,7 @@ public class OrdersController : ControllerBase
             // { orderId: string, name, phone, address, deliveryDetails, itemsCount, total, createdAt }
             return Ok(new 
             {
-                orderId = order.Id.ToString(), // Or OrderNumber depending on what frontend expects as 'id'
+                orderId = order.Id, // Return as numeric ID
                 name = order.CustomerName,
                 phone = order.CustomerPhone,
                 address = order.ShippingAddress,

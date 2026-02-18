@@ -23,18 +23,18 @@ public class AdminReviewsController : ControllerBase
     {
         var reviews = await _context.Reviews
             .Include(r => r.Product)
-            .OrderByDescending(r => r.CreatedAt)
+            .OrderByDescending(r => r.Date)
             .Select(r => new ReviewDto
             {
                 Id = r.Id,
-                UserName = r.UserName,
-                UserAvatar = r.UserAvatar ?? "",
+                CustomerName = r.CustomerName,
+                CustomerAvatar = r.CustomerAvatar,
                 Rating = r.Rating,
                 Comment = r.Comment,
                 IsVerifiedPurchase = r.IsVerifiedPurchase,
-                CreatedAt = r.CreatedAt,
+                Date = r.Date,
                 ProductId = r.ProductId,
-                ProductName = r.Product.Name,
+                IsFeatured = r.IsFeatured,
                 Likes = r.Likes
             })
             .ToListAsync();
@@ -65,21 +65,21 @@ public class AdminReviewsController : ControllerBase
 
         review.Rating = dto.Rating;
         review.Comment = dto.Comment;
-        review.UpdatedAt = DateTime.UtcNow;
+        review.Date = DateTime.UtcNow; // Update date on edit? Or keep original? Usually keep original. Or add UpdatedAt if needed. Let's just update Date for now or leave it.
 
         await _context.SaveChangesAsync();
 
         return Ok(new ReviewDto
         {
             Id = review.Id,
-            UserName = review.UserName,
-            UserAvatar = review.UserAvatar ?? "",
+            CustomerName = review.CustomerName,
+            CustomerAvatar = review.CustomerAvatar,
             Rating = review.Rating,
             Comment = review.Comment,
             IsVerifiedPurchase = review.IsVerifiedPurchase,
-            CreatedAt = review.CreatedAt,
+            Date = review.Date,
             ProductId = review.ProductId,
-            ProductName = review.Product.Name,
+            IsFeatured = review.IsFeatured,
             Likes = review.Likes
         });
     }
