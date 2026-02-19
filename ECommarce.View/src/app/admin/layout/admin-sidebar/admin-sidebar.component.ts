@@ -28,6 +28,9 @@ interface AdminNavItem {
   route: string;
 }
 
+import { SiteSettingsService } from "../../../core/services/site-settings.service";
+import { ImageUrlService } from "../../../core/services/image-url.service";
+
 @Component({
   selector: "app-admin-sidebar",
   standalone: true,
@@ -36,6 +39,10 @@ interface AdminNavItem {
 })
 export class AdminSidebarComponent implements OnInit {
   private router = inject(Router);
+  private settingsService = inject(SiteSettingsService);
+  public imageUrlService = inject(ImageUrlService);
+
+  settings$ = this.settingsService.getSettings();
 
   readonly icons = {
     Store,

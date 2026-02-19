@@ -1,4 +1,4 @@
-import { Component } from "@angular/core";
+import { Component, inject, OnInit } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import {
   animate,
@@ -14,6 +14,7 @@ import {
   Plus,
   X,
 } from "lucide-angular";
+import { SiteSettingsService } from "../../../core/services/site-settings.service";
 
 @Component({
   selector: "app-contact-fab",
@@ -68,24 +69,32 @@ import {
     `,
   ],
   template: `
-    <div class="fixed bottom-6 left-6 z-50 flex flex-col items-center gap-4">
+    <div
+      class="fixed bottom-6 left-6 z-50 flex flex-col items-center gap-4"
+      *ngIf="contactPhone || whatsAppNumber"
+      [@famTrigger]
+    >
       <!-- Options Stack -->
       <div *ngIf="isOpen" class="flex flex-col gap-3 mb-2">
         <!-- Phone Option -->
         <a
-          href="tel:+8801700000000"
+          *ngIf="contactPhone"
+          [href]="'tel:' + contactPhone"
           [@optionTrigger]="{ value: '', params: { delay: 50 } }"
           class="w-12 h-12 flex items-center justify-center rounded-full bg-white/80 backdrop-blur-md shadow-lg hover:scale-110 transition-transform text-[#0e181b] border border-white/20"
+          title="Call Us"
         >
           <lucide-icon [img]="icons.Phone" class="w-5 h-5"></lucide-icon>
         </a>
 
         <!-- Chat/WhatsApp Option -->
         <a
-          href="https://wa.me/8801700000000"
+          *ngIf="whatsAppNumber"
+          [href]="'https://wa.me/' + whatsAppNumber"
           target="_blank"
           [@optionTrigger]="{ value: '', params: { delay: 0 } }"
           class="w-12 h-12 flex items-center justify-center rounded-full bg-white/80 backdrop-blur-md shadow-lg hover:scale-110 transition-transform text-[#0e181b] border border-white/20"
+          title="WhatsApp Us"
         >
           <lucide-icon
             [img]="icons.MessageSquare"
@@ -124,14 +133,26 @@ import {
     </div>
   `,
 })
-export class ContactFabComponent {
+export class ContactFabComponent implements OnInit {
   readonly icons = {
     Phone,
     MessageSquare,
     Plus,
     X,
   };
+
+  private settingsService = inject(SiteSettingsService);
+
   isOpen = false;
+  contactPhone = "";
+  whatsAppNumber = "";
+
+  ngOnInit() {
+    this.settingsService.getSettings().subscribe((settings) => {
+      this.contactPhone = settings.contactPhone || "";
+      this.whatsAppNumber = settings.whatsAppNumber || "";
+    });
+  }
 
   toggle() {
     this.isOpen = !this.isOpen;

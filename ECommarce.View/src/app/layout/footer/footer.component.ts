@@ -1,6 +1,6 @@
 import { Component, inject, OnInit } from "@angular/core";
 import { CommonModule } from "@angular/common";
-import { SettingsService } from "../../admin/services/settings.service";
+import { SiteSettingsService } from "../../core/services/site-settings.service";
 import { ImageUrlService } from "../../core/services/image-url.service";
 
 @Component({
@@ -11,11 +11,12 @@ import { ImageUrlService } from "../../core/services/image-url.service";
   styleUrl: "./footer.component.css",
 })
 export class FooterComponent implements OnInit {
-  settingsService = inject(SettingsService);
+  settingsService = inject(SiteSettingsService);
   imageUrlService = inject(ImageUrlService);
-  settings$ = this.settingsService.settings$;
+  settings$ = this.settingsService.getSettings();
+  currentYear = new Date().getFullYear();
 
   ngOnInit() {
-    this.settingsService.getSettings().subscribe();
+    // settings$ is already an observable from getSettings() which uses shareReplay
   }
 }

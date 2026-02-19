@@ -1,9 +1,15 @@
-import { Component } from '@angular/core';
+import { CommonModule } from "@angular/common";
+import { Component, inject } from "@angular/core";
+import { SiteSettingsService } from "../../../../core/services/site-settings.service";
 
 @Component({
-  selector: 'app-newsletter',
+  selector: "app-newsletter",
   standalone: true,
-  templateUrl: './newsletter.component.html',
-  styleUrl: './newsletter.component.css',
+  imports: [CommonModule],
+  templateUrl: "./newsletter.component.html",
+  styleUrl: "./newsletter.component.css",
 })
-export class NewsletterComponent {}
+export class NewsletterComponent {
+  private settingsService = inject(SiteSettingsService);
+  settings$ = this.settingsService.getSettings();
+}

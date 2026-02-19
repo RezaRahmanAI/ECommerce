@@ -68,13 +68,26 @@ public class OrderService : IOrderService
 
         var subtotal = items.Sum(i => i.TotalPrice);
         decimal shippingCost = 0;
+        
+        // Fetch Site Settings for Free Shipping Threshold
+        var siteSettings = await _unitOfWork.Repository<SiteSetting>().ListAllAsync();
+        var settings = siteSettings.FirstOrDefault();
+        var freeShippingThreshold = settings?.FreeShippingThreshold ?? 0;
+
         // Lookup delivery method if provided
         if (orderDto.DeliveryMethodId.HasValue)
         {
             var method = await _unitOfWork.Repository<DeliveryMethod>().GetByIdAsync(orderDto.DeliveryMethodId.Value);
             if (method != null)
             {
-                shippingCost = method.Cost;
+                if (freeShippingThreshold > 0 && subtotal >= freeShippingThreshold)
+                {
+                    shippingCost = 0;
+                }
+                else
+                {
+                    shippingCost = method.Cost;
+                }
             }
         }
         else

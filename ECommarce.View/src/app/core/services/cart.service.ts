@@ -33,8 +33,9 @@ export class CartService {
     this.settingsService.settings$.subscribe((settings) => {
       if (settings) {
         // Global shipping settings removed. Shipping is calculated at checkout based on delivery method.
-        this.freeShippingThreshold = 0;
-        this.shippingCharge = 0;
+        // However, we still need the threshold for calculations and UI feedback
+        this.freeShippingThreshold = settings.freeShippingThreshold || 0;
+        this.shippingCharge = 0; // Shipping charge is calculated at checkout based on method
         // Trigger recalculation
         this.cartItemsSubject.next(this.cartItemsSubject.getValue());
       }

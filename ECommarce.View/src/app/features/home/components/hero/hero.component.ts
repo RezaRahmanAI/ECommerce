@@ -45,6 +45,7 @@ export class HeroComponent implements OnInit, OnDestroy {
 
   currentSlide = 0;
   timer: any;
+  currentYear = new Date().getFullYear();
 
   ngOnInit() {
     this.loadBanners();

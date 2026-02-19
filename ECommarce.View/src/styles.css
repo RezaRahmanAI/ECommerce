@@ -151,4 +151,8 @@
   .backdrop-blur-glass {
     backdrop-filter: blur(20px) saturate(180%);
   }
+
+  .site-container {
+    @apply max-w-[1920px] mx-auto px-6 md:px-12 lg:px-20;
+  }
 }

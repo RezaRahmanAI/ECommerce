@@ -125,12 +125,7 @@
             >
               SKU
             </th>
-            <th
-              class="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider"
-              scope="col"
-            >
-              Stock
-            </th>
+            
             <th
               class="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider"
               scope="col"
@@ -220,30 +215,7 @@
                 {{ product.sku }}
               </div>
             </td>
-            <td class="px-6 py-4 whitespace-nowrap">
-              <ng-container
-                *ngIf="(product.stockQuantity || 0) > 0; else outOfStock"
-              >
-                <div
-                  class="text-sm"
-                  [ngClass]="
-                    isLowStock(product)
-                      ? 'text-orange-600 font-medium flex items-center gap-1'
-                      : 'text-slate-900 dark:text-slate-200'
-                  "
-                >
-                  {{ product.stockQuantity }} in stock
-                  <lucide-icon
-                    [img]="icons.AlertTriangle"
-                    class="w-3.5 h-3.5"
-                    title="Low Stock"
-                  ></lucide-icon>
-                </div>
-              </ng-container>
-              <ng-template #outOfStock>
-                <div class="text-sm text-red-600 font-medium">0 in stock</div>
-              </ng-template>
-            </td>
+            
             <td class="px-6 py-4 whitespace-nowrap">
               <div
                 class="text-sm font-medium"

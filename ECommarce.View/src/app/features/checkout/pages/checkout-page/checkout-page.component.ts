@@ -12,6 +12,8 @@ import {
   of,
   switchMap,
   tap,
+  startWith,
+  shareReplay,
 } from "rxjs";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 
@@ -22,7 +24,10 @@ import { CustomerOrderApiService } from "../../../../core/services/customer-orde
 import { PriceDisplayComponent } from "../../../../shared/components/price-display/price-display.component";
 import { ImageUrlService } from "../../../../core/services/image-url.service";
 import { SettingsService } from "../../../../admin/services/settings.service";
-import { DeliveryMethod } from "../../../../admin/models/settings.models";
+import {
+  DeliveryMethod,
+  AdminSettings,
+} from "../../../../admin/models/settings.models";
 
 import { LucideAngularModule, CheckCircle2, ArrowLeft } from "lucide-angular";
 
@@ -63,29 +68,62 @@ export class CheckoutPageComponent {
   isLoading = false;
   errorMessage = "";
   didAutofill = false;
-  deliveryMethods: DeliveryMethod[] = [];
-  selectedMethod: DeliveryMethod | null = null;
 
   private readonly settingsService = inject(SettingsService);
+
+  readonly deliveryMethods$ = this.settingsService
+    .getPublicDeliveryMethods()
+    .pipe(
+      tap((methods) => {
+        if (methods.length > 0) {
+          const defaultMethod =
+            methods.find((m) => m.name.toLowerCase().includes("inside")) ||
+            methods[0];
+          const currentId = this.checkoutForm.controls.deliveryMethodId.value;
+          if (!currentId) {
+            this.checkoutForm.patchValue({
+              deliveryMethodId: defaultMethod.id,
+            });
+          }
+        }
+      }),
+      shareReplay(1),
+    );
 
   readonly summary$ = this.cartService.summary$;
 
   readonly vm$ = combineLatest([
     this.cartService.getCart(),
     this.summary$,
-    of(null), // Placeholder for animation or extra data if needed
+    this.settingsService
+      .getSettings()
+      .pipe(startWith(null as AdminSettings | null)),
+    this.deliveryMethods$.pipe(startWith([] as DeliveryMethod[])),
   ]).pipe(
-    map(([cartItems, summary]) => {
-      // Adjust summary shipping if a method is selected
-      const shipping = this.selectedMethod
-        ? this.selectedMethod.cost
-        : summary.shipping;
+    map(([cartItems, summary, settings, deliveryMethods]) => {
+      const freeShippingThreshold = settings?.freeShippingThreshold ?? 0;
+      const isFreeShipping =
+        freeShippingThreshold > 0 && summary.subtotal >= freeShippingThreshold;
+
+      // Update delivery methods costs if free shipping applies
+      const effectiveDeliveryMethods = deliveryMethods.map((m) => ({
+        ...m,
+        cost: isFreeShipping ? 0 : m.cost,
+      }));
+
+      // Find the currently selected method in the effective list (to get the updated cost)
+      const currentMethodId = this.checkoutForm.controls.deliveryMethodId.value;
+      const selectedMethod =
+        effectiveDeliveryMethods.find((m) => m.id === currentMethodId) || null;
+
+      const shipping = selectedMethod ? selectedMethod.cost : summary.shipping;
       const total = summary.subtotal + summary.tax + shipping;
 
       return {
         cartItems,
         summary: { ...summary, shipping, total },
-        deliveryMethods: this.deliveryMethods,
+        deliveryMethods: effectiveDeliveryMethods,
+        isFreeShipping,
       };
     }),
   );
@@ -134,26 +172,6 @@ export class CheckoutPageComponent {
         }
 
         this.didAutofill = false;
-      });
-
-    // Load delivery methods
-    this.settingsService.getPublicDeliveryMethods().subscribe((methods) => {
-      this.deliveryMethods = methods;
-      if (methods.length > 0) {
-        const defaultMethod =
-          methods.find((m) => m.name.toLowerCase().includes("inside")) ||
-          methods[0];
-        this.checkoutForm.patchValue({ deliveryMethodId: defaultMethod.id });
-        this.selectedMethod = defaultMethod;
-      }
-    });
-
-    // Watch for delivery method changes
-    this.checkoutForm.controls.deliveryMethodId.valueChanges
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((id) => {
-        this.selectedMethod =
-          this.deliveryMethods.find((m) => m.id === id) || null;
       });
   }
 

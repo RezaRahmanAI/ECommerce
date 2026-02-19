@@ -19,7 +19,7 @@ import {
 
 import { AuthStateService } from "../../core/services/auth-state.service";
 import { CartService } from "../../core/services/cart.service";
-import { SettingsService } from "../../admin/services/settings.service";
+import { SiteSettingsService } from "../../core/services/site-settings.service";
 import { ImageUrlService } from "../../core/services/image-url.service";
 import { NavigationService } from "../../core/services/navigation.service";
 
@@ -33,7 +33,7 @@ import { NavigationService } from "../../core/services/navigation.service";
 export class NavbarComponent {
   private readonly authState = inject(AuthStateService);
   private readonly cartService = inject(CartService);
-  private readonly settingsService = inject(SettingsService);
+  private readonly settingsService = inject(SiteSettingsService);
   private readonly navigationService = inject(NavigationService);
   private readonly router = inject(Router);
   public readonly imageUrlService = inject(ImageUrlService);
@@ -62,7 +62,7 @@ export class NavbarComponent {
   );
 
   constructor() {
-    this.settingsService.getSettings().subscribe();
+    // Subscription handled by async pipe in template
   }
 
   @HostListener("window:scroll", [])
@@ -73,7 +73,7 @@ export class NavbarComponent {
   readonly vm$ = combineLatest([
     this.authState.user$,
     this.cartService.summary$,
-    this.settingsService.settings$,
+    this.settingsService.getSettings(),
     this.navigationService.getMegaMenu(),
     this.isHomePage$,
   ]).pipe(

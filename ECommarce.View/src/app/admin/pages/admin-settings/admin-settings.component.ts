@@ -75,6 +75,7 @@ export class AdminSettingsComponent implements OnInit {
     whatsAppNumber: [""],
     currency: ["BDT"],
     description: [""],
+    freeShippingThreshold: [0],
     facebookPixelId: [""],
     googleTagId: [""],
     payments: this.formBuilder.group({
@@ -114,11 +115,14 @@ export class AdminSettingsComponent implements OnInit {
   imageUrlService = inject(ImageUrlService);
 
   private lastSettings: AdminSettings | null = null;
+  protected Math = Math;
+  protected date = new Date();
 
   ngOnInit(): void {
     this.settingsService.getSettings().subscribe((settings) => {
       this.lastSettings = settings;
       this.shippingZones = settings.shippingZones || [];
+      this.deliveryMethods = settings.deliveryMethods || [];
       this.stripePublishableKey = settings.stripePublishableKey || "";
 
       if (settings.logoUrl) {
@@ -139,6 +143,7 @@ export class AdminSettingsComponent implements OnInit {
         whatsAppNumber: settings.whatsAppNumber,
         currency: settings.currency,
         description: settings.description,
+        freeShippingThreshold: settings.freeShippingThreshold,
         facebookPixelId: settings.facebookPixelId,
         googleTagId: settings.googleTagId,
         payments: {
@@ -183,6 +188,7 @@ export class AdminSettingsComponent implements OnInit {
       whatsAppNumber: formValue.whatsAppNumber,
       currency: formValue.currency,
       description: formValue.description,
+      freeShippingThreshold: formValue.freeShippingThreshold,
       stripeEnabled: formValue.payments.stripeEnabled,
       paypalEnabled: formValue.payments.paypalEnabled,
       stripePublishableKey: this.stripePublishableKey,

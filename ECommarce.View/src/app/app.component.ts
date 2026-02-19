@@ -1,13 +1,8 @@
-import { Component, inject, OnInit, Renderer2, Inject } from "@angular/core";
-import { DOCUMENT } from "@angular/common";
+import { Component, inject, OnInit, Renderer2 } from "@angular/core";
+import { DOCUMENT, CommonModule } from "@angular/common";
+import { Title } from "@angular/platform-browser";
 import { SiteSettingsService } from "./core/services/site-settings.service";
-import {
-  NavigationEnd,
-  Router,
-  RouterModule,
-  RouterOutlet,
-} from "@angular/router";
-import { CommonModule } from "@angular/common";
+import { NavigationEnd, Router, RouterOutlet } from "@angular/router";
 import { filter, map, startWith } from "rxjs";
 
 import { NavbarComponent } from "./layout/navbar/navbar.component";
@@ -36,6 +31,7 @@ export class AppComponent implements OnInit {
   private renderer = inject(Renderer2);
   private document = inject(DOCUMENT);
   private logger = inject(LoggerService);
+  private titleService = inject(Title);
 
   showPublicLayout$ = this.router.events.pipe(
     filter((event) => event instanceof NavigationEnd),
@@ -46,6 +42,9 @@ export class AppComponent implements OnInit {
   ngOnInit() {
     this.logger.info("Application initialized with professional logging");
     this.siteSettingsService.getSettings().subscribe((settings) => {
+      if (settings.websiteName) {
+        this.titleService.setTitle(settings.websiteName);
+      }
       if (settings.facebookPixelId) {
         this.injectFacebookPixel(settings.facebookPixelId);
       }

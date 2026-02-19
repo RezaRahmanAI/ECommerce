@@ -19,4 +19,5 @@ export class CampaignSpotlightComponent {
       "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=2070&auto=format&fit=crop", // Placeholder Lauxury Image
     link: "/women",
   };
+  currentYear = new Date().getFullYear();
 }

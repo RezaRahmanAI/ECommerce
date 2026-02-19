@@ -8,6 +8,7 @@ import { of, switchMap } from "rxjs";
 import { BlogContentBlock, BlogPost } from "../../blog.models";
 import { BlogService } from "../../blog.service";
 import { ImageUrlService } from "../../../../core/services/image-url.service";
+import { SiteSettingsService } from "../../../../core/services/site-settings.service";
 
 type BlogComment = {
   id: number;
@@ -43,6 +44,8 @@ export class BlogDetailsComponent implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
   private readonly document = inject(DOCUMENT);
   readonly imageUrlService = inject(ImageUrlService);
+  private settingsService = inject(SiteSettingsService);
+  settings$ = this.settingsService.getSettings();
 
   post?: BlogPost;
   contentBlocks: BlogContentBlock[] = [];
@@ -50,6 +53,7 @@ export class BlogDetailsComponent implements OnInit {
   shareMessage = "";
   replyMessage = "";
   notFound = false;
+  websiteName = "";
 
   readonly commentForm = this.formBuilder.nonNullable.group({
     name: ["", [Validators.required]],
@@ -136,6 +140,10 @@ export class BlogDetailsComponent implements OnInit {
         this.shareMessage = "";
         this.replyMessage = "";
       });
+
+    this.settingsService.getSettings().subscribe((settings) => {
+      this.websiteName = settings.websiteName || "SheraShop";
+    });
   }
 
   get shareUrl(): string {
@@ -210,7 +218,8 @@ export class BlogDetailsComponent implements OnInit {
     platform: "pinterest" | "facebook" | "twitter",
   ): string {
     const encodedUrl = encodeURIComponent(this.shareUrl);
-    const title = encodeURIComponent(this.post?.title ?? "SheraShopBD24 Blog");
+    const websiteName = this.websiteName || "SheraShop";
+    const title = encodeURIComponent(this.post?.title ?? `${websiteName} Blog`);
 
     switch (platform) {
       case "pinterest":

@@ -9,6 +9,7 @@ import {
 import { Router, RouterModule } from "@angular/router";
 import { finalize } from "rxjs/operators";
 import { ContactPayload, ContactService } from "./contact.service";
+import { SiteSettingsService } from "../../core/services/site-settings.service";
 
 type SocialLink = {
   name: string;
@@ -59,7 +60,7 @@ export class ContactComponent {
   phone = "+1 (555) 123-4567";
   phoneDial = "+15551234567";
   address = "123 Modest Fashion Ave,\nNew York, NY 10012";
-  addressLines = this.address.split("\n");
+  addressLines: string[] = [];
   officeHours = "Mon-Fri, 9am - 6pm EST.";
 
   mapDetails = {
@@ -109,7 +110,21 @@ export class ContactComponent {
     private formBuilder: FormBuilder,
     private contactService: ContactService,
     private router: Router,
+    private settingsService: SiteSettingsService,
   ) {
+    this.settingsService.getSettings().subscribe((settings) => {
+      if (settings) {
+        this.supportEmail = settings.contactEmail || this.supportEmail;
+        this.phone = settings.contactPhone || this.phone;
+        this.phoneDial =
+          settings.contactPhone?.replace(/[^0-9+]/g, "") || this.phoneDial;
+        this.address = settings.address || this.address;
+        this.addressLines = this.address ? this.address.split("\n") : [];
+        this.mapDetails.storeName =
+          settings.websiteName || this.mapDetails.storeName;
+        this.mapLocation = settings.address || this.mapLocation;
+      }
+    });
     this.helpCenterLink = this.router.config.some(
       (route) => route.path === "help",
     )

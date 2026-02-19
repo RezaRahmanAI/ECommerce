@@ -23,6 +23,7 @@ import {
 import { AdminDashboardService } from "../../services/admin-dashboard.service";
 import { PriceDisplayComponent } from "../../../shared/components/price-display/price-display.component";
 import { ImageUrlService } from "../../../core/services/image-url.service";
+import { SiteSettingsService } from "../../../core/services/site-settings.service";
 import {
   LucideAngularModule,
   Receipt,
@@ -58,10 +59,15 @@ export class DashboardOverviewComponent {
     RotateCcw,
   };
   private adminDashboardService = inject(AdminDashboardService);
+  private settingsService = inject(SiteSettingsService);
   readonly imageUrlService = inject(ImageUrlService);
   private readonly destroyRef = inject(DestroyRef);
+
+  settings$ = this.settingsService.getSettings();
+
   private readonly refreshIntervalMs = 15000;
   protected Math = Math;
+  protected date = new Date();
 
   stats$: Observable<DashboardStats> = this.createLiveStream(() =>
     this.adminDashboardService.getStats(),

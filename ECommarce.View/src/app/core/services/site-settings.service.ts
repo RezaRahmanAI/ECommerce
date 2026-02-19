@@ -4,6 +4,7 @@ import { ApiHttpClient } from "../http/http-client";
 
 export interface SiteSettings {
   websiteName: string;
+  description?: string;
   logoUrl?: string;
   contactEmail?: string;
   contactPhone?: string;

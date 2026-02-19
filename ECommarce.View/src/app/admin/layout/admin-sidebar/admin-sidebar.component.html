@@ -3,16 +3,23 @@
 >
   <!-- Fixed Header -->
   <div class="px-6 pt-6 pb-4 flex-shrink-0">
-    <div class="flex items-center gap-3">
+    <div class="flex items-center gap-3" *ngIf="settings$ | async as settings">
       <div class="bg-white/10 p-2 rounded-lg">
+        <img
+          *ngIf="settings.logoUrl"
+          [src]="imageUrlService.getImageUrl(settings.logoUrl)"
+          class="w-8 h-8 object-contain"
+          alt="Logo"
+        />
         <lucide-icon
+          *ngIf="!settings.logoUrl"
           [img]="icons.Store"
           class="w-5 h-5 text-white"
         ></lucide-icon>
       </div>
       <div>
         <h1 class="text-white text-lg font-bold leading-tight">
-          SheraShopBD24
+          {{ settings.websiteName || "Admin Console" }}
         </h1>
         <p class="text-gray-400 text-xs font-medium">Admin Console</p>
       </div>

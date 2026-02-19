@@ -290,6 +290,52 @@ export class AdminProductFormComponent implements OnDestroy {
         });
 
         // Load existing media
+        // 1. Parse Variants First (Colors needed for Media Dropdowns)
+        this.colorsArray.clear();
+        const uniqueColors = new Set<string>();
+        const images = (product as any).images || (product as any).Images || [];
+
+        images.forEach((img: any) => {
+          const color = img.color || img.Color;
+          if (color) uniqueColors.add(color);
+        });
+
+        if (uniqueColors.size > 0) {
+          uniqueColors.forEach((color) => {
+            this.colorsArray.push(
+              this.formBuilder.group({
+                name: [color],
+                selected: [true],
+              }),
+            );
+          });
+        } else {
+          this.colorsArray.push(this.createColorGroup(true));
+        }
+
+        // 2. Sizes from Variants
+        this.sizesArray.clear();
+        const variants =
+          (product as any).variants || (product as any).Variants || [];
+
+        if (variants && variants.length > 0) {
+          variants.forEach((v: any) => {
+            this.sizesArray.push(
+              this.formBuilder.group({
+                label: [v.size || v.Size || ""],
+                stock: [
+                  v.stockQuantity || v.StockQuantity || 0,
+                  [Validators.min(0)],
+                ],
+                selected: [true],
+              }),
+            );
+          });
+        } else {
+          this.sizesArray.push(this.createSizeGroup(true));
+        }
+
+        // 3. Load Media
         // Load existing media with details
         if ((product as any).images && (product as any).images.length > 0) {
           (product as any).images.forEach((img: any, index: number) => {
@@ -332,52 +378,6 @@ export class AdminProductFormComponent implements OnDestroy {
         // Actually, the new backend 'GetProductById' returns 'Variants.Colors' as a list of names!
         // We should use that.
 
-        // Parse Variants from ProductDto (Flat List structure)
-        // 1. Colors from Images
-        this.colorsArray.clear();
-        const uniqueColors = new Set<string>();
-        const images = (product as any).images || (product as any).Images || [];
-
-        images.forEach((img: any) => {
-          const color = img.color || img.Color;
-          if (color) uniqueColors.add(color);
-        });
-
-        if (uniqueColors.size > 0) {
-          uniqueColors.forEach((color) => {
-            this.colorsArray.push(
-              this.formBuilder.group({
-                name: [color],
-                hex: ["#111827"], // Default to dark since we don't store hex
-                selected: [true],
-              }),
-            );
-          });
-        } else {
-          this.colorsArray.push(this.createColorGroup(true));
-        }
-
-        // 2. Sizes from Variants
-        this.sizesArray.clear();
-        const variants =
-          (product as any).variants || (product as any).Variants || [];
-
-        if (variants && variants.length > 0) {
-          variants.forEach((v: any) => {
-            this.sizesArray.push(
-              this.formBuilder.group({
-                label: [v.size || v.Size || ""],
-                stock: [
-                  v.stockQuantity || v.StockQuantity || 0,
-                  [Validators.min(0)],
-                ],
-                selected: [true], // Existing variants are active
-              }),
-            );
-          });
-        } else {
-          this.sizesArray.push(this.createSizeGroup(true));
-        }
         // We removed the legacy 'else if' block because 'backendVariants' in GetProductById
         // is now ALWAYS an object (ProductVariantsDto), never an array of entities.
 
@@ -584,7 +584,6 @@ export class AdminProductFormComponent implements OnDestroy {
   private createColorGroup(selected: boolean): AbstractControl {
     return this.formBuilder.group({
       name: [""],
-      hex: ["#111827"],
       selected: [selected],
     });
   }
@@ -655,6 +654,7 @@ export class AdminProductFormComponent implements OnDestroy {
       type: partial.type ?? "image",
       isMain: partial.isMain ?? this.mediaItemsArray.length === 0,
       source: partial.source,
+      color: partial.color,
     };
     this.mediaItemsArray.push(this.createMediaItemGroup(item));
     this.mediaError = "";

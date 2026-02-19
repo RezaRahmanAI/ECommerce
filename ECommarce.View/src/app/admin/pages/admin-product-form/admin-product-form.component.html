@@ -135,6 +135,152 @@
           </label>
         </div>
       </div>
+      <!-- Product Options (Colors & Sizes) -->
+      <div
+        class="rounded-xl border border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark p-6 shadow-sm"
+        formGroupName="variants"
+      >
+        <h2
+          class="mb-4 text-lg font-bold text-text-main-light dark:text-text-main-dark"
+        >
+          Product Options
+        </h2>
+        <div class="space-y-6">
+          <!-- Colors Section -->
+          <div class="space-y-4" formArrayName="colors">
+            <div class="flex items-center justify-between">
+              <div>
+                <h3
+                  class="text-sm font-semibold text-text-main-light dark:text-text-main-dark"
+                >
+                  Available Colors
+                </h3>
+                <p class="text-xs text-text-secondary-light">
+                  Add colors here to tag your images. Does not affect stock.
+                </p>
+              </div>
+              <button
+                class="flex items-center gap-2 text-sm font-semibold text-primary hover:text-[#083a4a]"
+                type="button"
+                (click)="addColor()"
+              >
+                <lucide-icon
+                  [img]="icons.PlusCircle"
+                  class="w-5 h-5"
+                ></lucide-icon>
+                Add color
+              </button>
+            </div>
+
+            <!-- existing color loop... -->
+
+            <div
+              class="flex flex-col gap-3 rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark p-4"
+              *ngFor="let color of colorsArray.controls; let colorIndex = index"
+              [formGroupName]="colorIndex"
+            >
+              <div class="grid gap-3 sm:grid-cols-[1fr_1fr_0.5fr]">
+                <label
+                  class="flex flex-col gap-1 text-xs font-medium text-text-secondary-light uppercase"
+                >
+                  Name
+                  <input
+                    class="rounded-lg border border-border-light dark:border-border-dark bg-white dark:bg-black/20 px-3 py-2 text-sm text-text-main-light dark:text-text-main-dark"
+                    type="text"
+                    placeholder="e.g. Navy Blue"
+                    formControlName="name"
+                  />
+                </label>
+                <div class="flex items-end pb-1">
+                  <button
+                    class="text-xs font-semibold text-red-500 hover:underline"
+                    type="button"
+                    (click)="removeColor(colorIndex)"
+                  >
+                    Remove
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sizes Section -->
+          <div class="space-y-4" formArrayName="sizes">
+            <div class="flex items-center justify-between">
+              <div>
+                <h3
+                  class="text-sm font-semibold text-text-main-light dark:text-text-main-dark"
+                >
+                  Sizes & Inventory
+                </h3>
+                <p class="text-xs text-text-secondary-light">
+                  Define stock quantity for each size.
+                </p>
+              </div>
+              <button
+                class="flex items-center gap-2 text-sm font-semibold text-primary hover:text-[#083a4a]"
+                type="button"
+                (click)="addSize()"
+              >
+                <lucide-icon
+                  [img]="icons.PlusCircle"
+                  class="w-5 h-5"
+                ></lucide-icon>
+                Add size
+              </button>
+            </div>
+            <!-- ... -->
+            <div
+              class="flex flex-col gap-3 rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark p-4"
+              *ngFor="let size of sizesArray.controls; let sizeIndex = index"
+              [formGroupName]="sizeIndex"
+            >
+              <div class="grid gap-3 sm:grid-cols-[1fr_1fr_0.8fr]">
+                <label
+                  class="flex flex-col gap-1 text-xs font-medium text-text-secondary-light uppercase"
+                >
+                  Size label
+                  <input
+                    class="rounded-lg border border-border-light dark:border-border-dark bg-white dark:bg-black/20 px-3 py-2 text-sm text-text-main-light dark:text-text-main-dark"
+                    type="text"
+                    placeholder="e.g. M"
+                    formControlName="label"
+                  />
+                </label>
+                <label
+                  class="flex flex-col gap-1 text-xs font-medium text-text-secondary-light uppercase"
+                >
+                  Stock
+                  <input
+                    class="rounded-lg border border-border-light dark:border-border-dark bg-white dark:bg-black/20 px-3 py-2 text-sm text-text-main-light dark:text-text-main-dark"
+                    type="number"
+                    formControlName="stock"
+                  />
+                </label>
+                <label
+                  class="flex items-center gap-2 text-xs font-medium text-text-secondary-light uppercase"
+                >
+                  <input
+                    class="text-primary focus:ring-primary"
+                    type="radio"
+                    name="selectedSize"
+                    [checked]="size.get('selected')?.value"
+                    (change)="setSelectedSize(sizeIndex)"
+                  />
+                  Default
+                </label>
+              </div>
+              <button
+                class="w-fit text-xs font-semibold text-red-500 hover:underline"
+                type="button"
+                (click)="removeSize(sizeIndex)"
+              >
+                Remove size
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
       <!-- Media Card -->
       <div
         class="rounded-xl border border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark p-6 shadow-sm"
@@ -301,169 +447,6 @@
             No media added yet. Add at least one image or video to preview on
             the product pages.
           </p>
-        </div>
-      </div>
-      <!-- Product Options (Colors & Sizes) -->
-      <div
-        class="rounded-xl border border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark p-6 shadow-sm"
-        formGroupName="variants"
-      >
-        <h2
-          class="mb-4 text-lg font-bold text-text-main-light dark:text-text-main-dark"
-        >
-          Product Options
-        </h2>
-        <div class="space-y-6">
-          <!-- Colors Section -->
-          <div class="space-y-4" formArrayName="colors">
-            <div class="flex items-center justify-between">
-              <div>
-                <h3
-                  class="text-sm font-semibold text-text-main-light dark:text-text-main-dark"
-                >
-                  Available Colors
-                </h3>
-                <p class="text-xs text-text-secondary-light">
-                  Add colors here to tag your images. Does not affect stock.
-                </p>
-              </div>
-              <button
-                class="flex items-center gap-2 text-sm font-semibold text-primary hover:text-[#083a4a]"
-                type="button"
-                (click)="addColor()"
-              >
-                <lucide-icon
-                  [img]="icons.PlusCircle"
-                  class="w-5 h-5"
-                ></lucide-icon>
-                Add color
-              </button>
-            </div>
-
-            <!-- existing color loop... -->
-
-            <div
-              class="flex flex-col gap-3 rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark p-4"
-              *ngFor="let color of colorsArray.controls; let colorIndex = index"
-              [formGroupName]="colorIndex"
-            >
-              <div class="grid gap-3 sm:grid-cols-[1fr_1fr_0.5fr]">
-                <label
-                  class="flex flex-col gap-1 text-xs font-medium text-text-secondary-light uppercase"
-                >
-                  Name
-                  <input
-                    class="rounded-lg border border-border-light dark:border-border-dark bg-white dark:bg-black/20 px-3 py-2 text-sm text-text-main-light dark:text-text-main-dark"
-                    type="text"
-                    placeholder="e.g. Navy Blue"
-                    formControlName="name"
-                  />
-                </label>
-                <label
-                  class="flex flex-col gap-1 text-xs font-medium text-text-secondary-light uppercase"
-                >
-                  Hex Code
-                  <div class="flex items-center gap-2">
-                    <input
-                      class="h-9 w-12 cursor-pointer rounded-lg border border-border-light dark:border-border-dark p-0.5"
-                      type="color"
-                      formControlName="hex"
-                    />
-                    <input
-                      class="w-full rounded-lg border border-border-light dark:border-border-dark bg-white dark:bg-black/20 px-3 py-2 text-sm text-text-main-light dark:text-text-main-dark uppercase"
-                      type="text"
-                      formControlName="hex"
-                    />
-                  </div>
-                </label>
-                <div class="flex items-end pb-1">
-                  <button
-                    class="text-xs font-semibold text-red-500 hover:underline"
-                    type="button"
-                    (click)="removeColor(colorIndex)"
-                  >
-                    Remove
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Sizes Section -->
-          <div class="space-y-4" formArrayName="sizes">
-            <div class="flex items-center justify-between">
-              <div>
-                <h3
-                  class="text-sm font-semibold text-text-main-light dark:text-text-main-dark"
-                >
-                  Sizes & Inventory
-                </h3>
-                <p class="text-xs text-text-secondary-light">
-                  Define stock quantity for each size.
-                </p>
-              </div>
-              <button
-                class="flex items-center gap-2 text-sm font-semibold text-primary hover:text-[#083a4a]"
-                type="button"
-                (click)="addSize()"
-              >
-                <lucide-icon
-                  [img]="icons.PlusCircle"
-                  class="w-5 h-5"
-                ></lucide-icon>
-                Add size
-              </button>
-            </div>
-            <!-- ... -->
-            <div
-              class="flex flex-col gap-3 rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark p-4"
-              *ngFor="let size of sizesArray.controls; let sizeIndex = index"
-              [formGroupName]="sizeIndex"
-            >
-              <div class="grid gap-3 sm:grid-cols-[1fr_1fr_0.8fr]">
-                <label
-                  class="flex flex-col gap-1 text-xs font-medium text-text-secondary-light uppercase"
-                >
-                  Size label
-                  <input
-                    class="rounded-lg border border-border-light dark:border-border-dark bg-white dark:bg-black/20 px-3 py-2 text-sm text-text-main-light dark:text-text-main-dark"
-                    type="text"
-                    placeholder="e.g. M"
-                    formControlName="label"
-                  />
-                </label>
-                <label
-                  class="flex flex-col gap-1 text-xs font-medium text-text-secondary-light uppercase"
-                >
-                  Stock
-                  <input
-                    class="rounded-lg border border-border-light dark:border-border-dark bg-white dark:bg-black/20 px-3 py-2 text-sm text-text-main-light dark:text-text-main-dark"
-                    type="number"
-                    formControlName="stock"
-                  />
-                </label>
-                <label
-                  class="flex items-center gap-2 text-xs font-medium text-text-secondary-light uppercase"
-                >
-                  <input
-                    class="text-primary focus:ring-primary"
-                    type="radio"
-                    name="selectedSize"
-                    [checked]="size.get('selected')?.value"
-                    (change)="setSelectedSize(sizeIndex)"
-                  />
-                  Default
-                </label>
-              </div>
-              <button
-                class="w-fit text-xs font-semibold text-red-500 hover:underline"
-                type="button"
-                (click)="removeSize(sizeIndex)"
-              >
-                Remove size
-              </button>
-            </div>
-          </div>
         </div>
       </div>
       <!-- Product Details Card -->

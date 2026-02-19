@@ -2,10 +2,8 @@ using System.ComponentModel.DataAnnotations;
 
 namespace ECommerce.Core.Entities;
 
-public class SiteSetting
-{
-    public int Id { get; set; }
-    
+public class SiteSetting : BaseEntity
+{    
     [Required]
     [MaxLength(100)]
     public string WebsiteName { get; set; } = "SheraShopBD24";
@@ -33,6 +31,4 @@ public class SiteSetting
     public string? Currency { get; set; } = "BDT";
     public decimal FreeShippingThreshold { get; set; } = 5000;
     public decimal ShippingCharge { get; set; } = 120;
-    
-    public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 }

@@ -2,14 +2,14 @@
 <div
   class="bg-white text-slate-500 text-[10px] uppercase tracking-[0.2em] py-2 border-b border-gray-100"
 >
-  <div
-    class="max-w-[1920px] mx-auto px-6 md:px-12 lg:px-20 flex justify-between items-center"
-  >
+  <div class="site-container flex justify-between items-center">
     <div class="flex items-center gap-6">
       <a
-        href="mailto:support@sherashopbd24.com"
+        [href]="'mailto:' + (vm$ | async)?.settings?.contactEmail"
         class="hover:text-primary transition-colors"
-        >support&#64;sherashopbd24.com</a
+        >{{
+          (vm$ | async)?.settings?.contactEmail || "support@sherashopbd24.com"
+        }}</a
       >
     </div>
     <div class="hidden md:flex items-center gap-6">
@@ -36,22 +36,22 @@
   }"
 >
   <ng-container *ngIf="vm$ | async as vm">
-    <div class="max-w-[1920px] mx-auto px-6 md:px-12 lg:px-20">
+    <div class="site-container">
       <div class="flex items-center justify-between h-16 md:h-18">
         <!-- Left Side: Logo -->
         <div class="flex-shrink-0 flex items-center">
           <a routerLink="/" class="flex items-center group">
             <ng-container *ngIf="vm.settings?.logoUrl; else brandText">
               <img
-                [src]="imageUrlService.getImageUrl(vm.settings!.logoUrl!)"
-                alt="Logo"
+                [src]="imageUrlService.getImageUrl(vm.settings.logoUrl!)"
+                [alt]="vm.settings.websiteName || 'Logo'"
                 class="h-6 md:h-8 w-auto object-contain transition-transform duration-300"
               />
             </ng-container>
             <ng-template #brandText>
               <span
                 class="font-serif text-2xl tracking-tighter uppercase font-extrabold text-primary"
-                >SheraShop</span
+                >{{ vm.settings.websiteName || "SheraShop" }}</span
               >
             </ng-template>
           </a>

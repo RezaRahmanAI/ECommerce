@@ -218,6 +218,20 @@
                   formControlName="currency"
                 />
               </div>
+              <div class="col-span-2 md:col-span-1">
+                <label
+                  class="block text-sm font-medium text-text-main mb-1"
+                  for="free-shipping-threshold"
+                  >Free Shipping Threshold</label
+                >
+                <input
+                  class="block w-full rounded-lg border-border bg-background-light text-text-main shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
+                  id="free-shipping-threshold"
+                  type="number"
+                  formControlName="freeShippingThreshold"
+                  min="0"
+                />
+              </div>
               <div class="col-span-2">
                 <label
                   class="block text-sm font-medium text-text-main mb-1"
@@ -706,6 +720,10 @@
     </form>
   </div>
   <div class="mt-12 mb-6 text-center text-xs text-text-secondary">
-    <p>© 2026 SheraShopBD24. All rights reserved.</p>
+    <p>
+      © {{ Math.max(2026, date.getFullYear()) }}
+      {{ settingsForm.controls.websiteName.value || "Admin Console" }}. All
+      rights reserved.
+    </p>
   </div>
 </div>

@@ -1,9 +1,9 @@
-<section class="py-24 bg-background-light px-6 md:px-20 lg:px-40">
+<section class="py-24 bg-background-light site-container">
   <div class="max-w-7xl mx-auto text-center font-sans">
     <div class="mb-16">
       <span
-        class="text-[10px] uppercase tracking-[0.4em] text-accent font-bold mb-3 block"
-        >Why SheraShop</span
+        class="text-[10px] uppercase tracking-[0.5em] text-accent font-bold mb-4 block"
+        >Why {{ (settings$ | async)?.websiteName || "SheraShop" }}</span
       >
       <h2 class="text-4xl font-serif italic tracking-tighter text-primary">
         The Art of Excellence
