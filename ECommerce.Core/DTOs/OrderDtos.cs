@@ -10,6 +10,7 @@ public class OrderCreateDto
     public string DeliveryDetails { get; set; }
     public int ItemsCount { get; set; }
     public decimal Total { get; set; }
+    public int? DeliveryMethodId { get; set; }
     public List<OrderItemDto> Items { get; set; }
 }
 

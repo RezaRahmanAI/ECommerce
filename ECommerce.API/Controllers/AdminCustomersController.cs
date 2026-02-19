@@ -40,4 +40,27 @@ public class AdminCustomersController : ControllerBase
             total
         });
     }
+    [HttpPost("{id}/flag")]
+    public async Task<IActionResult> FlagCustomer(int id)
+    {
+        var customer = await _customerService.GetCustomerByIdAsync(id);
+        if (customer == null) return NotFound();
+
+        customer.IsSuspicious = true;
+        await _customerService.UpdateCustomerAsync(customer);
+
+        return Ok();
+    }
+
+    [HttpPost("{id}/unflag")]
+    public async Task<IActionResult> UnflagCustomer(int id)
+    {
+        var customer = await _customerService.GetCustomerByIdAsync(id);
+        if (customer == null) return NotFound();
+
+        customer.IsSuspicious = false;
+        await _customerService.UpdateCustomerAsync(customer);
+
+        return Ok();
+    }
 }

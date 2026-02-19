@@ -1,6 +1,7 @@
 using ECommerce.Core.DTOs;
 using ECommerce.Core.Interfaces;
 using ECommerce.Core.Entities;
+using ECommerce.Core.Specifications;
 using ECommerce.Infrastructure.Data;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -16,12 +17,14 @@ public class AdminProductsController : ControllerBase
     private readonly ApplicationDbContext _context;
     private readonly IWebHostEnvironment _environment;
     private readonly IProductService _productService;
+    private readonly IUnitOfWork _unitOfWork;
 
-    public AdminProductsController(ApplicationDbContext context, IWebHostEnvironment environment, IProductService productService)
+    public AdminProductsController(ApplicationDbContext context, IWebHostEnvironment environment, IProductService productService, IUnitOfWork unitOfWork)
     {
         _context = context;
         _environment = environment;
         _productService = productService;
+        _unitOfWork = unitOfWork;
     }
 
     [HttpPost("media")]
@@ -302,5 +305,61 @@ public class AdminProductsController : ControllerBase
             .Replace(",", "")
             .Replace("'", "")
             .Replace("\"", "");
+    }
+    [HttpGet("inventory")]
+    public async Task<ActionResult<List<ProductInventoryDto>>> GetInventory()
+    {
+        var spec = new BaseSpecification<Product>();
+        spec.AddInclude(x => x.Variants);
+        var products = await _unitOfWork.Repository<Product>().ListAsync(spec);
+
+        var inventory = products.Select(p => new ProductInventoryDto
+        {
+            ProductId = p.Id,
+            ProductName = p.Name,
+            ProductSku = p.Sku,
+            ImageUrl = p.ImageUrl,
+            TotalStock = p.StockQuantity,
+            Variants = p.Variants.Select(v => new VariantInventoryDto
+            {
+                VariantId = v.Id,
+                Sku = v.Sku,
+                Size = v.Size,
+                StockQuantity = v.StockQuantity
+            }).ToList()
+        }).ToList();
+
+        return Ok(inventory);
+    }
+
+    [HttpPut("inventory/{variantId}")]
+    public async Task<ActionResult> UpdateStock(int variantId, UpdateStockDto dto)
+    {
+        var variant = await _unitOfWork.Repository<ProductVariant>().GetByIdAsync(variantId);
+        if (variant == null) return NotFound(new { message = "Variant not found" });
+
+        var product = await _unitOfWork.Repository<Product>().GetByIdAsync(variant.ProductId);
+        if (product == null) return NotFound(new { message = "Parent product not found" });
+        
+        // Update variant stock
+        variant.StockQuantity = dto.Quantity;
+        _unitOfWork.Repository<ProductVariant>().Update(variant);
+
+        // Recalculate total stock for product
+        var variantSpec = new BaseSpecification<ProductVariant>(v => v.ProductId == product.Id);
+        var allVariants = await _unitOfWork.Repository<ProductVariant>().ListAsync(variantSpec);
+        
+        var targetVar = allVariants.FirstOrDefault(v => v.Id == variantId);
+        if (targetVar != null) targetVar.StockQuantity = dto.Quantity;
+
+        product.StockQuantity = allVariants.Sum(v => v.StockQuantity);
+        _unitOfWork.Repository<Product>().Update(product);
+
+        if (await _unitOfWork.Complete() > 0)
+        {
+             return Ok(new { message = "Stock updated successfully", newTotal = product.StockQuantity });
+        }
+
+        return BadRequest(new { message = "Failed to update stock" });
     }
 }

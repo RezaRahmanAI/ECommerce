@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ECommerce.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260218130237_RemoveColorFromVariant")]
-    partial class RemoveColorFromVariant
+    [Migration("20260218170348_AddAnalyticsAndPixels")]
+    partial class AddAnalyticsAndPixels
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -280,6 +280,34 @@ namespace ECommerce.Infrastructure.Migrations
                         .IsUnique();
 
                     b.ToTable("Customers");
+                });
+
+            modelBuilder.Entity("ECommerce.Core.Entities.DailyTraffic", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("date");
+
+                    b.Property<int>("PageViews")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UniqueVisitors")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("DailyTraffics");
                 });
 
             modelBuilder.Entity("ECommerce.Core.Entities.HeroBanner", b =>
@@ -552,9 +580,6 @@ namespace ECommerce.Infrastructure.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
-                    b.Property<bool>("IsFeatured")
-                        .HasColumnType("bit");
-
                     b.Property<bool>("IsNew")
                         .HasColumnType("bit");
 
@@ -777,11 +802,17 @@ namespace ECommerce.Infrastructure.Migrations
                     b.Property<string>("Currency")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("FacebookPixelId")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("FacebookUrl")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<decimal>("FreeShippingThreshold")
                         .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("GoogleTagId")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("InstagramUrl")
                         .HasColumnType("nvarchar(max)");

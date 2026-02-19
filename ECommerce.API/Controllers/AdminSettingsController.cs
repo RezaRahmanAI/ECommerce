@@ -54,7 +54,8 @@ public class AdminSettingsController : ControllerBase
             WhatsAppNumber = settings.WhatsAppNumber,
             Currency = settings.Currency,
             FreeShippingThreshold = settings.FreeShippingThreshold,
-            ShippingCharge = settings.ShippingCharge
+            ShippingCharge = settings.ShippingCharge,
+            DeliveryMethods = await _context.DeliveryMethods.ToListAsync()
         });
     }
 
@@ -108,5 +109,57 @@ public class AdminSettingsController : ControllerBase
         }
 
         return Ok(new { url = $"/uploads/settings/{fileName}" });
+    }
+
+    // Delivery Methods CRUD
+    [HttpGet("delivery-methods")]
+    public async Task<ActionResult<IEnumerable<DeliveryMethod>>> GetDeliveryMethods()
+    {
+        return await _context.DeliveryMethods.ToListAsync();
+    }
+
+    [HttpPost("delivery-methods")]
+    public async Task<ActionResult<DeliveryMethod>> CreateDeliveryMethod([FromBody] DeliveryMethodDto dto)
+    {
+        var method = new DeliveryMethod
+        {
+            Name = dto.Name,
+            Cost = dto.Cost,
+            EstimatedDays = dto.EstimatedDays,
+            IsActive = dto.IsActive,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        _context.DeliveryMethods.Add(method);
+        await _context.SaveChangesAsync();
+
+        return CreatedAtAction(nameof(GetDeliveryMethods), new { id = method.Id }, method);
+    }
+
+    [HttpPut("delivery-methods/{id}")]
+    public async Task<IActionResult> UpdateDeliveryMethod(int id, [FromBody] DeliveryMethodDto dto)
+    {
+        var method = await _context.DeliveryMethods.FindAsync(id);
+        if (method == null) return NotFound();
+
+        method.Name = dto.Name;
+        method.Cost = dto.Cost;
+        method.EstimatedDays = dto.EstimatedDays;
+        method.IsActive = dto.IsActive;
+        method.UpdatedAt = DateTime.UtcNow;
+
+        await _context.SaveChangesAsync();
+        return NoContent();
+    }
+
+    [HttpDelete("delivery-methods/{id}")]
+    public async Task<IActionResult> DeleteDeliveryMethod(int id)
+    {
+        var method = await _context.DeliveryMethods.FindAsync(id);
+        if (method == null) return NotFound();
+
+        _context.DeliveryMethods.Remove(method);
+        await _context.SaveChangesAsync();
+        return NoContent();
     }
 }

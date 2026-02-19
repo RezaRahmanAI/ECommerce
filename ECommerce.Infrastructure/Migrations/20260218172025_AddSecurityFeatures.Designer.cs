@@ -4,6 +4,7 @@ using ECommerce.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ECommerce.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260218172025_AddSecurityFeatures")]
+    partial class AddSecurityFeatures
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -341,40 +344,6 @@ namespace ECommerce.Infrastructure.Migrations
                     b.ToTable("DailyTraffics");
                 });
 
-            modelBuilder.Entity("ECommerce.Core.Entities.DeliveryMethod", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<decimal>("Cost")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("EstimatedDays")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("DeliveryMethods");
-                });
-
             modelBuilder.Entity("ECommerce.Core.Entities.HeroBanner", b =>
                 {
                     b.Property<int>("Id")
@@ -495,9 +464,6 @@ namespace ECommerce.Infrastructure.Migrations
                     b.Property<string>("DeliveryDetails")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("DeliveryMethodId")
-                        .HasColumnType("int");
-
                     b.Property<string>("OrderNumber")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -525,8 +491,6 @@ namespace ECommerce.Infrastructure.Migrations
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("DeliveryMethodId");
 
                     b.ToTable("Orders");
                 });
@@ -1131,15 +1095,6 @@ namespace ECommerce.Infrastructure.Migrations
                     b.Navigation("Category");
 
                     b.Navigation("ParentMenu");
-                });
-
-            modelBuilder.Entity("ECommerce.Core.Entities.Order", b =>
-                {
-                    b.HasOne("ECommerce.Core.Entities.DeliveryMethod", "DeliveryMethod")
-                        .WithMany()
-                        .HasForeignKey("DeliveryMethodId");
-
-                    b.Navigation("DeliveryMethod");
                 });
 
             modelBuilder.Entity("ECommerce.Core.Entities.OrderItem", b =>

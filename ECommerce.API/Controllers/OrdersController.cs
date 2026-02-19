@@ -27,22 +27,28 @@ public class OrdersController : ControllerBase
 
         if (string.IsNullOrWhiteSpace(orderDto.Name))
         {
-            return BadRequest(new { error = "Customer name is required" });
+            return BadRequest(new { message = "Customer name is required" });
         }
 
         if (string.IsNullOrWhiteSpace(orderDto.Phone))
         {
-            return BadRequest(new { error = "Phone number is required" });
+            return BadRequest(new { message = "Phone number is required" });
         }
 
         if (string.IsNullOrWhiteSpace(orderDto.Address))
         {
-            return BadRequest(new { error = "Shipping address is required" });
+            return BadRequest(new { message = "Shipping address is required" });
         }
 
         if (orderDto.Items == null || !orderDto.Items.Any())
         {
-            return BadRequest(new { error = "Order must contain at least one item" });
+            return BadRequest(new { message = "Order must contain at least one item" });
+        }
+
+        // Fix: Treat 0 as null for DeliveryMethodId to avoid FK violation
+        if (orderDto.DeliveryMethodId == 0)
+        {
+            orderDto.DeliveryMethodId = null;
         }
 
         try
@@ -65,7 +71,7 @@ public class OrdersController : ControllerBase
         }
         catch (Exception ex)
         {
-            return BadRequest(new { error = ex.Message });
+            return BadRequest(new { message = ex.Message });
         }
     }
 

@@ -25,10 +25,19 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<BlogPost> BlogPosts { get; set; }
     public DbSet<Customer> Customers { get; set; }
     public DbSet<SiteSetting> SiteSettings { get; set; }
+    public DbSet<DailyTraffic> DailyTraffics { get; set; }
+    public DbSet<BlockedIp> BlockedIps { get; set; }
+    public DbSet<DeliveryMethod> DeliveryMethods { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
+
+        // Delivery Method Configuration
+        builder.Entity<DeliveryMethod>(entity =>
+        {
+            entity.Property(d => d.Cost).HasColumnType("decimal(18,2)");
+        });
 
         // Product Configuration
         builder.Entity<Product>(entity =>

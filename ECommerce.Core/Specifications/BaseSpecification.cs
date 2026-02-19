@@ -44,7 +44,7 @@ public class BaseSpecification<T> : ISpecification<T>
         OrderByDescending = orderByDescExpression;
     }
 
-    protected void ApplyPaging(int skip, int take)
+    public void ApplyPaging(int skip, int take)
     {
         Skip = skip;
         Take = take;

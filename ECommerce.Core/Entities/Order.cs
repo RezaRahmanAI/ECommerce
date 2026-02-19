@@ -8,6 +8,7 @@ public enum OrderStatus
     Pending,
     Confirmed,
     Processing,
+    Packed,
     Shipped,
     Delivered,
     Cancelled
@@ -28,6 +29,9 @@ public class Order : BaseEntity
     public decimal Tax { get; set; }
     public decimal ShippingCost { get; set; }
     public decimal Total { get; set; }
+    
+    public int? DeliveryMethodId { get; set; }
+    public DeliveryMethod? DeliveryMethod { get; set; }
     
     public OrderStatus Status { get; set; } = OrderStatus.Pending;
     

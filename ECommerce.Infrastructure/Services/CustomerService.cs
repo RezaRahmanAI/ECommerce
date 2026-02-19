@@ -66,4 +66,14 @@ public class CustomerService
 
         return (items, total);
     }
+    public async Task<Customer?> GetCustomerByIdAsync(int id)
+    {
+        return await _context.Customers.FindAsync(id);
+    }
+
+    public async Task UpdateCustomerAsync(Customer customer)
+    {
+        _context.Customers.Update(customer);
+        await _context.SaveChangesAsync();
+    }
 }

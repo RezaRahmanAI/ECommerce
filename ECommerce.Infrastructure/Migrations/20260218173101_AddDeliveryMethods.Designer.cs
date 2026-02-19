@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ECommerce.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260217155335_o")]
-    partial class o
+    [Migration("20260218173101_AddDeliveryMethods")]
+    partial class AddDeliveryMethods
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -46,6 +46,9 @@ namespace ECommerce.Infrastructure.Migrations
 
                     b.Property<string>("FullName")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsSuspicious")
+                        .HasColumnType("bit");
 
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("bit");
@@ -91,6 +94,34 @@ namespace ECommerce.Infrastructure.Migrations
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
 
                     b.ToTable("AspNetUsers", (string)null);
+                });
+
+            modelBuilder.Entity("ECommerce.Core.Entities.BlockedIp", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("BlockedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("BlockedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("IpAddress")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Reason")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("BlockedIps");
                 });
 
             modelBuilder.Entity("ECommerce.Core.Entities.BlogPost", b =>
@@ -263,6 +294,9 @@ namespace ECommerce.Infrastructure.Migrations
                     b.Property<string>("DeliveryDetails")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<bool>("IsSuspicious")
+                        .HasColumnType("bit");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -280,6 +314,68 @@ namespace ECommerce.Infrastructure.Migrations
                         .IsUnique();
 
                     b.ToTable("Customers");
+                });
+
+            modelBuilder.Entity("ECommerce.Core.Entities.DailyTraffic", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("date");
+
+                    b.Property<int>("PageViews")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UniqueVisitors")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("DailyTraffics");
+                });
+
+            modelBuilder.Entity("ECommerce.Core.Entities.DeliveryMethod", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("Cost")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("EstimatedDays")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("DeliveryMethods");
                 });
 
             modelBuilder.Entity("ECommerce.Core.Entities.HeroBanner", b =>
@@ -552,9 +648,6 @@ namespace ECommerce.Infrastructure.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
-                    b.Property<bool>("IsFeatured")
-                        .HasColumnType("bit");
-
                     b.Property<bool>("IsNew")
                         .HasColumnType("bit");
 
@@ -672,9 +765,6 @@ namespace ECommerce.Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("Color")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -780,11 +870,17 @@ namespace ECommerce.Infrastructure.Migrations
                     b.Property<string>("Currency")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("FacebookPixelId")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("FacebookUrl")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<decimal>("FreeShippingThreshold")
                         .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("GoogleTagId")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("InstagramUrl")
                         .HasColumnType("nvarchar(max)");

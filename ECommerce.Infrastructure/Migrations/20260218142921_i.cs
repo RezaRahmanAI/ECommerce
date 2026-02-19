@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace ECommerce.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class o : Migration
+    public partial class i : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -432,7 +432,6 @@ namespace ECommerce.Infrastructure.Migrations
                     PurchaseRate = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
                     StockQuantity = table.Column<int>(type: "int", nullable: false),
                     IsActive = table.Column<bool>(type: "bit", nullable: false),
-                    IsFeatured = table.Column<bool>(type: "bit", nullable: false),
                     IsNew = table.Column<bool>(type: "bit", nullable: false),
                     MetaTitle = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     MetaDescription = table.Column<string>(type: "nvarchar(max)", nullable: true),
@@ -540,7 +539,6 @@ namespace ECommerce.Infrastructure.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Sku = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Size = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Color = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Price = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
                     StockQuantity = table.Column<int>(type: "int", nullable: false),
                     IsActive = table.Column<bool>(type: "bit", nullable: false),

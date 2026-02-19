@@ -1,5 +1,6 @@
 using ECommerce.Core.DTOs;
 using ECommerce.Infrastructure.Services;
+using ECommerce.Core.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ECommerce.API.Controllers;
@@ -9,9 +10,9 @@ namespace ECommerce.API.Controllers;
 public class CustomersController : ControllerBase
 {
     private readonly CustomerService _customerService;
-    private readonly OrderService _orderService;
+    private readonly IOrderService _orderService;
 
-    public CustomersController(CustomerService customerService, OrderService orderService)
+    public CustomersController(CustomerService customerService, IOrderService orderService)
     {
         _customerService = customerService;
         _orderService = orderService;

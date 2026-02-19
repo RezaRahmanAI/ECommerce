@@ -26,14 +26,16 @@ public class DashboardService : IDashboardService
         var shippedOrders = await _context.Orders.CountAsync(o => o.Status == OrderStatus.Shipped);
         var cancelledOrders = await _context.Orders.CountAsync(o => o.Status == OrderStatus.Cancelled);
 
-        // Revenue from Delivered and Shipped orders
+        // Revenue from Confirmed, Processing, Packed, Shipped, Delivered (All valid sales)
+        var validStatuses = new[] { OrderStatus.Pending, OrderStatus.Confirmed, OrderStatus.Processing, OrderStatus.Packed, OrderStatus.Shipped, OrderStatus.Delivered };
+
         var totalRevenue = await _context.Orders
-            .Where(o => o.Status == OrderStatus.Delivered || o.Status == OrderStatus.Shipped)
+            .Where(o => validStatuses.Contains(o.Status))
             .SumAsync(o => (decimal?)o.Total) ?? 0;
 
         // Calculate Average Selling Price (ASP)
         var totalItemsSold = await _context.Orders
-            .Where(o => o.Status == OrderStatus.Delivered || o.Status == OrderStatus.Shipped)
+            .Where(o => validStatuses.Contains(o.Status))
             .SelectMany(o => o.Items)
             .SumAsync(i => (int?)i.Quantity) ?? 0;
             
@@ -41,7 +43,7 @@ public class DashboardService : IDashboardService
 
         // Calculate Total Purchase Cost (Sum of PurchaseRate * Quantity for sold items)
         var totalPurchaseCost = await _context.Orders
-            .Where(o => o.Status == OrderStatus.Delivered || o.Status == OrderStatus.Shipped)
+            .Where(o => validStatuses.Contains(o.Status))
             .SelectMany(o => o.Items)
             .SumAsync(i => (decimal?)(i.Product.PurchaseRate * i.Quantity)) ?? 0;
 
@@ -72,7 +74,8 @@ public class DashboardService : IDashboardService
             {
                 Product = p,
                 SoldCount = _context.Orders
-                    .Where(o => o.Status == OrderStatus.Delivered || o.Status == OrderStatus.Shipped)
+                SoldCount = _context.Orders
+                    .Where(o => o.Status == OrderStatus.Confirmed || o.Status == OrderStatus.Processing || o.Status == OrderStatus.Packed || o.Status == OrderStatus.Shipped || o.Status == OrderStatus.Delivered)
                     .SelectMany(o => o.Items)
                     .Where(i => i.ProductId == p.Id)
                     .Sum(i => (int?)i.Quantity) ?? 0
@@ -120,8 +123,10 @@ public class DashboardService : IDashboardService
             _ => endDate.AddMonths(-1) // Default to last 30 days
         };
 
+        var validStatuses = new[] { OrderStatus.Pending, OrderStatus.Confirmed, OrderStatus.Processing, OrderStatus.Packed, OrderStatus.Shipped, OrderStatus.Delivered };
+
         var salesData = await _context.Orders
-            .Where(o => (o.Status == OrderStatus.Delivered || o.Status == OrderStatus.Shipped) &&
+            .Where(o => validStatuses.Contains(o.Status) &&
                         o.CreatedAt >= startDate && o.CreatedAt <= endDate)
             .GroupBy(o => o.CreatedAt.Date)
             .Select(g => new 

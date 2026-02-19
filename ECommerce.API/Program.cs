@@ -119,6 +119,8 @@ app.UseStaticFiles(); // Enable serving static files from wwwroot
 
 // Global exception handling
 app.UseMiddleware<ECommerce.API.Middleware.GlobalExceptionMiddleware>();
+app.UseMiddleware<ECommerce.API.Middleware.IpBlockingMiddleware>();
+app.UseMiddleware<ECommerce.API.Middleware.VisitorTrackingMiddleware>();
 
 app.UseCors("AllowAll");
 

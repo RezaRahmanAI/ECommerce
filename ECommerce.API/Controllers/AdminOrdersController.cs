@@ -21,10 +21,16 @@ public class AdminOrdersController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<OrderDto>>> GetOrders()
+    public async Task<ActionResult<object>> GetOrders(
+        [FromQuery] string? searchTerm,
+        [FromQuery] string? status,
+        [FromQuery] string? dateRange,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 10)
     {
-        var orders = await _orderService.GetOrdersAsync();
-        return Ok(orders);
+        var (items, total) = await _orderService.GetOrdersForAdminAsync(searchTerm, status, dateRange, page, pageSize);
+        // Ensure properties are lowercase to match frontend expectations if JSON serialization doesn't do it automatically
+        return Ok(new { items, total });
     }
 
     [HttpGet("filtered")]
@@ -33,8 +39,9 @@ public class AdminOrdersController : ControllerBase
         [FromQuery] string? status,
         [FromQuery] string? dateRange)
     {
-        var orders = await _orderService.GetOrdersForAdminAsync(searchTerm, status, dateRange);
-        return Ok(orders);
+        // Fetch all matching orders for stats calculation (page 1, max size)
+        var (items, _) = await _orderService.GetOrdersForAdminAsync(searchTerm, status, dateRange, 1, 100000);
+        return Ok(items);
     }
 
     [HttpGet("{id}")]

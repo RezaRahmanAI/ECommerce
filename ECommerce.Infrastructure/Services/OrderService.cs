@@ -28,11 +28,25 @@ public class OrderService : IOrderService
         foreach (var itemDto in orderDto.Items)
         {
             var product = await _unitOfWork.Repository<Product>().GetByIdAsync(itemDto.ProductId);
-            
             if (product == null) throw new KeyNotFoundException($"Product {itemDto.ProductId} not found");
+
+            // Deduct from Main Product Stock
             if (product.StockQuantity < itemDto.Quantity) throw new InvalidOperationException($"Insufficient stock for {product.Name}");
-            
             product.StockQuantity -= itemDto.Quantity;
+
+            // Deduct from Variant Stock if size/color provided
+            if (!string.IsNullOrEmpty(itemDto.Size))
+            {
+                var variantSpec = new BaseSpecification<ProductVariant>(v => v.ProductId == product.Id && v.Size == itemDto.Size);
+                var variant = await _unitOfWork.Repository<ProductVariant>().GetEntityWithSpec(variantSpec);
+                
+                if (variant != null)
+                {
+                     if (variant.StockQuantity < itemDto.Quantity) throw new InvalidOperationException($"Insufficient stock for {product.Name} ({itemDto.Size})");
+                     variant.StockQuantity -= itemDto.Quantity;
+                     _unitOfWork.Repository<ProductVariant>().Update(variant);
+                }
+            }
             
             var orderItem = new OrderItem
             {
@@ -49,9 +63,25 @@ public class OrderService : IOrderService
         }
 
         var subtotal = items.Sum(i => i.TotalPrice);
-        // Note: SiteSettings lookup here might be better via another repository
-        // But for brevity in this step, we assume _unitOfWork handles it.
-        // In a real world app, I'd create a SiteSettings Specification.
+        decimal shippingCost = 120; // Default fallback
+
+        // Lookup delivery method if provided
+        if (orderDto.DeliveryMethodId.HasValue)
+        {
+            var method = await _unitOfWork.Repository<DeliveryMethod>().GetByIdAsync(orderDto.DeliveryMethodId.Value);
+            if (method != null)
+            {
+                shippingCost = method.Cost;
+            }
+        }
+        else
+        {
+            // Fallback to free shipping threshold if no method selected (legacy logic)
+            if (subtotal >= 5000)
+            {
+                shippingCost = 0;
+            }
+        }
 
         var order = new Order
         {
@@ -62,9 +92,11 @@ public class OrderService : IOrderService
             DeliveryDetails = orderDto.DeliveryDetails,
             Items = items,
             SubTotal = subtotal,
-            Tax = subtotal * 0.08m,
-            ShippingCost = subtotal >= 5000 ? 0 : 120, // Simplified fallback
-            Status = OrderStatus.Confirmed
+            Tax = 0,
+            ShippingCost = shippingCost,
+            DeliveryMethodId = orderDto.DeliveryMethodId,
+            Status = OrderStatus.Confirmed,
+            CreatedAt = DateTime.UtcNow
         };
         
         order.Total = order.SubTotal + order.Tax + order.ShippingCost;
@@ -103,22 +135,55 @@ public class OrderService : IOrderService
 
     public async Task<bool> UpdateOrderStatusAsync(int id, string status)
     {
-        var order = await _unitOfWork.Repository<Order>().GetByIdAsync(id);
+        var spec = new BaseSpecification<Order>(x => x.Id == id);
+        spec.AddInclude(x => x.Items);
+        var order = await _unitOfWork.Repository<Order>().GetEntityWithSpec(spec);
+        
         if (order == null) return false;
 
-        if (Enum.TryParse<OrderStatus>(status, true, out var orderStatus))
+        if (Enum.TryParse<OrderStatus>(status, true, out var newStatus))
         {
-            order.Status = orderStatus;
+            // Restore stock if cancelling
+            if (newStatus == OrderStatus.Cancelled && order.Status != OrderStatus.Cancelled)
+            {
+                foreach (var item in order.Items)
+                {
+                    var product = await _unitOfWork.Repository<Product>().GetByIdAsync(item.ProductId);
+                    if (product != null)
+                    {
+                        product.StockQuantity += item.Quantity;
+                        _unitOfWork.Repository<Product>().Update(product);
+
+                        if (!string.IsNullOrEmpty(item.Size))
+                        {
+                            var variantSpec = new BaseSpecification<ProductVariant>(v => v.ProductId == item.ProductId && v.Size == item.Size);
+                            var variant = await _unitOfWork.Repository<ProductVariant>().GetEntityWithSpec(variantSpec);
+                            if (variant != null)
+                            {
+                                variant.StockQuantity += item.Quantity;
+                                _unitOfWork.Repository<ProductVariant>().Update(variant);
+                            }
+                        }
+                    }
+                }
+            }
+
+            order.Status = newStatus;
             _unitOfWork.Repository<Order>().Update(order);
             return await _unitOfWork.Complete() > 0;
         }
 
         return false;
     }
-    public async Task<IReadOnlyList<OrderDto>> GetOrdersForAdminAsync(string? searchTerm, string? status, string? dateRange)
+
+    public async Task<(IReadOnlyList<OrderDto> Items, int Total)> GetOrdersForAdminAsync(string? searchTerm, string? status, string? dateRange, int page, int pageSize)
     {
         var spec = new OrdersWithFiltersForAdminSpecification(searchTerm, status, dateRange);
+        var total = await _unitOfWork.Repository<Order>().CountAsync(spec);
+        
+        spec.ApplyPaging(pageSize * (page - 1), pageSize);
         var orders = await _unitOfWork.Repository<Order>().ListAsync(spec);
-        return _mapper.Map<IReadOnlyList<Order>, IReadOnlyList<OrderDto>>(orders);
+        
+        return (_mapper.Map<IReadOnlyList<Order>, IReadOnlyList<OrderDto>>(orders), total);
     }
 }

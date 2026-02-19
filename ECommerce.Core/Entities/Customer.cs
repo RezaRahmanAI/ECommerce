@@ -14,4 +14,6 @@ public class Customer : BaseEntity
     public string Address { get; set; }
 
     public string? DeliveryDetails { get; set; }
+
+    public bool IsSuspicious { get; set; } = false;
 }
