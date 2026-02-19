@@ -9,8 +9,8 @@ import { SettingsService } from "../../admin/services/settings.service";
   providedIn: "root",
 })
 export class CartService {
-  private freeShippingThreshold = 5000;
-  private shippingCharge = 120;
+  private freeShippingThreshold = 0;
+  private shippingCharge = 0;
   private readonly taxRate = 0;
   private readonly storageKey = "cart_items";
   private readonly settingsService = inject(SettingsService);
@@ -32,9 +32,10 @@ export class CartService {
     // Subscribe to settings updates
     this.settingsService.settings$.subscribe((settings) => {
       if (settings) {
-        this.freeShippingThreshold = settings.freeShippingThreshold ?? 5000;
-        this.shippingCharge = settings.shippingCharge ?? 120;
-        // Trigger recalculation by pushing current items again
+        // Global shipping settings removed. Shipping is calculated at checkout based on delivery method.
+        this.freeShippingThreshold = 0;
+        this.shippingCharge = 0;
+        // Trigger recalculation
         this.cartItemsSubject.next(this.cartItemsSubject.getValue());
       }
     });

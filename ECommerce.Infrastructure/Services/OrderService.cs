@@ -67,8 +67,6 @@ public class OrderService : IOrderService
         }
 
         var subtotal = items.Sum(i => i.TotalPrice);
-        decimal shippingCost = 120; // Default fallback
-
         // Lookup delivery method if provided
         if (orderDto.DeliveryMethodId.HasValue)
         {
@@ -80,11 +78,9 @@ public class OrderService : IOrderService
         }
         else
         {
-            // Fallback to free shipping threshold if no method selected (legacy logic)
-            if (subtotal >= 5000)
-            {
-                shippingCost = 0;
-            }
+             // If no delivery method is selected, we should strictly require it or default to 0/handling
+             // ideally the frontend forces a selection.
+             shippingCost = 0; 
         }
 
         var order = new Order
