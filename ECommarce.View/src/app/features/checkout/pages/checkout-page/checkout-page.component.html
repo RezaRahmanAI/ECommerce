@@ -1,0 +1,310 @@
+<main class="flex-grow">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
+    <div class="lg:grid lg:grid-cols-12 lg:gap-x-12 xl:gap-x-16">
+      <div class="lg:col-span-7">
+        <div class="mb-8">
+          <h1 class="text-2xl font-bold text-slate-900 dark:text-white">
+            Place your order
+          </h1>
+          <p class="text-sm text-slate-500 dark:text-slate-400">
+            Enter your delivery details to place the order. Returning customers
+            can provide their phone number to autofill saved information.
+          </p>
+        </div>
+
+        <form [formGroup]="checkoutForm" class="space-y-6">
+          <div
+            class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4"
+          >
+            <div>
+              <label
+                class="block text-sm font-medium text-slate-700 dark:text-slate-300"
+                for="full-name"
+                >Full name</label
+              >
+              <input
+                class="mt-1 block w-full rounded-lg border-slate-300 dark:border-slate-700 dark:bg-slate-800 shadow-sm focus:border-primary focus:ring-primary sm:text-sm py-3"
+                id="full-name"
+                type="text"
+                formControlName="fullName"
+                placeholder="Amina Noor"
+              />
+              <p
+                class="text-xs text-red-500 mt-1"
+                *ngIf="
+                  checkoutForm.controls.fullName.touched &&
+                  checkoutForm.controls.fullName.invalid
+                "
+              >
+                Your name is required.
+              </p>
+            </div>
+
+            <div>
+              <label
+                class="block text-sm font-medium text-slate-700 dark:text-slate-300"
+                for="phone"
+                >Phone number</label
+              >
+              <input
+                class="mt-1 block w-full rounded-lg border-slate-300 dark:border-slate-700 dark:bg-slate-800 shadow-sm focus:border-primary focus:ring-primary sm:text-sm py-3"
+                id="phone"
+                type="tel"
+                formControlName="phone"
+                placeholder="+1 (555) 123-4567"
+              />
+              <p
+                class="text-xs text-slate-500 dark:text-slate-400 mt-1"
+                *ngIf="didAutofill"
+              >
+                Saved details found and autofilled.
+              </p>
+              <p
+                class="text-xs text-red-500 mt-1"
+                *ngIf="
+                  checkoutForm.controls.phone.touched &&
+                  checkoutForm.controls.phone.invalid
+                "
+              >
+                A valid phone number is required.
+              </p>
+            </div>
+
+            <div>
+              <label
+                class="block text-sm font-medium text-slate-700 dark:text-slate-300"
+                for="address"
+                >Delivery address</label
+              >
+              <textarea
+                class="mt-1 block w-full rounded-lg border-slate-300 dark:border-slate-700 dark:bg-slate-800 shadow-sm focus:border-primary focus:ring-primary sm:text-sm py-3"
+                id="address"
+                rows="3"
+                formControlName="address"
+                placeholder="Street, city, and any landmarks"
+              ></textarea>
+              <p
+                class="text-xs text-red-500 mt-1"
+                *ngIf="
+                  checkoutForm.controls.address.touched &&
+                  checkoutForm.controls.address.invalid
+                "
+              >
+                Your delivery address is required.
+              </p>
+            </div>
+
+            <div>
+              <label
+                class="block text-sm font-medium text-slate-700 dark:text-slate-300"
+                for="delivery-details"
+                >Product delivery details</label
+              >
+              <textarea
+                class="mt-1 block w-full rounded-lg border-slate-300 dark:border-slate-700 dark:bg-slate-800 shadow-sm focus:border-primary focus:ring-primary sm:text-sm py-3"
+                id="delivery-details"
+                rows="4"
+                formControlName="deliveryDetails"
+                placeholder="Preferred delivery time, drop-off notes, or other instructions"
+              ></textarea>
+              <p
+                class="text-xs text-red-500 mt-1"
+                *ngIf="
+                  checkoutForm.controls.deliveryDetails.touched &&
+                  checkoutForm.controls.deliveryDetails.invalid
+                "
+              >
+                Please add delivery instructions.
+              </p>
+            </div>
+
+            <hr class="border-slate-200 dark:border-slate-800" />
+
+            <div *ngIf="deliveryMethods.length > 0">
+              <label
+                class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-4"
+                >Delivery Method</label
+              >
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <label
+                  *ngFor="let method of deliveryMethods"
+                  class="relative flex cursor-pointer rounded-lg border bg-white dark:bg-slate-900 p-4 shadow-sm focus:outline-none transition-all"
+                  [ngClass]="
+                    checkoutForm.get('deliveryMethodId')?.value === method.id
+                      ? 'border-primary ring-2 ring-primary bg-primary/5'
+                      : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700'
+                  "
+                >
+                  <input
+                    type="radio"
+                    [value]="method.id"
+                    formControlName="deliveryMethodId"
+                    class="sr-only"
+                  />
+                  <span class="flex flex-1">
+                    <span class="flex flex-col">
+                      <span
+                        class="block text-sm font-bold text-slate-900 dark:text-white uppercase tracking-tight"
+                        >{{ method.name }}</span
+                      >
+                      <span
+                        class="mt-1 flex items-center text-xs text-slate-500 dark:text-slate-400"
+                      >
+                        {{ method.estimatedDays || "Standard Delivery" }}
+                      </span>
+                      <span
+                        class="mt-2 text-sm font-bold text-primary dark:text-accent"
+                        >৳{{ method.cost }}</span
+                      >
+                    </span>
+                  </span>
+                  <span
+                    class="material-icons text-primary"
+                    [ngClass]="
+                      checkoutForm.get('deliveryMethodId')?.value === method.id
+                        ? 'opacity-100'
+                        : 'opacity-0'
+                    "
+                  >
+                    check_circle
+                  </span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div
+            class="flex flex-col-reverse sm:flex-row sm:justify-between items-center gap-4"
+          >
+            <a
+              class="flex items-center text-sm font-medium text-primary hover:text-primary/80 dark:text-accent dark:hover:text-accent/80 transition-colors"
+              routerLink="/cart"
+            >
+              <span class="material-icons text-base mr-1">arrow_back</span>
+              Return to cart
+            </a>
+            <button
+              class="w-full sm:w-auto bg-primary hover:bg-primary/90 text-white rounded-lg px-8 py-4 text-base font-semibold shadow-md transition-all hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+              type="button"
+              (click)="placeOrder()"
+              [disabled]="isLoading"
+            >
+              {{ isLoading ? "Placing order..." : "Place Order" }}
+            </button>
+          </div>
+
+          <p class="text-sm text-red-500" *ngIf="errorMessage">
+            {{ errorMessage }}
+          </p>
+        </form>
+      </div>
+
+      <div class="mt-10 lg:mt-0 lg:col-span-5" *ngIf="vm$ | async as vm">
+        <div class="sticky top-24">
+          <h2 class="sr-only">Order Summary</h2>
+          <div
+            class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden"
+          >
+            <div class="p-6">
+              <ul
+                class="divide-y divide-slate-200 dark:divide-slate-800"
+                role="list"
+              >
+                <li
+                  class="flex py-6 first:pt-0"
+                  *ngFor="let item of vm.cartItems; trackBy: trackCartItem"
+                >
+                  <div
+                    class="h-24 w-24 flex-shrink-0 overflow-hidden rounded-md border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 relative"
+                  >
+                    <span
+                      class="absolute top-0 right-0 -mr-2 -mt-2 w-6 h-6 rounded-full bg-slate-500 text-white text-xs flex items-center justify-center z-10 shadow-sm"
+                    >
+                      {{ item.quantity }}
+                    </span>
+                    <img
+                      class="h-full w-full object-cover object-center"
+                      [attr.data-alt]="item.imageAlt"
+                      [src]="imageUrlService.getImageUrl(item.imageUrl)"
+                    />
+                  </div>
+                  <div class="ml-4 flex flex-1 flex-col">
+                    <div>
+                      <div
+                        class="flex justify-between text-base font-medium text-slate-900 dark:text-white"
+                      >
+                        <h3>{{ item.name }}</h3>
+                        <app-price-display
+                          class="ml-4"
+                          [amount]="item.price"
+                          size="sm"
+                        ></app-price-display>
+                      </div>
+                      <p
+                        class="mt-1 text-sm text-slate-500 dark:text-slate-400"
+                      >
+                        {{ item.color }}
+                      </p>
+                      <p
+                        class="mt-1 text-sm text-slate-500 dark:text-slate-400"
+                      >
+                        Size: {{ item.size }}
+                      </p>
+                    </div>
+                  </div>
+                </li>
+              </ul>
+            </div>
+            <div
+              class="p-6 border-t border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/20 space-y-4"
+            >
+              <div class="flex items-center justify-between">
+                <p class="text-sm text-slate-600 dark:text-slate-400">
+                  Subtotal
+                </p>
+                <app-price-display
+                  class="text-sm font-medium text-slate-900 dark:text-white"
+                  [amount]="vm.summary.subtotal"
+                  size="sm"
+                ></app-price-display>
+              </div>
+              <div class="flex items-center justify-between">
+                <p class="text-sm text-slate-600 dark:text-slate-400">
+                  Shipping
+                </p>
+                <p class="text-sm font-medium text-slate-900 dark:text-white">
+                  <ng-container
+                    *ngIf="vm.summary.shipping === 0; else checkoutShipping"
+                  >
+                    Free
+                  </ng-container>
+                  <ng-template #checkoutShipping>
+                    <app-price-display
+                      [amount]="vm.summary.shipping"
+                      size="sm"
+                    ></app-price-display>
+                  </ng-template>
+                </p>
+              </div>
+
+              <div
+                class="flex items-center justify-between pt-4 border-t border-slate-200 dark:border-slate-700"
+              >
+                <p class="text-base font-bold text-primary dark:text-white">
+                  Total
+                </p>
+                <div class="text-right">
+                  <app-price-display
+                    class="text-primary dark:text-white"
+                    [amount]="vm.summary.total"
+                    size="lg"
+                  ></app-price-display>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>

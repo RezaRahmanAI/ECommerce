@@ -1,0 +1,402 @@
+import { Component, inject } from "@angular/core";
+import { CommonModule } from "@angular/common";
+import { FormsModule } from "@angular/forms";
+import { ActivatedRoute, Router, RouterLink } from "@angular/router";
+import {
+  BehaviorSubject,
+  combineLatest,
+  filter,
+  map,
+  of,
+  switchMap,
+  tap,
+  shareReplay,
+} from "rxjs";
+
+import { ProductService } from "../../../../core/services/product.service";
+import { Product, ProductImage } from "../../../../core/models/product";
+import { Review } from "../../../../core/models/review";
+import { ReviewService } from "../../../../core/services/review.service";
+import { CartService } from "../../../../core/services/cart.service";
+import { PriceDisplayComponent } from "../../../../shared/components/price-display/price-display.component";
+import { ImageUrlService } from "../../../../core/services/image-url.service";
+import { NotificationService } from "../../../../core/services/notification.service";
+
+import { ProductCardComponent } from "../../../../shared/components/product-card/product-card.component";
+import { SizeGuideComponent } from "../../../../shared/components/size-guide/size-guide.component";
+
+@Component({
+  selector: "app-product-details-page",
+  standalone: true,
+  imports: [
+    CommonModule,
+    RouterLink,
+    FormsModule,
+    PriceDisplayComponent,
+    ProductCardComponent,
+    SizeGuideComponent,
+  ],
+  templateUrl: "./product-details-page.component.html",
+  styleUrl: "./product-details-page.component.css",
+})
+export class ProductDetailsPageComponent {
+  private readonly route = inject(ActivatedRoute);
+  private readonly productService = inject(ProductService);
+  private readonly cartService = inject(CartService);
+  private readonly reviewService = inject(ReviewService);
+  private readonly notificationService = inject(NotificationService);
+  private readonly router = inject(Router);
+  readonly imageUrlService = inject(ImageUrlService);
+
+  isSizeGuideOpen = false;
+  currentImageIndex = 0;
+
+  private readonly selectedColorSubject = new BehaviorSubject<{
+    name: string;
+    hex: string;
+  } | null>(null);
+  private readonly selectedSizeSubject = new BehaviorSubject<string | null>(
+    null,
+  );
+  private readonly quantitySubject = new BehaviorSubject<number>(1);
+  private readonly selectedMediaSubject = new BehaviorSubject<string | null>(
+    null,
+  );
+
+  product$ = this.route.paramMap.pipe(
+    map((params) => params.get("slug") ?? ""),
+    filter((slug) => slug.length > 0),
+    switchMap((slug) => this.productService.getBySlug(slug)),
+    filter((product): product is Product => Boolean(product)),
+    tap((product) => {
+      const colors = Array.from(
+        new Set(product.images?.map((i) => i.color).filter(Boolean)),
+      );
+      this.selectedColorSubject.next(
+        colors[0] ? { name: colors[0]!, hex: "" } : null,
+      );
+
+      const sizes = Array.from(
+        new Set(product.variants?.map((v) => v.size).filter(Boolean)),
+      );
+      this.selectedSizeSubject.next(sizes[0] ?? null);
+
+      this.quantitySubject.next(1);
+      this.selectedMediaSubject.next(null); // Reset or set to first image
+      this.currentImageIndex = 0;
+    }),
+    shareReplay(1),
+  );
+
+  reviews$ = this.product$.pipe(
+    switchMap((product) =>
+      this.productService.getReviewsByProductId(product.id),
+    ),
+  );
+
+  relatedProducts$ = this.product$.pipe(
+    switchMap((product) => {
+      if (product.collectionId) {
+        return this.productService.getRelatedProducts(
+          product.collectionId,
+          undefined,
+          4,
+        );
+      } else if (product.categoryId) {
+        return this.productService.getRelatedProducts(
+          undefined,
+          product.categoryId,
+          4,
+        );
+      }
+      return of([]);
+    }),
+  );
+
+  readonly vm$ = combineLatest([
+    this.product$,
+    this.selectedColorSubject,
+    this.selectedSizeSubject,
+    this.quantitySubject,
+    this.selectedMediaSubject,
+    this.relatedProducts$,
+  ]).pipe(
+    map(
+      ([
+        product,
+        selectedColor,
+        selectedSize,
+        quantity,
+        selectedMedia,
+        relatedProducts,
+      ]) => {
+        const uniqueColors = Array.from(
+          new Set(product.images?.map((i) => i.color).filter(Boolean)),
+        ).map((color) => ({ name: color!, hex: "" }));
+
+        const uniqueSizes = Array.from(
+          new Set(product.variants?.map((v) => v.size).filter(Boolean)),
+        );
+
+        const selectedVariant = product.variants?.find(
+          (v) => v.size === selectedSize,
+        );
+        const currentStock = selectedVariant
+          ? selectedVariant.stockQuantity
+          : product.stockQuantity;
+
+        return {
+          product,
+          selectedColor,
+          selectedSize,
+          quantity,
+          currentStock,
+          selectedMedia: this.ensureSelectedMedia(product, selectedMedia),
+          gallery: this.buildGallery(product),
+          uniqueColors,
+          uniqueSizes,
+          relatedProducts,
+        };
+      },
+    ),
+  );
+
+  selectionError = "";
+
+  fullStars(rating: number): number[] {
+    return Array.from({ length: Math.floor(rating) }, (_, index) => index);
+  }
+
+  hasHalfStar(rating: number): boolean {
+    return rating % 1 >= 0.5;
+  }
+
+  emptyStars(rating: number): number[] {
+    const full = Math.floor(rating);
+    const half = this.hasHalfStar(rating) ? 1 : 0;
+    return Array.from(
+      { length: Math.max(0, 5 - full - half) },
+      (_, index) => index,
+    );
+  }
+
+  hasDiscount(product: Product): boolean {
+    return !!(
+      product.compareAtPrice &&
+      product.compareAtPrice > 0 &&
+      product.compareAtPrice > product.price
+    );
+  }
+
+  getDiscountPercentage(product: Product): number {
+    if (!this.hasDiscount(product)) return 0;
+    const discount = (product.compareAtPrice ?? 0) - product.price;
+    return Math.round((discount / (product.compareAtPrice ?? 1)) * 100);
+  }
+
+  selectedColorName(
+    product: Product | null,
+    selectedColor: { name: string } | null,
+  ): string {
+    if (selectedColor) return selectedColor.name;
+    const colors = Array.from(
+      new Set(product?.images?.map((i) => i.color).filter(Boolean)),
+    );
+    return colors[0] ?? "";
+  }
+
+  selectedSizeLabel(
+    product: Product | null,
+    selectedSize: string | null,
+  ): string {
+    if (selectedSize) return selectedSize;
+    const sizes = Array.from(
+      new Set(product?.variants?.map((v) => v.size).filter(Boolean)),
+    );
+    return sizes[0] ?? "";
+  }
+
+  selectColor(color: { name: string; hex: string }, product: Product): void {
+    this.selectedColorSubject.next(color);
+    this.selectionError = "";
+
+    // Switch to the image associated with this color
+    if (product.images) {
+      const colorImage = product.images.find((i) => i.color === color.name);
+      if (colorImage) {
+        const gallery = this.buildGallery(product);
+        const index = gallery.findIndex((url) => url === colorImage.imageUrl);
+        if (index !== -1) {
+          this.currentImageIndex = index;
+        }
+      }
+    }
+  }
+
+  selectSize(sizeLabel: string): void {
+    this.selectedSizeSubject.next(sizeLabel);
+    this.selectionError = "";
+  }
+
+  selectMedia(mediaUrl: string): void {
+    this.selectedMediaSubject.next(mediaUrl);
+  }
+
+  increaseQuantity(): void {
+    this.quantitySubject.next(this.quantitySubject.getValue() + 1);
+  }
+
+  decreaseQuantity(): void {
+    this.quantitySubject.next(Math.max(1, this.quantitySubject.getValue() - 1));
+  }
+
+  addToCart(product: Product | null): void {
+    if (!product) {
+      return;
+    }
+    const selectedColor = this.selectedColorSubject.getValue();
+    const selectedSize = this.selectedSizeSubject.getValue();
+    if (!selectedColor || !selectedSize) {
+      this.selectionError =
+        "Please select a color and size before adding to cart.";
+      return;
+    }
+    const quantity = this.quantitySubject.getValue();
+    this.cartService.addItem(
+      product,
+      quantity,
+      selectedColor.name,
+      selectedSize,
+    );
+
+    // Show success notification
+    this.notificationService.success(
+      `Added ${quantity} x ${product.name} to your bag`,
+    );
+
+    this.selectionError = "";
+  }
+
+  buyNow(product: Product | null): void {
+    this.addToCart(product);
+    if (!this.selectionError) {
+      void this.router.navigateByUrl("/cart");
+    }
+  }
+
+  trackReview(_: number, review: Review): number {
+    return review.id;
+  }
+
+  scrollToReviews(): void {
+    const reviewsSection = document.getElementById("reviews");
+    if (reviewsSection) {
+      reviewsSection.scrollIntoView({ behavior: "smooth" });
+    }
+  }
+
+  getColorImage(product: Product, color: string): string | null {
+    if (!product?.images) return null;
+    const img = product.images.find((i) => i.color === color);
+    return img ? this.imageUrlService.getImageUrl(img.imageUrl) : null;
+  }
+
+  openSizeGuide(): void {
+    this.isSizeGuideOpen = true;
+  }
+
+  closeSizeGuide(): void {
+    this.isSizeGuideOpen = false;
+  }
+
+  prevImage(gallery: string[]): void {
+    this.currentImageIndex =
+      (this.currentImageIndex - 1 + gallery.length) % gallery.length;
+  }
+
+  nextImage(gallery: string[]): void {
+    this.currentImageIndex = (this.currentImageIndex + 1) % gallery.length;
+  }
+
+  goToImage(index: number): void {
+    this.currentImageIndex = index;
+  }
+
+  private buildGallery(product: Product): string[] {
+    const images = product.images?.map((i) => i.imageUrl) ?? [];
+    // For vertical stack, we want the main image first, then the rest
+    let gallery = [];
+    if (product.imageUrl) {
+      gallery.push(product.imageUrl);
+    }
+    // Add other images, avoiding duplicates
+    images.forEach((img) => {
+      if (img !== product.imageUrl) {
+        gallery.push(img);
+      }
+    });
+    return gallery;
+  }
+
+  private ensureSelectedMedia(
+    product: Product,
+    selectedMedia: string | null,
+  ): string | null {
+    // For the vertical stack, selectedMedia is less relevant for display swapping,
+    // but we can keep it if we want to highlight or scroll to an image later.
+    return selectedMedia ?? product.imageUrl ?? null;
+  }
+  // Review Logic
+  isReviewFormOpen = false;
+  reviewRating = 5;
+  reviewComment = "";
+  reviewName = "";
+  reviewError = "";
+  isSubmittingReview = false;
+
+  toggleReviewForm(): void {
+    this.isReviewFormOpen = !this.isReviewFormOpen;
+    if (!this.isReviewFormOpen) {
+      this.reviewError = "";
+    }
+  }
+
+  setRating(rating: number): void {
+    this.reviewRating = rating;
+  }
+
+  submitReview(productId: number): void {
+    if (!this.reviewName.trim() || !this.reviewComment.trim()) {
+      this.reviewError = "Please provide your name and a comment.";
+      return;
+    }
+
+    this.isSubmittingReview = true;
+    this.reviewError = "";
+
+    const review: any = {
+      productId,
+      customerName: this.reviewName,
+      rating: this.reviewRating,
+      comment: this.reviewComment,
+    };
+
+    this.reviewService.addReview(productId, review).subscribe({
+      next: (newReview: Review) => {
+        this.isSubmittingReview = false;
+        this.isReviewFormOpen = false;
+        this.reviewComment = "";
+        this.reviewName = "";
+        this.reviewRating = 5;
+
+        // Refresh reviews
+        window.location.reload();
+      },
+      error: (err: unknown) => {
+        this.isSubmittingReview = false;
+        this.reviewError = "Failed to submit review. Please try again.";
+        console.error(err);
+      },
+    });
+  }
+}

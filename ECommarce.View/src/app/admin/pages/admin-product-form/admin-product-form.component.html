@@ -1,0 +1,787 @@
+<form
+  class="mx-auto flex w-full max-w-7xl flex-1 flex-col p-6"
+  [formGroup]="form"
+  (ngSubmit)="saveProduct()"
+>
+  <!-- Page Heading & Global Actions -->
+  <div
+    class="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-center"
+  >
+    <div>
+      <div
+        class="flex items-center gap-2 text-sm text-text-secondary-light dark:text-text-secondary-dark mb-1"
+      >
+        <span>Products</span>
+        <span class="material-symbols-outlined" style="font-size: 14px"
+          >chevron_right</span
+        >
+        <span
+          class="font-medium text-text-main-light dark:text-text-main-dark"
+          >{{ isEditMode ? "Edit" : "Add New" }}</span
+        >
+      </div>
+      <h1
+        class="text-3xl font-bold text-text-main-light dark:text-text-main-dark"
+      >
+        {{ pageTitle }}
+      </h1>
+    </div>
+    <div class="flex gap-3">
+      <button
+        class="flex h-10 items-center justify-center rounded-lg border border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark px-4 text-sm font-semibold text-text-main-light dark:text-text-main-dark hover:bg-gray-50 dark:hover:bg-gray-800"
+        type="button"
+        (click)="discard()"
+      >
+        Discard
+      </button>
+      <button
+        class="flex h-10 items-center justify-center gap-2 rounded-lg bg-primary px-6 text-sm font-bold text-white hover:bg-[#083a4a] shadow-lg shadow-primary/20"
+        type="submit"
+      >
+        <span class="material-symbols-outlined" style="font-size: 20px"
+          >check</span
+        >
+        {{ isEditMode ? "Update Product" : "Save Product" }}
+      </button>
+    </div>
+  </div>
+  <div class="grid grid-cols-1 gap-8 lg:grid-cols-3">
+    <!-- Left Column (Main Info) -->
+    <div class="flex flex-col gap-8 lg:col-span-2">
+      <!-- General Information Card -->
+      <div
+        class="rounded-xl border border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark p-6 shadow-sm"
+      >
+        <h2
+          class="mb-4 text-lg font-bold text-text-main-light dark:text-text-main-dark"
+        >
+          General Information
+        </h2>
+        <div class="flex flex-col gap-5">
+          <label class="flex flex-col gap-1.5">
+            <span
+              class="text-sm font-medium text-text-main-light dark:text-text-main-dark"
+              >Product Name</span
+            >
+            <input
+              class="w-full rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark px-4 py-2.5 text-text-main-light dark:text-text-main-dark placeholder:text-text-secondary-light focus:border-primary focus:ring-1 focus:ring-primary"
+              placeholder="e.g. Premium Silk Hijab - Midnight Blue"
+              type="text"
+              formControlName="name"
+            />
+          </label>
+          <label class="flex flex-col gap-1.5">
+            <span
+              class="text-sm font-medium text-text-main-light dark:text-text-main-dark"
+              >Description</span
+            >
+            <div
+              class="overflow-hidden rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark"
+            >
+              <!-- Fake Toolbar -->
+              <div
+                class="flex items-center gap-1 border-b border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark px-2 py-2"
+              >
+                <button
+                  class="p-1 text-text-secondary-light hover:text-primary"
+                  type="button"
+                >
+                  <span
+                    class="material-symbols-outlined"
+                    style="font-size: 20px"
+                    >format_bold</span
+                  >
+                </button>
+                <button
+                  class="p-1 text-text-secondary-light hover:text-primary"
+                  type="button"
+                >
+                  <span
+                    class="material-symbols-outlined"
+                    style="font-size: 20px"
+                    >format_italic</span
+                  >
+                </button>
+                <button
+                  class="p-1 text-text-secondary-light hover:text-primary"
+                  type="button"
+                >
+                  <span
+                    class="material-symbols-outlined"
+                    style="font-size: 20px"
+                    >format_underlined</span
+                  >
+                </button>
+                <div
+                  class="mx-1 h-4 w-px bg-border-light dark:bg-border-dark"
+                ></div>
+                <button
+                  class="p-1 text-text-secondary-light hover:text-primary"
+                  type="button"
+                >
+                  <span
+                    class="material-symbols-outlined"
+                    style="font-size: 20px"
+                    >format_list_bulleted</span
+                  >
+                </button>
+                <button
+                  class="p-1 text-text-secondary-light hover:text-primary"
+                  type="button"
+                >
+                  <span
+                    class="material-symbols-outlined"
+                    style="font-size: 20px"
+                    >link</span
+                  >
+                </button>
+              </div>
+              <textarea
+                class="w-full resize-y border-none bg-transparent p-4 text-text-main-light dark:text-text-main-dark placeholder:text-text-secondary-light focus:ring-0"
+                placeholder="Describe your product here..."
+                rows="6"
+                formControlName="description"
+              ></textarea>
+            </div>
+            <span class="text-xs text-text-secondary-light"
+              >Tell your customers about the material, fit, and care
+              instructions.</span
+            >
+          </label>
+        </div>
+      </div>
+      <!-- Media Card -->
+      <div
+        class="rounded-xl border border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark p-6 shadow-sm"
+      >
+        <div class="mb-4 flex items-center justify-between">
+          <h2
+            class="text-lg font-bold text-text-main-light dark:text-text-main-dark"
+          >
+            Media
+          </h2>
+          <button
+            class="text-sm font-medium text-primary hover:underline"
+            type="button"
+            (click)="addFromUrl()"
+          >
+            Add from URL
+          </button>
+        </div>
+        <div
+          class="rounded-lg border-2 border-dashed border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark p-8 transition-colors hover:border-primary/50"
+          (dragover)="handleDragOver($event)"
+          (drop)="handleDrop($event)"
+          (click)="fileInput.click()"
+        >
+          <div class="flex flex-col items-center justify-center text-center">
+            <div
+              class="mb-3 rounded-full bg-surface-light dark:bg-surface-dark p-3 shadow-sm"
+            >
+              <span
+                class="material-symbols-outlined text-primary"
+                style="font-size: 32px"
+                >cloud_upload</span
+              >
+            </div>
+            <p
+              class="text-sm font-medium text-text-main-light dark:text-text-main-dark"
+            >
+              <span class="text-primary cursor-pointer hover:underline"
+                >Click to upload</span
+              >
+              or drag and drop
+            </p>
+            <p class="mt-1 text-xs text-text-secondary-light">
+              SVG, PNG, JPG or GIF (max. 800x400px)
+            </p>
+          </div>
+          <input
+            #fileInput
+            class="hidden"
+            type="file"
+            multiple
+            (change)="handleFilesSelected($event)"
+          />
+        </div>
+        <p *ngIf="mediaError" class="mt-3 text-xs text-red-500">
+          {{ mediaError }}
+        </p>
+        <div class="mt-6 space-y-4" formArrayName="mediaItems">
+          <div
+            *ngFor="
+              let media of mediaItemsArray.controls;
+              let mediaIndex = index;
+              trackBy: trackByIndex
+            "
+            class="flex flex-col gap-4 rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark p-4"
+            [formGroupName]="mediaIndex"
+          >
+            <div class="flex flex-col gap-4 sm:flex-row">
+              <div
+                class="relative h-36 w-full overflow-hidden rounded-lg border border-border-light dark:border-border-dark bg-white sm:w-40"
+              >
+                <img
+                  [alt]="media.get('alt')?.value || 'Product media'"
+                  class="h-full w-full object-cover"
+                  [src]="imageUrlService.getImageUrl(media.get('url')?.value)"
+                />
+                <div
+                  *ngIf="media.get('type')?.value === 'video'"
+                  class="absolute inset-0 flex items-center justify-center bg-black/40"
+                >
+                  <span class="material-symbols-outlined text-white"
+                    >play_circle</span
+                  >
+                </div>
+              </div>
+              <div class="flex-1 grid gap-3 sm:grid-cols-2">
+                <label
+                  class="flex flex-col gap-1 text-xs font-medium text-text-secondary-light uppercase"
+                >
+                  Label
+                  <input
+                    class="rounded-lg border border-border-light dark:border-border-dark bg-white dark:bg-black/20 px-3 py-2 text-sm text-text-main-light dark:text-text-main-dark"
+                    type="text"
+                    formControlName="label"
+                  />
+                </label>
+                <label
+                  class="flex flex-col gap-1 text-xs font-medium text-text-secondary-light uppercase"
+                >
+                  Alt text
+                  <input
+                    class="rounded-lg border border-border-light dark:border-border-dark bg-white dark:bg-black/20 px-3 py-2 text-sm text-text-main-light dark:text-text-main-dark"
+                    type="text"
+                    formControlName="alt"
+                  />
+                </label>
+                <label
+                  class="flex flex-col gap-1 text-xs font-medium text-text-secondary-light uppercase"
+                >
+                  Media type
+                  <select
+                    class="rounded-lg border border-border-light dark:border-border-dark bg-white dark:bg-black/20 px-3 py-2 text-sm text-text-main-light dark:text-text-main-dark"
+                    formControlName="type"
+                  >
+                    <option value="image">Image</option>
+                    <option value="video">Video</option>
+                  </select>
+                </label>
+                <label
+                  class="flex flex-col gap-1 text-xs font-medium text-text-secondary-light uppercase"
+                >
+                  Color Variant
+                  <select
+                    class="rounded-lg border border-border-light dark:border-border-dark bg-white dark:bg-black/20 px-3 py-2 text-sm text-text-main-light dark:text-text-main-dark"
+                    formControlName="color"
+                  >
+                    <option [ngValue]="null">None</option>
+                    <option
+                      *ngFor="let colorGroup of colorsArray.controls"
+                      [value]="colorGroup.get('name')?.value"
+                    >
+                      {{ colorGroup.get("name")?.value }}
+                    </option>
+                  </select>
+                </label>
+                <div class="flex flex-col justify-between gap-3">
+                  <label
+                    class="flex items-center gap-2 text-xs font-medium text-text-secondary-light uppercase"
+                  >
+                    <input
+                      class="text-primary focus:ring-primary"
+                      type="radio"
+                      name="mainMedia"
+                      [checked]="media.get('isMain')?.value"
+                      (change)="setMainMedia(mediaIndex)"
+                    />
+                    Main media
+                  </label>
+                  <button
+                    class="text-xs font-semibold text-red-500 hover:underline"
+                    type="button"
+                    (click)="removeMediaItem(mediaIndex)"
+                  >
+                    Remove media
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <p
+            *ngIf="mediaItemsArray.length === 0"
+            class="text-xs text-text-secondary-light"
+          >
+            No media added yet. Add at least one image or video to preview on
+            the product pages.
+          </p>
+        </div>
+      </div>
+      <!-- Product Options (Colors & Sizes) -->
+      <div
+        class="rounded-xl border border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark p-6 shadow-sm"
+        formGroupName="variants"
+      >
+        <h2
+          class="mb-4 text-lg font-bold text-text-main-light dark:text-text-main-dark"
+        >
+          Product Options
+        </h2>
+        <div class="space-y-6">
+          <!-- Colors Section -->
+          <div class="space-y-4" formArrayName="colors">
+            <div class="flex items-center justify-between">
+              <div>
+                <h3
+                  class="text-sm font-semibold text-text-main-light dark:text-text-main-dark"
+                >
+                  Available Colors
+                </h3>
+                <p class="text-xs text-text-secondary-light">
+                  Add colors here to tag your images. Does not affect stock.
+                </p>
+              </div>
+              <button
+                class="flex items-center gap-2 text-sm font-semibold text-primary hover:text-[#083a4a]"
+                type="button"
+                (click)="addColor()"
+              >
+                <span class="material-symbols-outlined" style="font-size: 20px"
+                  >add_circle</span
+                >
+                Add color
+              </button>
+            </div>
+
+            <!-- existing color loop... -->
+
+            <div
+              class="flex flex-col gap-3 rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark p-4"
+              *ngFor="let color of colorsArray.controls; let colorIndex = index"
+              [formGroupName]="colorIndex"
+            >
+              <!-- ... -->
+            </div>
+          </div>
+
+          <!-- Sizes Section -->
+          <div class="space-y-4" formArrayName="sizes">
+            <div class="flex items-center justify-between">
+              <div>
+                <h3
+                  class="text-sm font-semibold text-text-main-light dark:text-text-main-dark"
+                >
+                  Sizes & Inventory
+                </h3>
+                <p class="text-xs text-text-secondary-light">
+                  Define stock quantity for each size.
+                </p>
+              </div>
+              <button
+                class="flex items-center gap-2 text-sm font-semibold text-primary hover:text-[#083a4a]"
+                type="button"
+                (click)="addSize()"
+              >
+                <span class="material-symbols-outlined" style="font-size: 20px"
+                  >add_circle</span
+                >
+                Add size
+              </button>
+            </div>
+            <!-- ... -->
+            <div
+              class="flex flex-col gap-3 rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark p-4"
+              *ngFor="let size of sizesArray.controls; let sizeIndex = index"
+              [formGroupName]="sizeIndex"
+            >
+              <div class="grid gap-3 sm:grid-cols-[1fr_1fr_0.8fr]">
+                <label
+                  class="flex flex-col gap-1 text-xs font-medium text-text-secondary-light uppercase"
+                >
+                  Size label
+                  <input
+                    class="rounded-lg border border-border-light dark:border-border-dark bg-white dark:bg-black/20 px-3 py-2 text-sm text-text-main-light dark:text-text-main-dark"
+                    type="text"
+                    placeholder="e.g. M"
+                    formControlName="label"
+                  />
+                </label>
+                <label
+                  class="flex flex-col gap-1 text-xs font-medium text-text-secondary-light uppercase"
+                >
+                  Stock
+                  <input
+                    class="rounded-lg border border-border-light dark:border-border-dark bg-white dark:bg-black/20 px-3 py-2 text-sm text-text-main-light dark:text-text-main-dark"
+                    type="number"
+                    formControlName="stock"
+                  />
+                </label>
+                <label
+                  class="flex items-center gap-2 text-xs font-medium text-text-secondary-light uppercase"
+                >
+                  <input
+                    class="text-primary focus:ring-primary"
+                    type="radio"
+                    name="selectedSize"
+                    [checked]="size.get('selected')?.value"
+                    (change)="setSelectedSize(sizeIndex)"
+                  />
+                  Default
+                </label>
+              </div>
+              <button
+                class="w-fit text-xs font-semibold text-red-500 hover:underline"
+                type="button"
+                (click)="removeSize(sizeIndex)"
+              >
+                Remove size
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Product Details Card -->
+      <div
+        class="rounded-xl border border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark p-6 shadow-sm"
+        formGroupName="meta"
+      >
+        <h2
+          class="mb-4 text-lg font-bold text-text-main-light dark:text-text-main-dark"
+        >
+          Product Details
+        </h2>
+        <div class="grid gap-4">
+          <label class="flex flex-col gap-1.5">
+            <span
+              class="text-sm font-medium text-text-main-light dark:text-text-main-dark"
+              >Fabric &amp; Care</span
+            >
+            <textarea
+              class="w-full rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark px-4 py-3 text-text-main-light dark:text-text-main-dark"
+              rows="4"
+              placeholder="Share fabric details and care instructions."
+              formControlName="fabricAndCare"
+            ></textarea>
+          </label>
+          <label class="flex flex-col gap-1.5">
+            <span
+              class="text-sm font-medium text-text-main-light dark:text-text-main-dark"
+              >Shipping &amp; Returns</span
+            >
+            <textarea
+              class="w-full rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark px-4 py-3 text-text-main-light dark:text-text-main-dark"
+              rows="4"
+              placeholder="Outline delivery timelines and return policy."
+              formControlName="shippingAndReturns"
+            ></textarea>
+          </label>
+        </div>
+      </div>
+    </div>
+    <!-- Right Column (Organization & Settings) -->
+    <div class="flex flex-col gap-8 lg:col-span-1">
+      <!-- Status Card -->
+      <div
+        class="rounded-xl border border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark p-6 shadow-sm"
+      >
+        <h2
+          class="mb-4 text-lg font-bold text-text-main-light dark:text-text-main-dark"
+        >
+          Product Status
+        </h2>
+        <div class="flex items-center justify-between mb-4">
+          <span
+            class="text-sm font-medium text-text-main-light dark:text-text-main-dark"
+            >Draft / Active</span
+          >
+          <label class="relative inline-flex cursor-pointer items-center">
+            <input
+              class="peer sr-only"
+              type="checkbox"
+              formControlName="statusActive"
+            />
+            <div
+              class="peer h-6 w-11 rounded-full bg-gray-200 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-primary peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none dark:bg-gray-700"
+            ></div>
+          </label>
+        </div>
+
+        <div class="flex items-center justify-between mb-4">
+          <span
+            class="text-sm font-medium text-text-main-light dark:text-text-main-dark"
+            >New Arrival</span
+          >
+          <label class="relative inline-flex cursor-pointer items-center">
+            <input
+              class="peer sr-only"
+              type="checkbox"
+              formControlName="newArrival"
+            />
+            <div
+              class="peer h-6 w-11 rounded-full bg-gray-200 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-primary peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none dark:bg-gray-700"
+            ></div>
+          </label>
+        </div>
+        <div class="flex items-center justify-between mb-4">
+          <span
+            class="text-sm font-medium text-text-main-light dark:text-text-main-dark"
+            >Show in Pop-up Offer</span
+          >
+          <label class="relative inline-flex cursor-pointer items-center">
+            <input
+              class="peer sr-only"
+              type="checkbox"
+              formControlName="isPopupOffer"
+            />
+            <div
+              class="peer h-6 w-11 rounded-full bg-gray-200 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-primary peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none dark:bg-gray-700"
+            ></div>
+          </label>
+        </div>
+        <div class="rounded-lg bg-accent/20 p-3">
+          <p
+            class="text-xs text-primary/80 font-medium flex items-center gap-2"
+          >
+            <span class="material-symbols-outlined" style="font-size: 16px"
+              >visibility</span
+            >
+            This product will be visible on the store immediately upon saving.
+          </p>
+        </div>
+      </div>
+      <!-- Organization Card -->
+      <div
+        class="rounded-xl border border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark p-6 shadow-sm"
+      >
+        <h2
+          class="mb-4 text-lg font-bold text-text-main-light dark:text-text-main-dark"
+        >
+          Organization
+        </h2>
+        <div class="flex flex-col gap-5">
+          <label class="flex flex-col gap-1.5">
+            <span
+              class="text-sm font-medium text-text-main-light dark:text-text-main-dark"
+              >Category</span
+            >
+            <select
+              class="w-full rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark px-3 py-2.5 text-text-main-light dark:text-text-main-dark focus:border-primary focus:ring-1 focus:ring-primary"
+              formControlName="category"
+            >
+              <option value="" disabled>Select category</option>
+              <option *ngFor="let cat of categories" [value]="cat.id">
+                {{ cat.name }}
+              </option>
+            </select>
+          </label>
+
+          <label
+            class="flex flex-col gap-1.5"
+            *ngIf="filteredSubCategories.length > 0"
+          >
+            <span
+              class="text-sm font-medium text-text-main-light dark:text-text-main-dark"
+              >Sub Category</span
+            >
+            <select
+              class="w-full rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark px-3 py-2.5 text-text-main-light dark:text-text-main-dark focus:border-primary focus:ring-1 focus:ring-primary"
+              formControlName="subCategory"
+            >
+              <option value="">Select sub-category</option>
+              <option
+                *ngFor="let sub of filteredSubCategories"
+                [value]="sub.id"
+              >
+                {{ sub.name }}
+              </option>
+            </select>
+          </label>
+
+          <label
+            class="flex flex-col gap-1.5"
+            *ngIf="filteredCollections.length > 0"
+          >
+            <span
+              class="text-sm font-medium text-text-main-light dark:text-text-main-dark"
+              >Collection</span
+            >
+            <select
+              class="w-full rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark px-3 py-2.5 text-text-main-light dark:text-text-main-dark focus:border-primary focus:ring-1 focus:ring-primary"
+              formControlName="collection"
+            >
+              <option value="">Select collection</option>
+              <option *ngFor="let col of filteredCollections" [value]="col.id">
+                {{ col.name }}
+              </option>
+            </select>
+          </label>
+
+          <!-- ilyn.global Design Fields -->
+          <label class="flex flex-col gap-1.5">
+            <span
+              class="text-sm font-medium text-text-main-light dark:text-text-main-dark flex items-center gap-2"
+            >
+              Tier
+              <span class="text-xs text-accent font-bold">Premium</span>
+            </span>
+            <select
+              class="w-full rounded-lg border border-accent/30 dark:border-accent/50 bg-background-light dark:bg-background-dark px-3 py-2.5 text-text-main-light dark:text-text-main-dark focus:border-accent focus:ring-1 focus:ring-accent hover:border-accent/50 transition-colors"
+              formControlName="tier"
+            >
+              <option value="">Select tier</option>
+              <option value="Premium">Premium</option>
+              <option value="Luxury">Luxury</option>
+              <option value="Platinum">Platinum</option>
+              <option value="Sahara">Sahara</option>
+            </select>
+            <span class="text-xs text-text-secondary-light"
+              >Tier level for ilyn.global-style categorization</span
+            >
+          </label>
+
+          <label class="flex flex-col gap-1.5">
+            <span
+              class="text-sm font-medium text-text-main-light dark:text-text-main-dark flex items-center gap-2"
+            >
+              Tags
+              <span class="text-xs text-accent">Optional</span>
+            </span>
+            <input
+              class="w-full rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark px-3 py-2.5 text-text-main-light dark:text-text-main-dark focus:border-primary focus:ring-1 focus:ring-primary"
+              type="text"
+              placeholder="e.g. seasonal, bestseller, limited (comma-separated)"
+              formControlName="tags"
+            />
+            <span class="text-xs text-text-secondary-light"
+              >Add comma-separated tags for better categorization</span
+            >
+          </label>
+
+          <label class="flex flex-col gap-1.5">
+            <span
+              class="text-sm font-medium text-text-main-light dark:text-text-main-dark flex items-center gap-2"
+            >
+              Sort Order
+              <span class="text-xs text-text-secondary-light"
+                >(Display priority)</span
+              >
+            </span>
+            <input
+              class="w-full rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark px-3 py-2.5 text-text-main-light dark:text-text-main-dark focus:border-primary focus:ring-1 focus:ring-primary"
+              type="number"
+              placeholder="0"
+              formControlName="sortOrder"
+              min="0"
+            />
+            <span class="text-xs text-text-secondary-light"
+              >Lower numbers appear first (0 = no priority)</span
+            >
+          </label>
+        </div>
+      </div>
+      <!-- Pricing Card (Base) -->
+      <div
+        class="rounded-xl border border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark p-6 shadow-sm"
+      >
+        <h2
+          class="mb-4 text-lg font-bold text-text-main-light dark:text-text-main-dark"
+        >
+          Pricing
+        </h2>
+        <div class="flex flex-col gap-5">
+          <label class="flex flex-col gap-1.5">
+            <span
+              class="text-sm font-medium text-text-main-light dark:text-text-main-dark"
+              >Price</span
+            >
+            <div class="relative">
+              <img
+                class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2"
+                src="assets/taka.svg"
+                alt="Taka"
+              />
+              <input
+                class="w-full rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark py-2.5 pl-7 pr-4 text-text-main-light dark:text-text-main-dark focus:border-primary focus:ring-1 focus:ring-primary"
+                placeholder="0.00"
+                type="number"
+                formControlName="price"
+              />
+            </div>
+            <span class="text-xs text-text-secondary-light">
+              <app-price-display
+                [amount]="form.get('price')?.value ?? 0"
+                size="sm"
+              ></app-price-display>
+            </span>
+          </label>
+          <label class="flex flex-col gap-1.5">
+            <span
+              class="text-sm font-medium text-text-main-light dark:text-text-main-dark"
+              >Purchase Rate</span
+            >
+            <div class="relative">
+              <img
+                class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2"
+                src="assets/taka.svg"
+                alt="Taka"
+              />
+              <input
+                class="w-full rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark py-2.5 pl-7 pr-4 text-text-main-light dark:text-text-main-dark focus:border-primary focus:ring-1 focus:ring-primary"
+                placeholder="0.00"
+                type="number"
+                formControlName="purchaseRate"
+              />
+            </div>
+            <span class="text-xs text-text-secondary-light">
+              <app-price-display
+                [amount]="form.get('purchaseRate')?.value ?? 0"
+                size="sm"
+              ></app-price-display>
+            </span>
+            <span class="text-xs text-text-secondary-light"
+              >Visible only to admins.</span
+            >
+          </label>
+          <label class="flex flex-col gap-1.5">
+            <span
+              class="text-sm font-medium text-text-main-light dark:text-text-main-dark"
+              >Sale Price</span
+            >
+            <div class="relative">
+              <img
+                class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2"
+                src="assets/taka.svg"
+                alt="Taka"
+              />
+              <input
+                class="w-full rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark py-2.5 pl-7 pr-4 text-text-main-light dark:text-text-main-dark focus:border-primary focus:ring-1 focus:ring-primary"
+                placeholder="0.00"
+                type="number"
+                formControlName="salePrice"
+              />
+            </div>
+            <span class="text-xs text-text-secondary-light">
+              <app-price-display
+                [amount]="form.get('salePrice')?.value ?? 0"
+                size="sm"
+              ></app-price-display>
+            </span>
+            <span class="text-xs text-text-secondary-light"
+              >Leave empty if not on sale.</span
+            >
+            <span
+              *ngIf="
+                form.errors?.['salePriceExceedsBase'] &&
+                form.get('salePrice')?.touched
+              "
+              class="text-xs text-red-500"
+            >
+              Sale price must be less than or equal to price.
+            </span>
+          </label>
+        </div>
+      </div>
+    </div>
+  </div>
+</form>

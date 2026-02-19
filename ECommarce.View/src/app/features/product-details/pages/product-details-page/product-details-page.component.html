@@ -1,0 +1,574 @@
+<ng-container *ngFor="let vm of [vm$ | async]">
+  <div *ngIf="vm" class="bg-[#f5f5f3] min-h-screen font-sans text-[#1a1a1a]">
+    <!-- Breadcrumb -->
+    <div class="max-w-[1200px] mx-auto px-6 pt-28 pb-4">
+      <nav class="flex items-center gap-2 text-xs text-[#888]">
+        <a
+          routerLink="/"
+          class="hover:text-[#1a1a1a] transition-colors underline underline-offset-2"
+          >Home</a
+        >
+        <span class="text-[#ccc]">/</span>
+        <span class="text-[#1a1a1a]">{{ vm.product.name }}</span>
+        <span *ngIf="vm.product.sku" class="text-[#ccc]">-</span>
+        <span *ngIf="vm.product.sku" class="text-[#888]">{{
+          vm.product.sku
+        }}</span>
+      </nav>
+    </div>
+
+    <!-- Main Product Layout -->
+    <div class="max-w-[1200px] mx-auto px-6 pb-20">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 xl:gap-16">
+        <!-- ===== LEFT: Image Gallery ===== -->
+        <div class="relative">
+          <!-- Main Image with Arrows -->
+          <div
+            class="relative bg-[#ebebeb] overflow-hidden group"
+            style="aspect-ratio: 3/4"
+          >
+            <!-- Images -->
+            <ng-container *ngFor="let url of vm.gallery; let i = index">
+              <img
+                [src]="imageUrlService.getImageUrl(url)"
+                [alt]="vm.product.name"
+                class="absolute inset-0 w-full h-full object-cover transition-opacity duration-500"
+                [class.opacity-100]="i === currentImageIndex"
+                [class.opacity-0]="i !== currentImageIndex"
+              />
+            </ng-container>
+
+            <!-- Tier Badge -->
+            <div *ngIf="vm.product.tier" class="absolute top-4 right-4 z-10">
+              <span
+                class="px-3 py-1 bg-white/90 text-[10px] uppercase tracking-[0.25em] font-semibold text-[#1a1a1a] border border-[#ddd]"
+              >
+                {{ vm.product.tier }}
+              </span>
+            </div>
+
+            <!-- Prev Arrow -->
+            <button
+              *ngIf="vm.gallery.length > 1"
+              (click)="prevImage(vm.gallery)"
+              class="absolute left-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-white/80 hover:bg-white flex items-center justify-center shadow transition-all duration-200 opacity-0 group-hover:opacity-100"
+              type="button"
+            >
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <polyline points="15 18 9 12 15 6" />
+              </svg>
+            </button>
+
+            <!-- Next Arrow -->
+            <button
+              *ngIf="vm.gallery.length > 1"
+              (click)="nextImage(vm.gallery)"
+              class="absolute right-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-white/80 hover:bg-white flex items-center justify-center shadow transition-all duration-200 opacity-0 group-hover:opacity-100"
+              type="button"
+            >
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <polyline points="9 18 15 12 9 6" />
+              </svg>
+            </button>
+          </div>
+
+          <!-- Image Counter + Progress Bar -->
+          <div
+            *ngIf="vm.gallery.length > 1"
+            class="flex items-center gap-3 mt-3 px-1"
+          >
+            <span class="text-xs text-[#888]"
+              >{{ currentImageIndex + 1 }} / {{ vm.gallery.length }}</span
+            >
+            <div class="flex-1 h-[2px] bg-[#ddd] rounded-full overflow-hidden">
+              <div
+                class="h-full bg-[#1a1a1a] rounded-full transition-all duration-300"
+                [style.width.%]="
+                  ((currentImageIndex + 1) / vm.gallery.length) * 100
+                "
+              ></div>
+            </div>
+          </div>
+
+          <!-- Thumbnail Row -->
+          <div
+            *ngIf="vm.gallery.length > 1"
+            class="flex gap-2 mt-3 overflow-x-auto pb-1"
+          >
+            <button
+              *ngFor="let url of vm.gallery; let i = index"
+              (click)="goToImage(i)"
+              type="button"
+              class="flex-shrink-0 w-16 h-20 overflow-hidden border-2 transition-all duration-200"
+              [class.border-[#1a1a1a]]="i === currentImageIndex"
+              [class.border-transparent]="i !== currentImageIndex"
+            >
+              <img
+                [src]="imageUrlService.getImageUrl(url)"
+                [alt]="vm.product.name + ' ' + (i + 1)"
+                class="w-full h-full object-cover"
+              />
+            </button>
+          </div>
+        </div>
+
+        <!-- ===== RIGHT: Product Info (Sticky) ===== -->
+        <div class="lg:sticky lg:top-24 lg:self-start">
+          <div class="flex flex-col gap-6">
+            <!-- Product Name & SKU -->
+            <div>
+              <h1
+                class="text-2xl md:text-3xl font-semibold text-[#1a1a1a] leading-tight mb-1"
+              >
+                {{ vm.product.name }}
+              </h1>
+              <p class="text-sm text-[#c8922a] font-medium">
+                Product Code: {{ vm.product.sku }}
+              </p>
+            </div>
+
+            <!-- Price -->
+            <div class="flex items-baseline gap-3">
+              <app-price-display
+                class="text-xl font-bold text-[#1a1a1a]"
+                [amount]="vm.product.price"
+                size="lg"
+              ></app-price-display>
+              <app-price-display
+                *ngIf="hasDiscount(vm.product)"
+                class="line-through text-[#aaa] text-sm"
+                [amount]="vm.product.compareAtPrice!"
+                size="sm"
+              ></app-price-display>
+              <span
+                *ngIf="hasDiscount(vm.product)"
+                class="text-xs font-bold text-red-500 uppercase tracking-wider"
+              >
+                -{{ getDiscountPercentage(vm.product) }}%
+              </span>
+            </div>
+
+            <!-- Color Swatches -->
+            <div *ngIf="vm.uniqueColors.length > 0" class="space-y-2">
+              <p class="text-sm font-medium text-[#1a1a1a]">
+                Color:
+                <span class="font-normal text-[#555]">{{
+                  selectedColorName(vm.product, vm.selectedColor)
+                }}</span>
+              </p>
+              <div class="flex flex-wrap gap-2">
+                <button
+                  *ngFor="let color of vm.uniqueColors"
+                  (click)="selectColor(color, vm.product)"
+                  type="button"
+                  [title]="color.name"
+                  class="w-16 h-20 overflow-hidden border-2 transition-all duration-200 relative"
+                  [class.border-[#1a1a1a]]="
+                    color.name === vm.selectedColor?.name
+                  "
+                  [class.border-[#ddd]]="color.name !== vm.selectedColor?.name"
+                >
+                  <img
+                    *ngIf="getColorImage(vm.product, color.name) as imgUrl"
+                    [src]="imgUrl"
+                    [alt]="color.name"
+                    class="w-full h-full object-cover"
+                  />
+                  <div
+                    *ngIf="!getColorImage(vm.product, color.name)"
+                    class="w-full h-full flex items-end justify-center pb-1"
+                    [style.backgroundColor]="'#e8e8e8'"
+                  >
+                    <span
+                      class="text-[8px] text-[#555] uppercase tracking-wide text-center leading-tight px-1"
+                      >{{ color.name }}</span
+                    >
+                  </div>
+                </button>
+              </div>
+            </div>
+
+            <!-- Size Selector -->
+            <div *ngIf="vm.uniqueSizes.length > 0" class="space-y-2">
+              <div class="flex items-center justify-between">
+                <p class="text-sm font-medium text-[#1a1a1a]">Select Size</p>
+                <button
+                  (click)="openSizeGuide()"
+                  class="text-xs text-[#555] underline underline-offset-2 hover:text-[#1a1a1a] transition-colors flex items-center gap-1"
+                  type="button"
+                >
+                  Size Guide
+                  <svg
+                    width="12"
+                    height="12"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" />
+                  </svg>
+                </button>
+              </div>
+              <div class="flex flex-wrap gap-2">
+                <button
+                  *ngFor="let size of vm.uniqueSizes"
+                  (click)="selectSize(size || '')"
+                  type="button"
+                  class="px-4 h-10 border text-xs font-medium uppercase tracking-wider transition-all duration-200"
+                  [class.bg-[#1a1a1a]]="size === vm.selectedSize"
+                  [class.text-white]="size === vm.selectedSize"
+                  [class.border-[#1a1a1a]]="size === vm.selectedSize"
+                  [class.bg-white]="size !== vm.selectedSize"
+                  [class.text-[#1a1a1a]]="size !== vm.selectedSize"
+                  [class.border-[#ccc]]="size !== vm.selectedSize"
+                  [class.hover:border-[#1a1a1a]]="size !== vm.selectedSize"
+                >
+                  {{ size }}
+                </button>
+              </div>
+              <p *ngIf="vm.selectedSize" class="text-xs text-[#555] mt-1">
+                Stock: {{ vm.currentStock }}
+              </p>
+            </div>
+
+            <!-- Error -->
+            <p
+              *ngIf="selectionError"
+              class="text-xs text-red-600 bg-red-50 border border-red-100 px-3 py-2"
+            >
+              {{ selectionError }}
+            </p>
+
+            <!-- Action Buttons -->
+            <div class="flex flex-col gap-3 pt-2">
+              <!-- Add to Bag -->
+              <button
+                (click)="addToCart(vm.product)"
+                [disabled]="!vm.currentStock"
+                type="button"
+                class="w-full h-12 bg-[#1a1a1a] text-white text-sm font-semibold uppercase tracking-[0.15em] hover:bg-[#333] transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" />
+                  <line x1="3" y1="6" x2="21" y2="6" />
+                  <path d="M16 10a4 4 0 01-8 0" />
+                </svg>
+                {{ vm.currentStock ? "Add to bag" : "Out of Stock" }}
+              </button>
+
+              <!-- Buy Now -->
+              <button
+                (click)="buyNow(vm.product)"
+                [disabled]="!vm.currentStock"
+                type="button"
+                class="w-full h-12 bg-white border border-[#1a1a1a] text-[#1a1a1a] text-sm font-semibold uppercase tracking-[0.15em] hover:bg-[#f5f5f3] transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <circle cx="12" cy="12" r="10" />
+                  <polyline points="12 6 12 12 16 14" />
+                </svg>
+                Buy It Now
+              </button>
+            </div>
+
+            <!-- Description -->
+            <div
+              *ngIf="vm.product.description"
+              class="pt-2 border-t border-[#e0e0e0]"
+            >
+              <p class="text-sm text-[#555] leading-relaxed">
+                {{ vm.product.description }}
+              </p>
+            </div>
+
+            <!-- Accordions -->
+            <div class="border-t border-[#e0e0e0]">
+              <details
+                class="group border-b border-[#e0e0e0]"
+                *ngIf="vm.product.fabricAndCare"
+              >
+                <summary
+                  class="flex items-center justify-between py-4 cursor-pointer list-none"
+                >
+                  <span class="text-sm font-semibold text-[#1a1a1a]"
+                    >Details</span
+                  >
+                  <span
+                    class="text-[#888] transition-transform duration-300 group-open:rotate-45"
+                  >
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    >
+                      <line x1="12" y1="5" x2="12" y2="19" />
+                      <line x1="5" y1="12" x2="19" y2="12" />
+                    </svg>
+                  </span>
+                </summary>
+                <div class="pb-4 text-sm text-[#555] leading-relaxed">
+                  {{ vm.product.fabricAndCare }}
+                </div>
+              </details>
+
+              <details class="group border-b border-[#e0e0e0]">
+                <summary
+                  class="flex items-center justify-between py-4 cursor-pointer list-none"
+                >
+                  <span class="text-sm font-semibold text-[#1a1a1a]"
+                    >Materials</span
+                  >
+                  <span
+                    class="text-[#888] transition-transform duration-300 group-open:rotate-45"
+                  >
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    >
+                      <line x1="12" y1="5" x2="12" y2="19" />
+                      <line x1="5" y1="12" x2="19" y2="12" />
+                    </svg>
+                  </span>
+                </summary>
+                <div class="pb-4 text-sm text-[#555] leading-relaxed">
+                  {{
+                    vm.product.shortDescription ||
+                      "Premium quality fabric crafted for comfort and elegance."
+                  }}
+                </div>
+              </details>
+
+              <details class="group border-b border-[#e0e0e0]">
+                <summary
+                  class="flex items-center justify-between py-4 cursor-pointer list-none"
+                >
+                  <span class="text-sm font-semibold text-[#1a1a1a]">Care</span>
+                  <span
+                    class="text-[#888] transition-transform duration-300 group-open:rotate-45"
+                  >
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    >
+                      <line x1="12" y1="5" x2="12" y2="19" />
+                      <line x1="5" y1="12" x2="19" y2="12" />
+                    </svg>
+                  </span>
+                </summary>
+                <div class="pb-4 text-sm text-[#555] leading-relaxed">
+                  {{
+                    vm.product.shippingAndReturns ||
+                      "Hand wash or dry clean recommended. Do not bleach."
+                  }}
+                </div>
+              </details>
+            </div>
+          </div>
+        </div>
+        <!-- END RIGHT -->
+      </div>
+    </div>
+
+    <!-- ===== Reviews Section ===== -->
+    <div
+      class="max-w-[1200px] mx-auto px-6 py-16 border-t border-[#e0e0e0]"
+      id="reviews"
+    >
+      <div
+        class="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 gap-6"
+      >
+        <div>
+          <p
+            class="text-[10px] uppercase tracking-[0.4em] text-[#c8922a] font-bold mb-2"
+          >
+            Refined Experience
+          </p>
+          <h3 class="text-3xl font-serif italic text-[#1a1a1a]">
+            Customer Testimonies
+          </h3>
+        </div>
+        <button
+          (click)="toggleReviewForm()"
+          class="px-6 py-3 bg-[#1a1a1a] text-white text-xs uppercase tracking-[0.2em] font-semibold hover:bg-[#333] transition-colors"
+        >
+          Write a Review
+        </button>
+      </div>
+
+      <!-- Review Form -->
+      <div
+        *ngIf="isReviewFormOpen"
+        class="mb-12 bg-white p-8 border border-[#e0e0e0]"
+      >
+        <h4 class="text-lg font-semibold text-[#1a1a1a] mb-6">
+          Share your experience
+        </h4>
+        <div class="space-y-5 max-w-xl">
+          <div>
+            <label
+              class="block text-xs uppercase tracking-widest font-semibold text-[#888] mb-2"
+              >Rating</label
+            >
+            <div class="flex gap-1">
+              <button
+                *ngFor="let star of [1, 2, 3, 4, 5]"
+                (click)="setRating(star)"
+                class="text-2xl transition-colors"
+                [class.text-[#c8922a]]="star <= reviewRating"
+                [class.text-[#ddd]]="star > reviewRating"
+                type="button"
+              >
+                ★
+              </button>
+            </div>
+          </div>
+          <div>
+            <label
+              class="block text-xs uppercase tracking-widest font-semibold text-[#888] mb-2"
+              >Your Name</label
+            >
+            <input
+              [(ngModel)]="reviewName"
+              class="w-full border border-[#ddd] bg-[#fafafa] px-3 py-2 text-sm focus:outline-none focus:border-[#1a1a1a] transition-colors"
+              placeholder="Enter your name"
+            />
+          </div>
+          <div>
+            <label
+              class="block text-xs uppercase tracking-widest font-semibold text-[#888] mb-2"
+              >Your Review</label
+            >
+            <textarea
+              [(ngModel)]="reviewComment"
+              rows="4"
+              class="w-full border border-[#ddd] bg-[#fafafa] px-3 py-2 text-sm focus:outline-none focus:border-[#1a1a1a] transition-colors"
+              placeholder="How was your experience?"
+            ></textarea>
+          </div>
+          <div *ngIf="reviewError" class="text-xs text-red-500">
+            {{ reviewError }}
+          </div>
+          <div class="flex gap-3">
+            <button
+              (click)="submitReview(vm.product.id)"
+              [disabled]="isSubmittingReview"
+              class="px-6 py-2 bg-[#1a1a1a] text-white text-xs uppercase tracking-wider font-semibold hover:bg-[#333] transition-colors disabled:opacity-50"
+              type="button"
+            >
+              {{ isSubmittingReview ? "Submitting..." : "Submit" }}
+            </button>
+            <button
+              (click)="toggleReviewForm()"
+              class="px-6 py-2 border border-[#ddd] text-[#555] text-xs uppercase tracking-wider font-semibold hover:border-[#1a1a1a] transition-colors"
+              type="button"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Reviews Grid -->
+      <div *ngIf="reviews$ | async as reviews">
+        <div
+          *ngIf="reviews.length === 0"
+          class="text-center py-12 text-sm text-[#888]"
+        >
+          No reviews yet. Be the first to share your thoughts.
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div
+            *ngFor="let review of reviews; trackBy: trackReview"
+            class="bg-white p-6 border border-[#e0e0e0]"
+          >
+            <div class="flex items-center justify-between mb-3">
+              <span class="font-semibold text-sm text-[#1a1a1a]">{{
+                review.customerName
+              }}</span>
+              <span class="text-xs text-[#aaa]">{{
+                review.date | date: "mediumDate"
+              }}</span>
+            </div>
+            <div class="flex text-[#c8922a] text-sm mb-3">
+              <ng-container *ngFor="let _ of fullStars(review.rating)"
+                >★</ng-container
+              >
+            </div>
+            <p class="text-sm text-[#555] leading-relaxed italic">
+              "{{ review.comment }}"
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== Related Products ===== -->
+    <div
+      *ngIf="vm.relatedProducts && vm.relatedProducts.length > 0"
+      class="max-w-[1200px] mx-auto px-6 py-16 border-t border-[#e0e0e0]"
+    >
+      <div class="text-center mb-12">
+        <p
+          class="text-[10px] uppercase tracking-[0.4em] text-[#c8922a] font-bold mb-2"
+        >
+          Curated for you
+        </p>
+        <h3 class="text-3xl font-serif italic text-[#1a1a1a]">
+          Complete The Look
+        </h3>
+      </div>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+        <app-product-card
+          *ngFor="let related of vm.relatedProducts"
+          [product]="related"
+        ></app-product-card>
+      </div>
+    </div>
+  </div>
+
+  <!-- Size Guide Modal -->
+  <app-size-guide
+    *ngIf="isSizeGuideOpen"
+    (close)="closeSizeGuide()"
+  ></app-size-guide>
+</ng-container>

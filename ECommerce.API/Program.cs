@@ -14,8 +14,6 @@ var builder = WebApplication.CreateBuilder(args);
 Log.Logger = new LoggerConfiguration()
     .ReadFrom.Configuration(builder.Configuration)
     .Enrich.FromLogContext()
-    .WriteTo.Console()
-    .WriteTo.File("../Logs/log-.txt", rollingInterval: RollingInterval.Day)
     .CreateLogger();
 
 builder.Host.UseSerilog();
@@ -118,6 +116,7 @@ app.UseHttpsRedirection();
 app.UseStaticFiles(); // Enable serving static files from wwwroot
 
 // Global exception handling
+app.UseSerilogRequestLogging(); // Enable Serilog request logging
 app.UseMiddleware<ECommerce.API.Middleware.GlobalExceptionMiddleware>();
 app.UseMiddleware<ECommerce.API.Middleware.IpBlockingMiddleware>();
 app.UseMiddleware<ECommerce.API.Middleware.VisitorTrackingMiddleware>();

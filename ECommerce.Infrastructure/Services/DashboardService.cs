@@ -1,3 +1,7 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using ECommerce.Core.DTOs;
 using ECommerce.Core.Entities;
 using ECommerce.Core.Interfaces;
@@ -73,7 +77,6 @@ public class DashboardService : IDashboardService
             .Select(p => new
             {
                 Product = p,
-                SoldCount = _context.Orders
                 SoldCount = _context.Orders
                     .Where(o => o.Status == OrderStatus.Confirmed || o.Status == OrderStatus.Processing || o.Status == OrderStatus.Packed || o.Status == OrderStatus.Shipped || o.Status == OrderStatus.Delivered)
                     .SelectMany(o => o.Items)

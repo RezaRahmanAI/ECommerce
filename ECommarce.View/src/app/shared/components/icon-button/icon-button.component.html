@@ -1,0 +1,10 @@
+<button
+  type="button"
+  class="flex items-center justify-center rounded-full shadow-lg transition-all duration-300"
+  [ngClass]="{
+    'bg-white text-primary p-2 hover:bg-accent': variant === 'light',
+    'bg-primary text-white p-3 hover:bg-[#084255]': variant === 'dark'
+  }"
+>
+  <span class="material-symbols-outlined">{{ icon }}</span>
+</button>

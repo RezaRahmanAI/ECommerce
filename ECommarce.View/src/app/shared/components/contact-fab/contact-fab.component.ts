@@ -1,0 +1,124 @@
+import { Component } from "@angular/core";
+import { CommonModule } from "@angular/common";
+import {
+  animate,
+  style,
+  transition,
+  trigger,
+  state,
+} from "@angular/animations";
+
+@Component({
+  selector: "app-contact-fab",
+  standalone: true,
+  imports: [CommonModule],
+  animations: [
+    trigger("famTrigger", [
+      state("void", style({ transform: "scale(0)", opacity: 0 })),
+      state("*", style({ transform: "scale(1)", opacity: 1 })),
+      transition("void => *", animate("200ms cubic-bezier(0.2, 0, 0, 1)")),
+      transition("* => void", animate("200ms ease-out")),
+    ]),
+    trigger("optionTrigger", [
+      state("void", style({ transform: "translateY(10px)", opacity: 0 })),
+      state("*", style({ transform: "translateY(0)", opacity: 1 })),
+      transition(
+        ":enter",
+        animate("200ms {{delay}}ms cubic-bezier(0.2, 0, 0, 1)"),
+      ),
+      transition(
+        ":leave",
+        animate(
+          "150ms ease-in",
+          style({ opacity: 0, transform: "translateY(10px)" }),
+        ),
+      ),
+    ]),
+  ],
+  styles: [
+    `
+      @keyframes bounce-wave {
+        0%,
+        100% {
+          transform: translateY(0);
+        }
+        50% {
+          transform: translateY(-4px);
+        }
+      }
+      .dot-anim {
+        animation: bounce-wave 1.2s infinite ease-in-out;
+      }
+      .dot-1 {
+        animation-delay: 0s;
+      }
+      .dot-2 {
+        animation-delay: 0.2s;
+      }
+      .dot-3 {
+        animation-delay: 0.4s;
+      }
+    `,
+  ],
+  template: `
+    <div class="fixed bottom-6 left-6 z-50 flex flex-col items-center gap-4">
+      <!-- Options Stack -->
+      <div *ngIf="isOpen" class="flex flex-col gap-3 mb-2">
+        <!-- Phone Option -->
+        <a
+          href="tel:+8801700000000"
+          [@optionTrigger]="{ value: '', params: { delay: 50 } }"
+          class="w-12 h-12 flex items-center justify-center rounded-full bg-white/80 backdrop-blur-md shadow-lg hover:scale-110 transition-transform text-[#0e181b] border border-white/20"
+        >
+          <span class="material-symbols-outlined text-[20px]">call</span>
+        </a>
+
+        <!-- Chat/WhatsApp Option -->
+        <a
+          href="https://wa.me/8801700000000"
+          target="_blank"
+          [@optionTrigger]="{ value: '', params: { delay: 0 } }"
+          class="w-12 h-12 flex items-center justify-center rounded-full bg-white/80 backdrop-blur-md shadow-lg hover:scale-110 transition-transform text-[#0e181b] border border-white/20"
+        >
+          <span class="material-symbols-outlined text-[20px]">chat</span>
+        </a>
+      </div>
+
+      <!-- Main Toggle Button -->
+      <button
+        (click)="toggle()"
+        class="w-14 h-14 flex items-center justify-center rounded-full bg-white/90 backdrop-blur-xl shadow-2xl transition-all duration-300 hover:scale-105 border border-white/40"
+        [class.bg-white]="!isOpen"
+        [class.bg-gray-100]="isOpen"
+      >
+        <!-- Close / Add Icon -->
+        <span
+          *ngIf="isOpen"
+          class="material-symbols-outlined text-[28px] text-[#0e181b] rotate-45"
+        >
+          add
+        </span>
+
+        <!-- Animated Dots -->
+        <div *ngIf="!isOpen" class="flex items-center gap-1">
+          <span
+            class="w-1.5 h-1.5 bg-[#0e181b] rounded-full dot-anim dot-1"
+          ></span>
+          <span
+            class="w-1.5 h-1.5 bg-[#0e181b] rounded-full dot-anim dot-2"
+          ></span>
+          <span
+            class="w-1.5 h-1.5 bg-[#0e181b] rounded-full dot-anim dot-3"
+          ></span>
+        </div>
+      </button>
+    </div>
+  `,
+})
+export class ContactFabComponent {
+  isOpen = false;
+
+  toggle() {
+    this.isOpen = !this.isOpen;
+  }
+}
