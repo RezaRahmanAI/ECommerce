@@ -158,16 +158,15 @@
                       >
                     </span>
                   </span>
-                  <span
-                    class="material-icons text-primary"
+                  <lucide-icon
+                    [img]="icons.CheckCircle2"
+                    class="w-5 h-5 text-primary"
                     [ngClass]="
                       checkoutForm.get('deliveryMethodId')?.value === method.id
                         ? 'opacity-100'
                         : 'opacity-0'
                     "
-                  >
-                    check_circle
-                  </span>
+                  ></lucide-icon>
                 </label>
               </div>
             </div>
@@ -180,7 +179,10 @@
               class="flex items-center text-sm font-medium text-primary hover:text-primary/80 dark:text-accent dark:hover:text-accent/80 transition-colors"
               routerLink="/cart"
             >
-              <span class="material-icons text-base mr-1">arrow_back</span>
+              <lucide-icon
+                [img]="icons.ArrowLeft"
+                class="w-4 h-4 mr-1"
+              ></lucide-icon>
               Return to cart
             </a>
             <button

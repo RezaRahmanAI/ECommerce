@@ -25,6 +25,20 @@ import {
 } from "../../models/categories.models";
 import { PriceDisplayComponent } from "../../../shared/components/price-display/price-display.component";
 import { ImageUrlService } from "../../../core/services/image-url.service";
+import {
+  LucideAngularModule,
+  ChevronRight,
+  Check,
+  Bold,
+  Italic,
+  Underline,
+  List,
+  Link,
+  Upload,
+  PlayCircle,
+  PlusCircle,
+  Eye,
+} from "lucide-angular";
 
 interface MediaFormValue {
   id: string;
@@ -45,10 +59,24 @@ interface MediaFormValue {
     ReactiveFormsModule,
     RouterModule,
     PriceDisplayComponent,
+    LucideAngularModule,
   ],
   templateUrl: "./admin-product-form.component.html",
 })
 export class AdminProductFormComponent implements OnDestroy {
+  readonly icons = {
+    ChevronRight,
+    Check,
+    Bold,
+    Italic,
+    Underline,
+    List,
+    Link,
+    Upload,
+    PlayCircle,
+    PlusCircle,
+    Eye,
+  };
   private formBuilder = inject(FormBuilder);
   private productsService = inject(ProductsService);
   private categoriesService = inject(CategoriesService);
@@ -88,7 +116,7 @@ export class AdminProductFormComponent implements OnDestroy {
       purchaseRate: [0, [Validators.required, Validators.min(0)]],
 
       newArrival: [false],
-      isPopupOffer: [false],
+
       tier: [""],
       tags: [""],
       sortOrder: [0, [Validators.min(0)]],
@@ -223,6 +251,8 @@ export class AdminProductFormComponent implements OnDestroy {
     this.productsService
       .getProductById(productId)
       .subscribe((product: AdminProduct) => {
+        console.log("Admin Product Edit - Full Product Response:", product);
+
         // Populate form with product data
         // Pre-fill filtered lists based on product data BEFORE patching
         if (product.categoryId) {
@@ -253,14 +283,28 @@ export class AdminProductFormComponent implements OnDestroy {
           purchaseRate: product.price,
 
           newArrival: product.isNew || false,
-          isPopupOffer: false,
+
           tier: (product as any).tier || "",
           tags: (product as any).tags || "",
           sortOrder: (product as any).sortOrder || 0,
         });
 
         // Load existing media
-        if (product.images && product.images.length > 0) {
+        // Load existing media with details
+        if ((product as any).images && (product as any).images.length > 0) {
+          (product as any).images.forEach((img: any, index: number) => {
+            this.addMediaItem({
+              url: img.imageUrl,
+              source: "url",
+              label: `Image ${index + 1}`,
+              alt: img.altText || product.name,
+              type: "image",
+              isMain: img.isPrimary,
+              color: img.color, // Now we have color!
+            });
+          });
+        } else if (product.images && product.images.length > 0) {
+          // Fallback for legacy (if any) or if typed as ProductImage[]
           product.images.forEach((img, index) => {
             this.addMediaItem({
               url: img.imageUrl,
@@ -269,6 +313,7 @@ export class AdminProductFormComponent implements OnDestroy {
               alt: img.altText || product.name,
               type: "image",
               isMain: img.isPrimary,
+              color: img.color,
             });
           });
         } else if (product.imageUrl) {
@@ -287,107 +332,66 @@ export class AdminProductFormComponent implements OnDestroy {
         // Actually, the new backend 'GetProductById' returns 'Variants.Colors' as a list of names!
         // We should use that.
 
-        const backendVariants = (product as any).variants; // Typed as any to access new structure if not yet in interface
+        // Parse Variants from ProductDto (Flat List structure)
+        // 1. Colors from Images
+        this.colorsArray.clear();
+        const uniqueColors = new Set<string>();
+        const images = (product as any).images || (product as any).Images || [];
 
-        if (
-          backendVariants &&
-          (backendVariants.colors || backendVariants.sizes)
-        ) {
-          this.colorsArray.clear();
-          this.sizesArray.clear();
+        images.forEach((img: any) => {
+          const color = img.color || img.Color;
+          if (color) uniqueColors.add(color);
+        });
 
-          // 1. Colors (Visual Tags)
-          if (backendVariants.colors && Array.isArray(backendVariants.colors)) {
-            backendVariants.colors.forEach((c: any) => {
-              this.colorsArray.push(
-                this.formBuilder.group({
-                  name: [c.name || ""],
-                  hex: ["#111827"], // Hex not persisted in backend yet, default
-                  selected: [false],
-                }),
-              );
-            });
-          } else {
-            // Fallback if empty
-            this.colorsArray.push(this.createColorGroup(true));
-          }
-
-          // 2. Sizes (Stock)
-          if (backendVariants.sizes && Array.isArray(backendVariants.sizes)) {
-            backendVariants.sizes.forEach((s: any) => {
-              this.sizesArray.push(
-                this.formBuilder.group({
-                  label: [s.label || ""],
-                  stock: [s.stock || 0, [Validators.min(0)]],
-                  selected: [false],
-                }),
-              );
-            });
-          } else {
-            this.sizesArray.push(this.createSizeGroup(true));
-          }
-        } else if (
-          product.variants &&
-          Array.isArray(product.variants) &&
-          product.variants.length > 0
-        ) {
-          // Fallback for legacy structure where variants might have just been loaded directly
-          // BUT since we removed 'color' from interface, we can't map it here easily without 'as any'
-          // However, the backend should be returning the new structure (Colors/Sizes object)
-          // If we are here, it means 'backendVariants' (product.variants) is an ARRAY (old style) or we are misinterpreting.
-
-          // Let's assume for safety we just reset if we can't find the new structure,
-          // OR we try to extract what we can.
-
-          this.colorsArray.clear();
-          this.sizesArray.clear();
-
-          // Since 'color' is removed from interface, we cast to any to safely check if it exists in data
-          const rawVariants = product.variants as any[];
-          const uniqueColors = Array.from(
-            new Set(rawVariants.map((v) => v.color).filter((c: any) => !!c)),
-          );
-          const uniqueSizes = Array.from(
-            new Set(rawVariants.map((v) => v.size).filter((s: any) => !!s)),
-          );
-
-          if (uniqueColors.length > 0) {
-            uniqueColors.forEach((color: any) => {
-              this.colorsArray.push(this.createColorGroup(false));
-              this.colorsArray
-                .at(this.colorsArray.length - 1)
-                .patchValue({ name: color });
-            });
-          } else {
-            this.colorsArray.push(this.createColorGroup(true));
-          }
-
-          if (uniqueSizes.length > 0) {
-            // We need to sum stock for same sizes if multiple rows existed?
-            // Or just take the first one?
-            uniqueSizes.forEach((size: any) => {
-              const stock =
-                rawVariants.find((v) => v.size === size)?.stockQuantity || 0;
-              this.sizesArray.push(
-                this.formBuilder.group({
-                  label: [size],
-                  stock: [stock],
-                  selected: [false],
-                }),
-              );
-            });
-          } else {
-            this.sizesArray.push(this.createSizeGroup(true));
-          }
+        if (uniqueColors.size > 0) {
+          uniqueColors.forEach((color) => {
+            this.colorsArray.push(
+              this.formBuilder.group({
+                name: [color],
+                hex: ["#111827"], // Default to dark since we don't store hex
+                selected: [true],
+              }),
+            );
+          });
+        } else {
+          this.colorsArray.push(this.createColorGroup(true));
         }
 
-        // End of variant loading logic
+        // 2. Sizes from Variants
+        this.sizesArray.clear();
+        const variants =
+          (product as any).variants || (product as any).Variants || [];
+
+        if (variants && variants.length > 0) {
+          variants.forEach((v: any) => {
+            this.sizesArray.push(
+              this.formBuilder.group({
+                label: [v.size || v.Size || ""],
+                stock: [
+                  v.stockQuantity || v.StockQuantity || 0,
+                  [Validators.min(0)],
+                ],
+                selected: [true], // Existing variants are active
+              }),
+            );
+          });
+        } else {
+          this.sizesArray.push(this.createSizeGroup(true));
+        }
+        // We removed the legacy 'else if' block because 'backendVariants' in GetProductById
+        // is now ALWAYS an object (ProductVariantsDto), never an array of entities.
 
         // Load meta
         this.form.patchValue({
           meta: {
-            fabricAndCare: product.fabricAndCare || "",
-            shippingAndReturns: product.shippingAndReturns || "",
+            fabricAndCare:
+              product.fabricAndCare ||
+              (product as any).meta?.fabricAndCare ||
+              "",
+            shippingAndReturns:
+              product.shippingAndReturns ||
+              (product as any).meta?.shippingAndReturns ||
+              "",
           },
         });
       });
@@ -776,7 +780,6 @@ export class AdminProductFormComponent implements OnDestroy {
       purchaseRate: Number(raw.purchaseRate ?? 0),
 
       newArrival: Boolean(raw.newArrival),
-      isPopupOffer: Boolean(raw.isPopupOffer),
 
       media: {
         mainImage,
@@ -804,7 +807,9 @@ export class AdminProductFormComponent implements OnDestroy {
       tier: raw.tier ?? "",
       tags: raw.tags ?? "",
       sortOrder: Number(raw.sortOrder ?? 0),
-    } as any; // Cast to any because interface might still verify strictness,
+      subCategoryId: raw.subCategory ? Number(raw.subCategory) : null,
+      collectionId: raw.collection ? Number(raw.collection) : null,
+    };
     // but we want to match backend DTO structure primarily.
     // Actually the interface is updated, so it should be fine.
     // Removing 'as any' if possible to verify type safety.
@@ -847,7 +852,7 @@ export class AdminProductFormComponent implements OnDestroy {
       purchaseRate: 0,
 
       newArrival: false,
-      isPopupOffer: false,
+
       tier: "",
       tags: "",
       sortOrder: 0,

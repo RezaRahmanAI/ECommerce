@@ -7,14 +7,29 @@ import {
   VariantInventoryDto,
 } from "../../services/inventory.service";
 import { Subject, debounceTime, distinctUntilChanged, takeUntil } from "rxjs";
+import {
+  LucideAngularModule,
+  Search,
+  Package,
+  Box,
+  Warehouse,
+  AlertCircle,
+} from "lucide-angular";
 
 @Component({
   selector: "app-admin-inventory",
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, LucideAngularModule],
   templateUrl: "./admin-inventory.component.html",
 })
 export class AdminInventoryComponent implements OnInit, OnDestroy {
+  readonly icons = {
+    Search,
+    Package,
+    Box,
+    Warehouse,
+    AlertCircle,
+  };
   private inventoryService = inject(InventoryService);
   private destroy$ = new Subject<void>();
 

@@ -6,7 +6,10 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
       <nav class="flex items-center gap-2 text-xs text-white/60 mb-4">
         <a class="hover:text-white transition-colors" href="#">Home</a>
-        <span class="material-symbols-outlined text-[10px]">chevron_right</span>
+        <lucide-icon
+          [img]="icons.ChevronRight"
+          class="w-2.5 h-2.5"
+        ></lucide-icon>
         <span class="text-white">Children</span>
       </nav>
       <h1 class="text-4xl md:text-5xl font-serif font-bold mb-4">
@@ -33,10 +36,10 @@
                 class="flex items-center justify-between w-full text-left text-sm font-medium text-slate-700 group-hover:text-primary"
               >
                 <span>Girls</span>
-                <span
-                  class="material-symbols-outlined text-[16px] text-slate-400"
-                  >expand_less</span
-                >
+                <lucide-icon
+                  [img]="icons.ChevronUp"
+                  class="w-4 h-4 text-slate-400"
+                ></lucide-icon>
               </button>
               <div class="pl-3 mt-2 space-y-2 border-l border-slate-200">
                 <label class="flex items-center gap-2 cursor-pointer">
@@ -69,10 +72,10 @@
                 class="flex items-center justify-between w-full text-left text-sm font-medium text-slate-700 group-hover:text-primary"
               >
                 <span>Boys</span>
-                <span
-                  class="material-symbols-outlined text-[16px] text-slate-400"
-                  >expand_more</span
-                >
+                <lucide-icon
+                  [img]="icons.ChevronDown"
+                  class="w-4 h-4 text-slate-400"
+                ></lucide-icon>
               </button>
               <div
                 class="hidden pl-3 mt-2 space-y-2 border-l border-slate-200"
@@ -189,9 +192,10 @@
                 class="flex items-center gap-2 text-sm font-medium text-slate-900 hover:text-primary"
               >
                 <span>Popularity</span>
-                <span class="material-symbols-outlined text-[18px]"
-                  >expand_more</span
-                >
+                <lucide-icon
+                  [img]="icons.ChevronDown"
+                  class="w-4.5 h-4.5 font-medium"
+                ></lucide-icon>
               </button>
               <div
                 class="absolute right-0 top-full mt-2 w-40 bg-white shadow-xl rounded-lg border border-slate-100 py-1 hidden group-hover:block z-20"
@@ -242,16 +246,18 @@
               <button
                 class="absolute top-3 right-3 p-2 bg-white/80 hover:bg-white rounded-full text-slate-400 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 duration-300"
               >
-                <span class="material-symbols-outlined text-[18px]"
-                  >favorite</span
-                >
+                <lucide-icon
+                  [img]="icons.Heart"
+                  class="w-4.5 h-4.5"
+                ></lucide-icon>
               </button>
               <button
                 class="absolute bottom-0 left-0 right-0 bg-primary/95 text-white py-3.5 font-medium text-sm tracking-wide translate-y-full group-hover:translate-y-0 transition-transform duration-300 flex items-center justify-center gap-2"
               >
-                <span class="material-symbols-outlined text-[18px]"
-                  >shopping_cart</span
-                >
+                <lucide-icon
+                  [img]="icons.ShoppingCart"
+                  class="w-4.5 h-4.5"
+                ></lucide-icon>
                 Add to Cart
               </button>
             </div>
@@ -298,7 +304,10 @@
         <div class="mt-12 flex justify-center">
           <nav class="flex items-center gap-1 text-sm font-medium">
             <a class="p-2 text-slate-400 hover:text-primary" href="#">
-              <span class="material-symbols-outlined">chevron_left</span>
+              <lucide-icon
+                [img]="icons.ChevronLeft"
+                class="w-10 h-10"
+              ></lucide-icon>
             </a>
             <a
               class="px-4 py-2 bg-primary text-white rounded-md shadow-lg shadow-primary/20"
@@ -322,7 +331,10 @@
               >8</a
             >
             <a class="p-2 text-slate-600 hover:text-primary" href="#">
-              <span class="material-symbols-outlined">chevron_right</span>
+              <lucide-icon
+                [img]="icons.ChevronRight"
+                class="w-10 h-10"
+              ></lucide-icon>
             </a>
           </nav>
         </div>
@@ -331,9 +343,10 @@
   </div>
   <div class="bg-accent/20 border-y border-accent/30 py-16">
     <div class="max-w-xl mx-auto px-4 text-center">
-      <span class="material-symbols-outlined text-4xl text-primary mb-3"
-        >mail</span
-      >
+      <lucide-icon
+        [img]="icons.Mail"
+        class="w-10 h-10 text-primary mb-3"
+      ></lucide-icon>
       <h2 class="text-2xl font-serif font-bold text-primary mb-2">
         Join the Family
       </h2>

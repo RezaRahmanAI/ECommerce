@@ -24,6 +24,18 @@ import { NotificationService } from "../../../../core/services/notification.serv
 
 import { ProductCardComponent } from "../../../../shared/components/product-card/product-card.component";
 import { SizeGuideComponent } from "../../../../shared/components/size-guide/size-guide.component";
+import {
+  LucideAngularModule,
+  ChevronLeft,
+  ChevronRight,
+  ShoppingBag,
+  CreditCard,
+  Star,
+  Plus,
+  Minus,
+  Maximize2,
+  Loader2,
+} from "lucide-angular";
 
 @Component({
   selector: "app-product-details-page",
@@ -35,11 +47,23 @@ import { SizeGuideComponent } from "../../../../shared/components/size-guide/siz
     PriceDisplayComponent,
     ProductCardComponent,
     SizeGuideComponent,
+    LucideAngularModule,
   ],
   templateUrl: "./product-details-page.component.html",
   styleUrl: "./product-details-page.component.css",
 })
 export class ProductDetailsPageComponent {
+  readonly icons = {
+    ChevronLeft,
+    ChevronRight,
+    ShoppingBag,
+    CreditCard,
+    Star,
+    Plus,
+    Minus,
+    Maximize2,
+    Loader2,
+  };
   private readonly route = inject(ActivatedRoute);
   private readonly productService = inject(ProductService);
   private readonly cartService = inject(CartService);
@@ -59,6 +83,7 @@ export class ProductDetailsPageComponent {
     null,
   );
   private readonly quantitySubject = new BehaviorSubject<number>(1);
+  readonly quantity$ = this.quantitySubject.asObservable();
   private readonly selectedMediaSubject = new BehaviorSubject<string | null>(
     null,
   );

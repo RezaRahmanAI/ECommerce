@@ -4,14 +4,43 @@ import { FormBuilder, ReactiveFormsModule, Validators } from "@angular/forms";
 import { Subject, takeUntil } from "rxjs";
 import { AdminNavigationMenu } from "../../models/navigation.models";
 import { AdminNavigationService } from "../../services/admin-navigation.service";
+import {
+  LucideAngularModule,
+  Plus,
+  Edit,
+  Trash2,
+  ChevronRight,
+  ChevronDown,
+  X,
+  Link,
+  Type,
+  ArrowUpDown,
+  Check,
+  Loader2,
+  GripVertical,
+} from "lucide-angular";
 
 @Component({
   selector: "app-admin-navigation-management",
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, LucideAngularModule],
   templateUrl: "./admin-navigation-management.component.html",
 })
 export class AdminNavigationManagementComponent implements OnInit, OnDestroy {
+  readonly icons = {
+    Plus,
+    Edit,
+    Trash2,
+    ChevronRight,
+    ChevronDown,
+    X,
+    Link,
+    Type,
+    ArrowUpDown,
+    Check,
+    Loader2,
+    GripVertical,
+  };
   private navService = inject(AdminNavigationService);
   private fb = inject(FormBuilder);
   private destroy$ = new Subject<void>();

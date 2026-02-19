@@ -12,6 +12,26 @@ import {
 import { CategoriesService } from "../../services/categories.service";
 import { SubCategoriesService } from "../../services/sub-categories.service";
 import { environment } from "../../../../environments/environment";
+import {
+  LucideAngularModule,
+  Search,
+  Plus,
+  ChevronRight,
+  ChevronDown,
+  ChevronUp,
+  Edit,
+  Trash2,
+  Save,
+  X,
+  Image,
+  Folder,
+  Tag,
+  Link,
+  Check,
+  Upload,
+  GripVertical,
+  AlertCircle,
+} from "lucide-angular";
 
 interface ParentOption {
   id: string | null;
@@ -21,10 +41,34 @@ interface ParentOption {
 @Component({
   selector: "app-admin-sub-category-management",
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    RouterModule,
+    LucideAngularModule,
+  ],
   templateUrl: "./admin-sub-category-management.component.html",
 })
 export class AdminSubCategoryManagementComponent implements OnInit, OnDestroy {
+  readonly icons = {
+    Search,
+    Plus,
+    ChevronRight,
+    ChevronDown,
+    ChevronUp,
+    Edit,
+    Trash2,
+    Save,
+    X,
+    Image,
+    Folder,
+    Tag,
+    Link,
+    Check,
+    Upload,
+    GripVertical,
+    AlertCircle,
+  };
   private categoriesService = inject(CategoriesService);
   private subCategoriesService = inject(SubCategoriesService);
   private formBuilder = inject(FormBuilder);

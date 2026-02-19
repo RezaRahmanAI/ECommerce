@@ -11,14 +11,38 @@ import { ImageUrlService } from "../../../../core/services/image-url.service";
 import { Order } from "../../../../core/models/order";
 import { catchError, finalize, of, switchMap, tap } from "rxjs";
 
+import {
+  LucideAngularModule,
+  Package,
+  User,
+  MapPin,
+  LogOut,
+  ChevronRight,
+  Phone,
+  Clock,
+  CreditCard,
+  CheckCircle2,
+} from "lucide-angular";
+
 @Component({
   selector: "app-profile-page",
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, LucideAngularModule],
   templateUrl: "./profile-page.component.html",
   styleUrl: "./profile-page.component.css",
 })
 export class ProfilePageComponent implements OnInit {
+  readonly icons = {
+    Package,
+    User,
+    MapPin,
+    LogOut,
+    ChevronRight,
+    Phone,
+    Clock,
+    CreditCard,
+    CheckCircle2,
+  };
   private readonly profileService = inject(CustomerProfileService);
   private readonly fb = inject(FormBuilder);
   readonly imageUrlService = inject(ImageUrlService);

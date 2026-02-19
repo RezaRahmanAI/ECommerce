@@ -20,15 +20,41 @@ import {
 } from "../../models/settings.models";
 import { SettingsService } from "../../services/settings.service";
 import { ImageUrlService } from "../../../core/services/image-url.service";
+import {
+  LucideAngularModule,
+  Save,
+  Image,
+  Edit,
+  Upload,
+  Copy,
+  Plus,
+  Trash2,
+  X,
+} from "lucide-angular";
 
 @Component({
   selector: "app-admin-settings",
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    RouterModule,
+    LucideAngularModule,
+  ],
   templateUrl: "./admin-settings.component.html",
   styleUrl: "./admin-settings.component.css",
 })
 export class AdminSettingsComponent implements OnInit {
+  readonly icons = {
+    Save,
+    Image,
+    Edit,
+    Upload,
+    Copy,
+    Plus,
+    Trash2,
+    X,
+  };
   private formBuilder = inject(NonNullableFormBuilder);
   private settingsService = inject(SettingsService);
 

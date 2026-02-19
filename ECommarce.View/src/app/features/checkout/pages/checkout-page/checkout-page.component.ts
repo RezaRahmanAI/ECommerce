@@ -24,6 +24,8 @@ import { ImageUrlService } from "../../../../core/services/image-url.service";
 import { SettingsService } from "../../../../admin/services/settings.service";
 import { DeliveryMethod } from "../../../../admin/models/settings.models";
 
+import { LucideAngularModule, CheckCircle2, ArrowLeft } from "lucide-angular";
+
 @Component({
   selector: "app-checkout-page",
   standalone: true,
@@ -32,11 +34,16 @@ import { DeliveryMethod } from "../../../../admin/models/settings.models";
     ReactiveFormsModule,
     RouterModule,
     PriceDisplayComponent,
+    LucideAngularModule,
   ],
   templateUrl: "./checkout-page.component.html",
   styleUrl: "./checkout-page.component.css",
 })
 export class CheckoutPageComponent {
+  readonly icons = {
+    CheckCircle2,
+    ArrowLeft,
+  };
   private readonly cartService = inject(CartService);
   private readonly checkoutService = inject(CheckoutService);
   private readonly formBuilder = inject(FormBuilder);

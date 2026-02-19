@@ -19,10 +19,28 @@ type BlogCategoryChip = {
   icon: string;
 };
 
+import {
+  LucideAngularModule,
+  LayoutGrid,
+  Shirt,
+  Sparkles,
+  Coffee,
+  TrendingUp,
+  Search,
+  ArrowRight,
+  ChevronDown,
+  Mail,
+} from "lucide-angular";
+
 @Component({
   selector: "app-blog-list",
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    RouterModule,
+    LucideAngularModule,
+  ],
   templateUrl: "./blog-list.component.html",
 })
 export class BlogListComponent implements OnInit {
@@ -32,12 +50,24 @@ export class BlogListComponent implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
   readonly imageUrlService = inject(ImageUrlService);
 
+  readonly icons: any = {
+    LayoutGrid,
+    Shirt,
+    Sparkles,
+    Coffee,
+    TrendingUp,
+    Search,
+    ArrowRight,
+    ChevronDown,
+    Mail,
+  };
+
   readonly categories: BlogCategoryChip[] = [
-    { label: "All", icon: "grid_view" },
-    { label: "Style Guide", icon: "checkroom" },
-    { label: "Faith", icon: "mosque" },
-    { label: "Lifestyle", icon: "local_cafe" },
-    { label: "Trends", icon: "trending_up" },
+    { label: "All", icon: "LayoutGrid" },
+    { label: "Style Guide", icon: "Shirt" },
+    { label: "Faith", icon: "Sparkles" },
+    { label: "Lifestyle", icon: "Coffee" },
+    { label: "Trends", icon: "TrendingUp" },
   ];
 
   readonly searchControl = new FormControl("", { nonNullable: true });

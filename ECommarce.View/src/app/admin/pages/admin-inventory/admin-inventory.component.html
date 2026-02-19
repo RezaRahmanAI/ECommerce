@@ -18,10 +18,10 @@
       <div
         class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none transition-colors group-focus-within:text-primary"
       >
-        <span
-          class="material-symbols-outlined text-gray-400 group-focus-within:text-primary"
-          >search</span
-        >
+        <lucide-icon
+          [img]="icons.Search"
+          class="w-4 h-4 text-gray-400 group-focus-within:text-primary"
+        ></lucide-icon>
       </div>
       <input
         [formControl]="searchControl"
@@ -122,9 +122,10 @@
       *ngIf="filteredProducts.length === 0"
       class="p-12 text-center text-gray-500 dark:text-gray-400 bg-white dark:bg-surface-dark rounded-2xl border border-gray-100 dark:border-gray-800 border-dashed"
     >
-      <span class="material-symbols-outlined text-[48px] text-gray-300 mb-2"
-        >inventory_2</span
-      >
+      <lucide-icon
+        [img]="icons.Package"
+        class="w-12 h-12 text-gray-300 mb-2"
+      ></lucide-icon>
       <p class="text-lg font-medium">No products found</p>
     </div>
   </div>

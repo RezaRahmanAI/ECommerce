@@ -4,14 +4,31 @@ import { FormBuilder, ReactiveFormsModule, Validators } from "@angular/forms";
 import { Subject, takeUntil } from "rxjs";
 import { AdminPage } from "../../models/pages.models";
 import { AdminPagesService } from "../../services/admin-pages.service";
+import {
+  LucideAngularModule,
+  Plus,
+  Edit,
+  Trash2,
+  FileText,
+  X,
+  Loader2,
+} from "lucide-angular";
 
 @Component({
   selector: "app-admin-pages",
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, LucideAngularModule],
   templateUrl: "./admin-pages.component.html",
 })
 export class AdminPagesComponent implements OnInit, OnDestroy {
+  readonly icons = {
+    Plus,
+    Edit,
+    Trash2,
+    FileText,
+    X,
+    Loader2,
+  };
   private pagesService = inject(AdminPagesService);
   private fb = inject(FormBuilder);
   private destroy$ = new Subject<void>();

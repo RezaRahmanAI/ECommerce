@@ -19,7 +19,7 @@
         type="button"
         (click)="printOrders()"
       >
-        <span class="material-symbols-outlined text-[20px]">print</span>
+        <lucide-icon [img]="icons.Printer" class="w-5 h-5"></lucide-icon>
         <span>Print List</span>
       </button>
       <button
@@ -27,7 +27,7 @@
         type="button"
         (click)="exportOrders()"
       >
-        <span class="material-symbols-outlined text-[20px]">download</span>
+        <lucide-icon [img]="icons.Download" class="w-5 h-5"></lucide-icon>
         <span>Export CSV</span>
       </button>
     </div>
@@ -57,7 +57,7 @@
       <div
         class="absolute bottom-4 right-4 text-blue-500/10 dark:text-blue-500/20"
       >
-        <span class="material-symbols-outlined text-[64px]">shopping_bag</span>
+        <lucide-icon [img]="icons.ShoppingBag" class="w-12 h-12"></lucide-icon>
       </div>
     </div>
 
@@ -83,7 +83,7 @@
       <div
         class="absolute bottom-4 right-4 text-yellow-500/10 dark:text-yellow-500/20"
       >
-        <span class="material-symbols-outlined text-[64px]">inventory_2</span>
+        <lucide-icon [img]="icons.Package" class="w-12 h-12"></lucide-icon>
       </div>
     </div>
 
@@ -111,7 +111,7 @@
       <div
         class="absolute bottom-4 right-4 text-green-500/10 dark:text-green-500/20"
       >
-        <span class="material-symbols-outlined text-[64px]">payments</span>
+        <lucide-icon [img]="icons.CreditCard" class="w-12 h-12"></lucide-icon>
       </div>
     </div>
 
@@ -137,9 +137,7 @@
       <div
         class="absolute bottom-4 right-4 text-red-500/10 dark:text-red-500/20"
       >
-        <span class="material-symbols-outlined text-[64px]"
-          >assignment_return</span
-        >
+        <lucide-icon [img]="icons.RotateCcw" class="w-12 h-12"></lucide-icon>
       </div>
     </div>
   </div>
@@ -155,10 +153,10 @@
         <div
           class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none transition-colors group-focus-within:text-primary"
         >
-          <span
-            class="material-symbols-outlined text-gray-400 group-focus-within:text-primary"
-            >search</span
-          >
+          <lucide-icon
+            [img]="icons.Search"
+            class="w-4 h-4 text-gray-400 group-focus-within:text-primary"
+          ></lucide-icon>
         </div>
         <input
           class="block w-full pl-11 pr-4 py-3 border-gray-200 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-background-dark text-primary dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm font-medium"
@@ -183,11 +181,11 @@
               >Status:</span
             >
             <span>{{ selectedStatus }}</span>
-            <span
-              class="material-symbols-outlined text-[20px] ml-1 transition-transform"
+            <lucide-icon
+              [img]="icons.ChevronDown"
+              class="w-4 h-4 ml-1 transition-transform"
               [class.rotate-180]="statusMenuOpen"
-              >expand_more</span
-            >
+            ></lucide-icon>
           </button>
 
           <div
@@ -206,11 +204,11 @@
               (click)="setStatusFilter(status, $event)"
             >
               {{ status }}
-              <span
+              <lucide-icon
+                [img]="icons.Check"
                 *ngIf="selectedStatus === status"
-                class="material-symbols-outlined text-[18px] text-primary"
-                >check</span
-              >
+                class="w-4 h-4 text-primary"
+              ></lucide-icon>
             </button>
           </div>
         </div>
@@ -228,11 +226,11 @@
               >Period:</span
             >
             <span>{{ selectedDateRange }}</span>
-            <span
-              class="material-symbols-outlined text-[20px] ml-1 transition-transform"
+            <lucide-icon
+              [img]="icons.ChevronDown"
+              class="w-4 h-4 ml-1 transition-transform"
               [class.rotate-180]="dateMenuOpen"
-              >expand_more</span
-            >
+            ></lucide-icon>
           </button>
 
           <div
@@ -251,11 +249,11 @@
               (click)="setDateRange(range, $event)"
             >
               {{ range }}
-              <span
+              <lucide-icon
+                [img]="icons.Check"
                 *ngIf="selectedDateRange === range"
-                class="material-symbols-outlined text-[18px] text-primary"
-                >check</span
-              >
+                class="w-4 h-4 text-primary"
+              ></lucide-icon>
             </button>
           </div>
         </div>
@@ -393,7 +391,10 @@
                   type="button"
                   (click)="toggleRowActions(order.id, $event)"
                 >
-                  <span class="material-symbols-outlined">more_vert</span>
+                  <lucide-icon
+                    [img]="icons.MoreVertical"
+                    class="w-4 h-4"
+                  ></lucide-icon>
                 </button>
 
                 <!-- Dropdown Action Menu -->
@@ -415,9 +416,10 @@
                     [routerLink]="['/admin/orders', order.id]"
                     (click)="viewDetails($event)"
                   >
-                    <span class="material-symbols-outlined text-[18px]"
-                      >visibility</span
-                    >
+                    <lucide-icon
+                      [img]="icons.Eye"
+                      class="w-4 h-4"
+                    ></lucide-icon>
                     View Details
                   </a>
 
@@ -427,9 +429,10 @@
                     type="button"
                     (click)="markNextStatus(order, $event)"
                   >
-                    <span class="material-symbols-outlined text-[18px] filled"
-                      >fast_forward</span
-                    >
+                    <lucide-icon
+                      [img]="icons.Forward"
+                      class="w-4 h-4"
+                    ></lucide-icon>
                     {{ nextStatusLabel(order) }}
                   </button>
 
@@ -440,9 +443,10 @@
                     type="button"
                     (click)="cancelOrder(order, $event)"
                   >
-                    <span class="material-symbols-outlined text-[18px]"
-                      >cancel</span
-                    >
+                    <lucide-icon
+                      [img]="icons.XCircle"
+                      class="w-4 h-4"
+                    ></lucide-icon>
                     Cancel Order
                   </button>
                 </div>
@@ -459,10 +463,10 @@
                   <div
                     class="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center"
                   >
-                    <span
-                      class="material-symbols-outlined text-[32px] text-gray-400"
-                      >inventory_2</span
-                    >
+                    <lucide-icon
+                      [img]="icons.Package"
+                      class="w-12 h-12 text-gray-300"
+                    ></lucide-icon>
                   </div>
                   <p class="text-lg font-medium">No orders found</p>
                   <p class="text-sm">Try adjusting your search or filters.</p>
@@ -505,9 +509,10 @@
             [disabled]="page === 1"
             (click)="goToPreviousPage()"
           >
-            <span class="material-symbols-outlined text-[18px]"
-              >chevron_left</span
-            >
+            <lucide-icon
+              [img]="icons.ChevronLeft"
+              class="w-4 h-4"
+            ></lucide-icon>
           </button>
 
           <span class="text-sm font-medium text-gray-600 dark:text-gray-400"
@@ -520,9 +525,10 @@
             [disabled]="page === totalPages"
             (click)="goToNextPage()"
           >
-            <span class="material-symbols-outlined text-[18px]"
-              >chevron_right</span
-            >
+            <lucide-icon
+              [img]="icons.ChevronRight"
+              class="w-4 h-4"
+            ></lucide-icon>
           </button>
         </div>
       </div>

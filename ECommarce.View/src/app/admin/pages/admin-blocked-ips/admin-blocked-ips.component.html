@@ -21,7 +21,10 @@
         <h3
           class="text-lg font-bold text-primary dark:text-white mb-4 flex items-center gap-2"
         >
-          <span class="material-symbols-outlined text-red-500">block</span>
+          <lucide-icon
+            [img]="icons.Ban"
+            class="w-5 h-5 text-red-500"
+          ></lucide-icon>
           Block New IP
         </h3>
         <form [formGroup]="blockForm" (ngSubmit)="onSubmit()" class="space-y-4">

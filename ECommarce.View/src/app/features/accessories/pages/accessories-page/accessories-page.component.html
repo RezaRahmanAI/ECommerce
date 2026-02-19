@@ -14,37 +14,37 @@
     <button
       class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-primary text-white pl-3 pr-4 shadow-sm transition-transform active:scale-95"
     >
-      <span class="material-symbols-outlined text-[18px]">apps</span>
+      <lucide-icon [img]="icons.LayoutGrid" class="w-4.5 h-4.5"></lucide-icon>
       <p class="text-sm font-medium">All</p>
     </button>
     <button
       class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-accent hover:bg-accent/80 text-primary pl-3 pr-4 transition-colors"
     >
-      <span class="material-symbols-outlined text-[18px]">filter_list</span>
+      <lucide-icon [img]="icons.Filter" class="w-4.5 h-4.5"></lucide-icon>
       <p class="text-sm font-medium">Scarves</p>
     </button>
     <button
       class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-accent hover:bg-accent/80 text-primary pl-3 pr-4 transition-colors"
     >
-      <span class="material-symbols-outlined text-[18px]">checkroom</span>
+      <lucide-icon [img]="icons.Shirt" class="w-4.5 h-4.5"></lucide-icon>
       <p class="text-sm font-medium">Hats</p>
     </button>
     <button
       class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-accent hover:bg-accent/80 text-primary pl-3 pr-4 transition-colors"
     >
-      <span class="material-symbols-outlined text-[18px]">donut_large</span>
+      <lucide-icon [img]="icons.Trophy" class="w-4.5 h-4.5"></lucide-icon>
       <p class="text-sm font-medium">Belts</p>
     </button>
     <button
       class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-accent hover:bg-accent/80 text-primary pl-3 pr-4 transition-colors"
     >
-      <span class="material-symbols-outlined text-[18px]">diamond</span>
+      <lucide-icon [img]="icons.Gem" class="w-4.5 h-4.5"></lucide-icon>
       <p class="text-sm font-medium">Jewelry</p>
     </button>
     <button
       class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-accent hover:bg-accent/80 text-primary pl-3 pr-4 transition-colors"
     >
-      <span class="material-symbols-outlined text-[18px]">shopping_bag</span>
+      <lucide-icon [img]="icons.ShoppingBag" class="w-4.5 h-4.5"></lucide-icon>
       <p class="text-sm font-medium">Bags</p>
     </button>
   </div>
@@ -188,15 +188,17 @@
             <div
               class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-primary"
             >
-              <span class="material-symbols-outlined text-[20px]"
-                >expand_more</span
-              >
+              <lucide-icon
+                [img]="icons.ChevronDown"
+                class="w-5 h-5"
+              ></lucide-icon>
             </div>
           </div>
           <button class="lg:hidden p-2.5 bg-accent rounded-lg text-primary">
-            <span class="material-symbols-outlined text-[20px] block"
-              >filter_list</span
-            >
+            <lucide-icon
+              [img]="icons.Filter"
+              class="w-5 h-5 block"
+            ></lucide-icon>
           </button>
         </div>
       </div>
@@ -221,9 +223,10 @@
             <button
               class="absolute bottom-4 right-4 bg-white text-primary p-2 rounded-full shadow-lg translate-y-12 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 z-20 hover:bg-primary hover:text-white"
             >
-              <span class="material-symbols-outlined text-[20px] block"
-                >favorite</span
-              >
+              <lucide-icon
+                [img]="icons.Heart"
+                class="w-5 h-5 block"
+              ></lucide-icon>
             </button>
           </div>
           <div>
@@ -245,9 +248,10 @@
             <button
               class="w-full py-2.5 rounded-lg border border-primary text-primary font-bold text-sm hover:bg-primary hover:text-white transition-all duration-200 flex items-center justify-center gap-2"
             >
-              <span class="material-symbols-outlined text-[18px]"
-                >shopping_cart</span
-              >
+              <lucide-icon
+                [img]="icons.ShoppingCart"
+                class="w-4.5 h-4.5"
+              ></lucide-icon>
               Add to Cart
             </button>
           </div>

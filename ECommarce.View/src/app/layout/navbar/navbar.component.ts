@@ -1,7 +1,21 @@
 import { Component, inject, HostListener } from "@angular/core";
 import { CommonModule } from "@angular/common";
+import { FormsModule } from "@angular/forms";
+
 import { RouterModule, Router, NavigationEnd } from "@angular/router";
 import { combineLatest, map, startWith, filter } from "rxjs";
+import {
+  LucideAngularModule,
+  Search,
+  User,
+  ShoppingBag,
+  Menu,
+  X,
+  ChevronDown,
+  Facebook,
+  Instagram,
+  Twitter,
+} from "lucide-angular";
 
 import { AuthStateService } from "../../core/services/auth-state.service";
 import { CartService } from "../../core/services/cart.service";
@@ -12,7 +26,7 @@ import { NavigationService } from "../../core/services/navigation.service";
 @Component({
   selector: "app-navbar",
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, LucideAngularModule, FormsModule],
   templateUrl: "./navbar.component.html",
   styleUrl: "./navbar.component.css",
 })
@@ -24,7 +38,21 @@ export class NavbarComponent {
   private readonly router = inject(Router);
   public readonly imageUrlService = inject(ImageUrlService);
 
+  readonly icons = {
+    Search,
+    User,
+    ShoppingBag,
+    Menu,
+    X,
+    ChevronDown,
+    Facebook,
+    Instagram,
+    Twitter,
+  };
+
   isMenuOpen = false;
+  isSearchOpen = false;
+  searchQuery = "";
   isScrolled = false;
 
   readonly isHomePage$ = this.router.events.pipe(
@@ -64,6 +92,27 @@ export class NavbarComponent {
 
   closeMenu(): void {
     this.isMenuOpen = false;
+    this.isSearchOpen = false;
+  }
+
+  toggleSearch(): void {
+    this.isSearchOpen = !this.isSearchOpen;
+    if (this.isSearchOpen) {
+      setTimeout(() => {
+        const input = document.getElementById("navbar-search-input");
+        if (input) input.focus();
+      }, 100);
+    }
+  }
+
+  onSearch(): void {
+    if (this.searchQuery.trim()) {
+      this.router.navigate(["/search"], {
+        queryParams: { searchTerm: this.searchQuery.trim() },
+      });
+      this.isSearchOpen = false;
+      this.searchQuery = "";
+    }
   }
 
   logout(): void {

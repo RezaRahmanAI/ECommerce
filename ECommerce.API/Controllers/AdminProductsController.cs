@@ -101,13 +101,14 @@ public class AdminProductsController : ControllerBase
                 p.Price,
                 SalePrice = p.CompareAtPrice,
                 p.PurchaseRate,
-                Stock = p.StockQuantity,
+                p.StockQuantity,
                 Status = p.IsActive ? "Active" : "Draft",
                 p.ImageUrl,
                 Category = p.Category.Name,
                 CategoryId = p.CategoryId,
                 MediaUrls = p.Images.Select(i => i.Url).ToList(),
-                p.CreatedAt
+                p.CreatedAt,
+                p.Slug
             })
             .ToListAsync();
 
@@ -115,53 +116,13 @@ public class AdminProductsController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult> GetProductById(int id)
+    public async Task<ActionResult<ProductDto>> GetProductById(int id)
     {
-        var product = await _context.Products
-            .Include(p => p.Category)
-            .Include(p => p.Images)
-            .FirstOrDefaultAsync(p => p.Id == id);
+        var product = await _productService.GetProductByIdAsync(id);
 
-        if (product == null)
-            return NotFound();
+        if (product == null) return NotFound();
 
-        // Result
-        var result = new
-        {
-            product.Id,
-            product.Name,
-            product.Description,
-            product.Sku,
-            product.Price,
-            SalePrice = product.CompareAtPrice,
-            product.PurchaseRate,
-            Stock = product.StockQuantity,
-            Status = product.IsActive ? "Active" : "Draft",
-            product.ImageUrl,
-            Category = product.Category.Name,
-            CategoryId = product.CategoryId,
-            MediaUrls = product.Images.Select(i => i.Url).ToList(),
-            product.CreatedAt,
-
-            product.IsNew,
-            Variants = new ProductVariantsDto
-            {
-               Colors = product.Images
-                   .Where(i => !string.IsNullOrEmpty(i.Color))
-                   .Select(i => i.Color!)
-                   .Distinct()
-                   .Select(c => new ProductColorDto { Name = c })
-                   .ToList(),
-               Sizes = product.Variants.Select(v => new ProductSizeDto { Label = v.Size ?? "", Stock = v.StockQuantity }).ToList()
-            }, 
-            Meta = new ProductMetaDto 
-            { 
-               FabricAndCare = product.FabricAndCare ?? "", 
-               ShippingAndReturns = product.ShippingAndReturns ?? "" 
-            }
-        };
-        
-        return Ok(result);
+        return Ok(product);
     }
 
     private static readonly System.Text.Json.JsonSerializerOptions _jsonOptions = new()

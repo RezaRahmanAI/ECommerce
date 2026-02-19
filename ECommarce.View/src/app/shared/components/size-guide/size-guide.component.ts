@@ -1,10 +1,11 @@
-import { Component, EventEmitter, Input, Output } from "@angular/core";
+import { Component, EventEmitter, Output } from "@angular/core";
 import { CommonModule } from "@angular/common";
+import { LucideAngularModule, X } from "lucide-angular";
 
 @Component({
   selector: "app-size-guide",
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, LucideAngularModule],
   template: `
     <div
       class="fixed inset-0 z-50 flex justify-end"
@@ -32,7 +33,7 @@ import { CommonModule } from "@angular/common";
             (click)="close.emit()"
             class="p-2 text-slate-400 hover:text-red-500 transition-colors rounded-full hover:bg-red-50"
           >
-            <span class="material-symbols-outlined font-light">close</span>
+            <lucide-icon [img]="icons.X" class="w-5 h-5"></lucide-icon>
           </button>
         </div>
 
@@ -152,6 +153,9 @@ import { CommonModule } from "@angular/common";
   ],
 })
 export class SizeGuideComponent {
+  readonly icons = {
+    X,
+  };
   @Output() close = new EventEmitter<void>();
 
   unit: "cm" | "in" = "in";

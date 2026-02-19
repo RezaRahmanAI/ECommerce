@@ -36,7 +36,7 @@
         type="button"
         (click)="saveChanges()"
       >
-        <span class="material-symbols-outlined text-[18px]">save</span>
+        <lucide-icon [img]="icons.Save" class="w-4.5 h-4.5"></lucide-icon>
         Save Changes
       </button>
     </div>
@@ -97,18 +97,18 @@
                       />
                     </ng-container>
                     <ng-template #logoPlaceholder>
-                      <span
-                        class="material-symbols-outlined text-4xl text-text-secondary group-hover:hidden"
-                      >
-                        image
-                      </span>
+                      <lucide-icon
+                        [img]="icons.Image"
+                        class="w-10 h-10 text-text-secondary group-hover:hidden"
+                      ></lucide-icon>
                     </ng-template>
                     <div
                       class="absolute inset-0 bg-black/50 hidden group-hover:flex items-center justify-center cursor-pointer"
                     >
-                      <span class="material-symbols-outlined text-white"
-                        >edit</span
-                      >
+                      <lucide-icon
+                        [img]="icons.Edit"
+                        class="w-5 h-5 text-white"
+                      ></lucide-icon>
                     </div>
                   </div>
                   <div class="flex-1">
@@ -117,11 +117,10 @@
                       (click)="triggerLogoUpload()"
                     >
                       <div class="space-y-1 text-center">
-                        <span
-                          class="material-symbols-outlined text-text-secondary text-3xl mx-auto mb-2"
-                        >
-                          cloud_upload
-                        </span>
+                        <lucide-icon
+                          [img]="icons.Upload"
+                          class="w-8 h-8 text-text-secondary mx-auto mb-2"
+                        ></lucide-icon>
                         <div class="flex text-sm text-text-secondary">
                           <label
                             class="relative cursor-pointer rounded-md font-medium text-primary focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-primary"
@@ -438,9 +437,10 @@
                     type="button"
                     (click)="copyStripeKey()"
                   >
-                    <span class="material-symbols-outlined text-[16px]"
-                      >content_copy</span
-                    >
+                    <lucide-icon
+                      [img]="icons.Copy"
+                      class="w-4 h-4"
+                    ></lucide-icon>
                   </button>
                 </div>
                 <p *ngIf="copiedKey" class="mt-1 text-xs text-green-600">
@@ -506,7 +506,7 @@
               type="button"
               (click)="startAddDelivery()"
             >
-              <span class="material-symbols-outlined text-sm">add</span>
+              <lucide-icon [img]="icons.Plus" class="w-3.5 h-3.5"></lucide-icon>
               Add Method
             </button>
           </div>
@@ -575,17 +575,19 @@
                         class="p-1.5 text-text-secondary hover:text-primary transition-colors"
                         (click)="editDelivery(method)"
                       >
-                        <span class="material-symbols-outlined text-sm"
-                          >edit</span
-                        >
+                        <lucide-icon
+                          [img]="icons.Edit"
+                          class="w-4 h-4"
+                        ></lucide-icon>
                       </button>
                       <button
                         class="p-1.5 text-text-secondary hover:text-red-600 transition-colors"
                         (click)="deleteDelivery(method)"
                       >
-                        <span class="material-symbols-outlined text-sm"
-                          >delete</span
-                        >
+                        <lucide-icon
+                          [img]="icons.Trash2"
+                          class="w-4 h-4"
+                        ></lucide-icon>
                       </button>
                     </div>
                   </td>
@@ -628,7 +630,7 @@
               class="text-text-secondary hover:text-text-main transition-colors"
               (click)="closeDeliveryForm()"
             >
-              <span class="material-symbols-outlined">close</span>
+              <lucide-icon [img]="icons.X" class="w-5 h-5"></lucide-icon>
             </button>
           </div>
           <div class="p-6 space-y-4">

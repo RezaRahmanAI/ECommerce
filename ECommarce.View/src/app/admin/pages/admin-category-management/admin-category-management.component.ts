@@ -11,6 +11,26 @@ import {
 } from "../../models/categories.models";
 import { CategoriesService } from "../../services/categories.service";
 import { environment } from "../../../../environments/environment";
+import {
+  LucideAngularModule,
+  Search,
+  Plus,
+  ChevronRight,
+  ChevronDown,
+  ChevronUp,
+  Edit,
+  Trash2,
+  Save,
+  X,
+  Image,
+  Folder,
+  Tag,
+  Link,
+  Check,
+  Upload,
+  GripVertical,
+  AlertCircle,
+} from "lucide-angular";
 
 interface ParentOption {
   id: string | null;
@@ -20,10 +40,34 @@ interface ParentOption {
 @Component({
   selector: "app-admin-category-management",
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    RouterModule,
+    LucideAngularModule,
+  ],
   templateUrl: "./admin-category-management.component.html",
 })
 export class AdminCategoryManagementComponent implements OnInit, OnDestroy {
+  readonly icons = {
+    Search,
+    Plus,
+    ChevronRight,
+    ChevronDown,
+    ChevronUp,
+    Edit,
+    Trash2,
+    Save,
+    X,
+    Image,
+    Folder,
+    Tag,
+    Link,
+    Check,
+    Upload,
+    GripVertical,
+    AlertCircle,
+  };
   private categoriesService = inject(CategoriesService);
   private formBuilder = inject(FormBuilder);
   private route = inject(ActivatedRoute);

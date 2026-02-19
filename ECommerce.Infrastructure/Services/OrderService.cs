@@ -67,6 +67,7 @@ public class OrderService : IOrderService
         }
 
         var subtotal = items.Sum(i => i.TotalPrice);
+        decimal shippingCost = 0;
         // Lookup delivery method if provided
         if (orderDto.DeliveryMethodId.HasValue)
         {

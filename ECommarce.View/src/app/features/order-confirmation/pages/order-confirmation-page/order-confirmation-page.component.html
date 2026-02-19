@@ -6,9 +6,10 @@
     <div
       class="w-16 h-16 rounded-full bg-accent mb-6 flex items-center justify-center animate-pulse"
     >
-      <span class="material-symbols-outlined text-primary text-[32px] font-bold"
-        >check</span
-      >
+      <lucide-icon
+        [img]="icons.CheckCircle2"
+        class="text-primary w-8 h-8 font-bold"
+      ></lucide-icon>
     </div>
     <h1 class="text-3xl md:text-4xl font-bold mb-3">
       Thank you for your order!
@@ -28,9 +29,7 @@
         type="button"
         [routerLink]="['/track', order.id]"
       >
-        <span class="material-symbols-outlined text-[20px]"
-          >local_shipping</span
-        >
+        <lucide-icon [img]="icons.Truck" class="w-5 h-5"></lucide-icon>
         Track Order
       </button>
       <button
@@ -46,7 +45,7 @@
     <div class="min-w-[600px] flex items-center justify-between px-4">
       <div class="flex flex-col items-center relative group">
         <div [class]="stepIconClasses(order, OrderStatus.Confirmed)">
-          <span class="material-symbols-outlined text-[20px]">check</span>
+          <lucide-icon [img]="icons.CheckCircle2" class="w-5 h-5"></lucide-icon>
         </div>
         <p [ngClass]="stepLabelClasses(order, OrderStatus.Confirmed)">
           Confirmed
@@ -55,7 +54,7 @@
       <div [class]="connectorClasses(order, 0)"></div>
       <div class="flex flex-col items-center relative group">
         <div [class]="stepIconClasses(order, OrderStatus.Processing)">
-          <span class="material-symbols-outlined text-[20px]">inventory_2</span>
+          <lucide-icon [img]="icons.Package" class="w-5 h-5"></lucide-icon>
         </div>
         <p [ngClass]="stepLabelClasses(order, OrderStatus.Processing)">
           Processing
@@ -64,16 +63,14 @@
       <div [class]="connectorClasses(order, 1)"></div>
       <div class="flex flex-col items-center relative group">
         <div [class]="stepIconClasses(order, OrderStatus.Shipped)">
-          <span class="material-symbols-outlined text-[20px]"
-            >local_shipping</span
-          >
+          <lucide-icon [img]="icons.Truck" class="w-5 h-5"></lucide-icon>
         </div>
         <p [ngClass]="stepLabelClasses(order, OrderStatus.Shipped)">Shipped</p>
       </div>
       <div [class]="connectorClasses(order, 2)"></div>
       <div class="flex flex-col items-center relative group">
         <div [class]="stepIconClasses(order, OrderStatus.Delivered)">
-          <span class="material-symbols-outlined text-[20px]">home</span>
+          <lucide-icon [img]="icons.Home" class="w-5 h-5"></lucide-icon>
         </div>
         <p [ngClass]="stepLabelClasses(order, OrderStatus.Delivered)">
           Delivered
@@ -139,7 +136,7 @@
           <div
             class="w-10 h-10 rounded-full bg-white text-primary flex items-center justify-center shadow-sm"
           >
-            <span class="material-symbols-outlined">support_agent</span>
+            <lucide-icon [img]="icons.Headphones" class="w-5 h-5"></lucide-icon>
           </div>
           <div>
             <p class="font-semibold text-primary">Need help with your order?</p>
@@ -161,9 +158,10 @@
         class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6"
       >
         <h3 class="font-bold text-lg mb-4 flex items-center gap-2">
-          <span class="material-symbols-outlined text-gray-400"
-            >local_shipping</span
-          >
+          <lucide-icon
+            [img]="icons.Truck"
+            class="text-gray-400 w-5 h-5"
+          ></lucide-icon>
           Delivery Details
         </h3>
         <div class="space-y-4">
@@ -204,9 +202,10 @@
         class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6"
       >
         <h3 class="font-bold text-lg mb-4 flex items-center gap-2">
-          <span class="material-symbols-outlined text-gray-400"
-            >receipt_long</span
-          >
+          <lucide-icon
+            [img]="icons.FileText"
+            class="text-gray-400 w-5 h-5"
+          ></lucide-icon>
           Order Totals
         </h3>
         <div class="space-y-2">
@@ -254,7 +253,7 @@
         class="w-full py-3 text-primary text-sm font-semibold hover:underline flex items-center justify-center gap-1"
         type="button"
       >
-        <span class="material-symbols-outlined text-[18px]">print</span>
+        <lucide-icon [img]="icons.Printer" class="w-4.5 h-4.5"></lucide-icon>
         Print Invoice
       </button>
     </div>

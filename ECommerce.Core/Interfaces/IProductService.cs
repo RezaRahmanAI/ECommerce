@@ -8,6 +8,7 @@ namespace ECommerce.Core.Interfaces;
 public interface IProductService
 {
     Task<ProductDto> GetProductBySlugAsync(string slug);
+    Task<ProductDto> GetProductByIdAsync(int id);
 
     Task<ProductDto> CreateProductAsync(ProductCreateDto dto);
     Task<ProductDto> UpdateProductAsync(int id, ProductUpdateDto dto);

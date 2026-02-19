@@ -7,14 +7,40 @@ import {
   AdminCustomersService,
   Customer,
 } from "../../services/admin-customers.service";
+import {
+  LucideAngularModule,
+  Search,
+  Download,
+  ShieldAlert,
+  Users,
+  ChevronLeft,
+  ChevronRight,
+  MoreVertical,
+  Eye,
+} from "lucide-angular";
 
 @Component({
   selector: "app-admin-customers",
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    RouterModule,
+    LucideAngularModule,
+  ],
   templateUrl: "./admin-customers.component.html",
 })
 export class AdminCustomersComponent implements OnInit {
+  readonly icons = {
+    Search,
+    Download,
+    ShieldAlert,
+    Users,
+    ChevronLeft,
+    ChevronRight,
+    MoreVertical,
+    Eye,
+  };
   private customersService = inject(AdminCustomersService);
 
   searchControl = new FormControl("", { nonNullable: true });

@@ -1,16 +1,18 @@
-import { CommonModule } from '@angular/common';
-import { Component, OnDestroy, OnInit, inject } from '@angular/core';
-import { FormControl, ReactiveFormsModule } from '@angular/forms';
-import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
-import { filter, map, startWith, Subject, takeUntil } from 'rxjs';
+import { CommonModule } from "@angular/common";
+import { Component, OnDestroy, OnInit, inject } from "@angular/core";
+import { FormControl, ReactiveFormsModule } from "@angular/forms";
+import { ActivatedRoute, NavigationEnd, Router } from "@angular/router";
+import { filter, map, startWith, Subject, takeUntil } from "rxjs";
+import { LucideAngularModule, Search, Bell } from "lucide-angular";
 
 @Component({
-  selector: 'app-admin-header',
+  selector: "app-admin-header",
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
-  templateUrl: './admin-header.component.html',
+  imports: [CommonModule, ReactiveFormsModule, LucideAngularModule],
+  templateUrl: "./admin-header.component.html",
 })
 export class AdminHeaderComponent implements OnInit, OnDestroy {
+  readonly icons = { Search, Bell };
   private router = inject(Router);
   private activatedRoute = inject(ActivatedRoute);
 
@@ -20,14 +22,16 @@ export class AdminHeaderComponent implements OnInit, OnDestroy {
     map(() => this.resolveTitle(this.activatedRoute)),
   );
 
-  searchControl = new FormControl('', { nonNullable: true });
+  searchControl = new FormControl("", { nonNullable: true });
   private destroy$ = new Subject<void>();
 
   ngOnInit(): void {
-    this.searchControl.valueChanges.pipe(takeUntil(this.destroy$)).subscribe((value) => {
-      // eslint-disable-next-line no-console
-      console.log('Admin search:', value);
-    });
+    this.searchControl.valueChanges
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((value) => {
+        // eslint-disable-next-line no-console
+        console.log("Admin search:", value);
+      });
   }
 
   ngOnDestroy(): void {
@@ -38,12 +42,12 @@ export class AdminHeaderComponent implements OnInit, OnDestroy {
   private resolveTitle(route: ActivatedRoute): string {
     let currentRoute: ActivatedRoute | null = route.firstChild;
     while (currentRoute) {
-      const title = currentRoute.snapshot.data['title'] as string | undefined;
+      const title = currentRoute.snapshot.data["title"] as string | undefined;
       if (title) {
         return title;
       }
       currentRoute = currentRoute.firstChild;
     }
-    return 'Dashboard Overview';
+    return "Dashboard Overview";
   }
 }

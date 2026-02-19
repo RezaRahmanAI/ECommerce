@@ -88,6 +88,11 @@ builder.Services.AddScoped<ECommerce.Core.Interfaces.IReviewService, ECommerce.I
 builder.Services.AddHttpContextAccessor(); // Add HttpContextAccessor
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
+// Steadfast Courier
+builder.Services.Configure<ECommerce.Infrastructure.Services.SteadfastSettings>(builder.Configuration.GetSection("Steadfast"));
+builder.Services.AddHttpClient<ECommerce.Core.Interfaces.ISteadfastService, ECommerce.Infrastructure.Services.SteadfastService>();
+builder.Services.AddHostedService<ECommerce.Infrastructure.Services.SteadfastWorker>();
+
 // CORS - Environment-specific configuration
 var allowedOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>() 
     ?? new[] { "http://localhost:4200" };

@@ -43,7 +43,7 @@ export interface ProductCreatePayload {
   purchaseRate: number;
 
   newArrival: boolean;
-  isPopupOffer: boolean;
+
   statusActive: boolean;
 
   media: {
@@ -85,6 +85,13 @@ export interface ProductCreatePayload {
     average: number;
     count: number;
   };
+
+  // New Fields
+  tier?: string;
+  tags?: string;
+  sortOrder?: number;
+  subCategoryId?: number | null;
+  collectionId?: number | null;
 }
 
 export interface ProductUpdatePayload {
@@ -97,7 +104,7 @@ export interface ProductUpdatePayload {
   purchaseRate: number;
 
   newArrival: boolean;
-  isPopupOffer: boolean;
+
   statusActive: boolean;
 
   media: {
@@ -134,6 +141,13 @@ export interface ProductUpdatePayload {
     fabricAndCare: string;
     shippingAndReturns: string;
   };
+
+  // New Fields
+  tier?: string;
+  tags?: string;
+  sortOrder?: number;
+  subCategoryId?: number | null;
+  collectionId?: number | null;
 }
 
 export type ProductsStatusTab = "All Items" | "Active" | "Drafts" | "Archived";

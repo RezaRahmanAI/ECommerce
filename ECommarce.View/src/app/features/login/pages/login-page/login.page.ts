@@ -1,35 +1,56 @@
-import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router, RouterModule } from '@angular/router';
-import { finalize, take } from 'rxjs';
+import { CommonModule } from "@angular/common";
+import { Component, OnInit, inject } from "@angular/core";
+import { FormBuilder, ReactiveFormsModule, Validators } from "@angular/forms";
+import { Router, RouterModule } from "@angular/router";
+import { finalize, take } from "rxjs";
 
-import { AuthStateService } from '../../../../core/services/auth-state.service';
+import { AuthStateService } from "../../../../core/services/auth-state.service";
+
+import {
+  LucideAngularModule,
+  Mail,
+  Lock,
+  Eye,
+  EyeOff,
+  ArrowRight,
+} from "lucide-angular";
 
 @Component({
-  selector: 'app-login-page',
+  selector: "app-login-page",
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule],
-  templateUrl: './login.page.html',
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    RouterModule,
+    LucideAngularModule,
+  ],
+  templateUrl: "./login.page.html",
 })
 export class LoginPageComponent implements OnInit {
+  readonly icons = {
+    Mail,
+    Lock,
+    Eye,
+    EyeOff,
+    ArrowRight,
+  };
   private readonly formBuilder = inject(FormBuilder);
   private readonly authState = inject(AuthStateService);
   private readonly router = inject(Router);
 
   readonly loginForm = this.formBuilder.nonNullable.group({
-    email: ['', [Validators.required, Validators.email]],
-    password: ['', [Validators.required, Validators.minLength(6)]],
+    email: ["", [Validators.required, Validators.email]],
+    password: ["", [Validators.required, Validators.minLength(6)]],
     rememberMe: false,
   });
 
   isPasswordVisible = false;
   isLoading = false;
-  errorMessage = '';
+  errorMessage = "";
 
   ngOnInit(): void {
     if (this.authState.getSessionSnapshot()) {
-      void this.router.navigateByUrl('/admin/dashboard');
+      void this.router.navigateByUrl("/admin/dashboard");
     }
   }
 
@@ -52,7 +73,7 @@ export class LoginPageComponent implements OnInit {
     }
 
     this.isLoading = true;
-    this.errorMessage = '';
+    this.errorMessage = "";
 
     const { email, password, rememberMe } = this.loginForm.getRawValue();
 
@@ -66,10 +87,10 @@ export class LoginPageComponent implements OnInit {
       )
       .subscribe({
         next: (session) => {
-          void this.router.navigateByUrl('/admin/dashboard');
+          void this.router.navigateByUrl("/admin/dashboard");
         },
         error: (error: Error) => {
-          this.errorMessage = error.message || 'Invalid credentials';
+          this.errorMessage = error.message || "Invalid credentials";
         },
       });
   }

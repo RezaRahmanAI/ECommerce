@@ -8,14 +8,47 @@ import { PriceDisplayComponent } from "../../../../shared/components/price-displ
 
 import { ImageUrlService } from "../../../../core/services/image-url.service";
 
+import {
+  LucideAngularModule,
+  LayoutGrid,
+  Filter,
+  Shirt,
+  Trophy,
+  Gem,
+  ShoppingBag,
+  Sliders,
+  ChevronDown,
+  Package,
+  Heart,
+  ShoppingCart,
+} from "lucide-angular";
+
 @Component({
   selector: "app-accessories-page",
   standalone: true,
-  imports: [CommonModule, RouterLink, PriceDisplayComponent],
+  imports: [
+    CommonModule,
+    RouterLink,
+    PriceDisplayComponent,
+    LucideAngularModule,
+  ],
   templateUrl: "./accessories-page.component.html",
   styleUrl: "./accessories-page.component.css",
 })
 export class AccessoriesPageComponent implements OnInit {
+  readonly icons: any = {
+    LayoutGrid,
+    Filter,
+    Shirt,
+    Trophy,
+    Gem,
+    ShoppingBag,
+    Sliders,
+    ChevronDown,
+    Package,
+    Heart,
+    ShoppingCart,
+  };
   products: Product[] = [];
 
   constructor(

@@ -23,14 +23,40 @@ import {
 import { AdminDashboardService } from "../../services/admin-dashboard.service";
 import { PriceDisplayComponent } from "../../../shared/components/price-display/price-display.component";
 import { ImageUrlService } from "../../../core/services/image-url.service";
+import {
+  LucideAngularModule,
+  Receipt,
+  Eye,
+  CreditCard,
+  Truck,
+  Clock,
+  Package,
+  Users,
+  RotateCcw,
+} from "lucide-angular";
 
 @Component({
   selector: "app-dashboard-overview",
   standalone: true,
-  imports: [CommonModule, RouterModule, PriceDisplayComponent],
+  imports: [
+    CommonModule,
+    RouterModule,
+    PriceDisplayComponent,
+    LucideAngularModule,
+  ],
   templateUrl: "./dashboard-overview.component.html",
 })
 export class DashboardOverviewComponent {
+  readonly icons = {
+    Receipt,
+    Eye,
+    CreditCard,
+    Truck,
+    Clock,
+    Package,
+    Users,
+    RotateCcw,
+  };
   private adminDashboardService = inject(AdminDashboardService);
   readonly imageUrlService = inject(ImageUrlService);
   private readonly destroyRef = inject(DestroyRef);

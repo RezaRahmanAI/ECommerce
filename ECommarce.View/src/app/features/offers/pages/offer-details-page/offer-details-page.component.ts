@@ -33,6 +33,8 @@ const OFFERS: OfferDetails[] = [
 
 import { ImageUrlService } from "../../../../core/services/image-url.service";
 
+import { LucideAngularModule, X } from "lucide-angular";
+
 @Component({
   selector: "app-offer-details-page",
   standalone: true,
@@ -41,11 +43,15 @@ import { ImageUrlService } from "../../../../core/services/image-url.service";
     ReactiveFormsModule,
     RouterModule,
     PriceDisplayComponent,
+    LucideAngularModule,
   ],
   templateUrl: "./offer-details-page.component.html",
   styleUrl: "./offer-details-page.component.css",
 })
 export class OfferDetailsPageComponent {
+  readonly icons = {
+    X,
+  };
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly formBuilder = inject(FormBuilder);

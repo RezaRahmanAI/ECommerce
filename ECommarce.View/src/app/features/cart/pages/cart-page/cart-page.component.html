@@ -99,9 +99,10 @@
                   type="button"
                   (click)="removeItem(item)"
                 >
-                  <span class="material-symbols-outlined text-[20px]"
-                    >delete</span
-                  >
+                  <lucide-icon
+                    [img]="icons.Trash2"
+                    class="w-4 h-4"
+                  ></lucide-icon>
                 </button>
               </div>
               <div class="flex justify-between items-end mt-4 sm:mt-0">
@@ -114,7 +115,10 @@
                       type="button"
                       (click)="decreaseQuantity(item)"
                     >
-                      -
+                      <lucide-icon
+                        [img]="icons.Minus"
+                        class="w-3.5 h-3.5"
+                      ></lucide-icon>
                     </button>
                     <input
                       class="w-8 h-8 text-center bg-transparent border-none p-0 text-sm font-medium focus:ring-0 text-primary dark:text-white"
@@ -127,7 +131,10 @@
                       type="button"
                       (click)="increaseQuantity(item)"
                     >
-                      +
+                      <lucide-icon
+                        [img]="icons.Plus"
+                        class="w-3.5 h-3.5"
+                      ></lucide-icon>
                     </button>
                   </div>
                 </div>
@@ -238,16 +245,17 @@
               type="button"
               routerLink="/checkout"
             >
-              <span class="material-symbols-outlined">lock</span>
+              <lucide-icon [img]="icons.Lock" class="w-4 h-4"></lucide-icon>
               Proceed to Checkout
             </button>
             <div class="mt-6 flex flex-col gap-3">
               <div
                 class="flex items-center justify-center gap-2 text-xs text-slate-500 dark:text-slate-400"
               >
-                <span class="material-symbols-outlined text-sm text-green-600"
-                  >verified_user</span
-                >
+                <lucide-icon
+                  [img]="icons.Lock"
+                  class="w-3 h-3 text-green-600"
+                ></lucide-icon>
                 Secure SSL Encryption
               </div>
               <div
@@ -284,10 +292,10 @@
                 class="flex items-center justify-between cursor-pointer list-none text-sm font-medium text-slate-700 dark:text-slate-300"
               >
                 <span>Have a promo code?</span>
-                <span
-                  class="material-symbols-outlined transition-transform group-open:rotate-180"
-                  >keyboard_arrow_down</span
-                >
+                <lucide-icon
+                  class="transition-transform group-open:rotate-180 w-4 h-4"
+                  [img]="icons.ChevronDown"
+                ></lucide-icon>
               </summary>
               <div class="mt-4 flex gap-2">
                 <input

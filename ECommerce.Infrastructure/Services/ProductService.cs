@@ -35,6 +35,17 @@ public class ProductService : IProductService
 
 
 
+
+    public async Task<ProductDto> GetProductByIdAsync(int id)
+    {
+        var spec = new ProductsWithCategoriesSpecification(id);
+        var product = await _unitOfWork.Repository<Product>().GetEntityWithSpec(spec);
+
+        if (product == null) return null;
+
+        return _mapper.Map<Product, ProductDto>(product);
+    }
+
     public async Task<ProductDto> CreateProductAsync(ProductCreateDto dto)
     {
         var categorySpec = new CategoriesWithSubCategoriesSpec(dto.Category);
@@ -58,7 +69,14 @@ public class ProductService : IProductService
             Slug = GenerateSlug(dto.Name),
             Sku = $"PRD-{DateTime.UtcNow.Ticks}",
             FabricAndCare = dto.Meta?.FabricAndCare,
-            ShippingAndReturns = dto.Meta?.ShippingAndReturns
+            ShippingAndReturns = dto.Meta?.ShippingAndReturns,
+
+            // New fields
+            Tier = dto.Tier,
+            Tags = dto.Tags,
+            SortOrder = dto.SortOrder,
+            SubCategoryId = dto.SubCategoryId,
+            CollectionId = dto.CollectionId
         };
 
         _unitOfWork.Repository<Product>().Add(product);
@@ -130,6 +148,13 @@ public class ProductService : IProductService
         product.FabricAndCare = dto.Meta?.FabricAndCare;
         product.ShippingAndReturns = dto.Meta?.ShippingAndReturns;
 
+        // New fields
+        product.Tier = dto.Tier;
+        product.Tags = dto.Tags;
+        product.SortOrder = dto.SortOrder;
+        product.SubCategoryId = dto.SubCategoryId;
+        product.CollectionId = dto.CollectionId;
+
         // Sync images
         foreach (var img in product.Images.ToList())
         {
@@ -174,6 +199,9 @@ public class ProductService : IProductService
                 Size = v.Label
             });
         }
+
+        // Recalculate total stock from variants
+        product.StockQuantity = dto.InventoryVariants.Sum(v => v.Inventory);
 
         _unitOfWork.Repository<Product>().Update(product);
         await _unitOfWork.Complete();

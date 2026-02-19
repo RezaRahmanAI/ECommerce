@@ -12,9 +12,10 @@
         class="flex items-center gap-2 text-sm text-text-secondary-light dark:text-text-secondary-dark mb-1"
       >
         <span>Products</span>
-        <span class="material-symbols-outlined" style="font-size: 14px"
-          >chevron_right</span
-        >
+        <lucide-icon
+          [img]="icons.ChevronRight"
+          class="w-3.5 h-3.5"
+        ></lucide-icon>
         <span
           class="font-medium text-text-main-light dark:text-text-main-dark"
           >{{ isEditMode ? "Edit" : "Add New" }}</span
@@ -38,9 +39,7 @@
         class="flex h-10 items-center justify-center gap-2 rounded-lg bg-primary px-6 text-sm font-bold text-white hover:bg-[#083a4a] shadow-lg shadow-primary/20"
         type="submit"
       >
-        <span class="material-symbols-outlined" style="font-size: 20px"
-          >check</span
-        >
+        <lucide-icon [img]="icons.Check" class="w-5 h-5"></lucide-icon>
         {{ isEditMode ? "Update Product" : "Save Product" }}
       </button>
     </div>
@@ -86,31 +85,25 @@
                   class="p-1 text-text-secondary-light hover:text-primary"
                   type="button"
                 >
-                  <span
-                    class="material-symbols-outlined"
-                    style="font-size: 20px"
-                    >format_bold</span
-                  >
+                  <lucide-icon [img]="icons.Bold" class="w-5 h-5"></lucide-icon>
                 </button>
                 <button
                   class="p-1 text-text-secondary-light hover:text-primary"
                   type="button"
                 >
-                  <span
-                    class="material-symbols-outlined"
-                    style="font-size: 20px"
-                    >format_italic</span
-                  >
+                  <lucide-icon
+                    [img]="icons.Italic"
+                    class="w-5 h-5"
+                  ></lucide-icon>
                 </button>
                 <button
                   class="p-1 text-text-secondary-light hover:text-primary"
                   type="button"
                 >
-                  <span
-                    class="material-symbols-outlined"
-                    style="font-size: 20px"
-                    >format_underlined</span
-                  >
+                  <lucide-icon
+                    [img]="icons.Underline"
+                    class="w-5 h-5"
+                  ></lucide-icon>
                 </button>
                 <div
                   class="mx-1 h-4 w-px bg-border-light dark:bg-border-dark"
@@ -119,21 +112,13 @@
                   class="p-1 text-text-secondary-light hover:text-primary"
                   type="button"
                 >
-                  <span
-                    class="material-symbols-outlined"
-                    style="font-size: 20px"
-                    >format_list_bulleted</span
-                  >
+                  <lucide-icon [img]="icons.List" class="w-5 h-5"></lucide-icon>
                 </button>
                 <button
                   class="p-1 text-text-secondary-light hover:text-primary"
                   type="button"
                 >
-                  <span
-                    class="material-symbols-outlined"
-                    style="font-size: 20px"
-                    >link</span
-                  >
+                  <lucide-icon [img]="icons.Link" class="w-5 h-5"></lucide-icon>
                 </button>
               </div>
               <textarea
@@ -178,11 +163,10 @@
             <div
               class="mb-3 rounded-full bg-surface-light dark:bg-surface-dark p-3 shadow-sm"
             >
-              <span
-                class="material-symbols-outlined text-primary"
-                style="font-size: 32px"
-                >cloud_upload</span
-              >
+              <lucide-icon
+                [img]="icons.Upload"
+                class="w-8 h-8 text-primary"
+              ></lucide-icon>
             </div>
             <p
               class="text-sm font-medium text-text-main-light dark:text-text-main-dark"
@@ -230,9 +214,10 @@
                   *ngIf="media.get('type')?.value === 'video'"
                   class="absolute inset-0 flex items-center justify-center bg-black/40"
                 >
-                  <span class="material-symbols-outlined text-white"
-                    >play_circle</span
-                  >
+                  <lucide-icon
+                    [img]="icons.PlayCircle"
+                    class="w-10 h-10 text-white"
+                  ></lucide-icon>
                 </div>
               </div>
               <div class="flex-1 grid gap-3 sm:grid-cols-2">
@@ -347,9 +332,10 @@
                 type="button"
                 (click)="addColor()"
               >
-                <span class="material-symbols-outlined" style="font-size: 20px"
-                  >add_circle</span
-                >
+                <lucide-icon
+                  [img]="icons.PlusCircle"
+                  class="w-5 h-5"
+                ></lucide-icon>
                 Add color
               </button>
             </div>
@@ -361,7 +347,45 @@
               *ngFor="let color of colorsArray.controls; let colorIndex = index"
               [formGroupName]="colorIndex"
             >
-              <!-- ... -->
+              <div class="grid gap-3 sm:grid-cols-[1fr_1fr_0.5fr]">
+                <label
+                  class="flex flex-col gap-1 text-xs font-medium text-text-secondary-light uppercase"
+                >
+                  Name
+                  <input
+                    class="rounded-lg border border-border-light dark:border-border-dark bg-white dark:bg-black/20 px-3 py-2 text-sm text-text-main-light dark:text-text-main-dark"
+                    type="text"
+                    placeholder="e.g. Navy Blue"
+                    formControlName="name"
+                  />
+                </label>
+                <label
+                  class="flex flex-col gap-1 text-xs font-medium text-text-secondary-light uppercase"
+                >
+                  Hex Code
+                  <div class="flex items-center gap-2">
+                    <input
+                      class="h-9 w-12 cursor-pointer rounded-lg border border-border-light dark:border-border-dark p-0.5"
+                      type="color"
+                      formControlName="hex"
+                    />
+                    <input
+                      class="w-full rounded-lg border border-border-light dark:border-border-dark bg-white dark:bg-black/20 px-3 py-2 text-sm text-text-main-light dark:text-text-main-dark uppercase"
+                      type="text"
+                      formControlName="hex"
+                    />
+                  </div>
+                </label>
+                <div class="flex items-end pb-1">
+                  <button
+                    class="text-xs font-semibold text-red-500 hover:underline"
+                    type="button"
+                    (click)="removeColor(colorIndex)"
+                  >
+                    Remove
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -383,9 +407,10 @@
                 type="button"
                 (click)="addSize()"
               >
-                <span class="material-symbols-outlined" style="font-size: 20px"
-                  >add_circle</span
-                >
+                <lucide-icon
+                  [img]="icons.PlusCircle"
+                  class="w-5 h-5"
+                ></lucide-icon>
                 Add size
               </button>
             </div>
@@ -523,29 +548,12 @@
             ></div>
           </label>
         </div>
-        <div class="flex items-center justify-between mb-4">
-          <span
-            class="text-sm font-medium text-text-main-light dark:text-text-main-dark"
-            >Show in Pop-up Offer</span
-          >
-          <label class="relative inline-flex cursor-pointer items-center">
-            <input
-              class="peer sr-only"
-              type="checkbox"
-              formControlName="isPopupOffer"
-            />
-            <div
-              class="peer h-6 w-11 rounded-full bg-gray-200 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-primary peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none dark:bg-gray-700"
-            ></div>
-          </label>
-        </div>
+
         <div class="rounded-lg bg-accent/20 p-3">
           <p
             class="text-xs text-primary/80 font-medium flex items-center gap-2"
           >
-            <span class="material-symbols-outlined" style="font-size: 16px"
-              >visibility</span
-            >
+            <lucide-icon [img]="icons.Eye" class="w-4 h-4"></lucide-icon>
             This product will be visible on the store immediately upon saving.
           </p>
         </div>

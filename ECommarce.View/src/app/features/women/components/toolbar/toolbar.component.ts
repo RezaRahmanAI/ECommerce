@@ -1,9 +1,16 @@
-import { Component } from '@angular/core';
+import { Component } from "@angular/core";
+import { LucideAngularModule, X, ChevronDown } from "lucide-angular";
 
 @Component({
-  selector: 'app-women-toolbar',
+  selector: "app-women-toolbar",
   standalone: true,
-  templateUrl: './toolbar.component.html',
-  styleUrl: './toolbar.component.css',
+  imports: [LucideAngularModule],
+  templateUrl: "./toolbar.component.html",
+  styleUrl: "./toolbar.component.css",
 })
-export class WomenToolbarComponent {}
+export class WomenToolbarComponent {
+  readonly icons = {
+    X,
+    ChevronDown,
+  };
+}

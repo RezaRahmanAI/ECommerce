@@ -20,13 +20,23 @@ type BlogComment = {
   isAuthor?: boolean;
 };
 
+import { LucideAngularModule, Share2 } from "lucide-angular";
+
 @Component({
   selector: "app-blog-details",
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    RouterModule,
+    LucideAngularModule,
+  ],
   templateUrl: "./blog-details.component.html",
 })
 export class BlogDetailsComponent implements OnInit {
+  readonly icons = {
+    Share2,
+  };
   private readonly blogService = inject(BlogService);
   private readonly route = inject(ActivatedRoute);
   private readonly formBuilder = inject(FormBuilder);

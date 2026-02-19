@@ -6,13 +6,18 @@ import { ProductService } from "../../../../core/services/product.service";
 import { Product } from "../../../../core/models/product";
 import { ProductCardComponent } from "../../../../shared/components/product-card/product-card.component";
 
+import { LucideAngularModule, Package } from "lucide-angular";
+
 @Component({
   selector: "app-product-gallery",
   standalone: true,
-  imports: [CommonModule, ProductCardComponent],
+  imports: [CommonModule, ProductCardComponent, LucideAngularModule],
   templateUrl: "./product-gallery.component.html",
 })
 export class ProductGalleryComponent implements OnInit {
+  readonly icons = {
+    Package,
+  };
   private readonly route = inject(ActivatedRoute);
   private readonly productService = inject(ProductService);
 
@@ -47,7 +52,15 @@ export class ProductGalleryComponent implements OnInit {
     if (tags) filterParams.tags = tags;
 
     // Determine title based on what slug we have
-    if (
+    if (this.route.snapshot.url[0]?.path === "search") {
+      const searchTerm = queryParams["searchTerm"];
+      if (searchTerm) {
+        filterParams.searchTerm = searchTerm;
+        this.title = `Search Results for "${searchTerm}"`;
+      } else {
+        this.title = "Search Products";
+      }
+    } else if (
       categorySlug ||
       (this.route.snapshot.url[0]?.path === "category" && slug)
     ) {

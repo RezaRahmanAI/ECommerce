@@ -7,11 +7,18 @@ import {
   trigger,
   state,
 } from "@angular/animations";
+import {
+  LucideAngularModule,
+  Phone,
+  MessageSquare,
+  Plus,
+  X,
+} from "lucide-angular";
 
 @Component({
   selector: "app-contact-fab",
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, LucideAngularModule],
   animations: [
     trigger("famTrigger", [
       state("void", style({ transform: "scale(0)", opacity: 0 })),
@@ -70,7 +77,7 @@ import {
           [@optionTrigger]="{ value: '', params: { delay: 50 } }"
           class="w-12 h-12 flex items-center justify-center rounded-full bg-white/80 backdrop-blur-md shadow-lg hover:scale-110 transition-transform text-[#0e181b] border border-white/20"
         >
-          <span class="material-symbols-outlined text-[20px]">call</span>
+          <lucide-icon [img]="icons.Phone" class="w-5 h-5"></lucide-icon>
         </a>
 
         <!-- Chat/WhatsApp Option -->
@@ -80,7 +87,10 @@ import {
           [@optionTrigger]="{ value: '', params: { delay: 0 } }"
           class="w-12 h-12 flex items-center justify-center rounded-full bg-white/80 backdrop-blur-md shadow-lg hover:scale-110 transition-transform text-[#0e181b] border border-white/20"
         >
-          <span class="material-symbols-outlined text-[20px]">chat</span>
+          <lucide-icon
+            [img]="icons.MessageSquare"
+            class="w-5 h-5"
+          ></lucide-icon>
         </a>
       </div>
 
@@ -92,12 +102,11 @@ import {
         [class.bg-gray-100]="isOpen"
       >
         <!-- Close / Add Icon -->
-        <span
+        <lucide-icon
           *ngIf="isOpen"
-          class="material-symbols-outlined text-[28px] text-[#0e181b] rotate-45"
-        >
-          add
-        </span>
+          [img]="icons.Plus"
+          class="w-7 h-7 text-[#0e181b] rotate-45"
+        ></lucide-icon>
 
         <!-- Animated Dots -->
         <div *ngIf="!isOpen" class="flex items-center gap-1">
@@ -116,6 +125,12 @@ import {
   `,
 })
 export class ContactFabComponent {
+  readonly icons = {
+    Phone,
+    MessageSquare,
+    Plus,
+    X,
+  };
   isOpen = false;
 
   toggle() {

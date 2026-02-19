@@ -1,9 +1,22 @@
-import { Component } from '@angular/core';
+import { Component } from "@angular/core";
+import {
+  LucideAngularModule,
+  PenTool,
+  CheckCircle2,
+  Globe,
+} from "lucide-angular";
 
 @Component({
-  selector: 'app-why-choose-us',
+  selector: "app-why-choose-us",
   standalone: true,
-  templateUrl: './why-choose-us.component.html',
-  styleUrl: './why-choose-us.component.css',
+  imports: [LucideAngularModule],
+  templateUrl: "./why-choose-us.component.html",
+  styleUrl: "./why-choose-us.component.css",
 })
-export class WhyChooseUsComponent {}
+export class WhyChooseUsComponent {
+  readonly icons = {
+    PenTool,
+    CheckCircle2,
+    Globe,
+  };
+}

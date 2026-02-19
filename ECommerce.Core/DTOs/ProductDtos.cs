@@ -47,6 +47,13 @@ public class ProductCreateDto
     
     public ProductMetaDto Meta { get; set; } = new();
     public ProductRatingsDto Ratings { get; set; } = new();
+
+    // New Fields
+    public string? Tier { get; set; }
+    public string? Tags { get; set; }
+    public int SortOrder { get; set; }
+    public int? SubCategoryId { get; set; }
+    public int? CollectionId { get; set; }
 }
 
 // Product update DTO
@@ -93,6 +100,13 @@ public class ProductUpdateDto
     public List<ProductVariantEditDto> InventoryVariants { get; set; } = new();
     
     public ProductMetaDto Meta { get; set; } = new();
+
+    // New Fields
+    public string? Tier { get; set; }
+    public string? Tags { get; set; }
+    public int SortOrder { get; set; }
+    public int? SubCategoryId { get; set; }
+    public int? CollectionId { get; set; }
 }
 
 public class ProductVariantEditDto

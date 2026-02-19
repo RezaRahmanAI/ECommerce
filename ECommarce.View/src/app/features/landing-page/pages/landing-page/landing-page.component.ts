@@ -14,6 +14,18 @@ import {
   switchMap,
   tap,
 } from "rxjs";
+import {
+  LucideAngularModule,
+  Loader2,
+  ChevronLeft,
+  ChevronRight,
+  CheckCircle2,
+  Truck,
+  Lock,
+  ArrowRight,
+  Plus,
+  Minus,
+} from "lucide-angular";
 
 import { ProductService } from "../../../../core/services/product.service";
 import { Product } from "../../../../core/models/product";
@@ -33,11 +45,24 @@ import { PriceDisplayComponent } from "../../../../shared/components/price-displ
     ReactiveFormsModule,
     RouterModule,
     PriceDisplayComponent,
+    LucideAngularModule,
   ],
   templateUrl: "./landing-page.component.html",
   styleUrl: "./landing-page.component.css",
 })
 export class LandingPageComponent implements OnInit {
+  // ... existing code ...
+  readonly icons = {
+    Loader2,
+    ChevronLeft,
+    ChevronRight,
+    CheckCircle2,
+    Truck,
+    Lock,
+    ArrowRight,
+    Plus,
+    Minus,
+  };
   private readonly route = inject(ActivatedRoute);
   private readonly productService = inject(ProductService);
   private readonly cartService = inject(CartService);
@@ -164,6 +189,92 @@ export class LandingPageComponent implements OnInit {
       this.product.price * this.checkoutForm.controls.quantity.value;
     const shipping = this.selectedMethod?.cost ?? 0;
     return subtotal + shipping;
+  }
+
+  // UI Helpers matching ProductDetailsPageComponent
+  currentImageIndex = 0;
+
+  get gallery(): string[] {
+    if (!this.product) return [];
+    const images = this.product.images?.map((i) => i.imageUrl) ?? [];
+    let gallery = [];
+    if (this.product.imageUrl) {
+      gallery.push(this.product.imageUrl);
+    }
+    images.forEach((img) => {
+      if (img !== this.product?.imageUrl) {
+        gallery.push(img);
+      }
+    });
+    return gallery;
+  }
+
+  get uniqueColors(): { name: string; hex: string }[] {
+    if (!this.product) return [];
+    return Array.from(
+      new Set(this.product.images?.map((i) => i.color).filter(Boolean)),
+    ).map((color) => ({ name: color!, hex: "" }));
+  }
+
+  prevImage(): void {
+    const len = this.gallery.length;
+    if (len === 0) return;
+    this.currentImageIndex = (this.currentImageIndex - 1 + len) % len;
+  }
+
+  nextImage(): void {
+    const len = this.gallery.length;
+    if (len === 0) return;
+    this.currentImageIndex = (this.currentImageIndex + 1) % len;
+  }
+
+  goToImage(index: number): void {
+    this.currentImageIndex = index;
+  }
+
+  hasDiscount(product: Product): boolean {
+    return !!(
+      product.compareAtPrice &&
+      product.compareAtPrice > 0 &&
+      product.compareAtPrice > product.price
+    );
+  }
+
+  getDiscountPercentage(product: Product): number {
+    if (!this.hasDiscount(product)) return 0;
+    const discount = (product.compareAtPrice ?? 0) - product.price;
+    return Math.round((discount / (product.compareAtPrice ?? 1)) * 100);
+  }
+
+  getColorImage(color: string): string | null {
+    if (!this.product?.images) return null;
+    const img = this.product.images.find((i) => i.color === color);
+    return img ? this.imageUrlService.getImageUrl(img.imageUrl) : null;
+  }
+
+  selectColor(colorName: string): void {
+    this.checkoutForm.patchValue({ selectedColor: colorName });
+
+    // Switch image
+    const colorImage = this.product?.images.find((i) => i.color === colorName);
+    if (colorImage) {
+      const index = this.gallery.findIndex(
+        (url) => url === colorImage.imageUrl,
+      );
+      if (index !== -1) this.currentImageIndex = index;
+    }
+  }
+
+  increaseQuantity(): void {
+    const current = this.checkoutForm.controls.quantity.value;
+    this.checkoutForm.patchValue({ quantity: current + 1 });
+  }
+
+  decreaseQuantity(): void {
+    const current = this.checkoutForm.controls.quantity.value;
+    if (current > 1) {
+      this.checkoutForm.patchValue({ quantity: current - 1 });
+    }
   }
 
   placeOrder(): void {

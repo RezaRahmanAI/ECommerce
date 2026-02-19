@@ -12,6 +12,21 @@ import {
 import { ProductsService } from "../../services/products.service";
 import { PriceDisplayComponent } from "../../../shared/components/price-display/price-display.component";
 import { ImageUrlService } from "../../../core/services/image-url.service";
+import {
+  LucideAngularModule,
+  Plus,
+  Search,
+  Filter,
+  Download,
+  Edit,
+  Trash2,
+  ChevronLeft,
+  ChevronRight,
+  FileUp,
+  ChevronDown,
+  AlertTriangle,
+  Rocket,
+} from "lucide-angular";
 
 @Component({
   selector: "app-admin-products",
@@ -21,10 +36,25 @@ import { ImageUrlService } from "../../../core/services/image-url.service";
     ReactiveFormsModule,
     RouterModule,
     PriceDisplayComponent,
+    LucideAngularModule,
   ],
   templateUrl: "./admin-products.component.html",
 })
 export class AdminProductsComponent implements OnInit, OnDestroy {
+  readonly icons = {
+    Plus,
+    Search,
+    Filter,
+    Download,
+    Edit,
+    Trash2,
+    ChevronLeft,
+    ChevronRight,
+    FileUp,
+    ChevronDown,
+    AlertTriangle,
+    Rocket,
+  };
   private productsService = inject(ProductsService);
   readonly imageUrlService = inject(ImageUrlService);
   private destroy$ = new Subject<void>();

@@ -13,10 +13,12 @@ interface Slide {
   linkText: string;
 }
 
+import { LucideAngularModule, ArrowRight, ArrowLeft } from "lucide-angular";
+
 @Component({
   selector: "app-hero",
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, LucideAngularModule],
   templateUrl: "./hero.component.html",
   styleUrl: "./hero.component.css",
   animations: [
@@ -32,6 +34,10 @@ interface Slide {
   ],
 })
 export class HeroComponent implements OnInit, OnDestroy {
+  readonly icons = {
+    ArrowRight,
+    ArrowLeft,
+  };
   private bannerService = inject(BannerService);
   private imageUrlService = inject(ImageUrlService);
 

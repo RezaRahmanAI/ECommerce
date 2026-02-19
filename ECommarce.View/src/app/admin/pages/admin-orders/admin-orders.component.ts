@@ -9,6 +9,24 @@ import {
 import { FormControl, ReactiveFormsModule } from "@angular/forms";
 import { RouterModule } from "@angular/router";
 import { debounceTime, distinctUntilChanged, Subject, takeUntil } from "rxjs";
+import {
+  LucideAngularModule,
+  Printer,
+  Download,
+  ShoppingBag,
+  Package,
+  CreditCard,
+  RotateCcw,
+  Search,
+  ChevronDown,
+  Check,
+  MoreVertical,
+  Eye,
+  Forward,
+  XCircle,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-angular";
 
 import {
   Order,
@@ -33,10 +51,28 @@ interface OrderStats {
     ReactiveFormsModule,
     RouterModule,
     PriceDisplayComponent,
+    LucideAngularModule,
   ],
   templateUrl: "./admin-orders.component.html",
 })
 export class AdminOrdersComponent implements OnInit, OnDestroy {
+  readonly icons = {
+    Printer,
+    Download,
+    ShoppingBag,
+    Package,
+    CreditCard,
+    RotateCcw,
+    Search,
+    ChevronDown,
+    Check,
+    MoreVertical,
+    Eye,
+    Forward,
+    XCircle,
+    ChevronLeft,
+    ChevronRight,
+  };
   private ordersService = inject(OrdersService);
   private destroy$ = new Subject<void>();
 

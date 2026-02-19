@@ -5,14 +5,43 @@ import { Subject, takeUntil } from "rxjs";
 import { AdminBanner } from "../../models/banners.models";
 import { AdminBannersService } from "../../services/admin-banners.service";
 import { ImageUrlService } from "../../../core/services/image-url.service";
+import {
+  LucideAngularModule,
+  Plus,
+  Edit,
+  Trash2,
+  Image,
+  Monitor,
+  Smartphone,
+  Link,
+  Type,
+  ArrowUpDown,
+  X,
+  Upload,
+  Loader2,
+} from "lucide-angular";
 
 @Component({
   selector: "app-admin-banners",
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, LucideAngularModule],
   templateUrl: "./admin-banners.component.html",
 })
 export class AdminBannersComponent implements OnInit, OnDestroy {
+  readonly icons = {
+    Plus,
+    Edit,
+    Trash2,
+    Image,
+    Monitor,
+    Smartphone,
+    Link,
+    Type,
+    ArrowUpDown,
+    X,
+    Upload,
+    Loader2,
+  };
   private bannersService = inject(AdminBannersService);
   private fb = inject(FormBuilder);
   readonly imageUrlService = inject(ImageUrlService);

@@ -23,13 +23,38 @@ type InquiryTopic = {
   label: string;
 };
 
+import {
+  LucideAngularModule,
+  Mail,
+  Phone,
+  MapPin,
+  HelpCircle,
+  ArrowRight,
+  ChevronDown,
+  Store,
+} from "lucide-angular";
+
 @Component({
   selector: "app-contact",
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    RouterModule,
+    LucideAngularModule,
+  ],
   templateUrl: "./contact.component.html",
 })
 export class ContactComponent {
+  readonly icons = {
+    Mail,
+    Phone,
+    MapPin,
+    HelpCircle,
+    ArrowRight,
+    ChevronDown,
+    Store,
+  };
   supportEmail = "hello@sherashopbd24.com";
   phone = "+1 (555) 123-4567";
   phoneDial = "+15551234567";

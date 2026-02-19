@@ -53,6 +53,12 @@ export const appRoutes: Routes = [
   { path: "children", component: ChildrenProductsPageComponent },
   { path: "accessories", component: AccessoriesPageComponent },
   { path: "products", redirectTo: "women", pathMatch: "full" },
+  {
+    path: "search",
+    component: ProductGalleryComponent,
+    title: "Search Results",
+  },
+
   { path: "about", component: AboutComponent, title: "About Us" },
   { path: "contact", component: ContactComponent, title: "Contact" },
   {

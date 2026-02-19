@@ -1,9 +1,16 @@
-import { Component } from '@angular/core';
+import { Component } from "@angular/core";
+import { LucideAngularModule, ChevronLeft, ChevronRight } from "lucide-angular";
 
 @Component({
-  selector: 'app-women-pagination',
+  selector: "app-women-pagination",
   standalone: true,
-  templateUrl: './pagination.component.html',
-  styleUrl: './pagination.component.css',
+  imports: [LucideAngularModule],
+  templateUrl: "./pagination.component.html",
+  styleUrl: "./pagination.component.css",
 })
-export class WomenPaginationComponent {}
+export class WomenPaginationComponent {
+  readonly icons = {
+    ChevronLeft,
+    ChevronRight,
+  };
+}

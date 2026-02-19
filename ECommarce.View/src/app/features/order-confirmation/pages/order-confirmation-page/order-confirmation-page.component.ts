@@ -8,14 +8,39 @@ import { Order, OrderItem, OrderStatus } from "../../../../core/models/order";
 import { PriceDisplayComponent } from "../../../../shared/components/price-display/price-display.component";
 import { ImageUrlService } from "../../../../core/services/image-url.service";
 
+import {
+  LucideAngularModule,
+  CheckCircle2,
+  Truck,
+  Package,
+  Home,
+  Headphones,
+  FileText,
+  Printer,
+} from "lucide-angular";
+
 @Component({
   selector: "app-order-confirmation-page",
   standalone: true,
-  imports: [CommonModule, RouterModule, PriceDisplayComponent],
+  imports: [
+    CommonModule,
+    RouterModule,
+    PriceDisplayComponent,
+    LucideAngularModule,
+  ],
   templateUrl: "./order-confirmation-page.component.html",
   styleUrl: "./order-confirmation-page.component.css",
 })
 export class OrderConfirmationPageComponent {
+  readonly icons = {
+    CheckCircle2,
+    Truck,
+    Package,
+    Home,
+    Headphones,
+    FileText,
+    Printer,
+  };
   private readonly route = inject(ActivatedRoute);
   private readonly orderService = inject(OrderService);
   readonly imageUrlService = inject(ImageUrlService);

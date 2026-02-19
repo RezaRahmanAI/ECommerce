@@ -4,14 +4,37 @@ import { FormBuilder, ReactiveFormsModule, Validators } from "@angular/forms";
 import { Subject, takeUntil } from "rxjs";
 import { AdminReview } from "../../models/reviews.models";
 import { AdminReviewsService } from "../../services/admin-reviews.service";
+import {
+  LucideAngularModule,
+  Star,
+  User,
+  CheckCircle2,
+  ShoppingBag,
+  ThumbsUp,
+  Edit,
+  Trash2,
+  X,
+  MessageSquare,
+} from "lucide-angular";
 
 @Component({
   selector: "app-admin-reviews",
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, LucideAngularModule],
   templateUrl: "./admin-reviews.component.html",
 })
 export class AdminReviewsComponent implements OnInit, OnDestroy {
+  readonly icons = {
+    Star,
+    User,
+    CheckCircle2,
+    ShoppingBag,
+    ThumbsUp,
+    Edit,
+    Trash2,
+    X,
+    MessageSquare,
+  };
   private reviewsService = inject(AdminReviewsService);
   private fb = inject(FormBuilder);
   private destroy$ = new Subject<void>();
