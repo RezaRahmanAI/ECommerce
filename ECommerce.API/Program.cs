@@ -116,7 +116,8 @@ builder.Services.AddCors(options =>
             corsBuilder.WithOrigins(allowedOrigins)
                    .AllowAnyMethod()
                    .AllowAnyHeader()
-                   .AllowCredentials();
+                   .AllowCredentials()
+                   .SetIsOriginAllowedToAllowWildcardSubdomains();
         });
 });
 

@@ -1,7 +1,6 @@
-import { HttpClient } from "@angular/common/http";
 import { Injectable, inject } from "@angular/core";
 import { Observable } from "rxjs";
-import { environment } from "../../../environments/environment";
+import { ApiHttpClient } from "../../core/http/http-client";
 
 export interface StaticPage {
   id: number;
@@ -17,26 +16,26 @@ export interface StaticPage {
   providedIn: "root",
 })
 export class AdminPagesService {
-  private http = inject(HttpClient);
-  private apiUrl = `${environment.apiBaseUrl}/admin/pages`;
+  private readonly api = inject(ApiHttpClient);
+  private readonly baseUrl = "/admin/pages";
 
   getAll(): Observable<StaticPage[]> {
-    return this.http.get<StaticPage[]>(this.apiUrl);
+    return this.api.get<StaticPage[]>(this.baseUrl);
   }
 
   getById(id: number): Observable<StaticPage> {
-    return this.http.get<StaticPage>(`${this.apiUrl}/${id}`);
+    return this.api.get<StaticPage>(`${this.baseUrl}/${id}`);
   }
 
   create(page: Partial<StaticPage>): Observable<StaticPage> {
-    return this.http.post<StaticPage>(this.apiUrl, page);
+    return this.api.post<StaticPage>(this.baseUrl, page);
   }
 
   update(id: number, page: Partial<StaticPage>): Observable<StaticPage> {
-    return this.http.put<StaticPage>(`${this.apiUrl}/${id}`, page);
+    return this.api.put<StaticPage>(`${this.baseUrl}/${id}`, page);
   }
 
   delete(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${id}`);
+    return this.api.delete<void>(`${this.baseUrl}/${id}`);
   }
 }

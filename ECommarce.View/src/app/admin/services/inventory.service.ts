@@ -1,7 +1,6 @@
 import { Injectable, inject } from "@angular/core";
-import { HttpClient } from "@angular/common/http";
-import { environment } from "../../../environments/environment";
 import { Observable } from "rxjs";
+import { ApiHttpClient } from "../../core/http/http-client";
 
 export interface VariantInventoryDto {
   variantId: number;
@@ -23,14 +22,14 @@ export interface ProductInventoryDto {
   providedIn: "root",
 })
 export class InventoryService {
-  private http = inject(HttpClient);
-  private apiUrl = `${environment.apiBaseUrl}/admin/products/inventory`;
+  private readonly api = inject(ApiHttpClient);
+  private readonly baseUrl = "/admin/products/inventory";
 
   getInventory(): Observable<ProductInventoryDto[]> {
-    return this.http.get<ProductInventoryDto[]>(this.apiUrl);
+    return this.api.get<ProductInventoryDto[]>(this.baseUrl);
   }
 
   updateStock(variantId: number, quantity: number): Observable<any> {
-    return this.http.put(`${this.apiUrl}/${variantId}`, { quantity });
+    return this.api.put(`${this.baseUrl}/${variantId}`, { quantity });
   }
 }

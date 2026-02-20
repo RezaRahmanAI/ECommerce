@@ -42,7 +42,7 @@ public class AdminReviewsController : ControllerBase
         return Ok(reviews);
     }
 
-    [HttpDelete("{id}")]
+    [HttpPost("{id}/delete")]
     public async Task<ActionResult> DeleteReview(int id)
     {
         var review = await _context.Reviews.FindAsync(id);
@@ -54,7 +54,7 @@ public class AdminReviewsController : ControllerBase
         return NoContent();
     }
 
-    [HttpPut("{id}")]
+    [HttpPost("{id}")]
     public async Task<ActionResult<ReviewDto>> UpdateReview(int id, [FromBody] ReviewUpdateDto dto)
     {
         var review = await _context.Reviews

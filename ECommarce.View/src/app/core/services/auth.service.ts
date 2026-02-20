@@ -33,12 +33,28 @@ interface AuthResponseDto {
 export class AuthService {
   private readonly api = inject(ApiHttpClient);
   private readonly TOKEN_KEY = "auth_token";
+  private readonly USER_KEY = "auth_user";
 
   // Using a signal for reactive auth state
   readonly currentUser = signal<AuthUser | null>(null);
 
   constructor() {
+    this.restoreSession();
     this.checkAuth().subscribe();
+  }
+
+  private restoreSession(): void {
+    const token = localStorage.getItem(this.TOKEN_KEY);
+    const userJson = localStorage.getItem(this.USER_KEY);
+
+    if (token && userJson) {
+      try {
+        const user = JSON.parse(userJson) as AuthUser;
+        this.currentUser.set(user);
+      } catch (e) {
+        this.logout();
+      }
+    }
   }
 
   login(email: string, password: string): Observable<AuthSession> {
@@ -52,6 +68,7 @@ export class AuthService {
         tap((session) => {
           if (session.token) {
             localStorage.setItem(this.TOKEN_KEY, session.token);
+            localStorage.setItem(this.USER_KEY, JSON.stringify(session.user));
           }
           this.currentUser.set(session.user);
         }),
@@ -96,6 +113,7 @@ export class AuthService {
 
   logout(): void {
     localStorage.removeItem(this.TOKEN_KEY);
+    localStorage.removeItem(this.USER_KEY);
     this.currentUser.set(null);
 
     // Optional: Call backend to clear cookies if any remain, but strictly we are stateless now

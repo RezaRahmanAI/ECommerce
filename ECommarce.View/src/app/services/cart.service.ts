@@ -1,7 +1,6 @@
-import { Injectable } from "@angular/core";
-import { HttpClient } from "@angular/common/http";
+import { Injectable, inject } from "@angular/core";
 import { Observable } from "rxjs";
-import { environment } from "../../environments/environment";
+import { ApiHttpClient } from "../core/http/http-client";
 
 export interface CartItem {
   id: number;
@@ -26,30 +25,29 @@ export interface Cart {
   providedIn: "root",
 })
 export class CartService {
-  private readonly API_URL = `${environment.apiBaseUrl}/cart`;
-
-  constructor(private http: HttpClient) {}
+  private readonly api = inject(ApiHttpClient);
+  private readonly baseUrl = "/cart";
 
   getCart(): Observable<Cart> {
-    return this.http.get<Cart>(this.API_URL);
+    return this.api.get<Cart>(this.baseUrl);
   }
 
   addToCart(productId: number, quantity: number = 1): Observable<Cart> {
-    return this.http.post<Cart>(`${this.API_URL}/items`, {
+    return this.api.post<Cart>(`${this.baseUrl}/items`, {
       productId,
       quantity,
     });
   }
 
   updateCartItem(itemId: number, quantity: number): Observable<Cart> {
-    return this.http.put<Cart>(`${this.API_URL}/items/${itemId}`, { quantity });
+    return this.api.put<Cart>(`${this.baseUrl}/items/${itemId}`, { quantity });
   }
 
   removeFromCart(itemId: number): Observable<void> {
-    return this.http.delete<void>(`${this.API_URL}/items/${itemId}`);
+    return this.api.delete<void>(`${this.baseUrl}/items/${itemId}`);
   }
 
   clearCart(): Observable<void> {
-    return this.http.delete<void>(this.API_URL);
+    return this.api.delete<void>(this.baseUrl);
   }
 }

@@ -1,7 +1,6 @@
-import { HttpClient } from "@angular/common/http";
 import { Injectable, inject } from "@angular/core";
 import { Observable } from "rxjs";
-import { environment } from "../../../environments/environment";
+import { ApiHttpClient } from "../http/http-client";
 
 export interface HeroBanner {
   id: number;
@@ -18,10 +17,10 @@ export interface HeroBanner {
   providedIn: "root",
 })
 export class BannerService {
-  private http = inject(HttpClient);
-  private apiUrl = `${environment.apiBaseUrl}/banners`;
+  private readonly api = inject(ApiHttpClient);
+  private readonly baseUrl = "/banners";
 
   getActiveBanners(): Observable<HeroBanner[]> {
-    return this.http.get<HeroBanner[]>(this.apiUrl);
+    return this.api.get<HeroBanner[]>(this.baseUrl);
   }
 }

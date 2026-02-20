@@ -1,7 +1,6 @@
-import { HttpClient } from "@angular/common/http";
 import { Injectable, inject } from "@angular/core";
 import { Observable } from "rxjs";
-import { environment } from "../../../environments/environment";
+import { ApiHttpClient } from "../../core/http/http-client";
 
 export interface AdminReview {
   id: number;
@@ -20,21 +19,21 @@ export interface AdminReview {
   providedIn: "root",
 })
 export class AdminReviewsService {
-  private http = inject(HttpClient);
-  private apiUrl = `${environment.apiBaseUrl}/admin/reviews`;
+  private readonly api = inject(ApiHttpClient);
+  private readonly baseUrl = "/admin/reviews";
 
   getAll(): Observable<AdminReview[]> {
-    return this.http.get<AdminReview[]>(this.apiUrl);
+    return this.api.get<AdminReview[]>(this.baseUrl);
   }
 
   delete(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${id}`);
+    return this.api.delete<void>(`${this.baseUrl}/${id}`);
   }
 
   update(
     id: number,
     payload: { rating: number; comment: string },
   ): Observable<AdminReview> {
-    return this.http.put<AdminReview>(`${this.apiUrl}/${id}`, payload);
+    return this.api.put<AdminReview>(`${this.baseUrl}/${id}`, payload);
   }
 }

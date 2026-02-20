@@ -1,7 +1,7 @@
-import { HttpClient, HttpParams } from "@angular/common/http";
+import { HttpParams } from "@angular/common/http";
 import { Injectable, inject } from "@angular/core";
 import { Observable } from "rxjs";
-import { environment } from "../../../environments/environment";
+import { ApiHttpClient } from "../../core/http/http-client";
 
 export interface Customer {
   id: number;
@@ -29,8 +29,8 @@ export interface CustomersQueryParams {
   providedIn: "root",
 })
 export class AdminCustomersService {
-  private http = inject(HttpClient);
-  private apiUrl = `${environment.apiBaseUrl}/admin/customers`;
+  private readonly api = inject(ApiHttpClient);
+  private readonly baseUrl = "/admin/customers";
 
   getCustomers(params: CustomersQueryParams): Observable<CustomersResponse> {
     let httpParams = new HttpParams();
@@ -45,16 +45,16 @@ export class AdminCustomersService {
       httpParams = httpParams.set("pageSize", params.pageSize);
     }
 
-    return this.http.get<CustomersResponse>(this.apiUrl, {
+    return this.api.get<CustomersResponse>(this.baseUrl, {
       params: httpParams,
     });
   }
 
   flagCustomer(id: number): Observable<any> {
-    return this.http.post(`${this.apiUrl}/${id}/flag`, {});
+    return this.api.post(`${this.baseUrl}/${id}/flag`, {});
   }
 
   unflagCustomer(id: number): Observable<any> {
-    return this.http.post(`${this.apiUrl}/${id}/unflag`, {});
+    return this.api.post(`${this.baseUrl}/${id}/unflag`, {});
   }
 }

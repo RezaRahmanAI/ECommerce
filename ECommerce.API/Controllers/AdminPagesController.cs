@@ -84,7 +84,7 @@ public class AdminPagesController : ControllerBase
         });
     }
 
-    [HttpPut("{id}")]
+    [HttpPost("{id}")]
     public async Task<ActionResult<PageDto>> UpdatePage(int id, [FromBody] PageCreateDto dto)
     {
         var page = await _context.Pages.FindAsync(id);
@@ -112,7 +112,7 @@ public class AdminPagesController : ControllerBase
         });
     }
 
-    [HttpDelete("{id}")]
+    [HttpPost("{id}/delete")]
     public async Task<ActionResult> DeletePage(int id)
     {
         var page = await _context.Pages.FindAsync(id);

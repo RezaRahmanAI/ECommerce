@@ -92,7 +92,7 @@ public class AdminBannersController : ControllerBase
         });
     }
 
-    [HttpPut("{id}")]
+    [HttpPost("{id}")]
     public async Task<ActionResult<HeroBannerDto>> UpdateBanner(int id, [FromBody] CreateHeroBannerDto dto)
     {
         var banner = await _context.HeroBanners.FindAsync(id);
@@ -123,7 +123,7 @@ public class AdminBannersController : ControllerBase
         });
     }
 
-    [HttpDelete("{id}")]
+    [HttpPost("{id}/delete")]
     public async Task<ActionResult> DeleteBanner(int id)
     {
         var banner = await _context.HeroBanners.FindAsync(id);

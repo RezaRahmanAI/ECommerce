@@ -104,7 +104,7 @@ public class AdminSubCategoryController : ControllerBase
         return CreatedAtAction(nameof(GetSubCategoryById), new { id = subCategory.Id }, result);
     }
 
-    [HttpPut("{id}")]
+    [HttpPost("{id}")]
     public async Task<ActionResult<SubCategoryDto>> UpdateSubCategory(int id, [FromBody] SubCategoryUpdateDto dto)
     {
         var subCategory = await _context.SubCategories.FindAsync(id);
@@ -144,7 +144,7 @@ public class AdminSubCategoryController : ControllerBase
         return Ok(result);
     }
 
-    [HttpDelete("{id}")]
+    [HttpPost("{id}/delete")]
     public async Task<ActionResult> DeleteSubCategory(int id)
     {
         var subCategory = await _context.SubCategories.FindAsync(id);

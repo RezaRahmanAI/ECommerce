@@ -177,7 +177,7 @@ public class AdminProductsController : ControllerBase
         }
     }
 
-    [HttpPut("{id}")]
+    [HttpPost("{id}")]
     public async Task<ActionResult> UpdateProduct(int id, [FromBody] ProductUpdateDto dto)
     {
         try
@@ -197,7 +197,7 @@ public class AdminProductsController : ControllerBase
         }
     }
 
-    [HttpDelete("{id}")]
+    [HttpPost("{id}/delete")]
     public async Task<ActionResult> DeleteProduct(int id)
     {
         var product = await _context.Products
@@ -293,7 +293,7 @@ public class AdminProductsController : ControllerBase
         return Ok(inventory);
     }
 
-    [HttpPut("inventory/{variantId}")]
+    [HttpPost("inventory/{variantId}")]
     public async Task<ActionResult> UpdateStock(int variantId, UpdateStockDto dto)
     {
         var variant = await _unitOfWork.Repository<ProductVariant>().GetByIdAsync(variantId);

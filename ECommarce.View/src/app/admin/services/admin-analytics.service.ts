@@ -1,7 +1,6 @@
-import { HttpClient, HttpParams } from "@angular/common/http";
 import { Injectable, inject } from "@angular/core";
 import { Observable } from "rxjs";
-import { environment } from "../../../environments/environment";
+import { ApiHttpClient } from "../../core/http/http-client";
 
 export interface SalesData {
   date: string;
@@ -31,28 +30,28 @@ export interface TopProduct {
   providedIn: "root",
 })
 export class AdminAnalyticsService {
-  private http = inject(HttpClient);
-  private apiUrl = `${environment.apiBaseUrl}/admin/analytics`;
+  private readonly api = inject(ApiHttpClient);
+  private readonly baseUrl = "/admin/analytics";
 
   getSalesData(
     period: "week" | "month" | "year" = "month",
   ): Observable<SalesData[]> {
-    return this.http.get<SalesData[]>(`${this.apiUrl}/sales`, {
-      params: { period },
+    return this.api.get<SalesData[]>(`${this.baseUrl}/sales`, {
+      params: { period } as any,
     });
   }
 
   getOrderStatusDistribution(): Observable<StatusDistribution[]> {
-    return this.http.get<StatusDistribution[]>(
-      `${this.apiUrl}/orders/distribution`,
+    return this.api.get<StatusDistribution[]>(
+      `${this.baseUrl}/orders/distribution`,
     );
   }
 
   getCustomerGrowth(): Observable<CustomerGrowth[]> {
-    return this.http.get<CustomerGrowth[]>(`${this.apiUrl}/customers/growth`);
+    return this.api.get<CustomerGrowth[]>(`${this.baseUrl}/customers/growth`);
   }
 
   getTopProducts(): Observable<TopProduct[]> {
-    return this.http.get<TopProduct[]>(`${this.apiUrl}/products/top`);
+    return this.api.get<TopProduct[]>(`${this.baseUrl}/products/top`);
   }
 }

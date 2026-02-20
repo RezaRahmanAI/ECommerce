@@ -48,7 +48,7 @@ public class AdminSecurityController : ControllerBase
         return CreatedAtAction(nameof(GetBlockedIps), new { id = ipToBlock.Id }, ipToBlock);
     }
 
-    [HttpDelete("unblock-ip/{id}")]
+    [HttpPost("unblock-ip/{id}/delete")]
     public async Task<IActionResult> UnblockIp(int id)
     {
         var blockedIp = await _context.BlockedIps.FindAsync(id);

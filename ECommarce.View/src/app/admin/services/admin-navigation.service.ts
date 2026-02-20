@@ -1,7 +1,6 @@
-import { HttpClient } from "@angular/common/http";
 import { Injectable, inject } from "@angular/core";
 import { Observable } from "rxjs";
-import { environment } from "../../../environments/environment";
+import { ApiHttpClient } from "../../core/http/http-client";
 
 export interface NavigationMenuItem {
   id: number;
@@ -17,29 +16,29 @@ export interface NavigationMenuItem {
   providedIn: "root",
 })
 export class AdminNavigationService {
-  private http = inject(HttpClient);
-  private apiUrl = `${environment.apiBaseUrl}/admin/navigation`;
+  private readonly api = inject(ApiHttpClient);
+  private readonly baseUrl = "/admin/navigation";
 
   getAll(): Observable<NavigationMenuItem[]> {
-    return this.http.get<NavigationMenuItem[]>(this.apiUrl);
+    return this.api.get<NavigationMenuItem[]>(this.baseUrl);
   }
 
   getById(id: number): Observable<NavigationMenuItem> {
-    return this.http.get<NavigationMenuItem>(`${this.apiUrl}/${id}`);
+    return this.api.get<NavigationMenuItem>(`${this.baseUrl}/${id}`);
   }
 
   create(menu: Partial<NavigationMenuItem>): Observable<NavigationMenuItem> {
-    return this.http.post<NavigationMenuItem>(this.apiUrl, menu);
+    return this.api.post<NavigationMenuItem>(this.baseUrl, menu);
   }
 
   update(
     id: number,
     menu: Partial<NavigationMenuItem>,
   ): Observable<NavigationMenuItem> {
-    return this.http.put<NavigationMenuItem>(`${this.apiUrl}/${id}`, menu);
+    return this.api.put<NavigationMenuItem>(`${this.baseUrl}/${id}`, menu);
   }
 
   delete(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${id}`);
+    return this.api.delete<void>(`${this.baseUrl}/${id}`);
   }
 }

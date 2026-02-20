@@ -61,7 +61,7 @@ public class AdminNavigationController : ControllerBase
         return CreatedAtAction(nameof(GetMenuById), new { id = menu.Id }, MapToDto(menu));
     }
 
-    [HttpPut("{id}")]
+    [HttpPost("{id}")]
     public async Task<ActionResult<NavigationMenuDto>> UpdateMenu(int id, [FromBody] NavigationMenuCreateDto dto)
     {
         var menu = await _context.NavigationMenus.FindAsync(id);
@@ -79,7 +79,7 @@ public class AdminNavigationController : ControllerBase
         return Ok(MapToDto(menu));
     }
 
-    [HttpDelete("{id}")]
+    [HttpPost("{id}/delete")]
     public async Task<ActionResult> DeleteMenu(int id)
     {
         var menu = await _context.NavigationMenus.FindAsync(id);

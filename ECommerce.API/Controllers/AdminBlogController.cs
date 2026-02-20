@@ -41,7 +41,7 @@ public class AdminBlogController : ControllerBase
         return CreatedAtAction(nameof(GetPostById), new { id = post.Id }, post);
     }
 
-    [HttpPut("posts/{id}")]
+    [HttpPost("posts/{id}")]
     public async Task<ActionResult<BlogPostDto>> UpdatePost(int id, [FromBody] UpdateBlogPostDto dto)
     {
         var post = await _blogService.UpdatePostAsync(id, dto);
@@ -51,7 +51,7 @@ public class AdminBlogController : ControllerBase
         return Ok(post);
     }
 
-    [HttpDelete("posts/{id}")]
+    [HttpPost("posts/{id}/delete")]
     public async Task<ActionResult> DeletePost(int id)
     {
         var result = await _blogService.DeletePostAsync(id);

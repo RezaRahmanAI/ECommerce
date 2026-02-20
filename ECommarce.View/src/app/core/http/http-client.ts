@@ -32,14 +32,17 @@ export class ApiHttpClient {
   }
 
   put<T>(path: string, body: unknown, options: { headers?: HttpHeaders } = {}) {
-    return this.http.put<T>(this.buildUrl(path), body, {
+    return this.http.post<T>(this.buildUrl(path), body, {
       ...options,
       withCredentials: true,
     });
   }
 
   delete<T>(path: string, options: { headers?: HttpHeaders } = {}) {
-    return this.http.delete<T>(this.buildUrl(path), {
+    // Append /delete to distinguish from update (PUT) when using POST
+    const deletePath = path.endsWith("/") ? `${path}delete` : `${path}/delete`;
+
+    return this.http.post<T>(this.buildUrl(deletePath), null, {
       ...options,
       withCredentials: true,
     });

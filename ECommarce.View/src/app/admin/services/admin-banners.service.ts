@@ -1,7 +1,6 @@
-import { HttpClient } from "@angular/common/http";
 import { Injectable, inject } from "@angular/core";
 import { Observable } from "rxjs";
-import { environment } from "../../../environments/environment";
+import { ApiHttpClient } from "../../core/http/http-client";
 
 export interface Banner {
   id: number;
@@ -19,32 +18,32 @@ export interface Banner {
   providedIn: "root",
 })
 export class AdminBannersService {
-  private http = inject(HttpClient);
-  private apiUrl = `${environment.apiBaseUrl}/admin/banners`;
+  private readonly api = inject(ApiHttpClient);
+  private readonly baseUrl = "/admin/banners";
 
   getAll(): Observable<Banner[]> {
-    return this.http.get<Banner[]>(this.apiUrl);
+    return this.api.get<Banner[]>(this.baseUrl);
   }
 
   getById(id: number): Observable<Banner> {
-    return this.http.get<Banner>(`${this.apiUrl}/${id}`);
+    return this.api.get<Banner>(`${this.baseUrl}/${id}`);
   }
 
   create(banner: Partial<Banner>): Observable<Banner> {
-    return this.http.post<Banner>(this.apiUrl, banner);
+    return this.api.post<Banner>(this.baseUrl, banner);
   }
 
   update(id: number, banner: Partial<Banner>): Observable<Banner> {
-    return this.http.put<Banner>(`${this.apiUrl}/${id}`, banner);
+    return this.api.put<Banner>(`${this.baseUrl}/${id}`, banner);
   }
 
   delete(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${id}`);
+    return this.api.delete<void>(`${this.baseUrl}/${id}`);
   }
 
   uploadImage(file: File): Observable<{ url: string }> {
     const formData = new FormData();
     formData.append("file", file);
-    return this.http.post<{ url: string }>(`${this.apiUrl}/image`, formData);
+    return this.api.post<{ url: string }>(`${this.baseUrl}/image`, formData);
   }
 }

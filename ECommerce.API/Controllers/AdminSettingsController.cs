@@ -59,7 +59,7 @@ public class AdminSettingsController : ControllerBase
         });
     }
 
-    [HttpPut]
+    [HttpPost]
     public async Task<ActionResult<SiteSettingsDto>> UpdateSettings([FromBody] SiteSettingsDto dto)
     {
         var settings = await _context.SiteSettings.FirstOrDefaultAsync();
@@ -136,7 +136,7 @@ public class AdminSettingsController : ControllerBase
         return CreatedAtAction(nameof(GetDeliveryMethods), new { id = method.Id }, method);
     }
 
-    [HttpPut("delivery-methods/{id}")]
+    [HttpPost("delivery-methods/{id}")]
     public async Task<IActionResult> UpdateDeliveryMethod(int id, [FromBody] DeliveryMethodDto dto)
     {
         var method = await _context.DeliveryMethods.FindAsync(id);
@@ -152,7 +152,7 @@ public class AdminSettingsController : ControllerBase
         return NoContent();
     }
 
-    [HttpDelete("delivery-methods/{id}")]
+    [HttpPost("delivery-methods/{id}/delete")]
     public async Task<IActionResult> DeleteDeliveryMethod(int id)
     {
         var method = await _context.DeliveryMethods.FindAsync(id);

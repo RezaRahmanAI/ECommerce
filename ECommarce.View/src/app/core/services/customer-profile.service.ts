@@ -1,8 +1,8 @@
 import { Injectable, inject } from "@angular/core";
-import { HttpClient, HttpParams } from "@angular/common/http";
+import { HttpParams } from "@angular/common/http";
 import { BehaviorSubject, Observable, map, tap } from "rxjs";
-import { environment } from "../../../environments/environment";
 import { Order, OrderStatus } from "../models/order";
+import { ApiHttpClient } from "../http/http-client";
 
 export interface CustomerProfile {
   id: number;
@@ -24,8 +24,8 @@ export interface CustomerProfileRequest {
   providedIn: "root",
 })
 export class CustomerProfileService {
-  private readonly http = inject(HttpClient);
-  private readonly apiUrl = `${environment.apiBaseUrl}/customers`;
+  private readonly api = inject(ApiHttpClient);
+  private readonly baseUrl = "/customers";
   private readonly storageKey = "customer_phone";
 
   private readonly phoneSubject = new BehaviorSubject<string | null>(
@@ -49,12 +49,12 @@ export class CustomerProfileService {
 
   getProfile(phone: string): Observable<CustomerProfile> {
     const params = new HttpParams().set("phone", phone);
-    return this.http.get<CustomerProfile>(`${this.apiUrl}/lookup`, { params });
+    return this.api.get<CustomerProfile>(`${this.baseUrl}/lookup`, { params });
   }
 
   updateProfile(request: CustomerProfileRequest): Observable<CustomerProfile> {
-    return this.http
-      .post<CustomerProfile>(`${this.apiUrl}/profile`, request)
+    return this.api
+      .post<CustomerProfile>(`${this.baseUrl}/profile`, request)
       .pipe(
         tap((profile) => {
           if (profile.phone) {
@@ -66,8 +66,8 @@ export class CustomerProfileService {
 
   getOrders(phone: string): Observable<Order[]> {
     const params = new HttpParams().set("phone", phone);
-    return this.http
-      .get<any[]>(`${this.apiUrl}/orders`, { params })
+    return this.api
+      .get<any[]>(`${this.baseUrl}/orders`, { params })
       .pipe(map((dtos) => dtos.map(this.mapOrderDtoToOrder)));
   }
 

@@ -132,7 +132,7 @@ public class AdminCategoryController : ControllerBase
         return CreatedAtAction(nameof(GetCategoryById), new { id = category.Id }, result);
     }
 
-    [HttpPut("{id}")]
+    [HttpPost("{id}")]
     public async Task<ActionResult<CategoryDto>> UpdateCategory(int id, [FromBody] CategoryUpdateDto dto)
     {
         var category = await _context.Categories.FindAsync(id);
@@ -193,7 +193,7 @@ public class AdminCategoryController : ControllerBase
         return Ok(result);
     }
 
-    [HttpDelete("{id}")]
+    [HttpPost("{id}/delete")]
     public async Task<ActionResult> DeleteCategory(int id)
     {
         var category = await _context.Categories.FindAsync(id);
