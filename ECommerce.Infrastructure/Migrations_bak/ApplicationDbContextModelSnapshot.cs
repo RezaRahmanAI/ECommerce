@@ -878,6 +878,9 @@ namespace ECommerce.Infrastructure.Migrations
                     b.Property<string>("ContactPhone")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("Currency")
                         .HasColumnType("nvarchar(max)");
 
@@ -905,7 +908,7 @@ namespace ECommerce.Infrastructure.Migrations
                     b.Property<string>("TwitterUrl")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime>("UpdatedAt")
+                    b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("WebsiteName")

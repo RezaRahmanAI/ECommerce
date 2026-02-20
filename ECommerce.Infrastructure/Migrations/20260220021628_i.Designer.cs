@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ECommerce.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260219075218_AddSteadfastColumns")]
-    partial class AddSteadfastColumns
+    [Migration("20260220021628_i")]
+    partial class i
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -881,6 +881,9 @@ namespace ECommerce.Infrastructure.Migrations
                     b.Property<string>("ContactPhone")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("Currency")
                         .HasColumnType("nvarchar(max)");
 
@@ -908,7 +911,7 @@ namespace ECommerce.Infrastructure.Migrations
                     b.Property<string>("TwitterUrl")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime>("UpdatedAt")
+                    b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("WebsiteName")
