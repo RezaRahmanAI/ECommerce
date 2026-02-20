@@ -5,7 +5,6 @@ import { catchError } from "rxjs/operators";
 import { Router } from "@angular/router";
 
 import { NotificationService } from "../services/notification.service";
-import { AuthSessionService } from "../services/auth-session.service";
 
 /**
  * Global Error Interceptor
@@ -13,7 +12,7 @@ import { AuthSessionService } from "../services/auth-session.service";
  */
 export const globalErrorInterceptor: HttpInterceptorFn = (request, next) => {
   const notificationService = inject(NotificationService);
-  const sessionService = inject(AuthSessionService);
+
   const router = inject(Router);
 
   return next(request).pipe(
@@ -41,7 +40,6 @@ export const globalErrorInterceptor: HttpInterceptorFn = (request, next) => {
 
           case 401:
             notificationService.error("Session expired. Please login again.");
-            sessionService.clearSession(); // Use professional session clearing
             void router.navigate(["/login"]);
             break;
 

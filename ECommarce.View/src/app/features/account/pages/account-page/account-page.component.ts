@@ -3,9 +3,9 @@ import { Component, DestroyRef, inject } from "@angular/core";
 import { FormBuilder, ReactiveFormsModule, Validators } from "@angular/forms";
 import { RouterModule } from "@angular/router";
 import { combineLatest, map } from "rxjs";
-import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
+import { takeUntilDestroyed, toObservable } from "@angular/core/rxjs-interop";
 
-import { AuthStateService } from "../../../../core/services/auth-state.service";
+import { AuthService } from "../../../../core/services/auth.service";
 import { OrderService } from "../../../../core/services/order.service";
 import { UserService } from "../../../../core/services/user.service";
 import {
@@ -23,7 +23,7 @@ import { Order } from "../../../../core/models/order";
   styleUrl: "./account-page.component.css",
 })
 export class AccountPageComponent {
-  private readonly authState = inject(AuthStateService);
+  private readonly authService = inject(AuthService);
   private readonly userService = inject(UserService);
   private readonly orderService = inject(OrderService);
   private readonly formBuilder = inject(FormBuilder);
@@ -60,7 +60,7 @@ export class AccountPageComponent {
   editingPaymentId: string | null = null;
 
   readonly vm$ = combineLatest([
-    this.authState.user$,
+    toObservable(this.authService.currentUser),
     this.userService.profiles$,
     this.orderService.orders$,
   ]).pipe(
@@ -68,7 +68,7 @@ export class AccountPageComponent {
       const profile = user
         ? (profiles.find((item) => item.id === user.id) ?? null)
         : null;
-      return { user, profile, orders: user ? orders : [] };
+      return { user, profile, orders: user ? orders : ([] as Order[]) };
     }),
   );
 
@@ -95,7 +95,16 @@ export class AccountPageComponent {
 
     const { name, email, phone } = this.profileForm.getRawValue();
     this.userService.updateProfile(profile.id, { name, email, phone });
-    this.authState.updateUser({ name, email });
+
+    // Update local auth state if needed, though usually refreshing works best.
+    const currentUser = this.authService.currentUser();
+    if (currentUser) {
+      this.authService.currentUser.set({
+        ...currentUser,
+        name,
+        email,
+      });
+    }
   }
 
   startEditAddress(address: Address): void {

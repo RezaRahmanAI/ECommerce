@@ -6,9 +6,11 @@ import { provideHttpClient, withInterceptors } from "@angular/common/http";
 import { AppComponent } from "./app/app.component";
 import { appRoutes } from "./app/app.routes";
 import { API_CONFIG, ApiConfig } from "./app/core/config/api.config";
-import { authTokenInterceptor } from "./app/core/http/auth-token.interceptor";
+
 import { globalErrorInterceptor } from "./app/core/http/global-error.interceptor";
 import { environment } from "./environments/environment";
+
+import { jwtInterceptor } from "./app/core/interceptors/jwt.interceptor";
 
 bootstrapApplication(AppComponent, {
   providers: [
@@ -21,7 +23,7 @@ bootstrapApplication(AppComponent, {
     ),
     provideAnimations(),
     provideHttpClient(
-      withInterceptors([authTokenInterceptor, globalErrorInterceptor]),
+      withInterceptors([jwtInterceptor, globalErrorInterceptor]),
     ),
     {
       provide: API_CONFIG,

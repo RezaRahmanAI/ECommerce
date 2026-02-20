@@ -1,8 +1,9 @@
 using ECommerce.Core.DTOs;
-using ECommerce.Core.Interfaces;
+
 using ECommerce.Core.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace ECommerce.API.Controllers;
 
@@ -12,9 +13,9 @@ public class AuthController : ControllerBase
 {
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly SignInManager<ApplicationUser> _signInManager;
-    private readonly ITokenService _tokenService;
+    private readonly ECommerce.Core.Interfaces.ITokenService _tokenService;
 
-    public AuthController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, ITokenService tokenService)
+    public AuthController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, ECommerce.Core.Interfaces.ITokenService tokenService)
     {
         _userManager = userManager;
         _signInManager = signInManager;
@@ -35,10 +36,12 @@ public class AuthController : ControllerBase
         // Get actual roles from UserManager
         var roles = await _userManager.GetRolesAsync(user);
         var userRole = roles.FirstOrDefault() ?? "user";
+        
+        var token = _tokenService.CreateToken(user, userRole);
 
         return new AuthResponseDto
         {
-            AccessToken = _tokenService.CreateToken(user, roles.ToList()),
+            Token = token,
             User = new UserDto
             {
                 Id = user.Id,
@@ -71,9 +74,11 @@ public class AuthController : ControllerBase
         // Assign default user role
         await _userManager.AddToRoleAsync(user, "User");
 
+        var token = _tokenService.CreateToken(user, "User");
+
         return new AuthResponseDto
         {
-            AccessToken = _tokenService.CreateToken(user, new List<string> { "User" }),
+            Token = token,
             User = new UserDto
             {
                 Id = user.Id,
@@ -81,6 +86,35 @@ public class AuthController : ControllerBase
                 Name = user.FullName,
                 Role = "User"
             }
+        };
+    }
+
+    [HttpPost("logout")]
+    public IActionResult Logout()
+    {
+        // Stateless JWT logout - handled on client side
+        return Ok(new { message = "Logged out successfully" });
+    }
+
+    [HttpGet("me")]
+    [Microsoft.AspNetCore.Authorization.Authorize]
+    public async Task<ActionResult<UserDto>> GetCurrentUser()
+    {
+        // With JWT, [Authorize] ensures we have a valid user
+        var email = User.FindFirstValue(System.Security.Claims.ClaimTypes.Email);
+        var user = await _userManager.FindByEmailAsync(email!);
+        
+        if (user == null) return Unauthorized();
+
+        var roles = await _userManager.GetRolesAsync(user);
+        var userRole = roles.FirstOrDefault() ?? "user";
+
+        return new UserDto
+        {
+            Id = user.Id,
+            Email = user.Email!,
+            Name = user.FullName ?? user.UserName!,
+            Role = userRole
         };
     }
 }

@@ -2,13 +2,24 @@ using ECommerce.Infrastructure.Data;
 using ECommerce.Core.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
-using System.Text;
+
 
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Configure Kestrel for large file uploads
+builder.WebHost.ConfigureKestrel(serverOptions =>
+{
+    serverOptions.Limits.MaxRequestBodySize = 104857600; // 100 MB
+});
+
+builder.Services.Configure<Microsoft.AspNetCore.Http.Features.FormOptions>(x =>
+{
+    x.ValueLengthLimit = int.MaxValue;
+    x.MultipartBodyLengthLimit = 104857600; // 100 MB
+    x.MultipartHeadersLengthLimit = int.MaxValue;
+});
 
 // Configure Serilog
 Log.Logger = new LoggerConfiguration()
@@ -38,44 +49,33 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options => {
 .AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();
 
-// JWT Authentication
-var tokenKey = builder.Configuration["Token:Key"] ?? "super_secret_key_that_is_long_enough_for_sha256";
-var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(tokenKey));
+// Token Service
+builder.Services.AddScoped<ECommerce.Core.Interfaces.ITokenService, ECommerce.Infrastructure.Services.TokenService>();
 
+// JWT Authentication
 builder.Services.AddAuthentication(options =>
 {
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultAuthenticateScheme = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme;
 })
 .AddJwtBearer(options =>
 {
-    options.TokenValidationParameters = new TokenValidationParameters
+    options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
     {
         ValidateIssuerSigningKey = true,
-        IssuerSigningKey = key,
-        ValidateIssuer = false, // Set to true in production with proper issuer
-        ValidateAudience = false, // Set to true in production with proper audience
+        IssuerSigningKey = new Microsoft.IdentityModel.Tokens.SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(builder.Configuration["Token:Key"]!)),
+        ValidIssuer = builder.Configuration["Token:Issuer"],
+        ValidateIssuer = true,
+        ValidAudience = builder.Configuration["Token:Audience"],
+        ValidateAudience = true,
         ValidateLifetime = true,
         ClockSkew = TimeSpan.Zero
     };
 });
 
-// Configure Identity to return 401/403 instead of redirecting to login page
-builder.Services.ConfigureApplicationCookie(options =>
-{
-    options.Events.OnRedirectToLogin = context =>
-    {
-        context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-        return Task.CompletedTask;
-    };
-    options.Events.OnRedirectToAccessDenied = context =>
-    {
-        context.Response.StatusCode = StatusCodes.Status403Forbidden;
-        return Task.CompletedTask;
-    };
-});
 
-builder.Services.AddScoped<ECommerce.Core.Interfaces.ITokenService, ECommerce.Infrastructure.Services.TokenService>();
+
+
 builder.Services.AddScoped<ECommerce.Core.Interfaces.IUnitOfWork, ECommerce.Infrastructure.Data.UnitOfWork>();
 builder.Services.AddScoped(typeof(ECommerce.Core.Interfaces.IGenericRepository<>), typeof(ECommerce.Infrastructure.Data.GenericRepository<>));
 builder.Services.AddScoped<ECommerce.Core.Interfaces.IOrderService, ECommerce.Infrastructure.Services.OrderService>();
@@ -94,8 +94,19 @@ builder.Services.AddHttpClient<ECommerce.Core.Interfaces.ISteadfastService, ECom
 builder.Services.AddHostedService<ECommerce.Infrastructure.Services.SteadfastWorker>();
 
 // CORS - Environment-specific configuration
-var allowedOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>() 
-    ?? new[] { "http://localhost:4200" };
+var allowedOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>() ?? Array.Empty<string>();
+
+// Ensure critical origins are always allowed (Fail-safe)
+var criticalOrigins = new[] 
+{ 
+    "http://localhost:4200", 
+    "https://localhost:4200", 
+    "https://sherashopbd24.com", 
+    "https://www.sherashopbd24.com" 
+};
+
+// Combine and deduplicate
+allowedOrigins = allowedOrigins.Concat(criticalOrigins).Distinct().ToArray();
 
 builder.Services.AddCors(options =>
 {
@@ -121,12 +132,14 @@ app.UseHttpsRedirection();
 app.UseStaticFiles(); // Enable serving static files from wwwroot
 
 // Global exception handling
+app.UseCors("AllowAll");
+
 app.UseSerilogRequestLogging(); // Enable Serilog request logging
 app.UseMiddleware<ECommerce.API.Middleware.GlobalExceptionMiddleware>();
 app.UseMiddleware<ECommerce.API.Middleware.IpBlockingMiddleware>();
 app.UseMiddleware<ECommerce.API.Middleware.VisitorTrackingMiddleware>();
 
-app.UseCors("AllowAll");
+
 
 app.UseAuthentication();
 app.UseAuthorization();

@@ -1,6 +1,7 @@
 import { Component, inject, HostListener } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
+import { toObservable } from "@angular/core/rxjs-interop";
 
 import { RouterModule, Router, NavigationEnd } from "@angular/router";
 import { combineLatest, map, startWith, filter } from "rxjs";
@@ -17,7 +18,7 @@ import {
   Twitter,
 } from "lucide-angular";
 
-import { AuthStateService } from "../../core/services/auth-state.service";
+import { AuthService } from "../../core/services/auth.service";
 import { CartService } from "../../core/services/cart.service";
 import { SiteSettingsService } from "../../core/services/site-settings.service";
 import { ImageUrlService } from "../../core/services/image-url.service";
@@ -31,7 +32,7 @@ import { NavigationService } from "../../core/services/navigation.service";
   styleUrl: "./navbar.component.css",
 })
 export class NavbarComponent {
-  private readonly authState = inject(AuthStateService);
+  private readonly authService = inject(AuthService);
   private readonly cartService = inject(CartService);
   private readonly settingsService = inject(SiteSettingsService);
   private readonly navigationService = inject(NavigationService);
@@ -71,7 +72,7 @@ export class NavbarComponent {
   }
 
   readonly vm$ = combineLatest([
-    this.authState.user$,
+    toObservable(this.authService.currentUser),
     this.cartService.summary$,
     this.settingsService.getSettings(),
     this.navigationService.getMegaMenu(),
@@ -80,7 +81,7 @@ export class NavbarComponent {
     map(([user, summary, settings, menu, isHomePage]) => ({
       user,
       cartCount: summary.itemsCount,
-      settings,
+      settings: settings || null,
       menu,
       isHomePage,
     })),
@@ -116,6 +117,6 @@ export class NavbarComponent {
   }
 
   logout(): void {
-    this.authState.logout();
+    this.authService.logout();
   }
 }

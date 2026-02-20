@@ -28,7 +28,7 @@ public class RegisterDto
 
 public class AuthResponseDto
 {
-    public string AccessToken { get; set; }
+    public string Token { get; set; }
     public UserDto User { get; set; }
 }
 

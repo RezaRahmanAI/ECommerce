@@ -5,7 +5,7 @@
   "private": true,
   "main": "postcss.config.js",
   "scripts": {
-    "start": "ng serve",
+    "start": "ng serve --ssl",
     "build": "ng build",
     "test": "ng test",
     "lint": "ng lint",

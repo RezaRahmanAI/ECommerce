@@ -4,7 +4,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from "@angular/forms";
 import { Router, RouterModule } from "@angular/router";
 import { finalize, take } from "rxjs";
 
-import { AuthStateService } from "../../../../core/services/auth-state.service";
+import { AuthService } from "../../../../core/services/auth.service";
 
 import {
   LucideAngularModule,
@@ -35,7 +35,7 @@ export class LoginPageComponent implements OnInit {
     ArrowRight,
   };
   private readonly formBuilder = inject(FormBuilder);
-  private readonly authState = inject(AuthStateService);
+  private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
 
   readonly loginForm = this.formBuilder.nonNullable.group({
@@ -49,7 +49,7 @@ export class LoginPageComponent implements OnInit {
   errorMessage = "";
 
   ngOnInit(): void {
-    if (this.authState.getSessionSnapshot()) {
+    if (this.authService.currentUser()) {
       void this.router.navigateByUrl("/admin/dashboard");
     }
   }
@@ -75,10 +75,10 @@ export class LoginPageComponent implements OnInit {
     this.isLoading = true;
     this.errorMessage = "";
 
-    const { email, password, rememberMe } = this.loginForm.getRawValue();
+    const { email, password } = this.loginForm.getRawValue();
 
-    this.authState
-      .login(email, password, rememberMe)
+    this.authService
+      .login(email, password)
       .pipe(
         take(1),
         finalize(() => {
