@@ -63,6 +63,10 @@ export class AdminOrderDetailsComponent implements OnInit {
 
   statusClass(status: OrderStatus): string {
     switch (status) {
+      case "Pending":
+        return "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-200";
+      case "Confirmed":
+        return "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-200";
       case "Processing":
         return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-200";
       case "Shipped":

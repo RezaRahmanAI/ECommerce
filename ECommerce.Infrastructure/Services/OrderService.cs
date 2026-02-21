@@ -109,7 +109,7 @@ public class OrderService : IOrderService
             Tax = 0,
             ShippingCost = shippingCost,
             DeliveryMethodId = orderDto.DeliveryMethodId,
-            Status = OrderStatus.Confirmed,
+            Status = OrderStatus.Pending,
             CreatedAt = DateTime.UtcNow
         };
         

@@ -86,6 +86,8 @@ export class AdminOrdersComponent implements OnInit, OnDestroy {
 
   statusOptions: OrdersQueryParams["status"][] = [
     "All",
+    "Pending",
+    "Confirmed",
     "Processing",
     "Packed",
     "Shipped",
@@ -97,6 +99,10 @@ export class AdminOrdersComponent implements OnInit, OnDestroy {
 
   statusClass(status: string): string {
     switch (status) {
+      case "Pending":
+        return "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-200";
+      case "Confirmed":
+        return "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-200";
       case "Processing":
         return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-200";
       case "Packed":
@@ -116,6 +122,8 @@ export class AdminOrdersComponent implements OnInit, OnDestroy {
   // ... (existing code)
 
   getNextStatus(status: string): OrderStatus | null {
+    if (status === "Pending") return "Confirmed";
+    if (status === "Confirmed") return "Processing";
     if (status === "Processing") return "Packed";
     if (status === "Packed") return "Shipped";
     if (status === "Shipped") return "Delivered";
@@ -125,6 +133,8 @@ export class AdminOrdersComponent implements OnInit, OnDestroy {
   nextStatusLabel(order: Order): string | null {
     const nextStatus = this.getNextStatus(order.status);
     if (!nextStatus) return null;
+    if (nextStatus === "Confirmed") return "Confirm Order";
+    if (nextStatus === "Processing") return "Mark as Processing";
     if (nextStatus === "Packed") return "Mark as Packed";
     if (nextStatus === "Shipped") return "Mark as Shipped";
     return "Mark as Delivered";
@@ -388,7 +398,7 @@ export class AdminOrdersComponent implements OnInit, OnDestroy {
 
   private updateStats(orders: Order[]): void {
     const processing = orders.filter(
-      (order) => order.status === "Processing",
+      (order) => order.status === "Processing" || order.status === "Pending",
     ).length;
     const refunds = orders.filter((order) => order.status === "Refund").length;
     const revenue = orders.reduce((total, order) => total + order.total, 0);

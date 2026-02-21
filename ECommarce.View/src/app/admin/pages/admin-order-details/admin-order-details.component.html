@@ -31,6 +31,20 @@
     </div>
     <div class="flex gap-3">
       <button
+        *ngIf="order.status === 'Pending'"
+        (click)="updateStatus(order.id, 'Confirmed')"
+        class="bg-emerald-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-emerald-700 transition flex items-center gap-2"
+      >
+        Confirm Order
+      </button>
+      <button
+        *ngIf="order.status === 'Confirmed'"
+        (click)="updateStatus(order.id, 'Processing')"
+        class="bg-amber-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-amber-700 transition flex items-center gap-2"
+      >
+        Mark Processing
+      </button>
+      <button
         *ngIf="order.status === 'Processing'"
         (click)="updateStatus(order.id, 'Shipped')"
         class="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition"

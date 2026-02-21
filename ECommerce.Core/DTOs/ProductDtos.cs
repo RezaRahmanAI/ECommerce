@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace ECommerce.Core.DTOs;
 
@@ -115,6 +116,7 @@ public class ProductVariantEditDto
     public decimal Price { get; set; }
     public string Sku { get; set; }
     public int Inventory { get; set; }
+    [JsonPropertyName("imageUrl")]
     public string? ImageUrl { get; set; }
 }
 
@@ -129,6 +131,7 @@ public class ProductMediaImageDto
 {
     public string Type { get; set; } = "image";
     public string Label { get; set; } = string.Empty;
+    [JsonPropertyName("imageUrl")]
     public string ImageUrl { get; set; } = string.Empty;
     public string Alt { get; set; } = string.Empty;
     public string Color { get; set; } = string.Empty;
