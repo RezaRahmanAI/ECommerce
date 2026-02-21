@@ -50,14 +50,14 @@ export interface ProductCreatePayload {
     mainImage: {
       type: string;
       label: string;
-      url: string;
+      imageUrl: string;
       alt: string;
       color?: string;
     };
     thumbnails: {
       type: string;
       label: string;
-      url: string;
+      imageUrl: string;
       alt: string;
       color?: string;
     }[];
@@ -111,14 +111,14 @@ export interface ProductUpdatePayload {
     mainImage: {
       type: string;
       label: string;
-      url: string;
+      imageUrl: string;
       alt: string;
       color?: string;
     };
     thumbnails: {
       type: string;
       label: string;
-      url: string;
+      imageUrl: string;
       alt: string;
       color?: string;
     }[];

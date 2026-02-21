@@ -85,14 +85,41 @@ public class AdminCategoryController : ControllerBase
         return Ok(dto);
     }
 
-    [HttpPost("image")]
+    [HttpPost("upload-image")]
+    [DisableRequestSizeLimit]
+    [RequestFormLimits(MultipartBodyLengthLimit = 104857600)]
     public async Task<ActionResult<object>> UploadImage([FromForm] IFormFile file)
     {
-        if (file == null || file.Length == 0)
-            return BadRequest("No file uploaded");
+        try 
+        {
+            if (file == null || file.Length == 0)
+                return BadRequest("No file uploaded");
 
-        var imageUrl = await SaveImageAsync(file);
-        return Ok(new { url = imageUrl });
+            var uploadsFolder = Path.Combine(_environment.WebRootPath, "uploads", "categories");
+            if (!Directory.Exists(uploadsFolder))
+            {
+                Directory.CreateDirectory(uploadsFolder);
+            }
+
+            var fileExtension = Path.GetExtension(file.FileName);
+            var fileName = $"{Guid.NewGuid()}{fileExtension}";
+            var filePath = Path.Combine(uploadsFolder, fileName);
+
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await file.CopyToAsync(stream);
+            }
+
+            return Ok(new { url = $"/uploads/categories/{fileName}" });
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+             return StatusCode(403, new { message = "Permission denied: The server process does not have write access to the categories folder. Error: " + ex.Message });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { message = "An error occurred during image upload: " + ex.Message });
+        }
     }
 
     [HttpPost]

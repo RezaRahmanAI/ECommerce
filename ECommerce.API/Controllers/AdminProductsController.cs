@@ -27,34 +27,50 @@ public class AdminProductsController : ControllerBase
         _unitOfWork = unitOfWork;
     }
 
-    [HttpPost("media")]
+    [HttpPost("upload-media")]
+    [DisableRequestSizeLimit]
+    [RequestFormLimits(MultipartBodyLengthLimit = 104857600)]
     public async Task<ActionResult<List<string>>> UploadProductMedia([FromForm] List<IFormFile> files)
     {
-        if (files == null || files.Count == 0)
-            return BadRequest("No files uploaded");
-
-        var uploadedUrls = new List<string>();
-        var uploadsFolder = Path.Combine(_environment.WebRootPath, "uploads", "products");
-        Directory.CreateDirectory(uploadsFolder);
-
-        foreach (var file in files)
+        try 
         {
-            if (file.Length > 0)
+            if (files == null || files.Count == 0)
+                return BadRequest("No files uploaded");
+
+            var uploadedUrls = new List<string>();
+            var uploadsFolder = Path.Combine(_environment.WebRootPath, "uploads", "products");
+            if (!Directory.Exists(uploadsFolder))
             {
-                var fileExtension = Path.GetExtension(file.FileName);
-                var fileName = $"{Guid.NewGuid()}{fileExtension}";
-                var filePath = Path.Combine(uploadsFolder, fileName);
-
-                using (var stream = new FileStream(filePath, FileMode.Create))
-                {
-                    await file.CopyToAsync(stream);
-                }
-
-                uploadedUrls.Add($"/uploads/products/{fileName}");
+                Directory.CreateDirectory(uploadsFolder);
             }
-        }
 
-        return Ok(uploadedUrls);
+            foreach (var file in files)
+            {
+                if (file.Length > 0)
+                {
+                    var fileExtension = Path.GetExtension(file.FileName);
+                    var fileName = $"{Guid.NewGuid()}{fileExtension}";
+                    var filePath = Path.Combine(uploadsFolder, fileName);
+
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await file.CopyToAsync(stream);
+                    }
+
+                    uploadedUrls.Add($"/uploads/products/{fileName}");
+                }
+            }
+
+            return Ok(uploadedUrls);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+             return StatusCode(403, new { message = "Permission denied: The server process does not have write access to the products folder. Error: " + ex.Message });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { message = "An error occurred during product media upload: " + ex.Message });
+        }
     }
 
     [HttpGet]

@@ -51,6 +51,15 @@ export class LoginPageComponent implements OnInit {
   ngOnInit(): void {
     if (this.authService.currentUser()) {
       void this.router.navigateByUrl("/admin/dashboard");
+      return;
+    }
+
+    const savedEmail = this.authService.getSavedEmail();
+    if (savedEmail) {
+      this.loginForm.patchValue({
+        email: savedEmail,
+        rememberMe: true,
+      });
     }
   }
 
@@ -75,10 +84,10 @@ export class LoginPageComponent implements OnInit {
     this.isLoading = true;
     this.errorMessage = "";
 
-    const { email, password } = this.loginForm.getRawValue();
+    const { email, password, rememberMe } = this.loginForm.getRawValue();
 
     this.authService
-      .login(email, password)
+      .login(email, password, rememberMe)
       .pipe(
         take(1),
         finalize(() => {

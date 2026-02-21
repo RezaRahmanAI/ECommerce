@@ -43,11 +43,14 @@ export const globalErrorInterceptor: HttpInterceptorFn = (request, next) => {
             void router.navigate(["/login"]);
             break;
 
-          case 403:
-            notificationService.error(
-              "You do not have permission to perform this action",
-            );
+          case 403: {
+            const message =
+              error.error?.message ||
+              (typeof error.error === "string" ? error.error : null) ||
+              "You do not have permission to perform this action";
+            notificationService.error(message);
             break;
+          }
 
           case 404:
             // Skip notification for customer lookup (new customer scenario)

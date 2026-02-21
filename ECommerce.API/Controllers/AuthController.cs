@@ -100,11 +100,18 @@ public class AuthController : ControllerBase
     [Microsoft.AspNetCore.Authorization.Authorize]
     public async Task<ActionResult<UserDto>> GetCurrentUser()
     {
-        // With JWT, [Authorize] ensures we have a valid user
-        var email = User.FindFirstValue(System.Security.Claims.ClaimTypes.Email);
-        var user = await _userManager.FindByEmailAsync(email!);
+        // Find by ID directly
+        var userId = User.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier) ?? User.FindFirstValue("nameid");
+        var user = userId != null ? await _userManager.FindByIdAsync(userId) : null;
         
-        if (user == null) return Unauthorized();
+        // Fallback to email
+        if (user == null)
+        {
+            var email = User.FindFirstValue(System.Security.Claims.ClaimTypes.Email) ?? User.FindFirstValue("email");
+            user = email != null ? await _userManager.FindByEmailAsync(email) : null;
+        }
+        
+        if (user == null) return Unauthorized(new { message = "User not found in token claims." });
 
         var roles = await _userManager.GetRolesAsync(user);
         var userRole = roles.FirstOrDefault() ?? "user";

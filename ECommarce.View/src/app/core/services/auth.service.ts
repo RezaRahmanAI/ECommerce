@@ -34,6 +34,7 @@ export class AuthService {
   private readonly api = inject(ApiHttpClient);
   private readonly TOKEN_KEY = "auth_token";
   private readonly USER_KEY = "auth_user";
+  private readonly SAVED_EMAIL_KEY = "saved_email";
 
   // Using a signal for reactive auth state
   readonly currentUser = signal<AuthUser | null>(null);
@@ -44,8 +45,15 @@ export class AuthService {
   }
 
   private restoreSession(): void {
-    const token = localStorage.getItem(this.TOKEN_KEY);
-    const userJson = localStorage.getItem(this.USER_KEY);
+    // Check localStorage first (Remember Me sessions)
+    let token = localStorage.getItem(this.TOKEN_KEY);
+    let userJson = localStorage.getItem(this.USER_KEY);
+
+    // If not in localStorage, check sessionStorage (Non-Remember Me sessions)
+    if (!token || !userJson) {
+      token = sessionStorage.getItem(this.TOKEN_KEY);
+      userJson = sessionStorage.getItem(this.USER_KEY);
+    }
 
     if (token && userJson) {
       try {
@@ -57,7 +65,11 @@ export class AuthService {
     }
   }
 
-  login(email: string, password: string): Observable<AuthSession> {
+  login(
+    email: string,
+    password: string,
+    rememberMe: boolean = false,
+  ): Observable<AuthSession> {
     return this.api
       .post<AuthResponseDto>("/auth/login", {
         email: email.trim(),
@@ -67,8 +79,16 @@ export class AuthService {
         map((response) => this.normalizeSession(response)),
         tap((session) => {
           if (session.token) {
-            localStorage.setItem(this.TOKEN_KEY, session.token);
-            localStorage.setItem(this.USER_KEY, JSON.stringify(session.user));
+            const storage = rememberMe ? localStorage : sessionStorage;
+
+            storage.setItem(this.TOKEN_KEY, session.token);
+            storage.setItem(this.USER_KEY, JSON.stringify(session.user));
+
+            if (rememberMe) {
+              localStorage.setItem(this.SAVED_EMAIL_KEY, session.user.email);
+            } else {
+              localStorage.removeItem(this.SAVED_EMAIL_KEY);
+            }
           }
           this.currentUser.set(session.user);
         }),
@@ -96,7 +116,14 @@ export class AuthService {
   }
 
   getToken(): string | null {
-    return localStorage.getItem(this.TOKEN_KEY);
+    return (
+      localStorage.getItem(this.TOKEN_KEY) ||
+      sessionStorage.getItem(this.TOKEN_KEY)
+    );
+  }
+
+  getSavedEmail(): string | null {
+    return localStorage.getItem(this.SAVED_EMAIL_KEY);
   }
 
   isAuthenticated(): boolean {
@@ -114,6 +141,8 @@ export class AuthService {
   logout(): void {
     localStorage.removeItem(this.TOKEN_KEY);
     localStorage.removeItem(this.USER_KEY);
+    sessionStorage.removeItem(this.TOKEN_KEY);
+    sessionStorage.removeItem(this.USER_KEY);
     this.currentUser.set(null);
 
     // Optional: Call backend to clear cookies if any remain, but strictly we are stateless now

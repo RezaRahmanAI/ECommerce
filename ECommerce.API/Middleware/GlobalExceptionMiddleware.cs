@@ -50,8 +50,8 @@ public class GlobalExceptionMiddleware
                 break;
             
             case UnauthorizedAccessException:
-                statusCode = HttpStatusCode.Unauthorized;
-                message = "Unauthorized access attempt";
+                statusCode = HttpStatusCode.Forbidden;
+                message = "Permission denied: The server process does not have write access. Please check the folder permissions.";
                 break;
             
             case KeyNotFoundException:

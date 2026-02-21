@@ -43,7 +43,7 @@ export class SubCategoriesService {
     const formData = new FormData();
     formData.append("file", file);
     return this.api
-      .post<{ url: string }>("/admin/subcategories/image", formData)
+      .post<{ url: string }>("/admin/subcategories/upload-image", formData)
       .pipe(map((response) => response.url));
   }
 }

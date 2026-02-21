@@ -129,7 +129,7 @@ public class ProductMediaImageDto
 {
     public string Type { get; set; } = "image";
     public string Label { get; set; } = string.Empty;
-    public string Url { get; set; } = string.Empty;
+    public string ImageUrl { get; set; } = string.Empty;
     public string Alt { get; set; } = string.Empty;
     public string Color { get; set; } = string.Empty;
 }

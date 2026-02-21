@@ -129,7 +129,7 @@ export class ProductsService {
     }
     const formData = new FormData();
     files.forEach((file) => formData.append("files", file));
-    return this.api.post<string[]>("/admin/products/media", formData);
+    return this.api.post<string[]>("/admin/products/upload-media", formData);
   }
 
   removeProductMedia(productId: number, mediaUrl: string): Observable<boolean> {

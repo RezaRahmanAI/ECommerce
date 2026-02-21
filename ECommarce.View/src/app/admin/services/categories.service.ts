@@ -38,7 +38,7 @@ export class CategoriesService {
     const formData = new FormData();
     formData.append("file", file);
     return this.api
-      .post<{ url: string }>("/admin/categories/image", formData)
+      .post<{ url: string }>("/admin/categories/upload-image", formData)
       .pipe(map((response) => response.url));
   }
 

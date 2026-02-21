@@ -69,7 +69,8 @@ builder.Services.AddAuthentication(options =>
         ValidAudience = builder.Configuration["Token:Audience"],
         ValidateAudience = true,
         ValidateLifetime = true,
-        ClockSkew = TimeSpan.Zero
+        ClockSkew = TimeSpan.Zero,
+        RoleClaimType = System.Security.Claims.ClaimTypes.Role // Explicitly map role claims
     };
 });
 
@@ -146,6 +147,30 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+// Ensure Upload Directories Exist
+try
+{
+    var uploadPaths = new[]
+    {
+        Path.Combine(app.Environment.WebRootPath, "uploads", "categories"),
+        Path.Combine(app.Environment.WebRootPath, "uploads", "products"),
+        Path.Combine(app.Environment.WebRootPath, "uploads", "banners"),
+        Path.Combine(app.Environment.WebRootPath, "uploads", "subcategories")
+    };
+
+    foreach (var path in uploadPaths)
+    {
+        if (!Directory.Exists(path))
+        {
+            Directory.CreateDirectory(path);
+        }
+    }
+}
+catch (Exception ex)
+{
+    Log.Error(ex, "Failed to create upload directories");
+}
 
 // Seed Data
 using (var scope = app.Services.CreateScope())

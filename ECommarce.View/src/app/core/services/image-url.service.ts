@@ -11,23 +11,36 @@ export class ImageUrlService {
    * @returns Absolute URL to the image
    */
   getImageUrl(imageUrl: string | null | undefined): string {
-    if (!imageUrl) {
-      return "assets/images/placeholder.png"; // Fallback for missing images
+    if (!imageUrl || typeof imageUrl !== "string") {
+      return "assets/images/placeholder.png";
     }
 
+    const trimmedUrl = imageUrl.trim();
+
     // If it's a data URI or blob URL (local preview), return as is
-    if (imageUrl.startsWith("data:") || imageUrl.startsWith("blob:")) {
-      return imageUrl;
+    if (trimmedUrl.startsWith("data:") || trimmedUrl.startsWith("blob:")) {
+      return trimmedUrl;
     }
 
     // If it's already an absolute URL, return as is
-    if (imageUrl.startsWith("http://") || imageUrl.startsWith("https://")) {
-      return imageUrl;
+    if (/^https?:\/\//i.test(trimmedUrl)) {
+      return trimmedUrl;
     }
 
     // Convert relative URL to absolute URL using backend base URL
-    const baseUrl = environment.apiBaseUrl.replace("/api", "");
-    const cleanUrl = imageUrl.startsWith("/") ? imageUrl : "/" + imageUrl;
-    return `${baseUrl}${cleanUrl}`;
+    // environment.apiBaseUrl is typically something like "https://api.example.com/api"
+    // We want the root domain for static files.
+    const baseUrl = environment.apiBaseUrl.replace(/\/api\/?$/, "");
+    const cleanPath = trimmedUrl.startsWith("/")
+      ? trimmedUrl
+      : "/" + trimmedUrl;
+
+    const finalUrl = `${baseUrl}${cleanPath}`;
+
+    if (!environment.production) {
+      console.log(`[ImageUrlService] Normalizing: ${imageUrl} -> ${finalUrl}`);
+    }
+
+    return finalUrl;
   }
 }

@@ -706,7 +706,7 @@ export class AdminProductFormComponent implements OnDestroy {
     const mainImage = {
       type: mainImageItem?.type || "image",
       label: mainImageItem?.label || "Main Image",
-      url: mainImageItem?.url || "",
+      imageUrl: mainImageItem?.url || "",
       alt: mainImageItem?.alt || "",
       color: mainImageItem?.color || "",
     };
@@ -714,7 +714,7 @@ export class AdminProductFormComponent implements OnDestroy {
     const thumbnails = thumbnailItems.map((item) => ({
       type: item.type,
       label: item.label,
-      url: item.url,
+      imageUrl: item.url,
       alt: item.alt,
       color: item.color || "",
     }));

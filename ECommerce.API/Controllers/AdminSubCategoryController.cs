@@ -157,25 +157,41 @@ public class AdminSubCategoryController : ControllerBase
         return NoContent();
     }
 
-    [HttpPost("image")]
+    [HttpPost("upload-image")]
+    [DisableRequestSizeLimit]
+    [RequestFormLimits(MultipartBodyLengthLimit = 104857600)]
     public async Task<ActionResult<object>> UploadImage([FromForm] IFormFile file)
     {
-        if (file == null || file.Length == 0)
-            return BadRequest("No file uploaded");
-
-        var uploadsFolder = Path.Combine(_environment.WebRootPath, "uploads", "subcategories");
-        Directory.CreateDirectory(uploadsFolder);
-
-        var fileExtension = Path.GetExtension(file.FileName);
-        var fileName = $"{Guid.NewGuid()}{fileExtension}";
-        var filePath = Path.Combine(uploadsFolder, fileName);
-
-        using (var stream = new FileStream(filePath, FileMode.Create))
+        try 
         {
-            await file.CopyToAsync(stream);
-        }
+            if (file == null || file.Length == 0)
+                return BadRequest("No file uploaded");
 
-        return Ok(new { url = $"/uploads/subcategories/{fileName}" });
+            var uploadsFolder = Path.Combine(_environment.WebRootPath, "uploads", "subcategories");
+            if (!Directory.Exists(uploadsFolder))
+            {
+                Directory.CreateDirectory(uploadsFolder);
+            }
+
+            var fileExtension = Path.GetExtension(file.FileName);
+            var fileName = $"{Guid.NewGuid()}{fileExtension}";
+            var filePath = Path.Combine(uploadsFolder, fileName);
+
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await file.CopyToAsync(stream);
+            }
+
+            return Ok(new { url = $"/uploads/subcategories/{fileName}" });
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+             return StatusCode(403, new { message = "Permission denied: The server process does not have write access to the subcategories folder. Error: " + ex.Message });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { message = "An error occurred during subcategory image upload: " + ex.Message });
+        }
     }
 
     private static string GenerateSlug(string name)

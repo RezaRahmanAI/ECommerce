@@ -63,7 +63,7 @@ public class ProductService : IProductService
             StockQuantity = dto.InventoryVariants.Sum(v => v.Inventory),
             IsActive = dto.StatusActive,
             CategoryId = category.Id,
-            ImageUrl = dto.Media?.MainImage?.Url,
+            ImageUrl = dto.Media?.MainImage?.ImageUrl,
 
             IsNew = dto.NewArrival,
             Slug = GenerateSlug(dto.Name),
@@ -85,7 +85,7 @@ public class ProductService : IProductService
         if (dto.Media?.MainImage != null)
         {
             product.Images.Add(new ProductImage {
-                Url = dto.Media.MainImage.Url,
+                Url = dto.Media.MainImage.ImageUrl,
                 AltText = dto.Media.MainImage.Alt,
                 Label = dto.Media.MainImage.Label,
                 MediaType = dto.Media.MainImage.Type ?? "image",
@@ -97,7 +97,7 @@ public class ProductService : IProductService
         foreach (var thumb in dto.Media?.Thumbnails ?? new())
         {
             product.Images.Add(new ProductImage {
-                Url = thumb.Url,
+                Url = thumb.ImageUrl,
                 AltText = thumb.Alt,
                 Label = thumb.Label,
                 MediaType = thumb.Type ?? "image",
@@ -142,7 +142,7 @@ public class ProductService : IProductService
         product.PurchaseRate = dto.PurchaseRate;
         product.IsActive = dto.StatusActive;
         product.CategoryId = category.Id;
-        product.ImageUrl = dto.Media?.MainImage?.Url;
+        product.ImageUrl = dto.Media?.MainImage?.ImageUrl;
 
         product.IsNew = dto.NewArrival;
         product.FabricAndCare = dto.Meta?.FabricAndCare;
@@ -164,7 +164,7 @@ public class ProductService : IProductService
         if (dto.Media?.MainImage != null)
         {
             product.Images.Add(new ProductImage {
-                Url = dto.Media.MainImage.Url,
+                Url = dto.Media.MainImage.ImageUrl,
                 AltText = dto.Media.MainImage.Alt,
                 Label = dto.Media.MainImage.Label,
                 MediaType = dto.Media.MainImage.Type ?? "image",
@@ -176,7 +176,7 @@ public class ProductService : IProductService
         foreach (var thumb in dto.Media?.Thumbnails ?? new())
         {
             product.Images.Add(new ProductImage {
-                Url = thumb.Url,
+                Url = thumb.ImageUrl,
                 AltText = thumb.Alt,
                 Label = thumb.Label,
                 MediaType = thumb.Type ?? "image",
