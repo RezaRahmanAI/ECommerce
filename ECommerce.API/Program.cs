@@ -34,6 +34,14 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// Performance: Response Compression and Caching
+builder.Services.AddResponseCompression(options =>
+{
+    options.EnableForHttps = true;
+});
+builder.Services.AddMemoryCache();
+
+
 // Database
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -131,7 +139,9 @@ app.UseSwagger();
 
 app.UseHttpsRedirection();
 
+app.UseResponseCompression();
 app.UseStaticFiles(); // Enable serving static files from wwwroot
+
 
 // Global exception handling
 app.UseCors("AllowAll");

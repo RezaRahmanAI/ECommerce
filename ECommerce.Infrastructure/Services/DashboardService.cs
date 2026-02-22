@@ -7,65 +7,77 @@ using ECommerce.Core.Entities;
 using ECommerce.Core.Interfaces;
 using ECommerce.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace ECommerce.Infrastructure.Services;
 
 public class DashboardService : IDashboardService
 {
     private readonly ApplicationDbContext _context;
+    private readonly IMemoryCache _cache;
+    private const string DashboardStatsCacheKey = "DashboardStats";
 
-    public DashboardService(ApplicationDbContext context)
+    public DashboardService(ApplicationDbContext context, IMemoryCache cache)
     {
         _context = context;
+        _cache = cache;
     }
 
     public async Task<DashboardStatsDto> GetDashboardStatsAsync()
     {
-        var totalOrders = await _context.Orders.CountAsync();
-        var totalProducts = await _context.Products.CountAsync();
-        var totalCustomers = await _context.Users.CountAsync();
-        
-        var deliveredOrders = await _context.Orders.CountAsync(o => o.Status == OrderStatus.Delivered);
-        var pendingOrders = await _context.Orders.CountAsync(o => o.Status == OrderStatus.Pending || o.Status == OrderStatus.Confirmed || o.Status == OrderStatus.Processing);
-        var shippedOrders = await _context.Orders.CountAsync(o => o.Status == OrderStatus.Shipped);
-        var cancelledOrders = await _context.Orders.CountAsync(o => o.Status == OrderStatus.Cancelled);
-
-        // Revenue from Confirmed, Processing, Packed, Shipped, Delivered (All valid sales)
-        var validStatuses = new[] { OrderStatus.Pending, OrderStatus.Confirmed, OrderStatus.Processing, OrderStatus.Packed, OrderStatus.Shipped, OrderStatus.Delivered };
-
-        var totalRevenue = await _context.Orders
-            .Where(o => validStatuses.Contains(o.Status))
-            .SumAsync(o => (decimal?)o.Total) ?? 0;
-
-        // Calculate Average Selling Price (ASP)
-        var totalItemsSold = await _context.Orders
-            .Where(o => validStatuses.Contains(o.Status))
-            .SelectMany(o => o.Items)
-            .SumAsync(i => (int?)i.Quantity) ?? 0;
-            
-        var avgSellingPrice = totalItemsSold > 0 ? totalRevenue / totalItemsSold : 0;
-
-        // Calculate Total Purchase Cost (Sum of PurchaseRate * Quantity for sold items)
-        var totalPurchaseCost = await _context.Orders
-            .Where(o => validStatuses.Contains(o.Status))
-            .SelectMany(o => o.Items)
-            .SumAsync(i => (decimal?)(i.Product.PurchaseRate * i.Quantity)) ?? 0;
-
-        return new DashboardStatsDto
+        return await _cache.GetOrCreateAsync(DashboardStatsCacheKey, async entry =>
         {
-            TotalOrders = totalOrders,
-            TotalProducts = totalProducts,
-            TotalCustomers = totalCustomers,
-            TotalRevenue = totalRevenue,
-            DeliveredOrders = deliveredOrders,
-            PendingOrders = pendingOrders,
-            ReturnedOrders = 0, // Placeholder as there's no Return status yet
-            CustomerQueries = 0, // Placeholder
-            TotalPurchaseCost = totalPurchaseCost,
-            AverageSellingPrice = avgSellingPrice,
-            ReturnValue = 0,
-            ReturnRate = "0%"
-        };
+            entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5);
+
+            var totalOrders = await _context.Orders.AsNoTracking().CountAsync();
+            var totalProducts = await _context.Products.AsNoTracking().CountAsync();
+            var totalCustomers = await _context.Users.AsNoTracking().CountAsync();
+            
+            var deliveredOrders = await _context.Orders.AsNoTracking().CountAsync(o => o.Status == OrderStatus.Delivered);
+            var pendingOrders = await _context.Orders.AsNoTracking().CountAsync(o => o.Status == OrderStatus.Pending || o.Status == OrderStatus.Confirmed || o.Status == OrderStatus.Processing);
+            var shippedOrders = await _context.Orders.AsNoTracking().CountAsync(o => o.Status == OrderStatus.Shipped);
+            var cancelledOrders = await _context.Orders.AsNoTracking().CountAsync(o => o.Status == OrderStatus.Cancelled);
+
+            // Revenue from Confirmed, Processing, Packed, Shipped, Delivered (All valid sales)
+            var validStatuses = new[] { OrderStatus.Pending, OrderStatus.Confirmed, OrderStatus.Processing, OrderStatus.Packed, OrderStatus.Shipped, OrderStatus.Delivered };
+
+            var totalRevenue = await _context.Orders
+                .AsNoTracking()
+                .Where(o => validStatuses.Contains(o.Status))
+                .SumAsync(o => (decimal?)o.Total) ?? 0;
+
+            // Calculate Average Selling Price (ASP)
+            var totalItemsSold = await _context.Orders
+                .AsNoTracking()
+                .Where(o => validStatuses.Contains(o.Status))
+                .SelectMany(o => o.Items)
+                .SumAsync(i => (int?)i.Quantity) ?? 0;
+                
+            var avgSellingPrice = totalItemsSold > 0 ? totalRevenue / totalItemsSold : 0;
+
+            // Calculate Total Purchase Cost (Sum of PurchaseRate * Quantity for sold items)
+            var totalPurchaseCost = await _context.Orders
+                .AsNoTracking()
+                .Where(o => validStatuses.Contains(o.Status))
+                .SelectMany(o => o.Items)
+                .SumAsync(i => (decimal?)(i.Product.PurchaseRate * i.Quantity)) ?? 0;
+
+            return new DashboardStatsDto
+            {
+                TotalOrders = totalOrders,
+                TotalProducts = totalProducts,
+                TotalCustomers = totalCustomers,
+                TotalRevenue = totalRevenue,
+                DeliveredOrders = deliveredOrders,
+                PendingOrders = pendingOrders,
+                ReturnedOrders = 0, // Placeholder as there's no Return status yet
+                CustomerQueries = 0, // Placeholder
+                TotalPurchaseCost = totalPurchaseCost,
+                AverageSellingPrice = avgSellingPrice,
+                ReturnValue = 0,
+                ReturnRate = "0%"
+            };
+        }) ?? new DashboardStatsDto();
     }
 
 
@@ -73,11 +85,13 @@ public class DashboardService : IDashboardService
     {
         // Get products with actual sold count from completed orders
         var products = await _context.Products
+            .AsNoTracking()
             .Include(p => p.Images)
             .Select(p => new
             {
                 Product = p,
                 SoldCount = _context.Orders
+                    .AsNoTracking()
                     .Where(o => o.Status == OrderStatus.Confirmed || o.Status == OrderStatus.Processing || o.Status == OrderStatus.Packed || o.Status == OrderStatus.Shipped || o.Status == OrderStatus.Delivered)
                     .SelectMany(o => o.Items)
                     .Where(i => i.ProductId == p.Id)
@@ -101,6 +115,7 @@ public class DashboardService : IDashboardService
     public async Task<List<RecentOrderDto>> GetRecentOrdersAsync()
     {
         return await _context.Orders
+            .AsNoTracking()
             .OrderByDescending(o => o.CreatedAt)
             .Take(5)
             .Select(o => new RecentOrderDto
@@ -126,6 +141,7 @@ public class DashboardService : IDashboardService
             var startDate = new DateTime(endDate.Year, endDate.Month, 1).AddMonths(-11);
             
             var salesData = await _context.Orders
+                .AsNoTracking()
                 .Where(o => validStatuses.Contains(o.Status) && o.CreatedAt >= startDate)
                 .GroupBy(o => new { o.CreatedAt.Year, o.CreatedAt.Month })
                 .Select(g => new
@@ -147,6 +163,7 @@ public class DashboardService : IDashboardService
         {
             // Group by Year for all time
             var salesData = await _context.Orders
+                .AsNoTracking()
                 .Where(o => validStatuses.Contains(o.Status))
                 .GroupBy(o => o.CreatedAt.Year)
                 .Select(g => new
@@ -169,6 +186,7 @@ public class DashboardService : IDashboardService
             var startDate = period.ToLower() == "week" ? endDate.AddDays(-7) : endDate.AddDays(-30);
 
             var salesData = await _context.Orders
+                .AsNoTracking()
                 .Where(o => validStatuses.Contains(o.Status) &&
                             o.CreatedAt >= startDate && o.CreatedAt <= endDate)
                 .GroupBy(o => o.CreatedAt.Date)
@@ -191,6 +209,7 @@ public class DashboardService : IDashboardService
     public async Task<List<StatusDistributionDto>> GetOrderStatusDistributionAsync()
     {
         var distribution = await _context.Orders
+            .AsNoTracking()
             .GroupBy(o => o.Status)
             .Select(g => new
             {
@@ -212,6 +231,7 @@ public class DashboardService : IDashboardService
         var startDate = DateTime.UtcNow.AddMonths(-6);
 
         var growth = await _context.Customers 
+            .AsNoTracking()
             .Where(c => c.CreatedAt >= startDate)
             .GroupBy(c => new { c.CreatedAt.Year, c.CreatedAt.Month })
             .Select(g => new 

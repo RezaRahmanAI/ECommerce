@@ -29,8 +29,8 @@ export class MenProductsPageComponent implements OnInit {
   constructor(private readonly productService: ProductService) {}
 
   ngOnInit(): void {
-    this.productService.getProducts({ gender: "men" }).subscribe((products) => {
-      this.products = products;
+    this.productService.getProducts({ gender: "men" }).subscribe((response) => {
+      this.products = response.data;
     });
   }
 }

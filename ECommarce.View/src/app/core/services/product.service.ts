@@ -5,6 +5,7 @@ import { ApiHttpClient } from "../http/http-client";
 import { MOCK_REVIEWS } from "../data/mock-reviews";
 import { Product } from "../models/product";
 import { Review } from "../models/review";
+import { Pagination } from "../models/pagination";
 
 @Injectable({
   providedIn: "root",
@@ -14,19 +15,19 @@ export class ProductService {
   private readonly baseUrl = "/products";
   private readonly adminBaseUrl = "/admin/products";
 
-  getProducts(params?: any): Observable<Product[]> {
-    return this.api.get<Product[]>(this.baseUrl, { params });
+  getProducts(params?: any): Observable<Pagination<Product>> {
+    return this.api.get<Pagination<Product>>(this.baseUrl, { params });
   }
 
-  getFeaturedProducts(limit = 10): Observable<Product[]> {
-    return this.api.get<Product[]>(this.baseUrl, {
-      params: { limit, isFeatured: true } as any,
+  getFeaturedProducts(limit = 10): Observable<Pagination<Product>> {
+    return this.api.get<Pagination<Product>>(this.baseUrl, {
+      params: { pageSize: limit, isFeatured: true } as any,
     });
   }
 
-  getNewArrivals(limit = 10): Observable<Product[]> {
-    return this.api.get<Product[]>(this.baseUrl, {
-      params: { limit, isNew: true } as any,
+  getNewArrivals(limit = 10): Observable<Pagination<Product>> {
+    return this.api.get<Pagination<Product>>(this.baseUrl, {
+      params: { pageSize: limit, isNew: true } as any,
     });
   }
 
@@ -34,14 +35,14 @@ export class ProductService {
     collectionId?: number,
     categoryId?: number,
     limit = 4,
-  ): Observable<Product[]> {
-    const params: any = { limit };
+  ): Observable<Pagination<Product>> {
+    const params: any = { pageSize: limit };
     if (collectionId) {
       params.collectionId = collectionId;
     } else if (categoryId) {
       params.categoryId = categoryId;
     }
-    return this.api.get<Product[]>(this.baseUrl, { params });
+    return this.api.get<Pagination<Product>>(this.baseUrl, { params });
   }
 
   getById(id: number): Observable<Product> {

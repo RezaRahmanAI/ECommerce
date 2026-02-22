@@ -18,8 +18,8 @@ export class FeaturedProductsComponent implements OnInit {
   constructor(private readonly productService: ProductService) {}
 
   ngOnInit(): void {
-    this.productService.getFeaturedProducts().subscribe((products) => {
-      this.products = products;
+    this.productService.getFeaturedProducts().subscribe((response) => {
+      this.products = response.data;
     });
   }
 }

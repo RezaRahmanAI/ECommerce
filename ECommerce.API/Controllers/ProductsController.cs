@@ -30,17 +30,34 @@ public class ProductsController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<IReadOnlyList<ProductDto>>> GetProducts(string? sort, int? categoryId, int? subCategoryId, int? collectionId, string? categorySlug, string? subCategorySlug, string? collectionSlug, string? searchTerm, string? tier, string? tags, bool? isNew, bool? isFeatured)
+    public async Task<ActionResult<PaginationDto<ProductDto>>> GetProducts(
+        [FromQuery] string? sort, 
+        [FromQuery] int? categoryId, 
+        [FromQuery] int? subCategoryId, 
+        [FromQuery] int? collectionId, 
+        [FromQuery] string? categorySlug, 
+        [FromQuery] string? subCategorySlug, 
+        [FromQuery] string? collectionSlug, 
+        [FromQuery] string? searchTerm, 
+        [FromQuery] string? tier, 
+        [FromQuery] string? tags, 
+        [FromQuery] bool? isNew, 
+        [FromQuery] bool? isFeatured,
+        [FromQuery] int pageIndex = 1,
+        [FromQuery] int pageSize = 12)
     {
-        // Keeping this for now, but ideally should move to Service
-        var spec = new ProductsWithCategoriesSpecification(sort, categoryId, subCategoryId, collectionId, categorySlug, subCategorySlug, collectionSlug, searchTerm, tier, tags, isNew, isFeatured);
+        var skip = (pageIndex - 1) * pageSize;
+        var take = pageSize;
 
+        var spec = new ProductsWithCategoriesSpecification(sort, categoryId, subCategoryId, collectionId, categorySlug, subCategorySlug, collectionSlug, searchTerm, tier, tags, isNew, isFeatured, skip, take);
+        var countSpec = new ProductsWithCategoriesSpecification(sort, categoryId, subCategoryId, collectionId, categorySlug, subCategorySlug, collectionSlug, searchTerm, tier, tags, isNew, isFeatured);
 
+        var totalItems = await _productsRepo.CountAsync(countSpec);
         var products = await _productsRepo.ListAsync(spec);
-        // Note: This mapping needs to be updated in AutoMapper profile to handle new properties
-        // For now, returning basic list
+        
         var dtos = _mapper.Map<IReadOnlyList<ProductDto>>(products);
-        return Ok(dtos);
+        
+        return Ok(new PaginationDto<ProductDto>(pageIndex, pageSize, totalItems, dtos));
     }
 
     [HttpGet("{slug}")]

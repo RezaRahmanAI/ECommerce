@@ -64,6 +64,10 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
                   .WithMany(c => c.Products)
                   .HasForeignKey(p => p.CollectionId)
                   .OnDelete(DeleteBehavior.Restrict);
+
+            // Indexes for Performance
+            entity.HasIndex(p => p.Slug).IsUnique();
+            entity.HasIndex(p => p.Sku).IsUnique();
         });
         
         // Product Variant Configuration
@@ -84,6 +88,8 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
                   .WithMany(c => c.ChildCategories)
                   .HasForeignKey(c => c.ParentId)
                   .OnDelete(DeleteBehavior.Restrict);
+            
+            entity.HasIndex(c => c.Slug);
         });
 
         // Category Hierarchy
@@ -93,6 +99,8 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
                   .WithMany(c => c.SubCategories)
                   .HasForeignKey(sc => sc.CategoryId)
                   .OnDelete(DeleteBehavior.Cascade);
+            
+            entity.HasIndex(sc => sc.Slug);
         });
 
         builder.Entity<Collection>(entity =>
@@ -101,6 +109,8 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
                   .WithMany(sc => sc.Collections)
                   .HasForeignKey(c => c.SubCategoryId)
                   .OnDelete(DeleteBehavior.Cascade);
+            
+            entity.HasIndex(c => c.Slug);
         });
 
         // Navigation Menu Self-Referencing

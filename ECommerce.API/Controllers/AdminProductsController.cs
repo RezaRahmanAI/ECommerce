@@ -290,6 +290,9 @@ public class AdminProductsController : ControllerBase
     {
         var spec = new BaseSpecification<Product>();
         spec.AddInclude(x => x.Variants);
+        
+        // Performance: Use AsNoTracking indirectly via the repository if it supports it, 
+        // but here we are using ListAsync(spec).
         var products = await _unitOfWork.Repository<Product>().ListAsync(spec);
 
         var inventory = products.Select(p => new ProductInventoryDto

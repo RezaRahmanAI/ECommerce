@@ -4,7 +4,7 @@ namespace ECommerce.Core.Specifications;
 
 public class ProductsWithCategoriesSpecification : BaseSpecification<Product>
 {
-    public ProductsWithCategoriesSpecification(string? sort, int? categoryId, int? subCategoryId, int? collectionId, string? categorySlug, string? subCategorySlug, string? collectionSlug, string? search, string? tier, string? tags, bool? isNew = null, bool? isFeatured = null)
+    public ProductsWithCategoriesSpecification(string? sort, int? categoryId, int? subCategoryId, int? collectionId, string? categorySlug, string? subCategorySlug, string? collectionSlug, string? search, string? tier, string? tags, bool? isNew = null, bool? isFeatured = null, int? skip = null, int? take = null)
         : base(x => 
             (string.IsNullOrEmpty(search) || x.Name.ToLower().Contains(search.ToLower()) || (x.Description != null && x.Description.ToLower().Contains(search.ToLower()))) &&
             (!categoryId.HasValue || x.CategoryId == categoryId) &&
@@ -47,6 +47,11 @@ public class ProductsWithCategoriesSpecification : BaseSpecification<Product>
                     AddOrderBy(n => n.Name);
                     break;
             }
+        }
+
+        if (skip.HasValue && take.HasValue)
+        {
+            ApplyPaging(skip.Value, take.Value);
         }
     }
 

@@ -81,8 +81,8 @@ export class ProductGalleryComponent implements OnInit {
     }
 
     this.productService.getProducts(filterParams).subscribe({
-      next: (products) => {
-        this.products = products;
+      next: (response) => {
+        this.products = response.data;
         this.loading = false;
       },
       error: () => {
