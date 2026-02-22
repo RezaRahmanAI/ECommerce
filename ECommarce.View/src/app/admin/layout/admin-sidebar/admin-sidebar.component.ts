@@ -20,7 +20,9 @@ import {
   LogOut,
   ChevronDown,
   ChevronUp,
+  X,
 } from "lucide-angular";
+import { SidebarService } from "../../services/sidebar.service";
 
 interface AdminNavItem {
   label: string;
@@ -38,6 +40,7 @@ import { ImageUrlService } from "../../../core/services/image-url.service";
   templateUrl: "./admin-sidebar.component.html",
 })
 export class AdminSidebarComponent implements OnInit {
+  protected sidebarService = inject(SidebarService);
   private router = inject(Router);
   private settingsService = inject(SiteSettingsService);
   public imageUrlService = inject(ImageUrlService);
@@ -51,6 +54,7 @@ export class AdminSidebarComponent implements OnInit {
     ChevronUp,
     Eye,
     LogOut,
+    X,
   };
 
   topItems: AdminNavItem[] = [

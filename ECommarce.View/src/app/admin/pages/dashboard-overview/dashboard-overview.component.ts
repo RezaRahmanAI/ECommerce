@@ -93,8 +93,8 @@ export class DashboardOverviewComponent {
     this.adminDashboardService.getDailyTraffic(),
   );
 
-  timeRanges = ["Last 30 Days", "Last 7 Days", "This Year"];
-  selectedRange = this.timeRanges[0];
+  timeRanges = ["Last 7 Days", "Last 30 Days", "Last 12 Months", "All Time"];
+  selectedRange = this.timeRanges[1];
 
   onRangeChange(value: string): void {
     this.selectedRange = value;
@@ -110,8 +110,10 @@ export class DashboardOverviewComponent {
     switch (range) {
       case "Last 7 Days":
         return "week";
-      case "This Year":
+      case "Last 12 Months":
         return "year";
+      case "All Time":
+        return "all";
       default:
         return "month";
     }
@@ -182,6 +184,11 @@ export class DashboardOverviewComponent {
 
     // Generate path (simple line for now, could be smooth curve)
     return `M${points.join(" L")}`;
+  }
+
+  getMaxAmount(data: SalesData[]): number {
+    if (!data || data.length === 0) return 0;
+    return Math.max(...data.map((d) => d.amount));
   }
 
   // Helper to generate area fill path (closed loop)

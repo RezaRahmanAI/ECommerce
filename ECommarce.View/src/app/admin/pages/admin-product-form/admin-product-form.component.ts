@@ -116,6 +116,7 @@ export class AdminProductFormComponent implements OnDestroy {
       purchaseRate: [0, [Validators.required, Validators.min(0)]],
 
       newArrival: [false],
+      isFeatured: [false],
 
       tier: [""],
       tags: [""],
@@ -283,6 +284,7 @@ export class AdminProductFormComponent implements OnDestroy {
           purchaseRate: product.price,
 
           newArrival: product.isNew || false,
+          isFeatured: product.isFeatured || false,
 
           tier: (product as any).tier || "",
           tags: (product as any).tags || "",
@@ -780,6 +782,7 @@ export class AdminProductFormComponent implements OnDestroy {
       purchaseRate: Number(raw.purchaseRate ?? 0),
 
       newArrival: Boolean(raw.newArrival),
+      isFeatured: Boolean(raw.isFeatured),
 
       media: {
         mainImage,

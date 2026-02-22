@@ -4,6 +4,7 @@ import { BehaviorSubject, Observable, map } from "rxjs";
 import { CartItem, CartSummary } from "../models/cart";
 import { Product } from "../models/product";
 import { SettingsService } from "../../admin/services/settings.service";
+import { AnalyticsService } from "./analytics.service";
 
 @Injectable({
   providedIn: "root",
@@ -14,6 +15,7 @@ export class CartService {
   private readonly taxRate = 0;
   private readonly storageKey = "cart_items";
   private readonly settingsService = inject(SettingsService);
+  private readonly analyticsService = inject(AnalyticsService);
 
   private readonly cartItemsSubject = new BehaviorSubject<CartItem[]>(
     this.loadCart(),
@@ -30,7 +32,7 @@ export class CartService {
     });
 
     // Subscribe to settings updates
-    this.settingsService.settings$.subscribe((settings) => {
+    this.settingsService.settings$.subscribe((settings: any) => {
       if (settings) {
         // Global shipping settings removed. Shipping is calculated at checkout based on delivery method.
         // However, we still need the threshold for calculations and UI feedback
@@ -71,14 +73,19 @@ export class CartService {
 
     if (existing) {
       this.updateQty(existing.id, existing.quantity + quantity);
+      this.analyticsService.trackAddToCart({ ...existing, quantity });
       return;
     }
 
-    const nextItems = [
-      ...items,
-      this.createCartItem(product, quantity, resolvedColor, resolvedSize),
-    ];
+    const newItem = this.createCartItem(
+      product,
+      quantity,
+      resolvedColor,
+      resolvedSize,
+    );
+    const nextItems = [...items, newItem];
     this.cartItemsSubject.next(nextItems);
+    this.analyticsService.trackAddToCart(newItem);
   }
 
   removeItem(cartItemId: string): void {

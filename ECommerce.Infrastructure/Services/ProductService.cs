@@ -66,6 +66,7 @@ public class ProductService : IProductService
             ImageUrl = dto.Media?.MainImage?.ImageUrl ?? string.Empty,
 
             IsNew = dto.NewArrival,
+            IsFeatured = dto.IsFeatured,
             Slug = GenerateSlug(dto.Name),
             Sku = $"PRD-{DateTime.UtcNow.Ticks}",
             FabricAndCare = dto.Meta?.FabricAndCare,
@@ -145,6 +146,7 @@ public class ProductService : IProductService
         product.ImageUrl = dto.Media?.MainImage?.ImageUrl ?? string.Empty;
 
         product.IsNew = dto.NewArrival;
+        product.IsFeatured = dto.IsFeatured;
         product.FabricAndCare = dto.Meta?.FabricAndCare;
         product.ShippingAndReturns = dto.Meta?.ShippingAndReturns;
 

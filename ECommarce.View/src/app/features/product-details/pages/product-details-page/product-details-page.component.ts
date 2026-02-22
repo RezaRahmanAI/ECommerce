@@ -21,6 +21,7 @@ import { CartService } from "../../../../core/services/cart.service";
 import { PriceDisplayComponent } from "../../../../shared/components/price-display/price-display.component";
 import { ImageUrlService } from "../../../../core/services/image-url.service";
 import { NotificationService } from "../../../../core/services/notification.service";
+import { AnalyticsService } from "../../../../core/services/analytics.service";
 
 import { ProductCardComponent } from "../../../../shared/components/product-card/product-card.component";
 import { SizeGuideComponent } from "../../../../shared/components/size-guide/size-guide.component";
@@ -71,6 +72,7 @@ export class ProductDetailsPageComponent {
   private readonly notificationService = inject(NotificationService);
   private readonly router = inject(Router);
   readonly imageUrlService = inject(ImageUrlService);
+  private readonly analyticsService = inject(AnalyticsService);
 
   isSizeGuideOpen = false;
   currentImageIndex = 0;
@@ -109,6 +111,7 @@ export class ProductDetailsPageComponent {
       this.quantitySubject.next(1);
       this.selectedMediaSubject.next(null); // Reset or set to first image
       this.currentImageIndex = 0;
+      this.analyticsService.trackViewContent(product);
     }),
     shareReplay(1),
   );
@@ -281,17 +284,38 @@ export class ProductDetailsPageComponent {
     }
     const selectedColor = this.selectedColorSubject.getValue();
     const selectedSize = this.selectedSizeSubject.getValue();
-    if (!selectedColor || !selectedSize) {
-      this.selectionError =
-        "Please select a color and size before adding to cart.";
+
+    // Logic to match uniqueColors and uniqueSizes used in template
+    const uniqueColorsCount = Array.from(
+      new Set(product.images?.map((i) => i.color).filter(Boolean)),
+    ).length;
+    const uniqueSizesCount = Array.from(
+      new Set(product.variants?.map((v) => v.size).filter(Boolean)),
+    ).length;
+
+    const isColorRequired = uniqueColorsCount > 0;
+    const isSizeRequired = uniqueSizesCount > 0;
+
+    if (
+      (isColorRequired && !selectedColor) ||
+      (isSizeRequired && !selectedSize)
+    ) {
+      if (isColorRequired && isSizeRequired) {
+        this.selectionError =
+          "Please select a color and size before adding to cart.";
+      } else if (isColorRequired) {
+        this.selectionError = "Please select a color before adding to cart.";
+      } else {
+        this.selectionError = "Please select a size before adding to cart.";
+      }
       return;
     }
     const quantity = this.quantitySubject.getValue();
     this.cartService.addItem(
       product,
       quantity,
-      selectedColor.name,
-      selectedSize,
+      selectedColor?.name ?? undefined,
+      selectedSize ?? undefined,
     );
 
     // Show success notification

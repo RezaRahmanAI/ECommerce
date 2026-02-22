@@ -11,6 +11,7 @@ import { globalErrorInterceptor } from "./app/core/http/global-error.interceptor
 import { environment } from "./environments/environment";
 
 import { jwtInterceptor } from "./app/core/interceptors/jwt.interceptor";
+import { loadingInterceptor } from "./app/core/interceptors/loading.interceptor";
 
 bootstrapApplication(AppComponent, {
   providers: [
@@ -23,7 +24,11 @@ bootstrapApplication(AppComponent, {
     ),
     provideAnimations(),
     provideHttpClient(
-      withInterceptors([jwtInterceptor, globalErrorInterceptor]),
+      withInterceptors([
+        jwtInterceptor,
+        loadingInterceptor,
+        globalErrorInterceptor,
+      ]),
     ),
     {
       provide: API_CONFIG,

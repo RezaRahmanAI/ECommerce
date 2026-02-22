@@ -386,16 +386,44 @@
                 </span>
               </td>
               <td class="p-5 text-right relative">
-                <button
-                  class="text-gray-400 hover:text-primary dark:hover:text-white p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition"
-                  type="button"
-                  (click)="toggleRowActions(order.id, $event)"
-                >
-                  <lucide-icon
-                    [img]="icons.MoreVertical"
-                    class="w-4 h-4"
-                  ></lucide-icon>
-                </button>
+                <div class="flex items-center justify-end gap-1">
+                  <!-- Quick Actions for Pending -->
+                  <ng-container *ngIf="order.status === 'Pending'">
+                    <button
+                      class="text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 p-2 rounded-full transition"
+                      title="Confirm Order"
+                      type="button"
+                      (click)="markNextStatus(order, $event)"
+                    >
+                      <lucide-icon
+                        [img]="icons.Check"
+                        class="w-4 h-4"
+                      ></lucide-icon>
+                    </button>
+                    <button
+                      class="text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 p-2 rounded-full transition"
+                      title="Cancel Order"
+                      type="button"
+                      (click)="cancelOrder(order, $event)"
+                    >
+                      <lucide-icon
+                        [img]="icons.XCircle"
+                        class="w-4 h-4"
+                      ></lucide-icon>
+                    </button>
+                  </ng-container>
+
+                  <button
+                    class="text-gray-400 hover:text-primary dark:hover:text-white p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition"
+                    type="button"
+                    (click)="toggleRowActions(order.id, $event)"
+                  >
+                    <lucide-icon
+                      [img]="icons.MoreVertical"
+                      class="w-4 h-4"
+                    ></lucide-icon>
+                  </button>
+                </div>
 
                 <!-- Dropdown Action Menu -->
                 <div

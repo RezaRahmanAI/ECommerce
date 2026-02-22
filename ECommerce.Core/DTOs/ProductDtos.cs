@@ -35,6 +35,7 @@ public class ProductCreateDto
     
 
     public bool NewArrival { get; set; }
+    public bool IsFeatured { get; set; }
     public bool IsPopupOffer { get; set; }
     
     [Required]
@@ -89,6 +90,7 @@ public class ProductUpdateDto
     
 
     public bool NewArrival { get; set; }
+    public bool IsFeatured { get; set; }
     public bool IsPopupOffer { get; set; }
     
     [Required]

@@ -18,6 +18,7 @@ public class Product : BaseEntity
     public bool IsActive { get; set; } = true;
 
     public bool IsNew { get; set; } = false;
+    public bool IsFeatured { get; set; } = false;
     
     // Meta Info
     public string? MetaTitle { get; set; }

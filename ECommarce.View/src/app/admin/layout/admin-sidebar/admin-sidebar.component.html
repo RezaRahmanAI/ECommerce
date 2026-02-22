@@ -1,6 +1,16 @@
 <aside
-  class="w-64 h-full bg-primary flex flex-col flex-shrink-0 transition-all duration-300 pointer-events-auto z-50"
+  class="fixed lg:static inset-y-0 left-0 w-64 h-full bg-primary flex flex-col flex-shrink-0 transition-transform duration-300 z-50 lg:translate-x-0"
+  [class.-translate-x-full]="!sidebarService.isOpen()"
+  [class.translate-x-0]="sidebarService.isOpen()"
 >
+  <!-- Mobile Close Button -->
+  <button
+    (click)="sidebarService.close()"
+    class="absolute top-4 right-4 p-2 text-white/50 hover:text-white lg:hidden"
+    type="button"
+  >
+    <lucide-icon [img]="icons.X" class="w-6 h-6"></lucide-icon>
+  </button>
   <!-- Fixed Header -->
   <div class="px-6 pt-6 pb-4 flex-shrink-0">
     <div class="flex items-center gap-3" *ngIf="settings$ | async as settings">

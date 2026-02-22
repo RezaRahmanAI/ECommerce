@@ -8,6 +8,9 @@ import { Order, OrderItem, OrderStatus } from "../../../../core/models/order";
 import { PriceDisplayComponent } from "../../../../shared/components/price-display/price-display.component";
 import { ImageUrlService } from "../../../../core/services/image-url.service";
 
+import { AnalyticsService } from "../../../../core/services/analytics.service";
+import { tap } from "rxjs/operators";
+
 import {
   LucideAngularModule,
   CheckCircle2,
@@ -43,6 +46,7 @@ export class OrderConfirmationPageComponent {
   };
   private readonly route = inject(ActivatedRoute);
   private readonly orderService = inject(OrderService);
+  private readonly analyticsService = inject(AnalyticsService);
   readonly imageUrlService = inject(ImageUrlService);
 
   readonly statusSteps = [
@@ -55,11 +59,30 @@ export class OrderConfirmationPageComponent {
 
   readonly order$ = combineLatest([
     this.route.paramMap,
-    this.orderService.orders$,
+    this.orderService.orders$.pipe(
+      // Wait for orders to be loaded if they are empty
+      tap((orders) => {
+        if (!orders || orders.length === 0) {
+          // You might want to trigger a refresh here if orders are empty
+        }
+      }),
+    ),
   ]).pipe(
     map(([params, orders]) => {
-      const orderId = Number(params.get("orderId"));
-      return orders.find((order) => order.id === orderId) || orders[0];
+      const orderIdStr = params.get("orderId");
+      if (!orderIdStr) return null;
+
+      const orderId = Number(orderIdStr);
+      const foundOrder = orders.find((order) => order.id === orderId);
+
+      // If not found, and we have orders, just take the first one as fallback
+      // (This handles cases where IDs might change but we still want to show SOMETHING)
+      return foundOrder || (orders.length > 0 ? orders[0] : null);
+    }),
+    tap((order) => {
+      if (order) {
+        this.analyticsService.trackPurchase(order);
+      }
     }),
   );
 

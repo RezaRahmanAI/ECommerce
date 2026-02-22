@@ -28,6 +28,7 @@ export interface Product {
   isActive: boolean;
 
   isNew: boolean;
+  isFeatured: boolean;
 
   categoryId: number;
   categoryName: string;

@@ -25,6 +25,8 @@ public class SiteSettingsDto
     public string? Currency { get; set; }
     public decimal FreeShippingThreshold { get; set; }
     public decimal ShippingCharge { get; set; }
+    public string? FacebookPixelId { get; set; }
+    public string? GoogleTagId { get; set; }
 
     public IEnumerable<DeliveryMethod>? DeliveryMethods { get; set; }
 }

@@ -17,12 +17,14 @@ public class OrderService : IOrderService
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
     private readonly CustomerService _customerService;
+    private readonly ISteadfastService _steadfastService;
 
-    public OrderService(IUnitOfWork unitOfWork, IMapper mapper, CustomerService customerService)
+    public OrderService(IUnitOfWork unitOfWork, IMapper mapper, CustomerService customerService, ISteadfastService steadfastService)
     {
         _unitOfWork = unitOfWork;
         _mapper = mapper;
         _customerService = customerService;
+        _steadfastService = steadfastService;
     }
 
     public async Task<OrderDto> CreateOrderAsync(OrderCreateDto orderDto)
@@ -178,6 +180,24 @@ public class OrderService : IOrderService
                                 _unitOfWork.Repository<ProductVariant>().Update(variant);
                             }
                         }
+                    }
+                }
+            }
+
+            // Courier Integration: Send to Steadfast when confirmed
+            if (newStatus == OrderStatus.Confirmed && order.Status != OrderStatus.Confirmed)
+            {
+                if (order.SteadfastConsignmentId == null)
+                {
+                    var (consignmentId, trackingCode) = await _steadfastService.CreateOrderAsync(order);
+                    if (consignmentId != null)
+                    {
+                        if (long.TryParse(consignmentId, out var cid))
+                        {
+                             order.SteadfastConsignmentId = cid;
+                        }
+                        order.SteadfastTrackingCode = trackingCode;
+                        order.SteadfastStatus = "Sent";
                     }
                 }
             }

@@ -20,7 +20,7 @@ export class ProductService {
 
   getFeaturedProducts(limit = 10): Observable<Product[]> {
     return this.api.get<Product[]>(this.baseUrl, {
-      params: { limit, sort: "sortOrder" } as any,
+      params: { limit, isFeatured: true } as any,
     });
   }
 

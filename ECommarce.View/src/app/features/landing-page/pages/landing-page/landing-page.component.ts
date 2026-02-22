@@ -88,8 +88,8 @@ export class LandingPageComponent implements OnInit {
     address: ["", [Validators.required, Validators.minLength(5)]],
     deliveryDetails: ["Standard Delivery", [Validators.required]],
     deliveryMethodId: [0, Validators.required],
-    selectedColor: ["", Validators.required],
-    selectedSize: ["", Validators.required],
+    selectedColor: [""],
+    selectedSize: [""],
     quantity: [1, [Validators.required, Validators.min(1)]],
   });
 
@@ -278,7 +278,32 @@ export class LandingPageComponent implements OnInit {
   }
 
   placeOrder(): void {
-    if (this.checkoutForm.invalid || this.isOrdering || !this.product) {
+    if (this.isOrdering || !this.product) return;
+    this.errorMessage = "";
+
+    // Manual validation check for required variants
+    const colors = Array.from(
+      new Set(this.product.images?.map((i) => i.color).filter(Boolean)),
+    );
+    const sizes = Array.from(
+      new Set(this.product.variants?.map((v) => v.size).filter(Boolean)),
+    );
+
+    const isColorRequired = colors.length > 0;
+    const isSizeRequired = sizes.length > 0;
+
+    const formRaw = this.checkoutForm.getRawValue();
+
+    if (
+      this.checkoutForm.invalid ||
+      (isColorRequired && !formRaw.selectedColor) ||
+      (isSizeRequired && !formRaw.selectedSize)
+    ) {
+      if (isColorRequired && !formRaw.selectedColor) {
+        this.errorMessage = "Please select a color.";
+      } else if (isSizeRequired && !formRaw.selectedSize) {
+        this.errorMessage = "Please select a size.";
+      }
       this.checkoutForm.markAllAsTouched();
       return;
     }
@@ -308,20 +333,17 @@ export class LandingPageComponent implements OnInit {
     });
 
     // 3. Place order
-    this.checkoutService
-      .createOrder()
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: (orderId) => {
-          this.isOrdering = false;
-          if (orderId) {
-            void this.router.navigate(["/order-confirmation", orderId]);
-          }
-        },
-        error: (error: Error) => {
-          this.isOrdering = false;
-          this.errorMessage = error.message ?? "Unable to place order.";
-        },
-      });
+    this.checkoutService.createOrder().subscribe({
+      next: (orderId) => {
+        this.isOrdering = false;
+        if (orderId) {
+          void this.router.navigate(["/order-confirmation", orderId]);
+        }
+      },
+      error: (error: Error) => {
+        this.isOrdering = false;
+        this.errorMessage = error.message ?? "Unable to place order.";
+      },
+    });
   }
 }

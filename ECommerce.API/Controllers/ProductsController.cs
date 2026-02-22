@@ -30,10 +30,10 @@ public class ProductsController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<IReadOnlyList<ProductDto>>> GetProducts(string? sort, int? categoryId, int? subCategoryId, int? collectionId, string? categorySlug, string? subCategorySlug, string? collectionSlug, string? searchTerm, string? tier, string? tags, bool? isNew)
+    public async Task<ActionResult<IReadOnlyList<ProductDto>>> GetProducts(string? sort, int? categoryId, int? subCategoryId, int? collectionId, string? categorySlug, string? subCategorySlug, string? collectionSlug, string? searchTerm, string? tier, string? tags, bool? isNew, bool? isFeatured)
     {
         // Keeping this for now, but ideally should move to Service
-        var spec = new ProductsWithCategoriesSpecification(sort, categoryId, subCategoryId, collectionId, categorySlug, subCategorySlug, collectionSlug, searchTerm, tier, tags, isNew);
+        var spec = new ProductsWithCategoriesSpecification(sort, categoryId, subCategoryId, collectionId, categorySlug, subCategorySlug, collectionSlug, searchTerm, tier, tags, isNew, isFeatured);
 
 
         var products = await _productsRepo.ListAsync(spec);

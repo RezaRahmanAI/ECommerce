@@ -10,6 +10,8 @@ import { FooterComponent } from "./layout/footer/footer.component";
 import { ToastComponent } from "./shared/components/toast/toast.component";
 import { ContactFabComponent } from "./shared/components/contact-fab/contact-fab.component";
 import { LoggerService } from "./core/services/logger.service";
+import { AnalyticsService } from "./core/services/analytics.service";
+import { LoadingSpinnerComponent } from "./shared/components/loading-spinner/loading-spinner.component";
 
 @Component({
   selector: "app-root",
@@ -21,6 +23,7 @@ import { LoggerService } from "./core/services/logger.service";
     FooterComponent,
     ToastComponent,
     ContactFabComponent,
+    LoadingSpinnerComponent,
   ],
   templateUrl: "./app.component.html",
   styleUrl: "./app.component.css",
@@ -32,6 +35,7 @@ export class AppComponent implements OnInit {
   private document = inject(DOCUMENT);
   private logger = inject(LoggerService);
   private titleService = inject(Title);
+  private analyticsService = inject(AnalyticsService);
 
   showPublicLayout$ = this.router.events.pipe(
     filter((event) => event instanceof NavigationEnd),
@@ -41,6 +45,16 @@ export class AppComponent implements OnInit {
 
   ngOnInit() {
     this.logger.info("Application initialized with professional logging");
+
+    // Track PageViews on route changes
+    this.router.events
+      .pipe(filter((event) => event instanceof NavigationEnd))
+      .subscribe(() => {
+        if (!this.router.url.startsWith("/admin")) {
+          this.analyticsService.trackPageView();
+        }
+      });
+
     this.siteSettingsService.getSettings().subscribe((settings) => {
       if (settings.websiteName) {
         this.titleService.setTitle(settings.websiteName);
@@ -69,7 +83,6 @@ export class AppComponent implements OnInit {
       s.parentNode.insertBefore(t,s)}(window, document,'script',
       'https://connect.facebook.net/en_US/fbevents.js');
       fbq('init', '${pixelId}');
-      fbq('track', 'PageView');
     `;
     this.renderer.appendChild(this.document.head, script);
   }

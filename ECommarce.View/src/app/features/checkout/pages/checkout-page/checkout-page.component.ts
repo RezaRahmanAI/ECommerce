@@ -24,6 +24,7 @@ import { CustomerOrderApiService } from "../../../../core/services/customer-orde
 import { PriceDisplayComponent } from "../../../../shared/components/price-display/price-display.component";
 import { ImageUrlService } from "../../../../core/services/image-url.service";
 import { SettingsService } from "../../../../admin/services/settings.service";
+import { AnalyticsService } from "../../../../core/services/analytics.service";
 import {
   DeliveryMethod,
   AdminSettings,
@@ -56,6 +57,7 @@ export class CheckoutPageComponent {
   private readonly router = inject(Router);
   private readonly customerOrderApi = inject(CustomerOrderApiService);
   readonly imageUrlService = inject(ImageUrlService);
+  private readonly analyticsService = inject(AnalyticsService);
 
   readonly checkoutForm = this.formBuilder.nonNullable.group({
     fullName: ["", [Validators.required, Validators.minLength(2)]],
@@ -126,6 +128,10 @@ export class CheckoutPageComponent {
         isFreeShipping,
       };
     }),
+    tap(({ cartItems, summary }) => {
+      this.analyticsService.trackInitiateCheckout(cartItems, summary.total);
+    }),
+    shareReplay(1),
   );
 
   constructor() {

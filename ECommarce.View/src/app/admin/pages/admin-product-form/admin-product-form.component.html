@@ -532,6 +532,23 @@
           </label>
         </div>
 
+        <div class="flex items-center justify-between mb-4">
+          <span
+            class="text-sm font-medium text-text-main-light dark:text-text-main-dark"
+            >Is Featured</span
+          >
+          <label class="relative inline-flex cursor-pointer items-center">
+            <input
+              class="peer sr-only"
+              type="checkbox"
+              formControlName="isFeatured"
+            />
+            <div
+              class="peer h-6 w-11 rounded-full bg-gray-200 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-primary peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none dark:bg-gray-700"
+            ></div>
+          </label>
+        </div>
+
         <div class="rounded-lg bg-accent/20 p-3">
           <p
             class="text-xs text-primary/80 font-medium flex items-center gap-2"

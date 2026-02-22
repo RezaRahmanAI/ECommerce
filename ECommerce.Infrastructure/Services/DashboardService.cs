@@ -118,33 +118,74 @@ public class DashboardService : IDashboardService
     public async Task<List<SalesDataDto>> GetSalesDataAsync(string period)
     {
         var endDate = DateTime.UtcNow;
-        var startDate = period.ToLower() switch
-        {
-            "week" => endDate.AddDays(-7),
-            "month" => endDate.AddMonths(-1),
-            "year" => endDate.AddYears(-1),
-            _ => endDate.AddMonths(-1) // Default to last 30 days
-        };
-
         var validStatuses = new[] { OrderStatus.Pending, OrderStatus.Confirmed, OrderStatus.Processing, OrderStatus.Packed, OrderStatus.Shipped, OrderStatus.Delivered };
 
-        var salesData = await _context.Orders
-            .Where(o => validStatuses.Contains(o.Status) &&
-                        o.CreatedAt >= startDate && o.CreatedAt <= endDate)
-            .GroupBy(o => o.CreatedAt.Date)
-            .Select(g => new 
-            {
-                Date = g.Key,
-                Amount = g.Sum(o => o.Total)
-            })
-            .OrderBy(x => x.Date)
-            .ToListAsync();
-
-        return salesData.Select(x => new SalesDataDto
+        if (period.ToLower() == "year")
         {
-            Date = x.Date.ToString("yyyy-MM-dd"),
-            Amount = x.Amount
-        }).ToList();
+            // Group by Month for the last 12 months
+            var startDate = new DateTime(endDate.Year, endDate.Month, 1).AddMonths(-11);
+            
+            var salesData = await _context.Orders
+                .Where(o => validStatuses.Contains(o.Status) && o.CreatedAt >= startDate)
+                .GroupBy(o => new { o.CreatedAt.Year, o.CreatedAt.Month })
+                .Select(g => new
+                {
+                    Year = g.Key.Year,
+                    Month = g.Key.Month,
+                    Amount = g.Sum(o => o.Total)
+                })
+                .OrderBy(x => x.Year).ThenBy(x => x.Month)
+                .ToListAsync();
+
+            return salesData.Select(x => new SalesDataDto
+            {
+                Date = new DateTime(x.Year, x.Month, 1).ToString("MMM yyyy"),
+                Amount = x.Amount
+            }).ToList();
+        }
+        else if (period.ToLower() == "all")
+        {
+            // Group by Year for all time
+            var salesData = await _context.Orders
+                .Where(o => validStatuses.Contains(o.Status))
+                .GroupBy(o => o.CreatedAt.Year)
+                .Select(g => new
+                {
+                    Year = g.Key,
+                    Amount = g.Sum(o => o.Total)
+                })
+                .OrderBy(x => x.Year)
+                .ToListAsync();
+
+            return salesData.Select(x => new SalesDataDto
+            {
+                Date = x.Year.ToString(),
+                Amount = x.Amount
+            }).ToList();
+        }
+        else
+        {
+            // Default: Group by Day (week or month)
+            var startDate = period.ToLower() == "week" ? endDate.AddDays(-7) : endDate.AddDays(-30);
+
+            var salesData = await _context.Orders
+                .Where(o => validStatuses.Contains(o.Status) &&
+                            o.CreatedAt >= startDate && o.CreatedAt <= endDate)
+                .GroupBy(o => o.CreatedAt.Date)
+                .Select(g => new
+                {
+                    Date = g.Key,
+                    Amount = g.Sum(o => o.Total)
+                })
+                .OrderBy(x => x.Date)
+                .ToListAsync();
+
+            return salesData.Select(x => new SalesDataDto
+            {
+                Date = x.Date.ToString("yyyy-MM-dd"),
+                Amount = x.Amount
+            }).ToList();
+        }
     }
 
     public async Task<List<StatusDistributionDto>> GetOrderStatusDistributionAsync()

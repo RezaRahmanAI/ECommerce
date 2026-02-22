@@ -2,6 +2,14 @@
   class="h-20 bg-surface border-b border-[#e7f0f3] px-8 flex items-center justify-between flex-shrink-0 z-10"
 >
   <div class="flex items-center gap-4">
+    <!-- Mobile Menu Toggle -->
+    <button
+      (click)="sidebarService.toggle()"
+      class="p-2 -ml-2 text-gray-500 hover:bg-background-light rounded-lg transition-colors lg:hidden"
+      type="button"
+    >
+      <lucide-icon [img]="icons.Menu" class="w-6 h-6"></lucide-icon>
+    </button>
     <h2 class="text-primary text-xl font-bold tracking-tight">
       {{ pageTitle$ | async }}
     </h2>

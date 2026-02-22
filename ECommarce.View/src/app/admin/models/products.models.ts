@@ -43,6 +43,7 @@ export interface ProductCreatePayload {
   purchaseRate: number;
 
   newArrival: boolean;
+  isFeatured: boolean;
 
   statusActive: boolean;
 
@@ -104,6 +105,7 @@ export interface ProductUpdatePayload {
   purchaseRate: number;
 
   newArrival: boolean;
+  isFeatured: boolean;
 
   statusActive: boolean;
 
@@ -156,6 +158,8 @@ export interface ProductsQueryParams {
   searchTerm: string;
   category: string;
   statusTab: string;
+  isNew?: boolean;
+  isFeatured?: boolean;
   page: number;
   pageSize: number;
 }

@@ -118,6 +118,8 @@ public class AdminProductsController : ControllerBase
                 SalePrice = p.CompareAtPrice,
                 p.PurchaseRate,
                 p.StockQuantity,
+                p.IsNew,
+                p.IsFeatured,
                 Status = p.IsActive ? "Active" : "Draft",
                 p.ImageUrl,
                 Category = p.Category.Name,

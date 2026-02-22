@@ -55,6 +55,8 @@ public class AdminSettingsController : ControllerBase
             Currency = settings.Currency,
             FreeShippingThreshold = settings.FreeShippingThreshold,
             ShippingCharge = settings.ShippingCharge,
+            FacebookPixelId = settings.FacebookPixelId,
+            GoogleTagId = settings.GoogleTagId,
             DeliveryMethods = await _context.DeliveryMethods.ToListAsync()
         });
     }
@@ -83,6 +85,8 @@ public class AdminSettingsController : ControllerBase
         settings.Currency = dto.Currency;
         settings.FreeShippingThreshold = dto.FreeShippingThreshold;
         settings.ShippingCharge = dto.ShippingCharge;
+        settings.FacebookPixelId = dto.FacebookPixelId;
+        settings.GoogleTagId = dto.GoogleTagId;
         settings.UpdatedAt = DateTime.UtcNow;
 
         await _context.SaveChangesAsync();

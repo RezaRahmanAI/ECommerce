@@ -11,6 +11,7 @@ import {
   LucideAngularModule,
   Phone,
   MessageSquare,
+  MessageCircle,
   Plus,
   X,
 } from "lucide-angular";
@@ -71,35 +72,50 @@ import { SiteSettingsService } from "../../../core/services/site-settings.servic
   template: `
     <div
       class="fixed bottom-6 left-6 z-50 flex flex-col items-center gap-4"
-      *ngIf="contactPhone || whatsAppNumber"
+      *ngIf="contactPhone || whatsAppNumber || messengerUrl"
       [@famTrigger]
     >
       <!-- Options Stack -->
       <div *ngIf="isOpen" class="flex flex-col gap-3 mb-2">
-        <!-- Phone Option -->
+        <!-- Messenger Option -->
         <a
-          *ngIf="contactPhone"
-          [href]="'tel:' + contactPhone"
-          [@optionTrigger]="{ value: '', params: { delay: 50 } }"
-          class="w-12 h-12 flex items-center justify-center rounded-full bg-white/80 backdrop-blur-md shadow-lg hover:scale-110 transition-transform text-[#0e181b] border border-white/20"
-          title="Call Us"
+          *ngIf="messengerUrl"
+          [href]="messengerUrl"
+          target="_blank"
+          [@optionTrigger]="{ value: '', params: { delay: 100 } }"
+          class="w-12 h-12 flex items-center justify-center rounded-full bg-[#0084FF] shadow-lg hover:scale-110 transition-transform text-white border border-white/20"
+          title="Messenger"
         >
-          <lucide-icon [img]="icons.Phone" class="w-5 h-5"></lucide-icon>
+          <lucide-icon
+            [img]="icons.MessageCircle"
+            class="w-5 h-5"
+          ></lucide-icon>
         </a>
 
-        <!-- Chat/WhatsApp Option -->
+        <!-- WhatsApp Option -->
         <a
           *ngIf="whatsAppNumber"
           [href]="'https://wa.me/' + whatsAppNumber"
           target="_blank"
-          [@optionTrigger]="{ value: '', params: { delay: 0 } }"
-          class="w-12 h-12 flex items-center justify-center rounded-full bg-white/80 backdrop-blur-md shadow-lg hover:scale-110 transition-transform text-[#0e181b] border border-white/20"
+          [@optionTrigger]="{ value: '', params: { delay: 50 } }"
+          class="w-12 h-12 flex items-center justify-center rounded-full bg-[#25D366] shadow-lg hover:scale-110 transition-transform text-white border border-white/20"
           title="WhatsApp Us"
         >
           <lucide-icon
             [img]="icons.MessageSquare"
             class="w-5 h-5"
           ></lucide-icon>
+        </a>
+
+        <!-- Phone Option -->
+        <a
+          *ngIf="contactPhone"
+          [href]="'tel:' + contactPhone"
+          [@optionTrigger]="{ value: '', params: { delay: 0 } }"
+          class="w-12 h-12 flex items-center justify-center rounded-full bg-white/80 backdrop-blur-md shadow-lg hover:scale-110 transition-transform text-[#0e181b] border border-white/20"
+          title="Call Us"
+        >
+          <lucide-icon [img]="icons.Phone" class="w-5 h-5"></lucide-icon>
         </a>
       </div>
 
@@ -137,6 +153,7 @@ export class ContactFabComponent implements OnInit {
   readonly icons = {
     Phone,
     MessageSquare,
+    MessageCircle,
     Plus,
     X,
   };
@@ -146,11 +163,13 @@ export class ContactFabComponent implements OnInit {
   isOpen = false;
   contactPhone = "";
   whatsAppNumber = "";
+  messengerUrl = "";
 
   ngOnInit() {
     this.settingsService.getSettings().subscribe((settings) => {
       this.contactPhone = settings.contactPhone || "";
       this.whatsAppNumber = settings.whatsAppNumber || "";
+      this.messengerUrl = settings.facebookUrl || "";
     });
   }
 

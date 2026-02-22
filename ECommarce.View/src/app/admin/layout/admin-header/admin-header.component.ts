@@ -3,7 +3,8 @@ import { Component, OnDestroy, OnInit, inject } from "@angular/core";
 import { FormControl, ReactiveFormsModule } from "@angular/forms";
 import { ActivatedRoute, NavigationEnd, Router } from "@angular/router";
 import { filter, map, startWith, Subject, takeUntil } from "rxjs";
-import { LucideAngularModule, Search, Bell } from "lucide-angular";
+import { LucideAngularModule, Search, Bell, Menu } from "lucide-angular";
+import { SidebarService } from "../../services/sidebar.service";
 
 @Component({
   selector: "app-admin-header",
@@ -12,7 +13,8 @@ import { LucideAngularModule, Search, Bell } from "lucide-angular";
   templateUrl: "./admin-header.component.html",
 })
 export class AdminHeaderComponent implements OnInit, OnDestroy {
-  readonly icons = { Search, Bell };
+  readonly icons = { Search, Bell, Menu };
+  protected sidebarService = inject(SidebarService);
   private router = inject(Router);
   private activatedRoute = inject(ActivatedRoute);
 
