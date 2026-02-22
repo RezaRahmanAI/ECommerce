@@ -2,6 +2,7 @@ import { Component, inject } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { ActivatedRoute, Router, RouterLink } from "@angular/router";
+import { HttpContext } from "@angular/common/http";
 import {
   BehaviorSubject,
   combineLatest,
@@ -22,6 +23,7 @@ import { PriceDisplayComponent } from "../../../../shared/components/price-displ
 import { ImageUrlService } from "../../../../core/services/image-url.service";
 import { NotificationService } from "../../../../core/services/notification.service";
 import { AnalyticsService } from "../../../../core/services/analytics.service";
+import { SHOW_LOADING } from "../../../../core/services/loading.service";
 
 import { ProductCardComponent } from "../../../../shared/components/product-card/product-card.component";
 import { SizeGuideComponent } from "../../../../shared/components/size-guide/size-guide.component";
@@ -93,7 +95,12 @@ export class ProductDetailsPageComponent {
   product$ = this.route.paramMap.pipe(
     map((params) => params.get("slug") ?? ""),
     filter((slug) => slug.length > 0),
-    switchMap((slug) => this.productService.getBySlug(slug)),
+    switchMap((slug) =>
+      this.productService.getBySlug(
+        slug,
+        new HttpContext().set(SHOW_LOADING, true),
+      ),
+    ),
     filter((product): product is Product => Boolean(product)),
     tap((product) => {
       const colors = Array.from(

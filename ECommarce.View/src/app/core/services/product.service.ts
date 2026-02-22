@@ -1,11 +1,11 @@
 import { Injectable, inject } from "@angular/core";
+import { HttpContext } from "@angular/common/http";
 import { Observable, of } from "rxjs";
 
 import { ApiHttpClient } from "../http/http-client";
-import { MOCK_REVIEWS } from "../data/mock-reviews";
 import { Product } from "../models/product";
-import { Review } from "../models/review";
 import { Pagination } from "../models/pagination";
+import { Review } from "../models/review";
 
 @Injectable({
   providedIn: "root",
@@ -15,19 +15,30 @@ export class ProductService {
   private readonly baseUrl = "/products";
   private readonly adminBaseUrl = "/admin/products";
 
-  getProducts(params?: any): Observable<Pagination<Product>> {
-    return this.api.get<Pagination<Product>>(this.baseUrl, { params });
+  getProducts(
+    params?: any,
+    context?: HttpContext,
+  ): Observable<Pagination<Product>> {
+    return this.api.get<Pagination<Product>>(this.baseUrl, { params, context });
   }
 
-  getFeaturedProducts(limit = 10): Observable<Pagination<Product>> {
+  getFeaturedProducts(
+    limit = 10,
+    context?: HttpContext,
+  ): Observable<Pagination<Product>> {
     return this.api.get<Pagination<Product>>(this.baseUrl, {
-      params: { pageSize: limit, isFeatured: true } as any,
+      params: { isFeatured: true, pageSize: limit },
+      context,
     });
   }
 
-  getNewArrivals(limit = 10): Observable<Pagination<Product>> {
+  getNewArrivals(
+    limit = 10,
+    context?: HttpContext,
+  ): Observable<Pagination<Product>> {
     return this.api.get<Pagination<Product>>(this.baseUrl, {
-      params: { pageSize: limit, isNew: true } as any,
+      params: { orderBy: "id", order: "desc", pageSize: limit },
+      context,
     });
   }
 
@@ -35,6 +46,7 @@ export class ProductService {
     collectionId?: number,
     categoryId?: number,
     limit = 4,
+    context?: HttpContext,
   ): Observable<Pagination<Product>> {
     const params: any = { pageSize: limit };
     if (collectionId) {
@@ -42,31 +54,22 @@ export class ProductService {
     } else if (categoryId) {
       params.categoryId = categoryId;
     }
-    return this.api.get<Pagination<Product>>(this.baseUrl, { params });
+    return this.api.get<Pagination<Product>>(this.baseUrl, { params, context });
   }
 
-  getById(id: number): Observable<Product> {
-    return this.api.get<Product>(`${this.baseUrl}/${id}`);
+  getById(id: number, context?: HttpContext): Observable<Product> {
+    return this.api.get<Product>(`${this.baseUrl}/${id}`, { context });
   }
 
-  getBySlug(slug: string): Observable<Product> {
-    return this.api.get<Product>(`${this.baseUrl}/${slug}`);
+  getBySlug(slug: string, context?: HttpContext): Observable<Product> {
+    return this.api.get<Product>(`${this.baseUrl}/${slug}`, { context });
   }
 
   getReviewsByProductId(productId: number): Observable<Review[]> {
-    return of(MOCK_REVIEWS.filter((review) => review.productId === productId));
+    return this.api.get<Review[]>(`${this.baseUrl}/${productId}/reviews`);
   }
 
-  // Admin APIs
-  getAdminProducts(params?: any): Observable<Product[]> {
-    return this.api.get<Product[]>(this.adminBaseUrl, { params });
-  }
-
-  createProduct(product: Partial<Product>): Observable<Product> {
-    return this.api.post<Product>(this.adminBaseUrl, product);
-  }
-
-  deleteProduct(id: number): Observable<any> {
-    return this.api.delete(`${this.adminBaseUrl}/${id}`);
+  getAdminProducts(): Observable<Product[]> {
+    return this.api.get<Product[]>(this.adminBaseUrl);
   }
 }

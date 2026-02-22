@@ -1,5 +1,9 @@
 import { Injectable } from "@angular/core";
+import { HttpContextToken } from "@angular/common/http";
 import { BehaviorSubject, Observable } from "rxjs";
+
+export const SKIP_LOADING = new HttpContextToken<boolean>(() => false);
+export const SHOW_LOADING = new HttpContextToken<boolean>(() => false);
 
 @Injectable({
   providedIn: "root",

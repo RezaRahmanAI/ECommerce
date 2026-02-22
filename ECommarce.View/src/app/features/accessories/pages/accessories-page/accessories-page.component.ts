@@ -1,10 +1,12 @@
 import { Component, OnInit } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { RouterLink } from "@angular/router";
+import { HttpContext } from "@angular/common/http";
 
 import { ProductService } from "../../../../core/services/product.service";
 import { Product } from "../../../../core/models/product";
 import { PriceDisplayComponent } from "../../../../shared/components/price-display/price-display.component";
+import { SHOW_LOADING } from "../../../../core/services/loading.service";
 
 import { ImageUrlService } from "../../../../core/services/image-url.service";
 
@@ -58,7 +60,10 @@ export class AccessoriesPageComponent implements OnInit {
 
   ngOnInit(): void {
     this.productService
-      .getProducts({ category: "Accessories" })
+      .getProducts(
+        { category: "Accessories" },
+        new HttpContext().set(SHOW_LOADING, true),
+      )
       .subscribe((res) => {
         this.products = res.data;
       });

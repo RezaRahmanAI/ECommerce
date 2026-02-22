@@ -1,5 +1,10 @@
 import { inject, Injectable } from "@angular/core";
-import { HttpClient, HttpHeaders, HttpParams } from "@angular/common/http";
+import {
+  HttpClient,
+  HttpHeaders,
+  HttpParams,
+  HttpContext,
+} from "@angular/common/http";
 
 import { API_CONFIG, ApiConfig } from "../config/api.config";
 
@@ -12,7 +17,11 @@ export class ApiHttpClient {
 
   get<T>(
     path: string,
-    options: { params?: HttpParams; headers?: HttpHeaders } = {},
+    options: {
+      params?: HttpParams;
+      headers?: HttpHeaders;
+      context?: HttpContext;
+    } = {},
   ) {
     return this.http.get<T>(this.buildUrl(path), {
       ...options,
@@ -23,7 +32,7 @@ export class ApiHttpClient {
   post<T>(
     path: string,
     body: unknown,
-    options: { headers?: HttpHeaders } = {},
+    options: { headers?: HttpHeaders; context?: HttpContext } = {},
   ) {
     return this.http.post<T>(this.buildUrl(path), body, {
       ...options,
@@ -31,14 +40,21 @@ export class ApiHttpClient {
     });
   }
 
-  put<T>(path: string, body: unknown, options: { headers?: HttpHeaders } = {}) {
-    return this.http.post<T>(this.buildUrl(path), body, {
+  put<T>(
+    path: string,
+    body: unknown,
+    options: { headers?: HttpHeaders; context?: HttpContext } = {},
+  ) {
+    return this.http.put<T>(this.buildUrl(path), body, {
       ...options,
       withCredentials: true,
     });
   }
 
-  delete<T>(path: string, options: { headers?: HttpHeaders } = {}) {
+  delete<T>(
+    path: string,
+    options: { headers?: HttpHeaders; context?: HttpContext } = {},
+  ) {
     // Append /delete to distinguish from update (PUT) when using POST
     const deletePath = path.endsWith("/") ? `${path}delete` : `${path}/delete`;
 

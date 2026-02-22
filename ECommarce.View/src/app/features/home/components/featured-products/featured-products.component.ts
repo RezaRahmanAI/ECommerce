@@ -1,9 +1,11 @@
 import { Component, OnInit } from "@angular/core";
 import { CommonModule } from "@angular/common";
+import { HttpContext } from "@angular/common/http";
 
 import { ProductService } from "../../../../core/services/product.service";
 import { Product } from "../../../../core/models/product";
 import { ProductCardComponent } from "../../../../shared/components/product-card/product-card.component";
+import { SHOW_LOADING } from "../../../../core/services/loading.service";
 
 @Component({
   selector: "app-featured-products",
@@ -18,8 +20,10 @@ export class FeaturedProductsComponent implements OnInit {
   constructor(private readonly productService: ProductService) {}
 
   ngOnInit(): void {
-    this.productService.getFeaturedProducts().subscribe((response) => {
-      this.products = response.data;
-    });
+    this.productService
+      .getFeaturedProducts(10, new HttpContext().set(SHOW_LOADING, true))
+      .subscribe((response) => {
+        this.products = response.data;
+      });
   }
 }
