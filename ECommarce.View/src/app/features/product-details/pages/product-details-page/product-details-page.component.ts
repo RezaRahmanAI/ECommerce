@@ -325,7 +325,7 @@ export class ProductDetailsPageComponent {
   buyNow(product: Product | null): void {
     this.addToCart(product);
     if (!this.selectionError) {
-      void this.router.navigateByUrl("/cart");
+      void this.router.navigateByUrl("/checkout");
     }
   }
 
