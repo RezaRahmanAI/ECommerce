@@ -96,13 +96,38 @@
         <div
           class="divide-y divide-slate-100 dark:divide-slate-800 overflow-y-auto max-h-[600px]"
         >
-          <ng-container *ngFor="let node of filteredTree">
-            <ng-container
-              *ngTemplateOutlet="
-                treeNode;
-                context: { $implicit: node, depth: 0 }
-              "
-            ></ng-container>
+          <!-- Loading State -->
+          <ng-container *ngIf="isLoading">
+            <div
+              *ngFor="let i of [1, 2, 3, 4, 5, 6]"
+              class="px-6 py-4 flex items-center gap-4 animate-pulse"
+            >
+              <div class="w-5 h-5 bg-gray-100 dark:bg-gray-800 rounded"></div>
+              <div class="size-10 bg-gray-100 dark:bg-gray-800 rounded"></div>
+              <div class="flex-1 space-y-2">
+                <div
+                  class="h-4 w-32 bg-gray-100 dark:bg-gray-800 rounded"
+                ></div>
+                <div
+                  class="h-3 w-20 bg-gray-50 dark:bg-gray-800/50 rounded"
+                ></div>
+              </div>
+              <div
+                class="w-8 h-8 bg-gray-100 dark:bg-gray-800 rounded-full"
+              ></div>
+            </div>
+          </ng-container>
+
+          <!-- Tree State -->
+          <ng-container *ngIf="!isLoading">
+            <ng-container *ngFor="let node of filteredTree">
+              <ng-container
+                *ngTemplateOutlet="
+                  treeNode;
+                  context: { $implicit: node, depth: 0 }
+                "
+              ></ng-container>
+            </ng-container>
           </ng-container>
         </div>
 

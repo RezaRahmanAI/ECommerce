@@ -155,155 +155,232 @@
         <tbody
           class="divide-y divide-slate-200 dark:divide-slate-700 bg-white dark:bg-surface-dark"
         >
-          <tr
-            *ngFor="let product of products"
-            class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors"
-            [ngClass]="
-              isOutOfStock(product) ? 'bg-slate-50/50 dark:bg-slate-800/10' : ''
-            "
-          >
-            <td class="px-6 py-4 whitespace-nowrap">
-              <div class="flex items-center">
-                <input
-                  class="h-4 w-4 text-primary focus:ring-primary border-slate-300 rounded cursor-pointer"
-                  type="checkbox"
-                  [checked]="isSelected(product.id)"
-                  (change)="toggleSelectProduct(product.id, $event)"
-                />
-              </div>
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap">
-              <div class="flex items-center">
+          <!-- Loading State -->
+          <ng-container *ngIf="isLoading">
+            <tr *ngFor="let i of [1, 2, 3, 4, 5]" class="animate-pulse">
+              <td class="px-6 py-4">
                 <div
-                  class="h-10 w-10 flex-shrink-0 rounded-lg bg-slate-100 bg-cover bg-center border border-slate-200"
-                  [attr.data-alt]="product.name + ' thumbnail'"
-                  [style.background-image]="
-                    'url(' + imageUrlService.getImageUrl(product.imageUrl) + ')'
-                  "
+                  class="h-4 w-4 bg-slate-100 dark:bg-slate-800 rounded mx-auto"
                 ></div>
-                <div class="ml-4">
+              </td>
+              <td class="px-6 py-4">
+                <div class="flex items-center">
                   <div
-                    class="text-sm font-medium flex items-center gap-2"
-                    [ngClass]="
-                      isOutOfStock(product)
-                        ? 'text-slate-400 dark:text-slate-500'
-                        : 'text-slate-900 dark:text-white'
-                    "
-                  >
-                    {{ product.name }}
-                    <span
-                      *ngIf="product.isFeatured"
-                      class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400 uppercase tracking-wider"
-                      title="Featured Product"
+                    class="h-10 w-10 bg-slate-100 dark:bg-slate-800 rounded-lg"
+                  ></div>
+                  <div class="ml-4 space-y-2">
+                    <div
+                      class="h-4 w-32 bg-slate-100 dark:bg-slate-800 rounded text-transparent"
                     >
-                      Featured
-                    </span>
-                    <span
-                      *ngIf="product.isNew"
-                      class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400 uppercase tracking-wider"
-                      title="New Arrival"
+                      loading
+                    </div>
+                    <div
+                      class="h-3 w-20 bg-slate-50 dark:bg-slate-800/50 rounded text-transparent"
                     >
-                      New
-                    </span>
-                  </div>
-                  <div
-                    class="text-xs"
-                    [ngClass]="
-                      isOutOfStock(product)
-                        ? 'text-slate-400 dark:text-slate-600'
-                        : 'text-slate-500'
-                    "
-                  >
-                    {{ product.categoryName }}
+                      loading
+                    </div>
                   </div>
                 </div>
-              </div>
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap">
-              <div
-                class="text-sm font-mono"
-                [ngClass]="
-                  isOutOfStock(product) ? 'text-slate-400' : 'text-slate-500'
-                "
-              >
-                {{ product.sku }}
-              </div>
-            </td>
+              </td>
+              <td class="px-6 py-4">
+                <div
+                  class="h-4 w-16 bg-slate-100 dark:bg-slate-800 rounded text-transparent"
+                >
+                  loading
+                </div>
+              </td>
+              <td class="px-6 py-4">
+                <div
+                  class="h-4 w-20 bg-slate-100 dark:bg-slate-800 rounded text-transparent"
+                >
+                  loading
+                </div>
+              </td>
+              <td class="px-6 py-4">
+                <div
+                  class="h-4 w-20 bg-slate-100 dark:bg-slate-800 rounded text-transparent"
+                >
+                  loading
+                </div>
+              </td>
+              <td class="px-6 py-4">
+                <div
+                  class="h-6 w-16 bg-slate-100 dark:bg-slate-800 rounded-full text-transparent"
+                >
+                  loading
+                </div>
+              </td>
+              <td class="px-6 py-4">
+                <div
+                  class="h-8 w-8 bg-slate-100 dark:bg-slate-800 rounded-full ml-auto"
+                ></div>
+              </td>
+            </tr>
+          </ng-container>
 
-            <td class="px-6 py-4 whitespace-nowrap">
-              <div
-                class="text-sm font-medium"
-                [ngClass]="
-                  isOutOfStock(product)
-                    ? 'text-slate-400 dark:text-slate-500'
-                    : 'text-slate-900 dark:text-white'
-                "
-              >
-                <app-price-display
-                  [amount]="product.price"
-                  size="sm"
-                ></app-price-display>
-              </div>
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap">
-              <div
-                class="text-sm font-medium"
-                [ngClass]="
-                  isOutOfStock(product)
-                    ? 'text-slate-400 dark:text-slate-500'
-                    : 'text-slate-900 dark:text-white'
-                "
-              >
-                <app-price-display
-                  [amount]="product.purchaseRate ?? 0"
-                  size="sm"
-                ></app-price-display>
-              </div>
-              <p class="text-xs text-slate-400">Admin only</p>
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap">
-              <span
-                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
-                [ngClass]="statusClasses(product)"
-              >
-                {{ product.status }}
-              </span>
-            </td>
-            <td
-              class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium"
+          <!-- Product Rows -->
+          <ng-container *ngIf="!isLoading">
+            <tr
+              *ngFor="let product of products"
+              class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors"
+              [ngClass]="
+                isOutOfStock(product)
+                  ? 'bg-slate-50/50 dark:bg-slate-800/10'
+                  : ''
+              "
             >
-              <div class="flex items-center justify-end gap-2">
-                <a
-                  class="text-slate-400 hover:text-primary dark:hover:text-white transition-colors p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800"
-                  [routerLink]="['/lp', product.slug]"
-                  target="_blank"
-                  title="View Landing Page"
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="flex items-center">
+                  <input
+                    class="h-4 w-4 text-primary focus:ring-primary border-slate-300 rounded cursor-pointer"
+                    type="checkbox"
+                    [checked]="isSelected(product.id)"
+                    (change)="toggleSelectProduct(product.id, $event)"
+                  />
+                </div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="flex items-center">
+                  <div
+                    class="h-10 w-10 flex-shrink-0 rounded-lg bg-slate-100 bg-cover bg-center border border-slate-200"
+                    [attr.data-alt]="product.name + ' thumbnail'"
+                    [style.background-image]="
+                      'url(' +
+                      imageUrlService.getImageUrl(product.imageUrl) +
+                      ')'
+                    "
+                  ></div>
+                  <div class="ml-4">
+                    <div
+                      class="text-sm font-medium flex items-center gap-2"
+                      [ngClass]="
+                        isOutOfStock(product)
+                          ? 'text-slate-400 dark:text-slate-500'
+                          : 'text-slate-900 dark:text-white'
+                      "
+                    >
+                      {{ product.name }}
+                      <span
+                        *ngIf="product.isFeatured"
+                        class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400 uppercase tracking-wider"
+                        title="Featured Product"
+                      >
+                        Featured
+                      </span>
+                      <span
+                        *ngIf="product.isNew"
+                        class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400 uppercase tracking-wider"
+                        title="New Arrival"
+                      >
+                        New
+                      </span>
+                    </div>
+                    <div
+                      class="text-xs"
+                      [ngClass]="
+                        isOutOfStock(product)
+                          ? 'text-slate-400 dark:text-slate-600'
+                          : 'text-slate-500'
+                      "
+                    >
+                      {{ product.categoryName }}
+                    </div>
+                  </div>
+                </div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div
+                  class="text-sm font-mono"
+                  [ngClass]="
+                    isOutOfStock(product) ? 'text-slate-400' : 'text-slate-500'
+                  "
                 >
-                  <lucide-icon
-                    [img]="icons.Rocket"
-                    class="w-4.5 h-4.5"
-                  ></lucide-icon>
-                </a>
-                <a
-                  class="text-slate-400 hover:text-primary dark:hover:text-white transition-colors p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800"
-                  [routerLink]="['/admin/products', product.id, 'edit']"
+                  {{ product.sku }}
+                </div>
+              </td>
+
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div
+                  class="text-sm font-medium"
+                  [ngClass]="
+                    isOutOfStock(product)
+                      ? 'text-slate-400 dark:text-slate-500'
+                      : 'text-slate-900 dark:text-white'
+                  "
                 >
-                  <lucide-icon
-                    [img]="icons.Edit"
-                    class="w-4.5 h-4.5"
-                  ></lucide-icon>
-                </a>
-                <button
-                  class="text-slate-400 hover:text-red-600 transition-colors p-1 rounded-md hover:bg-red-50 dark:hover:bg-red-900/20"
-                  type="button"
-                  (click)="deleteProduct(product)"
+                  <app-price-display
+                    [amount]="product.price"
+                    size="sm"
+                  ></app-price-display>
+                </div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div
+                  class="text-sm font-medium"
+                  [ngClass]="
+                    isOutOfStock(product)
+                      ? 'text-slate-400 dark:text-slate-500'
+                      : 'text-slate-900 dark:text-white'
+                  "
                 >
-                  <lucide-icon
-                    [img]="icons.Trash2"
-                    class="w-4.5 h-4.5"
-                  ></lucide-icon>
-                </button>
-              </div>
+                  <app-price-display
+                    [amount]="product.purchaseRate ?? 0"
+                    size="sm"
+                  ></app-price-display>
+                </div>
+                <p class="text-xs text-slate-400">Admin only</p>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span
+                  class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+                  [ngClass]="statusClasses(product)"
+                >
+                  {{ product.status }}
+                </span>
+              </td>
+              <td
+                class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium"
+              >
+                <div class="flex items-center justify-end gap-2">
+                  <a
+                    class="text-slate-400 hover:text-primary dark:hover:text-white transition-colors p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800"
+                    [routerLink]="['/lp', product.slug]"
+                    target="_blank"
+                    title="View Landing Page"
+                  >
+                    <lucide-icon
+                      [img]="icons.Rocket"
+                      class="w-4.5 h-4.5"
+                    ></lucide-icon>
+                  </a>
+                  <a
+                    class="text-slate-400 hover:text-primary dark:hover:text-white transition-colors p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800"
+                    [routerLink]="['/admin/products', product.id, 'edit']"
+                  >
+                    <lucide-icon
+                      [img]="icons.Edit"
+                      class="w-4.5 h-4.5"
+                    ></lucide-icon>
+                  </a>
+                  <button
+                    class="text-slate-400 hover:text-red-600 transition-colors p-1 rounded-md hover:bg-red-50 dark:hover:bg-red-900/20"
+                    type="button"
+                    (click)="deleteProduct(product)"
+                  >
+                    <lucide-icon
+                      [img]="icons.Trash2"
+                      class="w-4.5 h-4.5"
+                    ></lucide-icon>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </ng-container>
+
+          <!-- Empty State -->
+          <tr *ngIf="!isLoading && products.length === 0">
+            <td colspan="7" class="px-6 py-12 text-center text-slate-500">
+              No products found matching your criteria.
             </td>
           </tr>
         </tbody>

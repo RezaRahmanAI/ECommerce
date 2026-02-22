@@ -76,6 +76,7 @@ export class AdminOrdersComponent implements OnInit, OnDestroy {
   private ordersService = inject(OrdersService);
   private destroy$ = new Subject<void>();
 
+  isLoading = false;
   searchControl = new FormControl("", { nonNullable: true });
 
   orders: Order[] = [];
@@ -361,15 +362,20 @@ export class AdminOrdersComponent implements OnInit, OnDestroy {
 
   loadOrders(resetSelection = true): void {
     const params = this.buildParams();
+    this.isLoading = true;
     this.ordersService
       .getOrders(params)
       .pipe(takeUntil(this.destroy$))
-      .subscribe((data) => {
-        this.orders = data.items;
-        this.totalResults = data.total;
-        if (resetSelection) {
-          this.selectedOrderIds.clear();
-        }
+      .subscribe({
+        next: (data) => {
+          this.orders = data.items;
+          this.totalResults = data.total;
+          if (resetSelection) {
+            this.selectedOrderIds.clear();
+          }
+          this.isLoading = false;
+        },
+        error: () => (this.isLoading = false),
       });
 
     this.ordersService

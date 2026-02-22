@@ -35,6 +35,9 @@ import { ImageUrlService } from "../../../../core/services/image-url.service";
 
 import { LucideAngularModule, X } from "lucide-angular";
 
+import { OrderService } from "../../../../core/services/order.service";
+import { OrderItem } from "../../../../core/models/order";
+
 @Component({
   selector: "app-offer-details-page",
   standalone: true,
@@ -56,6 +59,7 @@ export class OfferDetailsPageComponent {
   private readonly router = inject(Router);
   private readonly formBuilder = inject(FormBuilder);
   private readonly customerOrderApi = inject(CustomerOrderApiService);
+  private readonly orderService = inject(OrderService);
   private readonly destroyRef = inject(DestroyRef);
   readonly imageUrlService = inject(ImageUrlService);
 
@@ -128,7 +132,30 @@ export class OfferDetailsPageComponent {
       .subscribe({
         next: (response) => {
           this.isLoading = false;
-          this.successMessage = `Order ${response.orderId} placed! We will confirm details shortly.`;
+
+          // Build a virtual OrderItem for consistent confirmation display
+          const virtualItem: OrderItem = {
+            productId: 0,
+            productName: this.offer?.title ?? "Special Offer",
+            unitPrice: this.offer?.price ?? 0,
+            quantity: quantity,
+            color: "",
+            size: size,
+            imageUrl: this.offer?.imageUrl ?? "",
+            totalPrice: this.total,
+          };
+
+          // Save to history so confirmation page can find it
+          this.orderService.buildAndSaveOrder(
+            response,
+            [virtualItem],
+            this.total,
+            0,
+            0,
+          );
+
+          void this.router.navigate(["/order-confirmation", response.orderId]);
+
           this.orderForm.reset({
             fullName: "",
             phone: "",

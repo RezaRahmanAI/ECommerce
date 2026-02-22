@@ -59,6 +59,7 @@ export class AdminProductsComponent implements OnInit, OnDestroy {
   readonly imageUrlService = inject(ImageUrlService);
   private destroy$ = new Subject<void>();
 
+  isLoading = false;
   searchControl = new FormControl("", { nonNullable: true });
   categoryControl = new FormControl("All Categories", { nonNullable: true });
 
@@ -276,9 +277,9 @@ export class AdminProductsComponent implements OnInit, OnDestroy {
   }
 
   private loadProducts(): void {
-    this.productsService
-      .getProducts(this.buildQueryParams())
-      .subscribe(({ items, total }) => {
+    this.isLoading = true;
+    this.productsService.getProducts(this.buildQueryParams()).subscribe({
+      next: ({ items, total }) => {
         const totalPages = Math.max(1, Math.ceil(total / this.pageSize));
         if (total > 0 && this.page > totalPages) {
           this.page = totalPages;
@@ -287,7 +288,10 @@ export class AdminProductsComponent implements OnInit, OnDestroy {
         }
         this.products = items;
         this.totalResults = total;
-      });
+        this.isLoading = false;
+      },
+      error: () => (this.isLoading = false),
+    });
   }
 
   private buildQueryParams(): ProductsQueryParams {

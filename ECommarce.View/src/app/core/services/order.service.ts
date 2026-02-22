@@ -1,5 +1,5 @@
 import { Injectable, inject } from "@angular/core";
-import { BehaviorSubject, Observable, map } from "rxjs";
+import { BehaviorSubject, Observable, map, tap } from "rxjs";
 
 import { MOCK_ORDERS } from "../data/mock-orders";
 import { CartItem, CartSummary } from "../models/cart";
@@ -68,12 +68,41 @@ export class OrderService {
       })
       .pipe(
         map((response) => this.buildOrder(response, items, payload.summary)),
-        map((order) => {
-          this.ordersSubject.next([order, ...this.ordersSubject.getValue()]);
-          this.persistOrders();
-          return order;
-        }),
+        tap((order) => this.addOrderToHistory(order)),
       );
+  }
+
+  addOrderToHistory(order: Order): void {
+    const currentOrders = this.ordersSubject.getValue();
+    this.ordersSubject.next([order, ...currentOrders]);
+    this.persistOrders();
+  }
+
+  buildAndSaveOrder(
+    response: CustomerOrderResponse,
+    items: OrderItem[],
+    subTotal: number,
+    shippingCost: number,
+    tax: number,
+  ): Order {
+    const order: Order = {
+      id: response.orderId,
+      orderNumber: `ORD-${response.orderId}`,
+      status: OrderStatus.Confirmed,
+      items,
+      customerName: response.name,
+      customerPhone: response.phone,
+      shippingAddress: response.address,
+      deliveryDetails: response.deliveryDetails,
+      subTotal,
+      shippingCost,
+      tax,
+      total: response.total,
+      itemsCount: response.itemsCount,
+      createdAt: response.createdAt,
+    };
+    this.addOrderToHistory(order);
+    return order;
   }
 
   private loadOrders(): Order[] {

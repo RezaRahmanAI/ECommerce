@@ -1,6 +1,6 @@
 <div
   class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6"
-  *ngIf="stats$ | async as stats"
+  *ngIf="stats$ | async as stats; else loadingStats"
 >
   <!-- Total Orders -->
   <div
@@ -178,6 +178,24 @@
     </div>
   </div>
 </div>
+
+<ng-template #loadingStats>
+  <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
+    <div
+      *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8]"
+      class="bg-surface p-6 rounded-xl border border-gray-100 shadow-sm flex flex-col gap-4 animate-pulse"
+    >
+      <div class="flex items-start justify-between">
+        <div class="w-12 h-12 bg-gray-100 dark:bg-gray-800 rounded-lg"></div>
+        <div class="w-16 h-5 bg-gray-50 dark:bg-gray-800 rounded-full"></div>
+      </div>
+      <div class="space-y-3">
+        <div class="w-24 h-4 bg-gray-100 dark:bg-gray-800 rounded"></div>
+        <div class="w-32 h-8 bg-gray-200 dark:bg-gray-700 rounded"></div>
+      </div>
+    </div>
+  </div>
+</ng-template>
 
 <!-- Sales Analytics Section -->
 <div

@@ -88,6 +88,7 @@ export class AdminCategoryManagementComponent implements OnInit, OnDestroy {
   selectedImageFile: File | null = null;
   imagePreviewUrl: string | null = null;
   isUploadingImage = false;
+  isLoading = false;
 
   filterControl = this.formBuilder.control("", { nonNullable: true });
 
@@ -531,12 +532,17 @@ export class AdminCategoryManagementComponent implements OnInit, OnDestroy {
   }
 
   private loadCategories(): void {
-    this.categoriesService.getAll().subscribe((categories) => {
-      this.categoriesFlat = categories;
-      this.rebuildTree();
-      if (!this.selectedId && categories.length > 0) {
-        this.selectCategory(categories[0]);
-      }
+    this.isLoading = true;
+    this.categoriesService.getAll().subscribe({
+      next: (categories) => {
+        this.categoriesFlat = categories;
+        this.rebuildTree();
+        if (!this.selectedId && categories.length > 0) {
+          this.selectCategory(categories[0]);
+        }
+        this.isLoading = false;
+      },
+      error: () => (this.isLoading = false),
     });
   }
 
