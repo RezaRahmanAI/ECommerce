@@ -40,7 +40,7 @@ export class CartService {
   }
 
   updateCartItem(itemId: number, quantity: number): Observable<Cart> {
-    return this.api.put<Cart>(`${this.baseUrl}/items/${itemId}`, { quantity });
+    return this.api.post<Cart>(`${this.baseUrl}/items/${itemId}`, { quantity });
   }
 
   removeFromCart(itemId: number): Observable<void> {

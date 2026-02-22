@@ -45,7 +45,9 @@ export class ApiHttpClient {
     body: unknown,
     options: { headers?: HttpHeaders; context?: HttpContext } = {},
   ) {
-    return this.http.put<T>(this.buildUrl(path), body, {
+    // Forcing POST instead of PUT because some production environments block PUT/PATCH
+    // and cause CORS issues. The backend is already configured to accept POST for updates.
+    return this.http.post<T>(this.buildUrl(path), body, {
       ...options,
       withCredentials: true,
     });
