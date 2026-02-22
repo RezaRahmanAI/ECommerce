@@ -18,7 +18,7 @@ export class ApiHttpClient {
   get<T>(
     path: string,
     options: {
-      params?: HttpParams;
+      params?: any;
       headers?: HttpHeaders;
       context?: HttpContext;
     } = {},
