@@ -50,7 +50,9 @@ export class CartPageComponent {
     this.cartService.summary$,
   ]).pipe(map(([cartItems, summary]) => ({ cartItems, summary })));
 
-  readonly recommendedProducts$ = this.productService.getFeaturedProducts();
+  readonly recommendedProducts$ = this.productService
+    .getFeaturedProducts()
+    .pipe(map((res) => res.data));
 
   increaseQuantity(item: CartItem): void {
     this.cartService.updateQty(item.id, item.quantity + 1);

@@ -25,10 +25,8 @@ export class MenProductGridComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.productService
-      .getProducts({ gender: "men" })
-      .subscribe((products: any) => {
-        this.products = products;
-      });
+    this.productService.getProducts({ gender: "men" }).subscribe((res) => {
+      this.products = res.data;
+    });
   }
 }

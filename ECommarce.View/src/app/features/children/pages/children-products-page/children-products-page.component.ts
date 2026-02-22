@@ -55,10 +55,8 @@ export class ChildrenProductsPageComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.productService
-      .getProducts({ gender: "kids" })
-      .subscribe((products: Product[]) => {
-        this.products = products;
-      });
+    this.productService.getProducts({ gender: "kids" }).subscribe((res) => {
+      this.products = res.data;
+    });
   }
 }

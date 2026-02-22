@@ -59,8 +59,8 @@ export class AccessoriesPageComponent implements OnInit {
   ngOnInit(): void {
     this.productService
       .getProducts({ category: "Accessories" })
-      .subscribe((products: Product[]) => {
-        this.products = products;
+      .subscribe((res) => {
+        this.products = res.data;
       });
   }
 }
