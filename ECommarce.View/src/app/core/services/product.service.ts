@@ -66,7 +66,7 @@ export class ProductService {
   }
 
   getReviewsByProductId(productId: number): Observable<Review[]> {
-    return this.api.get<Review[]>(`${this.baseUrl}/${productId}/reviews`);
+    return this.api.get<Review[]>(`/reviews/products/${productId}`);
   }
 
   getAdminProducts(): Observable<Product[]> {

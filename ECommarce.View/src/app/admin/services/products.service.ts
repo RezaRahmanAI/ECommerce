@@ -105,7 +105,7 @@ export class ProductsService {
     productId: number,
     payload: ProductUpdatePayload,
   ): Observable<Product> {
-    return this.api.put<Product>(`/admin/products/${productId}`, payload).pipe(
+    return this.api.post<Product>(`/admin/products/${productId}`, payload).pipe(
       map((updated) => {
         this.updateCatalogSnapshot((products) => {
           const index = products.findIndex((item) => item.id === productId);

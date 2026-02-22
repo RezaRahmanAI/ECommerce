@@ -30,6 +30,6 @@ export class InventoryService {
   }
 
   updateStock(variantId: number, quantity: number): Observable<any> {
-    return this.api.put(`${this.baseUrl}/${variantId}`, { quantity });
+    return this.api.post(`${this.baseUrl}/${variantId}`, { quantity });
   }
 }

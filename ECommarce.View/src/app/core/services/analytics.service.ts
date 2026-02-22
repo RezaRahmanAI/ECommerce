@@ -99,18 +99,18 @@ export class AnalyticsService {
   trackPurchase(order: any): void {
     if (typeof fbq === "function") {
       fbq("track", "Purchase", {
-        value: order.totalAmount,
+        value: order.total,
         currency: "BDT",
-        content_ids: order.orderItems.map((i: any) => i.productId),
+        content_ids: order.items.map((i: any) => i.productId),
         content_type: "product",
       });
     }
     if (typeof gtag === "function") {
       gtag("event", "purchase", {
         transaction_id: order.id.toString(),
-        value: order.totalAmount,
+        value: order.total,
         currency: "BDT",
-        items: order.orderItems.map((i: any) => ({
+        items: order.items.map((i: any) => ({
           item_id: i.productId,
           item_name: i.name,
           price: i.price,

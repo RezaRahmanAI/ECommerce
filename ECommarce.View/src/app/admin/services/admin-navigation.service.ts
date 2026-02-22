@@ -35,7 +35,7 @@ export class AdminNavigationService {
     id: number,
     menu: Partial<NavigationMenuItem>,
   ): Observable<NavigationMenuItem> {
-    return this.api.put<NavigationMenuItem>(`${this.baseUrl}/${id}`, menu);
+    return this.api.post<NavigationMenuItem>(`${this.baseUrl}/${id}`, menu);
   }
 
   delete(id: number): Observable<void> {

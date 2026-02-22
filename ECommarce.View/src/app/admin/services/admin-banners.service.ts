@@ -34,7 +34,7 @@ export class AdminBannersService {
   }
 
   update(id: number, banner: Partial<Banner>): Observable<Banner> {
-    return this.api.put<Banner>(`${this.baseUrl}/${id}`, banner);
+    return this.api.post<Banner>(`${this.baseUrl}/${id}`, banner);
   }
 
   delete(id: number): Observable<void> {

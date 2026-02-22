@@ -34,6 +34,6 @@ export class AdminReviewsService {
     id: number,
     payload: { rating: number; comment: string },
   ): Observable<AdminReview> {
-    return this.api.put<AdminReview>(`${this.baseUrl}/${id}`, payload);
+    return this.api.post<AdminReview>(`${this.baseUrl}/${id}`, payload);
   }
 }

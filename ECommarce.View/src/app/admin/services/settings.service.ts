@@ -23,7 +23,7 @@ export class SettingsService {
 
   saveSettings(payload: AdminSettings): Observable<AdminSettings> {
     return this.api
-      .put<AdminSettings>("/admin/settings", payload)
+      .post<AdminSettings>("/admin/settings", payload)
       .pipe(tap((settings) => this.settingsSubject.next(settings)));
   }
 
@@ -38,7 +38,7 @@ export class SettingsService {
     zoneId: number,
     payload: ShippingZone,
   ): Observable<ShippingZone> {
-    return this.api.put<ShippingZone>(
+    return this.api.post<ShippingZone>(
       `/admin/settings/shipping-zones/${zoneId}`,
       payload,
     );
@@ -70,7 +70,7 @@ export class SettingsService {
     id: number,
     payload: Partial<DeliveryMethod>,
   ): Observable<void> {
-    return this.api.put<void>(
+    return this.api.post<void>(
       `/admin/settings/delivery-methods/${id}`,
       payload,
     );

@@ -27,7 +27,7 @@ export class CategoriesService {
   }
 
   update(id: string, payload: Partial<Category>): Observable<Category> {
-    return this.api.put<Category>(`/admin/categories/${id}`, payload);
+    return this.api.post<Category>(`/admin/categories/${id}`, payload);
   }
 
   delete(id: string): Observable<boolean> {

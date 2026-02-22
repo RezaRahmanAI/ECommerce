@@ -32,7 +32,7 @@ export class SubCategoriesService {
   }
 
   update(id: number, payload: Partial<SubCategory>): Observable<SubCategory> {
-    return this.api.put<SubCategory>(`/admin/subcategories/${id}`, payload);
+    return this.api.post<SubCategory>(`/admin/subcategories/${id}`, payload);
   }
 
   delete(id: number): Observable<void> {

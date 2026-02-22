@@ -63,7 +63,7 @@ export class OrdersService {
   }
 
   updateStatus(orderId: number, status: OrderStatus): Observable<Order> {
-    return this.api.put<Order>(`/admin/orders/${orderId}/status`, { status });
+    return this.api.post<Order>(`/admin/orders/${orderId}/status`, { status });
   }
 
   private buildCsv(rows: Order[]): string {
