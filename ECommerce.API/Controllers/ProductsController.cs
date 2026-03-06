@@ -30,6 +30,7 @@ public class ProductsController : ControllerBase
     }
 
     [HttpGet]
+    [ResponseCache(Duration = 60, VaryByQueryKeys = new[] { "*" })]
     public async Task<ActionResult<PaginationDto<ProductDto>>> GetProducts(
         [FromQuery] string? sort, 
         [FromQuery] int? categoryId, 
@@ -61,6 +62,7 @@ public class ProductsController : ControllerBase
     }
 
     [HttpGet("{slug}")]
+    [ResponseCache(Duration = 60, VaryByQueryKeys = new[] { "slug" })]
     public async Task<ActionResult<ProductDto>> GetProduct(string slug)
     {
         var product = await _productService.GetProductBySlugAsync(slug);

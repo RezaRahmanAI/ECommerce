@@ -25,22 +25,22 @@ public class GenericRepository<T> : IGenericRepository<T> where T : BaseEntity
 
     public async Task<IReadOnlyList<T>> ListAllAsync()
     {
-        return await _context.Set<T>().ToListAsync();
+        return await _context.Set<T>().AsNoTracking().ToListAsync();
     }
 
     public async Task<T> GetEntityWithSpec(ISpecification<T> spec)
     {
-        return await ApplySpecification(spec).FirstOrDefaultAsync();
+        return await ApplySpecification(spec).AsNoTracking().FirstOrDefaultAsync();
     }
 
     public async Task<IReadOnlyList<T>> ListAsync(ISpecification<T> spec)
     {
-        return await ApplySpecification(spec).ToListAsync();
+        return await ApplySpecification(spec).AsNoTracking().ToListAsync();
     }
 
     public async Task<int> CountAsync(ISpecification<T> spec)
     {
-        return await ApplySpecification(spec).CountAsync();
+        return await ApplySpecification(spec).AsNoTracking().CountAsync();
     }
 
     public void Add(T entity)

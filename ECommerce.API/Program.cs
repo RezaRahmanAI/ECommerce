@@ -2,7 +2,8 @@ using ECommerce.Infrastructure.Data;
 using ECommerce.Core.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-
+using Microsoft.AspNetCore.ResponseCompression;
+using System.IO.Compression;
 
 using Serilog;
 
@@ -34,17 +35,41 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Performance: Response Compression and Caching
+// Performance: Brotli + Gzip Response Compression
 builder.Services.AddResponseCompression(options =>
 {
     options.EnableForHttps = true;
+    options.Providers.Add<BrotliCompressionProvider>();
+    options.Providers.Add<GzipCompressionProvider>();
+    options.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(new[]
+    {
+        "application/json",
+        "text/css",
+        "application/javascript",
+        "text/html",
+        "image/svg+xml"
+    });
 });
+builder.Services.Configure<BrotliCompressionProviderOptions>(options =>
+{
+    options.Level = CompressionLevel.Fastest;
+});
+builder.Services.Configure<GzipCompressionProviderOptions>(options =>
+{
+    options.Level = CompressionLevel.SmallestSize;
+});
+
 builder.Services.AddMemoryCache();
+builder.Services.AddResponseCaching();
 
 
-// Database
+// Database with connection resiliency
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"),
+        sqlOptions => sqlOptions.EnableRetryOnFailure(
+            maxRetryCount: 3,
+            maxRetryDelay: TimeSpan.FromSeconds(5),
+            errorNumbersToAdd: null)));
 
 // Identity
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options => {
@@ -81,7 +106,6 @@ builder.Services.AddAuthentication(options =>
         RoleClaimType = System.Security.Claims.ClaimTypes.Role // Explicitly map role claims
     };
 });
-
 
 
 
@@ -132,16 +156,30 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-
-app.UseSwagger();
- app.UseSwaggerUI();
-
+// Swagger: Only in Development
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
 
 app.UseHttpsRedirection();
 
+// Response compression MUST be before static files and routing
 app.UseResponseCompression();
-app.UseStaticFiles(); // Enable serving static files from wwwroot
 
+// Static files with aggressive caching for production
+app.UseStaticFiles(new StaticFileOptions
+{
+    OnPrepareResponse = ctx =>
+    {
+        // Cache static files for 30 days
+        ctx.Context.Response.Headers.Append("Cache-Control", "public,max-age=2592000,immutable");
+    }
+});
+
+// Response caching
+app.UseResponseCaching();
 
 // Global exception handling
 app.UseCors("AllowAll");

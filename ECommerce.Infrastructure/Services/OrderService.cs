@@ -31,20 +31,35 @@ public class OrderService : IOrderService
     {
         var items = new List<OrderItem>();
         
+        var productIds = orderDto.Items.Select(i => i.ProductId).Distinct().ToList();
+        var products = await _unitOfWork.Repository<Product>().ListAsync(new BaseSpecification<Product>(p => productIds.Contains(p.Id)));
+        var productsDict = products.ToDictionary(p => p.Id);
+
+        // Pre-fetch all variants needed
+        var variantsList = new List<ProductVariant>();
+        var itemsWithVariants = orderDto.Items.Where(i => !string.IsNullOrEmpty(i.Size)).ToList();
+        if (itemsWithVariants.Any())
+        {
+            var variantCriteria = itemsWithVariants.Select(i => new { i.ProductId, i.Size }).ToList();
+            // Since we can't easily express multiple ANDs in a single simple spec without complex logic, 
+            // we fetch all variants for these products and filter in memory, or use a more specific spec if available.
+            var allVariantsForProducts = await _unitOfWork.Repository<ProductVariant>().ListAsync(new BaseSpecification<ProductVariant>(v => productIds.Contains(v.ProductId)));
+            variantsList = allVariantsForProducts.ToList();
+        }
+
         foreach (var itemDto in orderDto.Items)
         {
-            var product = await _unitOfWork.Repository<Product>().GetByIdAsync(itemDto.ProductId);
-            if (product == null) throw new KeyNotFoundException($"Product {itemDto.ProductId} not found");
+            if (!productsDict.TryGetValue(itemDto.ProductId, out var product))
+                throw new KeyNotFoundException($"Product {itemDto.ProductId} not found");
 
             // Deduct from Main Product Stock
             if (product.StockQuantity < itemDto.Quantity) throw new InvalidOperationException($"Insufficient stock for {product.Name}");
             product.StockQuantity -= itemDto.Quantity;
 
-            // Deduct from Variant Stock if size/color provided
+            // Deduct from Variant Stock if size provided
             if (!string.IsNullOrEmpty(itemDto.Size))
             {
-                var variantSpec = new BaseSpecification<ProductVariant>(v => v.ProductId == product.Id && v.Size == itemDto.Size);
-                var variant = await _unitOfWork.Repository<ProductVariant>().GetEntityWithSpec(variantSpec);
+                var variant = variantsList.FirstOrDefault(v => v.ProductId == product.Id && v.Size == itemDto.Size);
                 
                 if (variant != null)
                 {
@@ -66,6 +81,7 @@ public class OrderService : IOrderService
             };
             
             items.Add(orderItem);
+            _unitOfWork.Repository<Product>().Update(product);
         }
 
         var subtotal = items.Sum(i => i.TotalPrice);
@@ -162,18 +178,22 @@ public class OrderService : IOrderService
             // Restore stock if cancelling
             if (newStatus == OrderStatus.Cancelled && order.Status != OrderStatus.Cancelled)
             {
+                var productIds = order.Items.Select(i => i.ProductId).Distinct().ToList();
+                var products = await _unitOfWork.Repository<Product>().ListAsync(new BaseSpecification<Product>(p => productIds.Contains(p.Id)));
+                var productsDict = products.ToDictionary(p => p.Id);
+
+                var allVariantsForProducts = await _unitOfWork.Repository<ProductVariant>().ListAsync(new BaseSpecification<ProductVariant>(v => productIds.Contains(v.ProductId)));
+                
                 foreach (var item in order.Items)
                 {
-                    var product = await _unitOfWork.Repository<Product>().GetByIdAsync(item.ProductId);
-                    if (product != null)
+                    if (productsDict.TryGetValue(item.ProductId, out var product))
                     {
                         product.StockQuantity += item.Quantity;
                         _unitOfWork.Repository<Product>().Update(product);
 
                         if (!string.IsNullOrEmpty(item.Size))
                         {
-                            var variantSpec = new BaseSpecification<ProductVariant>(v => v.ProductId == item.ProductId && v.Size == item.Size);
-                            var variant = await _unitOfWork.Repository<ProductVariant>().GetEntityWithSpec(variantSpec);
+                            var variant = allVariantsForProducts.FirstOrDefault(v => v.ProductId == item.ProductId && v.Size == item.Size);
                             if (variant != null)
                             {
                                 variant.StockQuantity += item.Quantity;

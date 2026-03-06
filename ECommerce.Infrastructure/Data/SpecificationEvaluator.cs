@@ -36,6 +36,11 @@ public class SpecificationEvaluator<T> where T : BaseEntity
 
         query = spec.Includes.Aggregate(query, (current, include) => current.Include(include));
 
+        if (spec.IsSplitQuery)
+        {
+            query = query.AsSplitQuery();
+        }
+
         return query;
     }
 }

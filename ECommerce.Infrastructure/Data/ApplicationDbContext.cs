@@ -68,6 +68,10 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             // Indexes for Performance
             entity.HasIndex(p => p.Slug).IsUnique();
             entity.HasIndex(p => p.Sku).IsUnique();
+            entity.HasIndex(p => p.CategoryId);
+            entity.HasIndex(p => p.IsActive);
+            entity.HasIndex(p => p.IsFeatured);
+            entity.HasIndex(p => p.IsNew);
         });
         
         // Product Variant Configuration
@@ -134,6 +138,11 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
                   .WithOne(i => i.Order)
                   .HasForeignKey(i => i.OrderId)
                   .OnDelete(DeleteBehavior.Cascade);
+
+            // Performance indexes
+            entity.HasIndex(o => o.Status);
+            entity.HasIndex(o => o.CreatedAt);
+            entity.HasIndex(o => o.OrderNumber);
         });
 
         builder.Entity<OrderItem>(entity =>

@@ -29,6 +29,8 @@ public class BaseSpecification<T> : ISpecification<T>
 
     public bool IsPagingEnabled { get; private set; }
 
+    public bool IsSplitQuery { get; private set; }
+
     public void AddInclude(Expression<Func<T, object>> includeExpression)
     {
         Includes.Add(includeExpression);
@@ -49,5 +51,10 @@ public class BaseSpecification<T> : ISpecification<T>
         Skip = skip;
         Take = take;
         IsPagingEnabled = true;
+    }
+
+    protected void ApplySplitQuery()
+    {
+        IsSplitQuery = true;
     }
 }

@@ -21,6 +21,7 @@ public class CategoriesController : ControllerBase
     }
 
     [HttpGet]
+    [ResponseCache(Duration = 300)] // 5 minutes cache
     public async Task<ActionResult<IReadOnlyList<CategoryDto>>> GetCategories()
     {
         var spec = new CategoriesWithSubCategoriesSpec();

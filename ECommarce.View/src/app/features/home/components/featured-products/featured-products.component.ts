@@ -1,4 +1,4 @@
-import { Component, OnInit } from "@angular/core";
+import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { HttpContext } from "@angular/common/http";
 
@@ -13,17 +13,23 @@ import { SHOW_LOADING } from "../../../../core/services/loading.service";
   imports: [CommonModule, ProductCardComponent],
   templateUrl: "./featured-products.component.html",
   styleUrl: "./featured-products.component.css",
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class FeaturedProductsComponent implements OnInit {
   products: Product[] = [];
 
-  constructor(private readonly productService: ProductService) {}
+  constructor(private readonly productService: ProductService, private readonly cdr: ChangeDetectorRef) {}
 
   ngOnInit(): void {
     this.productService
       .getFeaturedProducts(10, new HttpContext().set(SHOW_LOADING, true))
       .subscribe((response) => {
         this.products = response.data;
+        this.cdr.markForCheck();
       });
+  }
+
+  trackByProduct(index: number, product: Product): number {
+    return product.id;
   }
 }

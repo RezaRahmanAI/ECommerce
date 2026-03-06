@@ -157,15 +157,11 @@ public class ProductService : IProductService
         product.SubCategoryId = dto.SubCategoryId;
         product.CollectionId = dto.CollectionId;
 
-        // Sync images
-        foreach (var img in product.Images.ToList())
-        {
-            _unitOfWork.Repository<ProductImage>().Delete(img);
-        }
-
+        // Sync images - Add/Update/Delete instead of bulk delete
+        var dtoImages = new List<ProductImage>();
         if (dto.Media?.MainImage != null)
         {
-            product.Images.Add(new ProductImage {
+            dtoImages.Add(new ProductImage {
                 Url = dto.Media.MainImage.ImageUrl ?? string.Empty,
                 AltText = dto.Media.MainImage.Alt,
                 Label = dto.Media.MainImage.Label,
@@ -174,10 +170,9 @@ public class ProductService : IProductService
                 Color = dto.Media.MainImage.Color
             });
         }
-
         foreach (var thumb in dto.Media?.Thumbnails ?? new())
         {
-            product.Images.Add(new ProductImage {
+            dtoImages.Add(new ProductImage {
                 Url = thumb.ImageUrl ?? string.Empty,
                 AltText = thumb.Alt,
                 Label = thumb.Label,
@@ -187,19 +182,57 @@ public class ProductService : IProductService
             });
         }
 
-        // Sync variants
-        foreach (var v in product.Variants.ToList())
+        // Simple sync: remove what's not in DTO, add new ones (simplified for this context)
+        // Ideally we match by ID or URL to update instead of delete.
+        // For brevity and safety, we match by URL.
+        var currentImages = product.Images.ToList();
+        foreach (var img in currentImages)
         {
-            _unitOfWork.Repository<ProductVariant>().Delete(v);
+            if (!dtoImages.Any(di => di.Url == img.Url))
+            {
+                _unitOfWork.Repository<ProductImage>().Delete(img);
+                product.Images.Remove(img);
+            }
         }
-        foreach (var v in dto.InventoryVariants)
+        foreach (var di in dtoImages)
         {
-            product.Variants.Add(new ProductVariant {
-                Sku = v.Sku,
-                Price = v.Price,
-                StockQuantity = v.Inventory,
-                Size = v.Label
-            });
+            if (!currentImages.Any(ci => ci.Url == di.Url))
+            {
+                product.Images.Add(di);
+            }
+        }
+
+        // Sync variants
+        var dtoVariants = dto.InventoryVariants.Select(v => new ProductVariant {
+            Sku = v.Sku,
+            Price = v.Price,
+            StockQuantity = v.Inventory,
+            Size = v.Label
+        }).ToList();
+
+        var currentVariants = product.Variants.ToList();
+        foreach (var v in currentVariants)
+        {
+            var matchedDto = dtoVariants.FirstOrDefault(dv => dv.Sku == v.Sku);
+            if (matchedDto == null)
+            {
+                _unitOfWork.Repository<ProductVariant>().Delete(v);
+                product.Variants.Remove(v);
+            }
+            else
+            {
+                v.Price = matchedDto.Price;
+                v.StockQuantity = matchedDto.StockQuantity;
+                v.Size = matchedDto.Size;
+                _unitOfWork.Repository<ProductVariant>().Update(v);
+            }
+        }
+        foreach (var dv in dtoVariants)
+        {
+            if (!currentVariants.Any(cv => cv.Sku == dv.Sku))
+            {
+                product.Variants.Add(dv);
+            }
         }
 
         // Recalculate total stock from variants

@@ -18,6 +18,7 @@ public class BannersController : ControllerBase
     }
 
     [HttpGet]
+    [ResponseCache(Duration = 300)]
     public async Task<ActionResult<List<HeroBannerDto>>> GetActiveBanners()
     {
         var spec = new HeroBannerSpecification(isActive: true);

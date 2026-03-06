@@ -1,5 +1,5 @@
 import { Injectable, inject } from "@angular/core";
-import { Observable } from "rxjs";
+import { Observable, shareReplay } from "rxjs";
 import { ApiHttpClient } from "../http/http-client";
 
 export interface HeroBanner {
@@ -20,7 +20,12 @@ export class BannerService {
   private readonly api = inject(ApiHttpClient);
   private readonly baseUrl = "/banners";
 
+  // Cache banners — they rarely change during a session
+  private banners$ = this.api
+    .get<HeroBanner[]>(this.baseUrl)
+    .pipe(shareReplay(1));
+
   getActiveBanners(): Observable<HeroBanner[]> {
-    return this.api.get<HeroBanner[]>(this.baseUrl);
+    return this.banners$;
   }
 }

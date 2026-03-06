@@ -24,6 +24,7 @@ public class ProductsWithCategoriesSpecification : BaseSpecification<Product>
         AddInclude(x => x.SubCategory!);
         AddInclude(x => x.Collection!);
         AddInclude(x => x.Images);
+        ApplySplitQuery();
 
         AddOrderBy(x => x.Name);
 

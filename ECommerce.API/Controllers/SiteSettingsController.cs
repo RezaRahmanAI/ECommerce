@@ -18,6 +18,7 @@ namespace ECommerce.API.Controllers
         }
 
         [HttpGet]
+        [ResponseCache(Duration = 600)] // 10 minutes cache
         public async Task<ActionResult<SiteSetting>> GetSettings()
         {
             var settings = await _context.SiteSettings.FirstOrDefaultAsync();
@@ -35,6 +36,7 @@ namespace ECommerce.API.Controllers
         }
 
         [HttpGet("delivery-methods")]
+        [ResponseCache(Duration = 300)]
         public async Task<ActionResult<IEnumerable<DeliveryMethod>>> GetDeliveryMethods()
         {
             return await _context.DeliveryMethods
