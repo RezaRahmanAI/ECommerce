@@ -1,0 +1,178 @@
+<div class="max-w-[1000px] mx-auto pb-20">
+  <div class="flex items-center justify-between mb-8">
+    <div class="flex items-center gap-4">
+      <a
+        routerLink="/admin/products"
+        class="w-10 h-10 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 flex items-center justify-center transition-colors"
+      >
+        <lucide-icon [img]="icons.ArrowLeft" class="w-5 h-5 text-slate-600 dark:text-slate-300"></lucide-icon>
+      </a>
+      <div>
+        <h1 class="text-2xl font-bold text-slate-900 dark:text-white">
+          Landing Page Editor
+        </h1>
+        <p class="text-sm text-slate-500" *ngFor="let p of [product]">
+          {{ p ? p.name : 'Loading...' }}
+        </p>
+      </div>
+    </div>
+    <div class="flex items-center gap-3">
+      <button
+        (click)="save()"
+        [disabled]="isSaving || isLoading"
+        class="h-10 px-6 rounded-lg bg-primary text-white font-medium hover:bg-[#083b4b] transition-colors flex items-center gap-2 disabled:opacity-50"
+      >
+        <lucide-icon
+          *ngIf="isSaving"
+          [img]="icons.Loader2"
+          class="w-4 h-4 animate-spin"
+        ></lucide-icon>
+        <lucide-icon
+          *ngIf="!isSaving"
+          [img]="icons.Save"
+          class="w-4 h-4"
+        ></lucide-icon>
+        Save Changes
+      </button>
+    </div>
+  </div>
+
+  <div *ngIf="isLoading" class="flex justify-center py-20">
+    <lucide-icon [img]="icons.Loader2" class="w-8 h-8 animate-spin text-primary"></lucide-icon>
+  </div>
+
+  <div *ngIf="error" class="bg-red-50 text-red-600 p-4 rounded-lg mb-6 text-sm">
+    {{ error }}
+  </div>
+
+  <form *ngIf="!isLoading" [formGroup]="form" class="space-y-6">
+    <!-- Basic Information -->
+    <div class="bg-white dark:bg-surface-dark border border-slate-200 dark:border-slate-700 rounded-xl p-6 shadow-sm">
+      <h2 class="text-lg font-bold text-slate-900 dark:text-white mb-4">Hero Section</h2>
+      <div class="grid grid-cols-1 gap-6">
+        <div>
+          <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Headline *</label>
+          <input
+            type="text"
+            formControlName="headline"
+            class="w-full h-11 px-4 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-surface-dark focus:ring-primary focus:border-primary text-slate-900 dark:text-white"
+            placeholder="e.g., Tono Him"
+          />
+          <p class="text-xs text-red-500 mt-1" *ngIf="form.controls.headline.touched && form.controls.headline.invalid">
+            Headline is required.
+          </p>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Video/Image URL (Optional)</label>
+          <input
+            type="text"
+            formControlName="videoUrl"
+            class="w-full h-11 px-4 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-surface-dark focus:ring-primary focus:border-primary text-slate-900 dark:text-white"
+            placeholder="https://youtube.com/... or https://domain.com/image.jpg"
+          />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Theme Color</label>
+          <input
+            type="color"
+            formControlName="themeColor"
+            class="h-11 w-20 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-surface-dark focus:ring-primary focus:border-primary p-1 cursor-pointer"
+          />
+        </div>
+      </div>
+    </div>
+
+    <!-- Benefits Section -->
+    <div class="bg-white dark:bg-surface-dark border border-slate-200 dark:border-slate-700 rounded-xl p-6 shadow-sm">
+      <h2 class="text-lg font-bold text-slate-900 dark:text-white mb-4">Benefits & Features</h2>
+      <div class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Section Title</label>
+          <input
+            type="text"
+            formControlName="benefitsTitle"
+            class="w-full h-11 px-4 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-surface-dark focus:ring-primary focus:border-primary text-slate-900 dark:text-white"
+          />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Content (HTML allowed)</label>
+          <textarea
+            formControlName="benefitsContent"
+            rows="6"
+            class="w-full p-4 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-surface-dark focus:ring-primary focus:border-primary text-slate-900 dark:text-white"
+            placeholder="<p>Benefit 1</p><p>Benefit 2</p>"
+          ></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- Usage Section -->
+    <div class="bg-white dark:bg-surface-dark border border-slate-200 dark:border-slate-700 rounded-xl p-6 shadow-sm">
+      <h2 class="text-lg font-bold text-slate-900 dark:text-white mb-4">Usage Instructions</h2>
+      <div class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Section Title</label>
+          <input
+            type="text"
+            formControlName="usageTitle"
+            class="w-full h-11 px-4 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-surface-dark focus:ring-primary focus:border-primary text-slate-900 dark:text-white"
+          />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Content (HTML allowed)</label>
+          <textarea
+            formControlName="usageContent"
+            rows="6"
+            class="w-full p-4 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-surface-dark focus:ring-primary focus:border-primary text-slate-900 dark:text-white"
+          ></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- Side Effects Section -->
+    <div class="bg-white dark:bg-surface-dark border border-slate-200 dark:border-slate-700 rounded-xl p-6 shadow-sm">
+      <h2 class="text-lg font-bold text-slate-900 dark:text-white mb-4">Side Effects / Disclaimers</h2>
+      <div class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Section Title</label>
+          <input
+            type="text"
+            formControlName="sideEffectsTitle"
+            class="w-full h-11 px-4 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-surface-dark focus:ring-primary focus:border-primary text-slate-900 dark:text-white"
+          />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Content (HTML allowed)</label>
+          <textarea
+            formControlName="sideEffectsContent"
+            rows="4"
+            class="w-full p-4 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-surface-dark focus:ring-primary focus:border-primary text-slate-900 dark:text-white"
+          ></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- Reviews Section -->
+    <div class="bg-white dark:bg-surface-dark border border-slate-200 dark:border-slate-700 rounded-xl p-6 shadow-sm">
+      <h2 class="text-lg font-bold text-slate-900 dark:text-white mb-4">Reviews Details</h2>
+      <div class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Section Title</label>
+          <input
+            type="text"
+            formControlName="reviewsTitle"
+            class="w-full h-11 px-4 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-surface-dark focus:ring-primary focus:border-primary text-slate-900 dark:text-white"
+          />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Reviews Images Content (HTML with img tags)</label>
+          <textarea
+            formControlName="reviewsImages"
+            rows="5"
+            class="w-full p-4 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-surface-dark focus:ring-primary focus:border-primary text-slate-900 dark:text-white"
+          ></textarea>
+        </div>
+      </div>
+    </div>
+  </form>
+</div>

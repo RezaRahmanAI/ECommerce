@@ -71,21 +71,15 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
             maxRetryDelay: TimeSpan.FromSeconds(5),
             errorNumbersToAdd: null)));
 
-// Identity
-builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options => {
-    options.Password.RequireDigit = true;
-    options.Password.RequireLowercase = true;
-    options.Password.RequireUppercase = true;
-    options.Password.RequireNonAlphanumeric = false;
-    options.Password.RequiredLength = 6;
-})
-.AddEntityFrameworkStores<ApplicationDbContext>()
-.AddDefaultTokenProviders();
+// JWT Setup
+var jwtKey = builder.Configuration["Token:Key"] ?? "development_key_arzamart_123456789";
+var keyBytes = System.Text.Encoding.UTF8.GetBytes(jwtKey);
+if (keyBytes.Length < 32)
+{
+    using var sha256 = System.Security.Cryptography.SHA256.Create();
+    keyBytes = sha256.ComputeHash(keyBytes);
+}
 
-// Token Service
-builder.Services.AddScoped<ECommerce.Core.Interfaces.ITokenService, ECommerce.Infrastructure.Services.TokenService>();
-
-// JWT Authentication
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme;
@@ -96,16 +90,18 @@ builder.Services.AddAuthentication(options =>
     options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
     {
         ValidateIssuerSigningKey = true,
-        IssuerSigningKey = new Microsoft.IdentityModel.Tokens.SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(builder.Configuration["Token:Key"]!)),
-        ValidIssuer = builder.Configuration["Token:Issuer"],
+        IssuerSigningKey = new Microsoft.IdentityModel.Tokens.SymmetricSecurityKey(keyBytes),
+        ValidIssuer = builder.Configuration["Token:Issuer"] ?? "ArzaMart",
         ValidateIssuer = true,
-        ValidAudience = builder.Configuration["Token:Audience"],
+        ValidAudience = builder.Configuration["Token:Audience"] ?? "ArzaMartUsers",
         ValidateAudience = true,
         ValidateLifetime = true,
-        ClockSkew = TimeSpan.Zero,
-        RoleClaimType = System.Security.Claims.ClaimTypes.Role // Explicitly map role claims
+        ClockSkew = TimeSpan.Zero
     };
 });
+
+builder.Services.AddAuthorization();
+
 
 
 
@@ -118,6 +114,7 @@ builder.Services.AddScoped<ECommerce.Core.Interfaces.IBlogService, ECommerce.Inf
 builder.Services.AddScoped<ECommerce.Core.Interfaces.INavigationService, ECommerce.Infrastructure.Services.NavigationService>();
 builder.Services.AddScoped<ECommerce.Core.Interfaces.IProductService, ECommerce.Infrastructure.Services.ProductService>();
 builder.Services.AddScoped<ECommerce.Core.Interfaces.IReviewService, ECommerce.Infrastructure.Services.ReviewService>();
+builder.Services.AddScoped<ECommerce.Core.Interfaces.IProductLandingPageService, ECommerce.Infrastructure.Services.ProductLandingPageService>();
 builder.Services.AddHttpContextAccessor(); // Add HttpContextAccessor
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
@@ -229,10 +226,9 @@ using (var scope = app.Services.CreateScope())
         var context = services.GetRequiredService<ApplicationDbContext>();
         context.Database.Migrate();
         
-        var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
-        var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
-        DataSeeder.SeedAsync(userManager, roleManager, context).GetAwaiter().GetResult();
+        DataSeeder.SeedAsync(context).GetAwaiter().GetResult();
     }
+
     catch (Exception ex)
     {
         var logger = services.GetRequiredService<ILogger<Program>>();

@@ -1,4 +1,4 @@
-import { Component, DestroyRef, OnInit, inject } from "@angular/core";
+import { Component, DestroyRef, OnInit, inject, ChangeDetectionStrategy, ChangeDetectorRef } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { FormBuilder, ReactiveFormsModule, Validators } from "@angular/forms";
 import { ActivatedRoute, Router, RouterModule } from "@angular/router";
@@ -35,7 +35,16 @@ import { CustomerOrderApiService } from "../../../../core/services/customer-orde
 import { ImageUrlService } from "../../../../core/services/image-url.service";
 import { SettingsService } from "../../../../admin/services/settings.service";
 import { DeliveryMethod } from "../../../../admin/models/settings.models";
+import { LandingPageService, PublicLandingPage } from "../../services/landing-page.service";
 import { PriceDisplayComponent } from "../../../../shared/components/price-display/price-display.component";
+
+interface OfferItem {
+  id: string | number;
+  name: string;
+  price: number;
+  imageUrl: string;
+  quantity: number;
+}
 
 @Component({
   selector: "app-landing-page",
@@ -49,9 +58,9 @@ import { PriceDisplayComponent } from "../../../../shared/components/price-displ
   ],
   templateUrl: "./landing-page.component.html",
   styleUrl: "./landing-page.component.css",
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LandingPageComponent implements OnInit {
-  // ... existing code ...
   readonly icons = {
     Loader2,
     ChevronLeft,
@@ -72,15 +81,31 @@ export class LandingPageComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly customerOrderApi = inject(CustomerOrderApiService);
   private readonly settingsService = inject(SettingsService);
+  private readonly landingPageService = inject(LandingPageService);
+  private readonly cdr = inject(ChangeDetectorRef);
   readonly imageUrlService = inject(ImageUrlService);
 
   product: Product | null = null;
+  landingPage: PublicLandingPage | null = null;
   isLoading = false;
   isOrdering = false;
   errorMessage = "";
   didAutofill = false;
   deliveryMethods: DeliveryMethod[] = [];
   selectedMethod: DeliveryMethod | null = null;
+
+  offerItems: OfferItem[] = [
+    { id: 'bb', name: 'Blueberry Gel -100ml', price: 160, imageUrl: 'https://lovecarebd.online/wp-content/uploads/2026/02/Blueberry-800x800-1-300x300-1-1.jpg', quantity: 0 },
+    { id: 'mc', name: 'Soft Silicon Magic Con*dom', price: 400, imageUrl: 'https://lovecarebd.online/wp-content/uploads/2026/02/Magic-Condom-800x800-1-300x300-1-1.jpg', quantity: 0 },
+    { id: 'gg', name: 'Grape Gel -100ml', price: 160, imageUrl: 'https://lovecarebd.online/wp-content/uploads/2026/02/Grape-800x800-1-300x300-1-1.jpg', quantity: 0 },
+    { id: 'sg', name: 'Strawberry Gel -100ml', price: 160, imageUrl: 'https://lovecarebd.online/wp-content/uploads/2026/02/Strawberry-800x800-1-300x300-1-1.jpg', quantity: 0 },
+    { id: 'sg2', name: 'Strawberry, Grape – 2 Flavor Combo', price: 240, imageUrl: 'https://lovecarebd.online/wp-content/uploads/2026/02/2-pices-Combo-SG-800x800-1-300x300-1-1.jpg', quantity: 0 },
+    { id: 'sb2', name: 'Strawberry, blueberry – 2 Flavor Combo', price: 240, imageUrl: 'https://lovecarebd.online/wp-content/uploads/2026/02/2-pis-Combo-800x800-1-300x300-1-1.jpg', quantity: 0 },
+    { id: 'smc', name: 'Strawberry & Magic Con*dom Combo', price: 450, imageUrl: 'https://lovecarebd.online/wp-content/uploads/2026/02/City-Condom-Pack12-1-800x800-1-300x300-1-1.jpg', quantity: 0 },
+    { id: 'sbg3', name: 'Strawberry, blueberry & grape – 3 Flavor Combo', price: 300, imageUrl: 'https://lovecarebd.online/wp-content/uploads/2026/02/3-Pis-Combo-800x800-1-300x300-1.jpg', quantity: 0 },
+    { id: 'sgmc', name: 'Strawberry, Grape – Magic Con*dom Combo', price: 480, imageUrl: 'https://lovecarebd.online/wp-content/uploads/2026/02/2-pis-Magic-Combo.png-800x800-1-300x300-1-1.jpg', quantity: 0 },
+    { id: 'sbgmc', name: 'Strawberry, Blueberry, Grape –Con*dom Combo', price: 530, imageUrl: 'https://lovecarebd.online/wp-content/uploads/2026/03/TONO-HIME-Strawberry-Blueberry-Grape-–-Magic-Condom-Combo-300x300-1.webp', quantity: 1 },
+  ];
 
   readonly checkoutForm = this.formBuilder.nonNullable.group({
     fullName: ["", [Validators.required, Validators.minLength(2)]],
@@ -90,7 +115,7 @@ export class LandingPageComponent implements OnInit {
     deliveryMethodId: [0, Validators.required],
     selectedColor: [""],
     selectedSize: [""],
-    quantity: [1, [Validators.required, Validators.min(1)]],
+    quantity: [1, [Validators.required, Validators.min(0)]],
   });
 
   ngOnInit(): void {
@@ -105,45 +130,86 @@ export class LandingPageComponent implements OnInit {
       this.route.paramMap.pipe(
         map((params) => params.get("slug") ?? ""),
         filter((slug) => slug.length > 0),
-        switchMap((slug) => this.productService.getBySlug(slug)),
+        switchMap((slug) => 
+          combineLatest([
+            this.productService.getBySlug(slug).pipe(catchError(() => of(null))),
+            this.landingPageService.getLandingPage(slug).pipe(catchError(() => of(null)))
+          ])
+        ),
       ),
       this.settingsService.getPublicDeliveryMethods(),
     ])
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: ([product, methods]) => {
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        switchMap(([ [product, landingPage], methods ]) => {
           this.product = product;
+          this.landingPage = landingPage;
           this.deliveryMethods = methods;
           this.isLoading = false;
 
           if (product) {
             // Set defaults
+            const images = product.images ?? [];
+            const variants = product.variants ?? [];
+            
             const colors = Array.from(
-              new Set(product.images?.map((i) => i.color).filter(Boolean)),
-            );
+              new Set(images.map((i: any) => i.color).filter(Boolean))
+            ) as string[];
+            
             const sizes = Array.from(
-              new Set(product.variants?.map((v) => v.size).filter(Boolean)),
-            );
+              new Set(variants.map((v: any) => v.size).filter(Boolean))
+            ) as string[];
 
             this.checkoutForm.patchValue({
               selectedColor: colors[0] ?? "",
               selectedSize: sizes[0] ?? "",
             });
-          }
 
-          if (methods.length > 0) {
+            // If it's an Item Product, fetch other Item Products for the offer grid
+            if (product.isItemProduct) {
+              return this.productService.getItemProducts().pipe(
+                map(pagination => pagination.data),
+                tap(items => {
+                  // Filter out current product and map to OfferItem
+                  this.offerItems = items
+                    .filter(item => item.id !== product.id)
+                    .map(item => ({
+                      id: item.id,
+                      name: item.name,
+                      price: item.price,
+                      imageUrl: this.imageUrlService.getImageUrl(item.imageUrl || ''),
+                      quantity: 0
+                    }));
+                  
+                  // If there's at least one item, set the first one to quantity 1 (as in the hardcoded example)
+                  if (this.offerItems.length > 0) {
+                    this.offerItems[0].quantity = 1;
+                  }
+                }),
+                catchError(() => of([]))
+              );
+            }
+          }
+          return of([]);
+        })
+      )
+      .subscribe({
+        next: () => {
+          if (this.deliveryMethods.length > 0) {
             const defaultMethod =
-              methods.find((m) => m.name.toLowerCase().includes("inside")) ||
-              methods[0];
+              this.deliveryMethods.find((m) => m.name.toLowerCase().includes("inside")) ||
+              this.deliveryMethods[0];
             this.checkoutForm.patchValue({
               deliveryMethodId: defaultMethod.id,
             });
             this.selectedMethod = defaultMethod;
           }
+          this.cdr.markForCheck();
         },
         error: () => {
           this.isLoading = false;
           this.errorMessage = "Product not found.";
+          this.cdr.markForCheck();
         },
       });
   }
@@ -172,6 +238,7 @@ export class LandingPageComponent implements OnInit {
             },
             { emitEvent: false },
           );
+          this.cdr.markForCheck();
         }
       });
 
@@ -180,15 +247,17 @@ export class LandingPageComponent implements OnInit {
       .subscribe((id) => {
         this.selectedMethod =
           this.deliveryMethods.find((m) => m.id === id) || null;
+        this.cdr.markForCheck();
       });
   }
 
+  get subtotal(): number {
+    return this.offerItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  }
+
   get total(): number {
-    if (!this.product) return 0;
-    const subtotal =
-      this.product.price * this.checkoutForm.controls.quantity.value;
     const shipping = this.selectedMethod?.cost ?? 0;
-    return subtotal + shipping;
+    return this.subtotal > 0 ? this.subtotal + shipping : 0;
   }
 
   // UI Helpers matching ProductDetailsPageComponent
@@ -265,6 +334,17 @@ export class LandingPageComponent implements OnInit {
     }
   }
 
+  changeQty(item: any, delta: number): void {
+    item.quantity = Math.max(0, item.quantity + delta);
+    this.cdr.markForCheck();
+  }
+
+  updateQuantity(item: any, event: any): void {
+     const val = parseInt(event.target.value) || 0;
+     item.quantity = Math.max(0, val);
+     this.cdr.markForCheck();
+  }
+
   increaseQuantity(): void {
     const current = this.checkoutForm.controls.quantity.value;
     this.checkoutForm.patchValue({ quantity: current + 1 });
@@ -305,23 +385,37 @@ export class LandingPageComponent implements OnInit {
         this.errorMessage = "Please select a size.";
       }
       this.checkoutForm.markAllAsTouched();
+      this.cdr.markForCheck();
       return;
     }
 
     this.isOrdering = true;
     this.errorMessage = "";
+    this.cdr.markForCheck();
 
-    // For landing page, we bypass the normal cart and create a "virtual" cart with just this item
+    // For landing page, we bypass the normal cart and create a "virtual" cart with items from offerItems
+    this.cartService.clearCart();
+    
+    const selectedItems = this.offerItems.filter(i => i.quantity > 0);
+    if (selectedItems.length === 0) {
+       this.errorMessage = "Please select at least one product.";
+       this.cdr.markForCheck();
+       return;
+    }
+
     const form = this.checkoutForm.getRawValue();
 
-    // 1. Prepare cart service with just this item (Clear others)
-    this.cartService.clearCart();
-    this.cartService.addItem(
-      this.product,
-      form.quantity,
-      form.selectedColor,
-      form.selectedSize,
-    );
+    // Add selected items to cart
+    selectedItems.forEach(item => {
+       const dummyProduct: any = {
+          id: typeof item.id === 'string' ? 99999 : item.id,
+          name: item.name,
+          price: item.price,
+          imageUrl: item.imageUrl,
+          status: 'Active'
+       };
+       this.cartService.addItem(dummyProduct, item.quantity);
+    });
 
     // 2. Persist state to checkout service
     this.checkoutService.updateState({
@@ -336,6 +430,7 @@ export class LandingPageComponent implements OnInit {
     this.checkoutService.createOrder().subscribe({
       next: (orderId) => {
         this.isOrdering = false;
+        this.cdr.markForCheck();
         if (orderId) {
           void this.router.navigate(["/order-confirmation", orderId]);
         }
@@ -343,7 +438,28 @@ export class LandingPageComponent implements OnInit {
       error: (error: Error) => {
         this.isOrdering = false;
         this.errorMessage = error.message ?? "Unable to place order.";
+        this.cdr.markForCheck();
       },
     });
   }
+
+  scrollToOrderForm(): void {
+    const el = document.getElementById("order-form-section");
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "start" });
+      
+      setTimeout(() => {
+         const nameInput = document.querySelector('input[formControlName="fullName"]') as HTMLElement;
+         if (nameInput) nameInput.focus();
+      }, 500);
+    }
+  }
+
+  useFallback(event: Event): void {
+    if (this.product && this.product.imageUrl) {
+      const target = event.target as HTMLImageElement;
+      target.src = this.imageUrlService.getImageUrl(this.product.imageUrl);
+    }
+  }
 }
+

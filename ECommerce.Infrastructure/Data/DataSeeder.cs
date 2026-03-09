@@ -10,140 +10,96 @@ namespace ECommerce.Infrastructure.Data;
 
 public static class DataSeeder
 {
-    public static async Task SeedAsync(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, ApplicationDbContext context)
+    public static async Task SeedAsync(ApplicationDbContext context)
     {
-        // Seed Roles
-        if (!await roleManager.RoleExistsAsync("Admin"))
-        {
-            await roleManager.CreateAsync(new IdentityRole("Admin"));
-        }
-
-        if (!await roleManager.RoleExistsAsync("User"))
-        {
-            await roleManager.CreateAsync(new IdentityRole("User"));
-        }
-
         // Seed Admin User
-        if (!await userManager.Users.AnyAsync())
+        if (!await context.Users.AnyAsync(u => u.Role == "Admin"))
         {
             var adminUser = new ApplicationUser
             {
                 UserName = "admin@gmail.com",
                 Email = "admin@gmail.com",
                 FullName = "Admin User",
-                EmailConfirmed = true
+                EmailConfirmed = true,
+                Role = "Admin",
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword("Admin123")
             };
 
-            var result = await userManager.CreateAsync(adminUser, "Admin123");
-
-            if (result.Succeeded)
-            {
-                await userManager.AddToRoleAsync(adminUser, "Admin");
-            }
+            context.Users.Add(adminUser);
+            await context.SaveChangesAsync();
         }
 
-        // Seed/Update Categories and SubCategories
-        var categoriesToSeed = new List<Category>
+
+        // Seed Categories and SubCategories only if no categories exist
+        if (!await context.Categories.AnyAsync())
         {
-            new Category
+            var categoriesToSeed = new List<Category>
             {
-                Name = "Men",
-                Slug = "men",
-                ImageUrl = "https://images.unsplash.com/photo-1490578474895-699cd4e2cf59",
-                DisplayOrder = 1,
-                IsActive = true,
-                SubCategories = new List<SubCategory>
+                new Category
                 {
-                    new SubCategory { Name = "Sherwani", Slug = "sherwani", ImageUrl = "https://images.unsplash.com/photo-1594938298603-c8148c4dae35", IsActive = true },
-                    new SubCategory { Name = "Thobe", Slug = "thobe", ImageUrl = "https://images.unsplash.com/photo-1583939003579-730e3918a45a", IsActive = true },
-                    new SubCategory { Name = "Kabli", Slug = "kabli", ImageUrl = "https://images.unsplash.com/photo-1594938291221-94f18cbb5660", IsActive = true },
-                    new SubCategory { Name = "Panjabi", Slug = "panjabi", ImageUrl = "https://images.unsplash.com/photo-1621510456681-233013d82a13", IsActive = true }
-                }
-            },
-            new Category
-            {
-                Name = "Women",
-                Slug = "women",
-                ImageUrl = "https://images.unsplash.com/photo-1483985988355-763728e1935b",
-                DisplayOrder = 2,
-                IsActive = true,
-                SubCategories = new List<SubCategory>
-                {
-                    new SubCategory { Name = "Abaya", Slug = "abaya", ImageUrl = "https://images.unsplash.com/photo-1568252542512-9fe8fe9c87bb", IsActive = true },
-                    new SubCategory { Name = "Tops", Slug = "tops", ImageUrl = "https://images.unsplash.com/photo-1551488831-00ddcb6c6bd3", IsActive = true },
-                    new SubCategory { Name = "Co-ords Dress Set", Slug = "coords", ImageUrl = "https://images.unsplash.com/photo-1551488831-00ddcb6c6bd3", IsActive = true },
-                    new SubCategory { Name = "Scarf", Slug = "scarf", ImageUrl = "https://images.unsplash.com/photo-1601924582970-84472305206c", IsActive = true }
-                }
-            },
-            new Category
-            {
-                Name = "Kids",
-                Slug = "kids",
-                ImageUrl = "https://images.unsplash.com/photo-1514090458221-65bb69af63e6",
-                DisplayOrder = 3,
-                IsActive = true,
-                SubCategories = new List<SubCategory>
-                {
-                    new SubCategory { Name = "Girls", Slug = "girls", ImageUrl = "https://images.unsplash.com/photo-1518837697477-94d4777248d6", IsActive = true },
-                    new SubCategory { Name = "Boys", Slug = "boys", ImageUrl = "https://images.unsplash.com/photo-1503910392345-1593b4ff3af1", IsActive = true },
-                    new SubCategory { Name = "Mother & Daughter", Slug = "mother-daughter", ImageUrl = "https://images.unsplash.com/photo-1518837697477-94d4777248d6", IsActive = true },
-                    new SubCategory { Name = "Father & Son", Slug = "father-son", ImageUrl = "https://images.unsplash.com/photo-1513159446162-54eb8bdf79b5", IsActive = true }
-                }
-            },
-            new Category
-            {
-                Name = "Accessories",
-                Slug = "accessories",
-                ImageUrl = "https://images.unsplash.com/photo-1491336477066-31156b5e4f35",
-                DisplayOrder = 4,
-                IsActive = true,
-                SubCategories = new List<SubCategory>
-                {
-                    new SubCategory { Name = "Bags", Slug = "bags", ImageUrl = "https://images.unsplash.com/photo-1584917865442-de89df76afd3", IsActive = true },
-                    new SubCategory { Name = "Home Decor", Slug = "home-decor", ImageUrl = "https://images.unsplash.com/photo-1513519245088-0e12902e5a38", IsActive = true },
-                    new SubCategory { Name = "Watches", Slug = "watches", ImageUrl = "https://images.unsplash.com/photo-1524592094714-0f0654e20314", IsActive = true },
-                    new SubCategory { Name = "Wallets", Slug = "wallets", ImageUrl = "https://images.unsplash.com/photo-1627123424574-724758594e93", IsActive = true }
-                }
-            }
-        };
-
-        foreach (var cat in categoriesToSeed)
-        {
-            var existingCat = await context.Categories
-                .Include(c => c.SubCategories)
-                .FirstOrDefaultAsync(c => c.Slug == cat.Slug);
-
-            if (existingCat == null)
-            {
-                await context.Categories.AddAsync(cat);
-            }
-            else
-            {
-                // Update existing category
-                existingCat.Name = cat.Name;
-                existingCat.ImageUrl = cat.ImageUrl;
-                existingCat.DisplayOrder = cat.DisplayOrder;
-                existingCat.IsActive = true;
-
-                // Update/Add Subcategories
-                foreach (var sub in cat.SubCategories)
-                {
-                    var existingSub = existingCat.SubCategories.FirstOrDefault(s => s.Slug == sub.Slug);
-                    if (existingSub == null)
+                    Name = "Men",
+                    Slug = "men",
+                    ImageUrl = "https://images.unsplash.com/photo-1490578474895-699cd4e2cf59",
+                    DisplayOrder = 1,
+                    IsActive = true,
+                    SubCategories = new List<SubCategory>
                     {
-                        sub.CategoryId = existingCat.Id;
-                        await context.SubCategories.AddAsync(sub);
+                        new SubCategory { Name = "Sherwani", Slug = "sherwani", ImageUrl = "https://images.unsplash.com/photo-1594938298603-c8148c4dae35", IsActive = true },
+                        new SubCategory { Name = "Thobe", Slug = "thobe", ImageUrl = "https://images.unsplash.com/photo-1583939003579-730e3918a45a", IsActive = true },
+                        new SubCategory { Name = "Kabli", Slug = "kabli", ImageUrl = "https://images.unsplash.com/photo-1594938291221-94f18cbb5660", IsActive = true },
+                        new SubCategory { Name = "Panjabi", Slug = "panjabi", ImageUrl = "https://images.unsplash.com/photo-1621510456681-233013d82a13", IsActive = true }
                     }
-                    else
+                },
+                new Category
+                {
+                    Name = "Women",
+                    Slug = "women",
+                    ImageUrl = "https://images.unsplash.com/photo-1483985988355-763728e1935b",
+                    DisplayOrder = 2,
+                    IsActive = true,
+                    SubCategories = new List<SubCategory>
                     {
-                        existingSub.Name = sub.Name;
-                        existingSub.ImageUrl = sub.ImageUrl;
-                        existingSub.IsActive = true;
+                        new SubCategory { Name = "Abaya", Slug = "abaya", ImageUrl = "https://images.unsplash.com/photo-1568252542512-9fe8fe9c87bb", IsActive = true },
+                        new SubCategory { Name = "Tops", Slug = "tops", ImageUrl = "https://images.unsplash.com/photo-1551488831-00ddcb6c6bd3", IsActive = true },
+                        new SubCategory { Name = "Co-ords Dress Set", Slug = "coords", ImageUrl = "https://images.unsplash.com/photo-1551488831-00ddcb6c6bd3", IsActive = true },
+                        new SubCategory { Name = "Scarf", Slug = "scarf", ImageUrl = "https://images.unsplash.com/photo-1601924582970-84472305206c", IsActive = true }
+                    }
+                },
+                new Category
+                {
+                    Name = "Kids",
+                    Slug = "kids",
+                    ImageUrl = "https://images.unsplash.com/photo-1514090458221-65bb69af63e6",
+                    DisplayOrder = 3,
+                    IsActive = true,
+                    SubCategories = new List<SubCategory>
+                    {
+                        new SubCategory { Name = "Girls", Slug = "girls", ImageUrl = "https://images.unsplash.com/photo-1518837697477-94d4777248d6", IsActive = true },
+                        new SubCategory { Name = "Boys", Slug = "boys", ImageUrl = "https://images.unsplash.com/photo-1503910392345-1593b4ff3af1", IsActive = true },
+                        new SubCategory { Name = "Mother & Daughter", Slug = "mother-daughter", ImageUrl = "https://images.unsplash.com/photo-1518837697477-94d4777248d6", IsActive = true },
+                        new SubCategory { Name = "Father & Son", Slug = "father-son", ImageUrl = "https://images.unsplash.com/photo-1513159446162-54eb8bdf79b5", IsActive = true }
+                    }
+                },
+                new Category
+                {
+                    Name = "Accessories",
+                    Slug = "accessories",
+                    ImageUrl = "https://images.unsplash.com/photo-1491336477066-31156b5e4f35",
+                    DisplayOrder = 4,
+                    IsActive = true,
+                    SubCategories = new List<SubCategory>
+                    {
+                        new SubCategory { Name = "Bags", Slug = "bags", ImageUrl = "https://images.unsplash.com/photo-1584917865442-de89df76afd3", IsActive = true },
+                        new SubCategory { Name = "Home Decor", Slug = "home-decor", ImageUrl = "https://images.unsplash.com/photo-1513519245088-0e12902e5a38", IsActive = true },
+                        new SubCategory { Name = "Watches", Slug = "watches", ImageUrl = "https://images.unsplash.com/photo-1524592094714-0f0654e20314", IsActive = true },
+                        new SubCategory { Name = "Wallets", Slug = "wallets", ImageUrl = "https://images.unsplash.com/photo-1627123424574-724758594e93", IsActive = true }
                     }
                 }
-            }
+            };
+
+            await context.Categories.AddRangeAsync(categoriesToSeed);
+            await context.SaveChangesAsync();
         }
-        await context.SaveChangesAsync();
 
         // Seed Products - Curated list of realistic products
         if (!await context.Products.AnyAsync())
@@ -855,10 +811,11 @@ public static class DataSeeder
 
             await context.Reviews.AddRangeAsync(reviews);
             await context.SaveChangesAsync();
-
-            // Seed Hero Banners
-            if (!await context.HeroBanners.AnyAsync())
-            {
+        }
+        
+        // Seed Hero Banners
+        if (!await context.HeroBanners.AnyAsync())
+        {
                 var banners = new List<HeroBanner>
             {
                 new HeroBanner
@@ -895,7 +852,134 @@ public static class DataSeeder
 
                 await context.HeroBanners.AddRangeAsync(banners);
                 await context.SaveChangesAsync();
+        }
+
+        // Seed Dummy Item Products (Landing Page Products)
+        if (!await context.Products.AnyAsync(p => p.IsItemProduct && p.Sku.StartsWith("DUMMY-")))
+        {
+            var category = await context.Categories.FirstOrDefaultAsync();
+            if (category == null)
+            {
+                category = new Category { Name = "General", Slug = "general", CreatedAt = DateTime.UtcNow, IsActive = true };
+                await context.Categories.AddAsync(category);
+                await context.SaveChangesAsync();
             }
+            
+            var dummyProducts = new List<Product>
+            {
+                // ... (the 6 products) ...
+                new Product
+                {
+                    Name = "Glow Revitalizing Serum",
+                    Slug = "glow-revitalizing-serum",
+                    Sku = "DUMMY-001",
+                    Description = "A potent serum for radiant skin.",
+                    Price = 1200,
+                    CompareAtPrice = 1500,
+                    StockQuantity = 100,
+                    IsActive = true,
+                    IsItemProduct = true,
+                    CategoryId = category.Id,
+                    ImageUrl = "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=800"
+                },
+                new Product
+                {
+                    Name = "Midnight Luxe Cream",
+                    Slug = "midnight-luxe-cream",
+                    Sku = "DUMMY-002",
+                    Description = "Intensive overnight hydration.",
+                    Price = 2500,
+                    CompareAtPrice = 3000,
+                    StockQuantity = 50,
+                    IsActive = true,
+                    IsItemProduct = true,
+                    CategoryId = category.Id,
+                    ImageUrl = "https://images.unsplash.com/photo-1556228720-195a672e8a03?w=800"
+                },
+                new Product
+                {
+                    Name = "Active Eye Repair Gel",
+                    Slug = "active-eye-repair-gel",
+                    Sku = "DUMMY-003",
+                    Description = "Reduces puffiness and dark circles.",
+                    Price = 950,
+                    CompareAtPrice = 1100,
+                    StockQuantity = 75,
+                    IsActive = true,
+                    IsItemProduct = true,
+                    CategoryId = category.Id,
+                    ImageUrl = "https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=800"
+                },
+                new Product
+                {
+                    Name = "Pure Organic Face Oil",
+                    Slug = "pure-organic-face-oil",
+                    Sku = "DUMMY-004",
+                    Description = "100% natural cold-pressed oil.",
+                    Price = 1800,
+                    CompareAtPrice = 2200,
+                    StockQuantity = 40,
+                    IsActive = true,
+                    IsItemProduct = true,
+                    CategoryId = category.Id,
+                    ImageUrl = "https://images.unsplash.com/photo-1608248597279-f99d160bfcbc?w=800"
+                },
+                new Product
+                {
+                    Name = "Mineral Shield Sunscreen",
+                    Slug = "mineral-shield-sunscreen",
+                    Sku = "DUMMY-005",
+                    Description = "SPF 50+ broad spectrum protection.",
+                    Price = 1400,
+                    CompareAtPrice = 1600,
+                    StockQuantity = 120,
+                    IsActive = true,
+                    IsItemProduct = true,
+                    CategoryId = category.Id,
+                    ImageUrl = "https://images.unsplash.com/photo-1556228515-01ff1a084d41?w=800"
+                },
+                new Product
+                {
+                    Name = "Gentle Hydrating Cleanser",
+                    Slug = "gentle-hydrating-cleanser",
+                    Sku = "DUMMY-006",
+                    Description = "pH balanced daily cleanser.",
+                    Price = 850,
+                    CompareAtPrice = 1000,
+                    StockQuantity = 200,
+                    IsActive = true,
+                    IsItemProduct = true,
+                    CategoryId = category.Id,
+                    ImageUrl = "https://images.unsplash.com/photo-1556228448-59b4070a7f5c?w=800"
+                }
+            };
+
+            await context.Products.AddRangeAsync(dummyProducts);
+            await context.SaveChangesAsync();
+
+            // Seed Landing Page Details for these products
+            var landingPages = new List<ProductLandingPage>();
+            foreach (var prod in dummyProducts)
+            {
+                landingPages.Add(new ProductLandingPage
+                {
+                    ProductId = prod.Id,
+                    Headline = $"Experience the Ultimate {prod.Name.Replace("DUMMY-", "")}",
+                    VideoUrl = "https://www.youtube.com/embed/dQw4w9WgXcQ", // Dummy video
+                    BenefitsTitle = "Why You'll Love It",
+                    BenefitsContent = "<ul><li>Dermatologist Tested</li><li>Paraben-Free</li><li>Cruelty-Free</li><li>Visible Results in 7 Days</li></ul>",
+                    UsageTitle = "How to Use",
+                    UsageContent = "<p>Apply a small amount to clean skin once daily. Massage gently until fully absorbed.</p>",
+                    SideEffectsTitle = "Information",
+                    SideEffectsContent = "<p>For external use only. Discontinue if irritation occurs.</p>",
+                    ReviewsTitle = "Real Results",
+                    ReviewsImages = "[\"https://images.unsplash.com/photo-1522337360788-8b13df772ec2?w=400\", \"https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=400\", \"https://images.unsplash.com/photo-1591130901020-ef9359a3f1f8?w=400\"]",
+                    ThemeColor = "#4A90E2"
+                });
+            }
+
+            await context.ProductLandingPages.AddRangeAsync(landingPages);
+            await context.SaveChangesAsync();
         }
     }
 }

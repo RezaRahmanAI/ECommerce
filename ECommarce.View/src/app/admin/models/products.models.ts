@@ -44,6 +44,7 @@ export interface ProductCreatePayload {
 
   newArrival: boolean;
   isFeatured: boolean;
+  isItemProduct: boolean;
 
   statusActive: boolean;
 
@@ -106,6 +107,7 @@ export interface ProductUpdatePayload {
 
   newArrival: boolean;
   isFeatured: boolean;
+  isItemProduct: boolean;
 
   statusActive: boolean;
 

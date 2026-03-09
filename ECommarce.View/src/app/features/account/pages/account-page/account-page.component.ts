@@ -59,12 +59,12 @@ export class AccountPageComponent {
   editingAddressId: string | null = null;
   editingPaymentId: string | null = null;
 
-  readonly vm$ = combineLatest([
-    toObservable(this.authService.currentUser),
-    this.userService.profiles$,
-    this.orderService.orders$,
-  ]).pipe(
-    map(([user, profiles, orders]) => {
+  readonly vm$ = combineLatest({
+    user: this.authService.currentUser,
+    profiles: this.userService.profiles$,
+    orders: this.orderService.orders$,
+  }).pipe(
+    map(({ user, profiles, orders }) => {
       const profile = user
         ? (profiles.find((item) => item.id === user.id) ?? null)
         : null;
@@ -97,13 +97,13 @@ export class AccountPageComponent {
     this.userService.updateProfile(profile.id, { name, email, phone });
 
     // Update local auth state if needed, though usually refreshing works best.
-    const currentUser = this.authService.currentUser();
+    const currentUser = this.authService.getCurrentUser();
     if (currentUser) {
-      this.authService.currentUser.set({
+      this.authService.setSession({
         ...currentUser,
-        name,
+        fullName: name,
         email,
-      });
+      }, this.authService.getAccessToken() || "");
     }
   }
 

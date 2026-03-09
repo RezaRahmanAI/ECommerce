@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 
-import { AuthUser } from './auth.service';
+import { User } from '../models/entities';
 import { Address, PaymentMethod, UserProfile } from '../models/user';
 
 @Injectable({
@@ -13,7 +13,7 @@ export class UserService {
   private readonly profilesSubject = new BehaviorSubject<UserProfile[]>(this.loadProfiles());
   readonly profiles$ = this.profilesSubject.asObservable();
 
-  ensureUserProfile(user: AuthUser): void {
+  ensureUserProfile(user: User): void {
     const profiles = this.profilesSubject.getValue();
     const existing = profiles.find((profile) => profile.id === user.id);
     if (existing) {
@@ -22,7 +22,7 @@ export class UserService {
 
     const newProfile: UserProfile = {
       id: user.id,
-      name: user.name,
+      name: user.fullName,
       email: user.email,
       addresses: [],
       paymentMethods: [],

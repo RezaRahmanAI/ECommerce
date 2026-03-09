@@ -235,6 +235,14 @@ export const appRoutes: Routes = [
         data: { title: "Edit Product" },
       },
       {
+        path: "products/:id/landing-page",
+        loadComponent: () =>
+          import("./admin/pages/admin-landing-page-editor/admin-landing-page-editor.component").then(
+            (m) => m.AdminLandingPageEditorComponent,
+          ),
+        data: { title: "Edit Landing Page" },
+      },
+      {
         path: "orders",
         loadComponent: () =>
           import("./admin/pages/admin-orders/admin-orders.component").then(

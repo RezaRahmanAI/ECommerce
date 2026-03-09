@@ -221,22 +221,38 @@ public class AdminCategoryController : ControllerBase
     }
 
     [HttpPost("{id}/delete")]
-    public async Task<ActionResult> DeleteCategory(int id)
+    public async Task<ActionResult<bool>> DeleteCategory(int id)
     {
-        var category = await _context.Categories.FindAsync(id);
-        if (category == null)
-            return NotFound();
-
-        // Delete image if exists
-        if (!string.IsNullOrEmpty(category.ImageUrl))
+        try
         {
-            DeleteImage(category.ImageUrl);
+            var category = await _context.Categories.FindAsync(id);
+            if (category == null)
+                return NotFound();
+
+            // Check if category has subcategories or products
+            var hasDependencies = await _context.Products.AnyAsync(p => p.CategoryId == id) ||
+                                 await _context.SubCategories.AnyAsync(sc => sc.CategoryId == id);
+            
+            if (hasDependencies)
+            {
+                return BadRequest(new { message = "Cannot delete category because it has associated products or subcategories." });
+            }
+
+            // Delete image if exists
+            if (!string.IsNullOrEmpty(category.ImageUrl))
+            {
+                DeleteImage(category.ImageUrl);
+            }
+
+            _context.Categories.Remove(category);
+            await _context.SaveChangesAsync();
+
+            return Ok(true);
         }
-
-        _context.Categories.Remove(category);
-        await _context.SaveChangesAsync();
-
-        return NoContent();
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { message = "An error occurred while deleting the category: " + ex.Message });
+        }
     }
 
     [HttpPost("reorder")]

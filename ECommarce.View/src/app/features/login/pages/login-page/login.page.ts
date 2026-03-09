@@ -49,12 +49,12 @@ export class LoginPageComponent implements OnInit {
   errorMessage = "";
 
   ngOnInit(): void {
-    if (this.authService.currentUser()) {
+    if (this.authService.isAuthenticated()) {
       void this.router.navigateByUrl("/admin/dashboard");
       return;
     }
 
-    const savedEmail = this.authService.getSavedEmail();
+    const savedEmail = localStorage.getItem("ecommarce-saved-email");
     if (savedEmail) {
       this.loginForm.patchValue({
         email: savedEmail,
@@ -95,11 +95,20 @@ export class LoginPageComponent implements OnInit {
         }),
       )
       .subscribe({
-        next: (session) => {
-          void this.router.navigateByUrl("/admin/dashboard");
+        next: (user) => {
+          if (user) {
+            if (rememberMe) {
+              localStorage.setItem("ecommarce-saved-email", email);
+            } else {
+              localStorage.removeItem("ecommarce-saved-email");
+            }
+            void this.router.navigateByUrl("/admin/dashboard");
+          } else {
+            this.errorMessage = "Invalid credentials";
+          }
         },
-        error: (error: Error) => {
-          this.errorMessage = error.message || "Invalid credentials";
+        error: () => {
+          this.errorMessage = "Network or server error occurred";
         },
       });
   }

@@ -19,6 +19,7 @@ public class Product : BaseEntity
 
     public bool IsNew { get; set; } = false;
     public bool IsFeatured { get; set; } = false;
+    public bool IsItemProduct { get; set; } = true;
     
     // Meta Info
     public string? MetaTitle { get; set; }

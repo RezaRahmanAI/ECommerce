@@ -44,14 +44,15 @@ public class ProductsController : ControllerBase
         [FromQuery] string? tags, 
         [FromQuery] bool? isNew, 
         [FromQuery] bool? isFeatured,
+        [FromQuery] bool? isItemProduct,
         [FromQuery] int pageIndex = 1,
         [FromQuery] int pageSize = 12)
     {
         var skip = (pageIndex - 1) * pageSize;
         var take = pageSize;
 
-        var spec = new ProductsWithCategoriesSpecification(sort, categoryId, subCategoryId, collectionId, categorySlug, subCategorySlug, collectionSlug, searchTerm, tier, tags, isNew, isFeatured, skip, take);
-        var countSpec = new ProductsWithCategoriesSpecification(sort, categoryId, subCategoryId, collectionId, categorySlug, subCategorySlug, collectionSlug, searchTerm, tier, tags, isNew, isFeatured);
+        var spec = new ProductsWithCategoriesSpecification(sort, categoryId, subCategoryId, collectionId, categorySlug, subCategorySlug, collectionSlug, searchTerm, tier, tags, isNew, isFeatured, isItemProduct, skip, take);
+        var countSpec = new ProductsWithCategoriesSpecification(sort, categoryId, subCategoryId, collectionId, categorySlug, subCategorySlug, collectionSlug, searchTerm, tier, tags, isNew, isFeatured, isItemProduct);
 
         var totalItems = await _productsRepo.CountAsync(countSpec);
         var products = await _productsRepo.ListAsync(spec);

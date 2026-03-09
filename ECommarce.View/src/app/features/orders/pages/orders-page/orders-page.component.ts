@@ -20,10 +20,10 @@ export class OrdersPageComponent {
   private readonly authService = inject(AuthService);
   private readonly orderService = inject(OrderService);
 
-  readonly orders$ = combineLatest([
-    toObservable(this.authService.currentUser),
-    this.orderService.orders$,
-  ]).pipe(map(([user, orders]) => (user ? orders : ([] as Order[]))));
+  readonly orders$ = combineLatest({
+    user: this.authService.currentUser,
+    orders: this.orderService.orders$,
+  }).pipe(map(({ user, orders }) => (user ? orders : ([] as Order[]))));
 
   trackByOrder(_: number, order: Order): number {
     return order.id;

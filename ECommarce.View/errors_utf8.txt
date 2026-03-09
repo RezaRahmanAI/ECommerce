@@ -1,0 +1,15 @@
+﻿src/app/admin/guards/admin.guard.ts(16,41): error TS2551: Property 'isLoggedIn' does not exist on type 'AuthService'. Did you mean 'isLoggedIn$'?
+src/app/admin/guards/admin.guard.ts(17,35): error TS2339: Property 'getRole' does not exist on type 'AuthService'.
+src/app/core/services/user.service.ts(4,10): error TS2305: Module '"./auth.service"' has no exported member 'AuthUser'.
+src/app/features/account/pages/account-page/account-page.component.ts(63,18): error TS2345: Argument of type 'Observable<User | null>' is not assignable to parameter of type 'Signal<unknown>'.
+src/app/features/account/pages/account-page/account-page.component.ts(69,53): error TS2339: Property 'id' does not exist on type '{}'.
+src/app/features/account/pages/account-page/account-page.component.ts(100,42): error TS2349: This expression is not callable.
+  Type 'Observable<User | null>' has no call signatures.
+src/app/features/account/pages/account-page/account-page.component.ts(102,36): error TS2339: Property 'set' does not exist on type 'Observable<User | null>'.
+src/app/features/login/pages/login-page/login.page.ts(52,26): error TS2349: This expression is not callable.
+  Type 'Observable<User | null>' has no call signatures.
+src/app/features/login/pages/login-page/login.page.ts(57,41): error TS2339: Property 'getSavedEmail' does not exist on type 'AuthService'.
+src/app/features/orders/pages/orders-page/orders-page.component.ts(24,18): error TS2345: Argument of type 'Observable<User | null>' is not assignable to parameter of type 'Signal<unknown>'.
+src/app/layout/navbar/navbar.component.ts(75,18): error TS2345: Argument of type 'Observable<User | null>' is not assignable to parameter of type 'Signal<unknown>'.
+  Type 'Observable<User | null>' is not assignable to type '() => unknown'.
+    Type 'Observable<User | null>' provides no match for the signature '(): unknown'.

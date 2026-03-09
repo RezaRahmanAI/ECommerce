@@ -1,5 +1,5 @@
 import { CommonModule } from "@angular/common";
-import { Component, OnDestroy, inject } from "@angular/core";
+import { Component, OnDestroy, inject, ElementRef, ViewChild } from "@angular/core";
 import {
   AbstractControl,
   FormArray,
@@ -17,6 +17,7 @@ import {
 } from "../../models/products.models";
 import { ProductImage } from "../../../core/models/product";
 import { ProductsService } from "../../services/products.service";
+import { AdminLandingPageService } from "../../services/admin-landing-page.service";
 import { CategoriesService } from "../../services/categories.service";
 import {
   Category,
@@ -83,57 +84,55 @@ export class AdminProductFormComponent implements OnDestroy {
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   public imageUrlService = inject(ImageUrlService);
+  private landingPageService = inject(AdminLandingPageService);
 
   // Mode detection
   isEditMode = false;
   productId: number | null = null;
   pageTitle = "Create Product";
 
-  categories: Category[] = [];
-  subCategories: SubCategory[] = [];
-  collections: Collection[] = [];
-
-  // Flattened for easy access if needed, but we used filtered lists
-  filteredSubCategories: SubCategory[] = [];
-  filteredCollections: Collection[] = [];
-
-  // No longer using complex ratings/meta objects in the new DTO
-
   mediaError = "";
   private mediaFileMap = new Map<string, File>();
+
+  @ViewChild("descriptionArea")
+  descriptionArea!: ElementRef<HTMLTextAreaElement>;
 
   form = this.formBuilder.group(
     {
       name: ["", [Validators.required, Validators.minLength(3)]],
-      description: ["", [Validators.required]],
       statusActive: [true],
-      category: ["", [Validators.required]],
-      subCategory: [""],
-      collection: [""],
-      gender: ["women", [Validators.required]],
+      category: ["", []],
+      gender: ["women"],
       price: [0, [Validators.required, Validators.min(0)]],
       salePrice: [null as number | null, [Validators.min(0)]],
-      purchaseRate: [0, [Validators.required, Validators.min(0)]],
+      purchaseRate: [0],
 
-      newArrival: [false],
-      isFeatured: [false],
-
-      tier: [""],
-      tags: [""],
-      sortOrder: [0, [Validators.min(0)]],
+      isItemProduct: [true],
       mediaFiles: [[] as File[]],
       mediaItems: this.formBuilder.array([]),
       variants: this.formBuilder.group({
         colors: this.formBuilder.array([this.createColorGroup(true)]),
         sizes: this.formBuilder.array([this.createSizeGroup(true)]),
       }),
-      meta: this.formBuilder.group({
-        fabricAndCare: [""],
-        shippingAndReturns: [""],
+      landingPage: this.formBuilder.group({
+        headline: [""],
+        videoUrl: [""],
+        benefitsTitle: [""],
+        benefitsContent: [""],
+        reviewsTitle: [""],
+        reviewsImages: [""],
+        sideEffectsTitle: [""],
+        sideEffectsContent: [""],
+        usageTitle: [""],
+        usageContent: [""],
       }),
     },
     { validators: [this.salePriceValidator] },
   );
+
+  categories: Category[] = [];
+  filteredSubCategories: SubCategory[] = [];
+  filteredCollections: Collection[] = [];
 
   constructor() {
     this.loadCategories(); // Load categories first
@@ -147,84 +146,19 @@ export class AdminProductFormComponent implements OnDestroy {
           this.isEditMode = true;
           this.productId = parsedId;
           this.pageTitle = "Edit Product";
-          // We call loadProduct inside loadCategories subscription or after
-          // But since loadCategories is async, we might race.
-          // However, patchValue works even if options aren't rendered yet (model value is set).
-          // But filtering needs data.
+          this.loadProduct(this.productId);
+          this.loadLandingPage(this.productId);
         }
       }
     });
-
-    // Setup cascading listeners
-    this.setupCascadingSelects();
   }
 
   loadCategories(): void {
     this.categoriesService.getAll().subscribe((categories) => {
       this.categories = categories;
-
-      // If edit mode, we might need to trigger filtering after data load if product loaded first
-      if (this.isEditMode && this.productId) {
-        this.loadProduct(this.productId);
-      }
     });
   }
 
-  setupCascadingSelects(): void {
-    this.form.get("category")?.valueChanges.subscribe((categoryId) => {
-      if (!categoryId) {
-        this.filteredSubCategories = [];
-        this.filteredCollections = [];
-        this.form.patchValue(
-          { subCategory: "", collection: "" },
-          { emitEvent: false },
-        );
-        return;
-      }
-
-      // Find selected category
-      const category = this.categories.find(
-        (c) => String(c.id) === String(categoryId),
-      );
-      this.filteredSubCategories = category?.subCategories || [];
-
-      // Clear downstream if user manually changed it (not programmatic patch)
-      // We can distinguish via options or just always clear if value doesn't match?
-      // For now, simpler: if the current subCategory value is not in the new list, clear it.
-      const currentSubId = this.form.get("subCategory")?.value;
-      const exists = this.filteredSubCategories.find(
-        (sc) => String(sc.id) === String(currentSubId),
-      );
-      if (!exists) {
-        this.form.patchValue(
-          { subCategory: "", collection: "" },
-          { emitEvent: false },
-        );
-        this.filteredCollections = [];
-      }
-    });
-
-    this.form.get("subCategory")?.valueChanges.subscribe((subCategoryId) => {
-      if (!subCategoryId) {
-        this.filteredCollections = [];
-        this.form.patchValue({ collection: "" }, { emitEvent: false });
-        return;
-      }
-
-      const subCategory = this.filteredSubCategories.find(
-        (sc) => String(sc.id) === String(subCategoryId),
-      );
-      this.filteredCollections = subCategory?.collections || [];
-
-      const currentColId = this.form.get("collection")?.value;
-      const exists = this.filteredCollections.find(
-        (c) => String(c.id) === String(currentColId),
-      );
-      if (!exists) {
-        this.form.patchValue({ collection: "" }, { emitEvent: false });
-      }
-    });
-  }
 
   ngOnDestroy(): void {
     this.mediaItemsArray.controls.forEach((control) => {
@@ -271,24 +205,13 @@ export class AdminProductFormComponent implements OnDestroy {
 
         this.form.patchValue({
           name: product.name,
-          description: product.description,
           statusActive: product.isActive,
-          category: String(product.categoryId),
-          subCategory: product.subCategoryId
-            ? String(product.subCategoryId)
-            : "",
-          collection: product.collectionId ? String(product.collectionId) : "",
-          gender: "women", // Default or handle via category
+          category: product.categoryId ? String(product.categoryId) : "",
+          gender: "women",
           price: product.price,
           salePrice: product.compareAtPrice || null,
           purchaseRate: product.price,
-
-          newArrival: product.isNew || false,
-          isFeatured: product.isFeatured || false,
-
-          tier: (product as any).tier || "",
-          tags: (product as any).tags || "",
-          sortOrder: (product as any).sortOrder || 0,
+          isItemProduct: product.isItemProduct || true,
         });
 
         // Load existing media
@@ -374,29 +297,27 @@ export class AdminProductFormComponent implements OnDestroy {
             isMain: true,
           });
         }
-
-        // Load colors (from Images or previously saved structure if we supported it)
-        // In new backend: Colors come from Images metadata or we can infer them?
-        // Actually, the new backend 'GetProductById' returns 'Variants.Colors' as a list of names!
-        // We should use that.
-
-        // We removed the legacy 'else if' block because 'backendVariants' in GetProductById
-        // is now ALWAYS an object (ProductVariantsDto), never an array of entities.
-
-        // Load meta
-        this.form.patchValue({
-          meta: {
-            fabricAndCare:
-              product.fabricAndCare ||
-              (product as any).meta?.fabricAndCare ||
-              "",
-            shippingAndReturns:
-              product.shippingAndReturns ||
-              (product as any).meta?.shippingAndReturns ||
-              "",
-          },
-        });
       });
+  }
+
+  loadLandingPage(productId: number): void {
+    this.landingPageService.getLandingPage(productId).subscribe({
+      next: (lp) => {
+        this.form.get("landingPage")?.patchValue({
+          headline: lp.headline ?? "",
+          videoUrl: lp.videoUrl ?? "",
+          benefitsTitle: lp.benefitsTitle ?? "",
+          benefitsContent: lp.benefitsContent ?? "",
+          reviewsTitle: lp.reviewsTitle ?? "",
+          reviewsImages: lp.reviewsImages ?? "",
+          sideEffectsTitle: lp.sideEffectsTitle ?? "",
+          sideEffectsContent: lp.sideEffectsContent ?? "",
+          usageTitle: lp.usageTitle ?? "",
+          usageContent: lp.usageContent ?? "",
+        });
+      },
+      error: () => console.log("No landing page found for this product yet."),
+    });
   }
 
   addColor(): void {
@@ -564,8 +485,39 @@ export class AdminProductFormComponent implements OnDestroy {
         next: (product) => {
           const action = this.isEditMode ? "updated" : "created";
           console.log(`Product ${action} successfully:`, product);
-          window.alert(`Product ${action} successfully.`);
-          void this.router.navigate(["/admin/products"]);
+          
+          // If it's an Item Product, save landing page data
+          if (this.form.get('isItemProduct')?.value) {
+            const lpGroup = this.form.get('landingPage');
+            const lpData = lpGroup?.value;
+            this.landingPageService.saveLandingPage({
+              productId: product.id,
+              headline: lpData?.headline || "",
+              videoUrl: lpData?.videoUrl ?? "",
+              benefitsTitle: lpData?.benefitsTitle ?? "",
+              benefitsContent: lpData?.benefitsContent ?? "",
+              reviewsTitle: lpData?.reviewsTitle ?? "",
+              reviewsImages: lpData?.reviewsImages ?? "",
+              sideEffectsTitle: lpData?.sideEffectsTitle ?? "",
+              sideEffectsContent: lpData?.sideEffectsContent ?? "",
+              usageTitle: lpData?.usageTitle ?? "",
+              usageContent: lpData?.usageContent ?? "",
+              themeColor: "#e63b3b" // Default theme color
+            }).subscribe({
+              next: () => {
+                window.alert(`Product and Landing Page ${action} successfully.`);
+                void this.router.navigate(["/admin/products"]);
+              },
+              error: (err) => {
+                console.error("Error saving landing page:", err);
+                window.alert(`Product ${action} but Landing Page failed: ${err.message}`);
+                void this.router.navigate(["/admin/products"]);
+              }
+            });
+          } else {
+            window.alert(`Product ${action} successfully.`);
+            void this.router.navigate(["/admin/products"]);
+          }
         },
         error: (error) => {
           const action = this.isEditMode ? "update" : "create";
@@ -586,7 +538,7 @@ export class AdminProductFormComponent implements OnDestroy {
   private createColorGroup(selected: boolean): AbstractControl {
     return this.formBuilder.group({
       name: [""],
-      selected: [selected],
+      selected: [true],
     });
   }
 
@@ -594,7 +546,7 @@ export class AdminProductFormComponent implements OnDestroy {
     return this.formBuilder.group({
       label: [""],
       stock: [0, [Validators.min(0)]],
-      selected: [selected],
+      selected: [true],
     });
   }
 
@@ -760,20 +712,26 @@ export class AdminProductFormComponent implements OnDestroy {
     });
 
     // 4. Resolve Category Name
-    const categoryObj = this.categories.find(
-      (c) => String(c.id) === String(raw.category),
-    );
+    let categoryName = "";
+    const selectedCategoryId = raw.category;
+    
+    if (selectedCategoryId) {
+      const categoryObj = this.categories.find(
+        (c) => String(c.id) === String(selectedCategoryId),
+      );
+      categoryName = categoryObj?.name || "";
+    } else if (raw.isItemProduct && this.categories.length > 0) {
+      // Fallback for Item Product if hidden category is not selected
+      categoryName = this.categories[0].name;
+    }
 
     return {
       name: raw.name ?? "",
-      description: raw.description ?? "",
+      description: "",
       statusActive: Boolean(raw.statusActive),
-      category: categoryObj?.name || "", // Send Name, not ID
+      category: categoryName, // Send Name, not ID
       gender: raw.gender ?? "women",
       price: Number(raw.price ?? 0),
-      // salePrice: raw.salePrice ? Number(raw.salePrice) : undefined, // potential fix for nullable
-      // If salePrice is 0 or null, send undefined or null? Backend expects decimal?
-      // DTO: public decimal? SalePrice { get; set; }
       salePrice:
         raw.salePrice !== null && raw.salePrice !== undefined
           ? Number(raw.salePrice)
@@ -781,8 +739,9 @@ export class AdminProductFormComponent implements OnDestroy {
 
       purchaseRate: Number(raw.purchaseRate ?? 0),
 
-      newArrival: Boolean(raw.newArrival),
-      isFeatured: Boolean(raw.isFeatured),
+      newArrival: false,
+      isFeatured: false,
+      isItemProduct: Boolean(raw.isItemProduct),
 
       media: {
         mainImage,
@@ -797,8 +756,8 @@ export class AdminProductFormComponent implements OnDestroy {
       inventoryVariants,
 
       meta: {
-        fabricAndCare: raw.meta?.fabricAndCare ?? "",
-        shippingAndReturns: raw.meta?.shippingAndReturns ?? "",
+        fabricAndCare: "",
+        shippingAndReturns: "",
       },
 
       ratings: {
@@ -806,12 +765,11 @@ export class AdminProductFormComponent implements OnDestroy {
         count: 0,
       },
 
-      // Legacy/Extra fields for updated backend
-      tier: raw.tier ?? "",
-      tags: raw.tags ?? "",
-      sortOrder: Number(raw.sortOrder ?? 0),
-      subCategoryId: raw.subCategory ? Number(raw.subCategory) : null,
-      collectionId: raw.collection ? Number(raw.collection) : null,
+      tier: "",
+      tags: "",
+      sortOrder: 0,
+      subCategoryId: null,
+      collectionId: null,
     };
     // but we want to match backend DTO structure primarily.
     // Actually the interface is updated, so it should be fine.
@@ -844,30 +802,30 @@ export class AdminProductFormComponent implements OnDestroy {
   private resetForm(): void {
     this.form.reset({
       name: "",
-      description: "",
       statusActive: true,
       category: "",
-      subCategory: "",
-      collection: "",
       gender: "women",
       price: 0,
       salePrice: null,
       purchaseRate: 0,
-
-      newArrival: false,
-
-      tier: "",
-      tags: "",
-      sortOrder: 0,
+      isItemProduct: true,
       mediaFiles: [],
       mediaItems: [],
       variants: {
         colors: [this.createColorGroup(true).value],
         sizes: [this.createSizeGroup(true).value],
       },
-      meta: {
-        fabricAndCare: "",
-        shippingAndReturns: "",
+      landingPage: {
+        headline: "",
+        videoUrl: "",
+        benefitsTitle: "",
+        benefitsContent: "",
+        reviewsTitle: "",
+        reviewsImages: "",
+        sideEffectsTitle: "",
+        sideEffectsContent: "",
+        usageTitle: "",
+        usageContent: "",
       },
     });
     this.mediaError = "";
@@ -906,4 +864,5 @@ export class AdminProductFormComponent implements OnDestroy {
   private generateId(prefix: string): string {
     return `${prefix}-${Math.random().toString(36).slice(2, 10)}`;
   }
+
 }

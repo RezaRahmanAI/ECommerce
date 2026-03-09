@@ -145,16 +145,32 @@ public class AdminSubCategoryController : ControllerBase
     }
 
     [HttpPost("{id}/delete")]
-    public async Task<ActionResult> DeleteSubCategory(int id)
+    public async Task<ActionResult<bool>> DeleteSubCategory(int id)
     {
-        var subCategory = await _context.SubCategories.FindAsync(id);
-        if (subCategory == null)
-            return NotFound();
+        try
+        {
+            var subCategory = await _context.SubCategories.FindAsync(id);
+            if (subCategory == null)
+                return NotFound();
 
-        _context.SubCategories.Remove(subCategory);
-        await _context.SaveChangesAsync();
+            // Check if subcategory has products or collections
+            var hasDependencies = await _context.Products.AnyAsync(p => p.SubCategoryId == id) ||
+                                 await _context.Collections.AnyAsync(c => c.SubCategoryId == id);
+            
+            if (hasDependencies)
+            {
+                return BadRequest(new { message = "Cannot delete subcategory because it has associated products or collections." });
+            }
 
-        return NoContent();
+            _context.SubCategories.Remove(subCategory);
+            await _context.SaveChangesAsync();
+
+            return Ok(true);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { message = "An error occurred while deleting the subcategory: " + ex.Message });
+        }
     }
 
     [HttpPost("upload-image")]

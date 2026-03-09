@@ -71,14 +71,14 @@ export class NavbarComponent {
     this.isScrolled = window.scrollY > 35;
   }
 
-  readonly vm$ = combineLatest([
-    toObservable(this.authService.currentUser),
-    this.cartService.summary$,
-    this.settingsService.getSettings(),
-    this.navigationService.getMegaMenu(),
-    this.isHomePage$,
-  ]).pipe(
-    map(([user, summary, settings, menu, isHomePage]) => ({
+  readonly vm$ = combineLatest({
+    user: this.authService.currentUser,
+    summary: this.cartService.summary$,
+    settings: this.settingsService.getSettings(),
+    menu: this.navigationService.getMegaMenu(),
+    isHomePage: this.isHomePage$,
+  }).pipe(
+    map(({ user, summary, settings, menu, isHomePage }) => ({
       user,
       cartCount: summary.itemsCount,
       settings: settings || null,

@@ -16,6 +16,7 @@ public class ProductDto
 
     public bool IsNew { get; set; }
     public bool IsFeatured { get; set; }
+    public bool IsItemProduct { get; set; }
     
     // Category Info
     public int CategoryId { get; set; }
@@ -75,6 +76,7 @@ public class ProductListDto
     public string CategoryName { get; set; }
     public bool IsNew { get; set; }
     public bool IsFeatured { get; set; }
+    public bool IsItemProduct { get; set; }
 
 
     public bool IsActive { get; set; }

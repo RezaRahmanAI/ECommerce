@@ -26,6 +26,7 @@ import {
   ChevronDown,
   AlertTriangle,
   Rocket,
+  FileEdit,
 } from "lucide-angular";
 
 @Component({
@@ -54,6 +55,7 @@ export class AdminProductsComponent implements OnInit, OnDestroy {
     ChevronDown,
     AlertTriangle,
     Rocket,
+    FileEdit,
   };
   private productsService = inject(ProductsService);
   readonly imageUrlService = inject(ImageUrlService);

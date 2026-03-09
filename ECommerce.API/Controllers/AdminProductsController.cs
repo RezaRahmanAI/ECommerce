@@ -120,6 +120,7 @@ public class AdminProductsController : ControllerBase
                 p.StockQuantity,
                 p.IsNew,
                 p.IsFeatured,
+                p.IsItemProduct,
                 Status = p.IsActive ? "Active" : "Draft",
                 p.ImageUrl,
                 Category = p.Category.Name,
@@ -216,30 +217,45 @@ public class AdminProductsController : ControllerBase
     }
 
     [HttpPost("{id}/delete")]
-    public async Task<ActionResult> DeleteProduct(int id)
+    public async Task<ActionResult<bool>> DeleteProduct(int id)
     {
-        var product = await _context.Products
-            .Include(p => p.Images)
-            .FirstOrDefaultAsync(p => p.Id == id);
-
-        if (product == null)
-            return NotFound();
-
-        // Delete associated images from filesystem
-        if (!string.IsNullOrEmpty(product.ImageUrl))
+        try
         {
-            DeleteImageFile(product.ImageUrl);
-        }
+            var product = await _context.Products
+                .Include(p => p.Images)
+                .Include(p => p.Variants)
+                .FirstOrDefaultAsync(p => p.Id == id);
 
-        foreach (var image in product.Images)
+            if (product == null)
+                return NotFound();
+
+            // Check if product is referenced in any order items
+            var isOrdered = await _context.OrderItems.AnyAsync(oi => oi.ProductId == id);
+            if (isOrdered)
+            {
+                return BadRequest(new { message = "Cannot delete product because it has been ordered in previous transactions." });
+            }
+
+            // Delete associated images from filesystem
+            if (!string.IsNullOrEmpty(product.ImageUrl))
+            {
+                DeleteImageFile(product.ImageUrl);
+            }
+
+            foreach (var image in product.Images)
+            {
+                DeleteImageFile(image.Url);
+            }
+
+            _context.Products.Remove(product);
+            await _context.SaveChangesAsync();
+
+            return Ok(true);
+        }
+        catch (Exception ex)
         {
-            DeleteImageFile(image.Url);
+            return StatusCode(500, new { message = "An error occurred while deleting the product: " + ex.Message });
         }
-
-        _context.Products.Remove(product);
-        await _context.SaveChangesAsync();
-
-        return NoContent();
     }
 
     private List<object> DeserializeVariants(string? json)

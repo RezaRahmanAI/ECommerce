@@ -22,6 +22,16 @@ export class ProductService {
     return this.api.get<Pagination<Product>>(this.baseUrl, { params, context });
   }
 
+  getItemProducts(
+    limit = 50,
+    context?: HttpContext,
+  ): Observable<Pagination<Product>> {
+    return this.api.get<Pagination<Product>>(this.baseUrl, {
+      params: { isItemProduct: true, pageSize: limit },
+      context,
+    });
+  }
+
   getFeaturedProducts(
     limit = 10,
     context?: HttpContext,

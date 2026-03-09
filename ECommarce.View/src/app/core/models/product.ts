@@ -29,6 +29,7 @@ export interface Product {
 
   isNew: boolean;
   isFeatured: boolean;
+  isItemProduct: boolean;
 
   categoryId: number;
   categoryName: string;

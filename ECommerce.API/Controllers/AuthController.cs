@@ -1,9 +1,12 @@
-using ECommerce.Core.DTOs;
-
+using ECommerce.API.Contracts.Auth;
 using ECommerce.Core.Entities;
-using Microsoft.AspNetCore.Identity;
+using ECommerce.Infrastructure.Data;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Text;
 
 namespace ECommerce.API.Controllers;
 
@@ -11,117 +14,128 @@ namespace ECommerce.API.Controllers;
 [Route("api/[controller]")]
 public class AuthController : ControllerBase
 {
-    private readonly UserManager<ApplicationUser> _userManager;
-    private readonly SignInManager<ApplicationUser> _signInManager;
-    private readonly ECommerce.Core.Interfaces.ITokenService _tokenService;
+    private readonly ApplicationDbContext _context;
+    private readonly IConfiguration _config;
 
-    public AuthController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, ECommerce.Core.Interfaces.ITokenService tokenService)
+    public AuthController(ApplicationDbContext context, IConfiguration config)
     {
-        _userManager = userManager;
-        _signInManager = signInManager;
-        _tokenService = tokenService;
+        _context = context;
+        _config = config;
     }
 
     [HttpPost("login")]
-    public async Task<ActionResult<AuthResponseDto>> Login(LoginDto loginDto)
+    public async Task<ActionResult<AuthResponse>> Login(LoginRequest request)
     {
-        var user = await _userManager.FindByEmailAsync(loginDto.Email);
+        var user = await _context.Users
+            .FirstOrDefaultAsync(u => u.Email == request.Identifier || u.UserName == request.Identifier || u.PhoneNumber == request.Identifier);
 
-        if (user == null) return Unauthorized("Invalid email or password");
-
-        var result = await _signInManager.CheckPasswordSignInAsync(user, loginDto.Password, false);
-
-        if (!result.Succeeded) return Unauthorized("Invalid email or password");
-
-        // Get actual roles from UserManager
-        var roles = await _userManager.GetRolesAsync(user);
-        var userRole = roles.FirstOrDefault() ?? "user";
-        
-        var token = _tokenService.CreateToken(user, userRole);
-
-        return new AuthResponseDto
+        if (user == null || string.IsNullOrEmpty(user.PasswordHash) || !BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
         {
-            Token = token,
-            User = new UserDto
-            {
-                Id = user.Id,
-                Email = user.Email!,
-                Name = user.FullName ?? user.UserName!,
-                Role = userRole
-            }
-        };
+            return Unauthorized(new { message = "Invalid email or password" });
+        }
+
+        var token = GenerateJwtToken(user);
+
+        return new AuthResponse(token, new UserSummary(
+            user.Id,
+            user.FullName ?? user.UserName ?? "User",
+            user.Email ?? "",
+            user.Role,
+            user.PhoneNumber
+        ));
     }
 
     [HttpPost("register")]
-    public async Task<ActionResult<AuthResponseDto>> Register(RegisterDto registerDto)
+    public async Task<ActionResult<AuthResponse>> Register(SignupRequest request)
     {
-        if (await _userManager.FindByEmailAsync(registerDto.Email) != null)
+        if (await _context.Users.AnyAsync(u => u.Email == request.Email))
         {
-            return BadRequest("Email is already in use");
+            return BadRequest(new { message = "Email already exists" });
         }
 
         var user = new ApplicationUser
         {
-            FullName = registerDto.FullName,
-            Email = registerDto.Email,
-            UserName = registerDto.Email
+            FullName = request.FullName,
+            Email = request.Email,
+            UserName = request.Email,
+            PhoneNumber = request.PhoneNumber,
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password),
+            Role = "Customer",
+            EmailConfirmed = true
         };
 
-        var result = await _userManager.CreateAsync(user, registerDto.Password);
+        _context.Users.Add(user);
+        await _context.SaveChangesAsync();
 
-        if (!result.Succeeded) return BadRequest(result.Errors);
+        var token = GenerateJwtToken(user);
 
-        // Assign default user role
-        await _userManager.AddToRoleAsync(user, "User");
+        return new AuthResponse(token, new UserSummary(
+            user.Id,
+            user.FullName ?? "",
+            user.Email ?? "",
+            user.Role,
+            user.PhoneNumber
+        ));
+    }
 
-        var token = _tokenService.CreateToken(user, "User");
+    [HttpGet("me")]
+    [Microsoft.AspNetCore.Authorization.Authorize]
+    public async Task<ActionResult<UserSummary>> GetMe()
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrEmpty(userId)) return Unauthorized();
 
-        return new AuthResponseDto
-        {
-            Token = token,
-            User = new UserDto
-            {
-                Id = user.Id,
-                Email = user.Email,
-                Name = user.FullName,
-                Role = "User"
-            }
-        };
+        var user = await _context.Users.FindAsync(userId);
+        if (user == null) return NotFound();
+
+        return new UserSummary(
+            user.Id,
+            user.FullName ?? user.UserName ?? "User",
+            user.Email ?? "",
+            user.Role,
+            user.PhoneNumber
+        );
     }
 
     [HttpPost("logout")]
     public IActionResult Logout()
     {
-        // Stateless JWT logout - handled on client side
-        return Ok(new { message = "Logged out successfully" });
+        return Ok(new { message = "Logged out" });
     }
 
-    [HttpGet("me")]
-    [Microsoft.AspNetCore.Authorization.Authorize]
-    public async Task<ActionResult<UserDto>> GetCurrentUser()
+    private string GenerateJwtToken(ApplicationUser user)
     {
-        // Find by ID directly
-        var userId = User.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier) ?? User.FindFirstValue("nameid");
-        var user = userId != null ? await _userManager.FindByIdAsync(userId) : null;
-        
-        // Fallback to email
-        if (user == null)
+        var claims = new List<Claim>
         {
-            var email = User.FindFirstValue(System.Security.Claims.ClaimTypes.Email) ?? User.FindFirstValue("email");
-            user = email != null ? await _userManager.FindByEmailAsync(email) : null;
-        }
-        
-        if (user == null) return Unauthorized(new { message = "User not found in token claims." });
-
-        var roles = await _userManager.GetRolesAsync(user);
-        var userRole = roles.FirstOrDefault() ?? "user";
-
-        return new UserDto
-        {
-            Id = user.Id,
-            Email = user.Email!,
-            Name = user.FullName ?? user.UserName!,
-            Role = userRole
+            new Claim(ClaimTypes.NameIdentifier, user.Id),
+            new Claim(ClaimTypes.Email, user.Email ?? ""),
+            new Claim(ClaimTypes.Name, user.FullName ?? user.UserName ?? ""),
+            new Claim(ClaimTypes.Role, user.Role),
+            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
         };
+
+        var jwtKey = _config["Token:Key"] ?? "development_key_arzamart_123456789";
+        var keyBytes = Encoding.UTF8.GetBytes(jwtKey);
+        
+        // Ensure key is at least 32 bytes for HMACSHA256
+        if (keyBytes.Length < 32)
+        {
+            using var sha256 = System.Security.Cryptography.SHA256.Create();
+            keyBytes = sha256.ComputeHash(keyBytes);
+        }
+
+        var key = new SymmetricSecurityKey(keyBytes);
+        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+        var token = new JwtSecurityToken(
+            issuer: _config["Token:Issuer"] ?? "ArzaMart",
+            audience: _config["Token:Audience"] ?? "ArzaMartUsers",
+            claims: claims,
+            expires: DateTime.Now.AddDays(7),
+            signingCredentials: creds
+        );
+
+        return new JwtSecurityTokenHandler().WriteToken(token);
     }
 }
+

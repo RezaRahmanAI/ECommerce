@@ -32,6 +32,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<DailyTraffic> DailyTraffics { get; set; }
     public DbSet<BlockedIp> BlockedIps { get; set; }
     public DbSet<DeliveryMethod> DeliveryMethods { get; set; }
+    public DbSet<ProductLandingPage> ProductLandingPages { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -72,6 +73,17 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             entity.HasIndex(p => p.IsActive);
             entity.HasIndex(p => p.IsFeatured);
             entity.HasIndex(p => p.IsNew);
+        });
+
+        // Product Landing Page Configuration
+        builder.Entity<ProductLandingPage>(entity =>
+        {
+            entity.HasOne(lp => lp.Product)
+                  .WithMany() // Assuming a product has one landing page, but avoiding changing Product entity for now
+                  .HasForeignKey(lp => lp.ProductId)
+                  .OnDelete(DeleteBehavior.Cascade);
+            
+            entity.HasIndex(lp => lp.ProductId).IsUnique();
         });
         
         // Product Variant Configuration

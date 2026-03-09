@@ -15,13 +15,11 @@ public class ProductCreateDto
     
     public bool StatusActive { get; set; } = true;
     
-    [Required(ErrorMessage = "Category is required")]
     [MaxLength(100)]
-    public string Category { get; set; } = string.Empty;
+    public string? Category { get; set; } = string.Empty;
     
-    [Required(ErrorMessage = "Gender is required")]
     [MaxLength(50)]
-    public string Gender { get; set; } = "women";
+    public string? Gender { get; set; } = "women";
     
     [Required]
     [Range(0.01, 1000000, ErrorMessage = "Price must be between 0.01 and 1,000,000")]
@@ -31,11 +29,12 @@ public class ProductCreateDto
     public decimal? SalePrice { get; set; }
     
     [Range(0, 1000000, ErrorMessage = "Purchase rate must be between 0 and 1,000,000")]
-    public decimal PurchaseRate { get; set; }
+    public decimal PurchaseRate { get; set; } = 0;
     
 
     public bool NewArrival { get; set; }
     public bool IsFeatured { get; set; }
+    public bool IsItemProduct { get; set; } = true;
     public bool IsPopupOffer { get; set; }
     
     [Required]
@@ -70,13 +69,11 @@ public class ProductUpdateDto
     
     public bool StatusActive { get; set; } = true;
     
-    [Required(ErrorMessage = "Category is required")]
     [MaxLength(100)]
-    public string Category { get; set; } = string.Empty;
+    public string? Category { get; set; } = string.Empty;
     
-    [Required(ErrorMessage = "Gender is required")]
     [MaxLength(50)]
-    public string Gender { get; set; } = "women";
+    public string? Gender { get; set; } = "women";
     
     [Required]
     [Range(0.01, 1000000, ErrorMessage = "Price must be between 0.01 and 1,000,000")]
@@ -91,6 +88,7 @@ public class ProductUpdateDto
 
     public bool NewArrival { get; set; }
     public bool IsFeatured { get; set; }
+    public bool IsItemProduct { get; set; } = true;
     public bool IsPopupOffer { get; set; }
     
     [Required]

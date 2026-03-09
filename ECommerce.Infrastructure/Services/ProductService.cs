@@ -48,10 +48,20 @@ public class ProductService : IProductService
 
     public async Task<ProductDto> CreateProductAsync(ProductCreateDto dto)
     {
-        var categorySpec = new CategoriesWithSubCategoriesSpec(dto.Category);
-        var category = await _unitOfWork.Repository<Category>().GetEntityWithSpec(categorySpec);
+        Category category = null;
+        if (!string.IsNullOrEmpty(dto.Category))
+        {
+            var categorySpec = new CategoriesWithSubCategoriesSpec(dto.Category);
+            category = await _unitOfWork.Repository<Category>().GetEntityWithSpec(categorySpec);
+        }
+
+        if (category == null)
+        {
+            // Fallback to first available category
+            category = (await _unitOfWork.Repository<Category>().ListAllAsync()).FirstOrDefault();
+        }
         
-        if (category == null) throw new KeyNotFoundException($"Category {dto.Category} not found");
+        if (category == null) throw new KeyNotFoundException($"No categories found in system. Please create a category first.");
 
         var product = new Product
         {
@@ -59,7 +69,7 @@ public class ProductService : IProductService
             Description = dto.Description,
             Price = dto.Price,
             CompareAtPrice = dto.SalePrice,
-            PurchaseRate = dto.PurchaseRate,
+            PurchaseRate = dto.PurchaseRate > 0 ? dto.PurchaseRate : dto.Price,
             StockQuantity = dto.InventoryVariants.Sum(v => v.Inventory),
             IsActive = dto.StatusActive,
             CategoryId = category.Id,
@@ -67,6 +77,7 @@ public class ProductService : IProductService
 
             IsNew = dto.NewArrival,
             IsFeatured = dto.IsFeatured,
+            IsItemProduct = dto.IsItemProduct,
             Slug = GenerateSlug(dto.Name),
             Sku = $"PRD-{DateTime.UtcNow.Ticks}",
             FabricAndCare = dto.Meta?.FabricAndCare,
@@ -131,22 +142,35 @@ public class ProductService : IProductService
 
         if (product == null) throw new KeyNotFoundException("Product not found");
 
-        var categorySpec = new CategoriesWithSubCategoriesSpec(dto.Category);
-        var category = await _unitOfWork.Repository<Category>().GetEntityWithSpec(categorySpec);
-        if (category == null) throw new KeyNotFoundException($"Category {dto.Category} not found");
+        Category category = null;
+        if (!string.IsNullOrEmpty(dto.Category))
+        {
+            var categorySpec = new CategoriesWithSubCategoriesSpec(dto.Category);
+            category = await _unitOfWork.Repository<Category>().GetEntityWithSpec(categorySpec);
+        }
+
+        if (category == null)
+        {
+            // Maintain current category if none provided and no fallback needed, 
+            // or fallback to first available if product currently has no category (unlikely)
+            category = product.Category ?? (await _unitOfWork.Repository<Category>().ListAllAsync()).FirstOrDefault();
+        }
+
+        if (category == null) throw new KeyNotFoundException($"Category context could not be resolved.");
 
         // Update basic props
         product.Name = dto.Name;
         product.Description = dto.Description;
         product.Price = dto.Price;
         product.CompareAtPrice = dto.SalePrice;
-        product.PurchaseRate = dto.PurchaseRate;
+        product.PurchaseRate = dto.PurchaseRate > 0 ? dto.PurchaseRate : (product.PurchaseRate ?? dto.Price);
         product.IsActive = dto.StatusActive;
         product.CategoryId = category.Id;
         product.ImageUrl = dto.Media?.MainImage?.ImageUrl ?? string.Empty;
 
         product.IsNew = dto.NewArrival;
         product.IsFeatured = dto.IsFeatured;
+        product.IsItemProduct = dto.IsItemProduct;
         product.FabricAndCare = dto.Meta?.FabricAndCare;
         product.ShippingAndReturns = dto.Meta?.ShippingAndReturns;
 

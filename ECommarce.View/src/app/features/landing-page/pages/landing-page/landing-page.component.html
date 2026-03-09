@@ -1,526 +1,192 @@
-<div class="min-h-screen bg-[#f5f5f3] font-sans text-[#1a1a1a] pb-20">
+<div class="landing-page-wrapper">
+  
+  <!-- HEADER -->
+  <header class="site-header">
+    <div class="logo">Tono Him</div>
+  </header>
+
   <!-- Loading State -->
-  <div
-    *ngIf="isLoading"
-    class="flex flex-col items-center justify-center min-h-[60vh] gap-4"
-  >
-    <lucide-icon
-      [img]="icons.Loader2"
-      class="w-12 h-12 text-[#1a1a1a] animate-spin"
-    ></lucide-icon>
-    <p class="text-[#555] font-medium tracking-widest text-xs uppercase">
-      Loading...
-    </p>
+  <div *ngIf="isLoading" class="flex flex-col items-center justify-center min-h-[60vh] gap-4">
+    <lucide-icon [img]="icons.Loader2" class="w-12 h-12 text-[#e63b3b] animate-spin"></lucide-icon>
+    <p class="text-[#555] font-medium tracking-widest text-xs uppercase">Loading...</p>
   </div>
 
-  <div
-    *ngIf="product && !isLoading"
-    class="max-w-[1200px] mx-auto px-6 pt-8 lg:pt-16"
-  >
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 xl:gap-16 items-start">
-      <!-- ===== LEFT: Image Gallery (Copied from Product Details) ===== -->
-      <div class="relative">
-        <div
-          class="relative bg-[#ebebeb] overflow-hidden group"
-          style="aspect-ratio: 3/4"
-        >
-          <!-- Images -->
-          <ng-container *ngFor="let url of gallery; let i = index">
-            <img
-              [src]="imageUrlService.getImageUrl(url)"
-              [alt]="product.name"
-              class="absolute inset-0 w-full h-full object-cover transition-opacity duration-500"
-              [class.opacity-100]="i === currentImageIndex"
-              [class.opacity-0]="i !== currentImageIndex"
-            />
-          </ng-container>
+  <div *ngIf="product && !isLoading">
+    
+    <!-- HERO -->
+    <section class="hero">
+      <h2 style="font-size:14px;color:#e63b3b;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;">✨ বিশেষ অফার</h2>
+      <h1 *ngIf="landingPage?.headline">{{ landingPage!.headline }}</h1>
+      <p *ngIf="landingPage?.benefitsContent">{{ landingPage!.headline }}</p> <!-- Using headline again as subtitle if benefitsContent is short, or just p -->
+      <a (click)="scrollToOrderForm()" class="btn-order">অর্ডার করতে চাই</a>
+      <br>
+      <img *ngIf="landingPage?.videoUrl; else productHeroImg" [src]="landingPage!.videoUrl" (error)="useFallback($event)" alt="Hero Image">
+      <ng-template #productHeroImg>
+        <img *ngIf="product.imageUrl" [src]="imageUrlService.getImageUrl(product.imageUrl)" [alt]="product.name">
+      </ng-template>
+    </section>
 
-          <!-- Tier Badge -->
-          <div *ngIf="product.tier" class="absolute top-4 right-4 z-10">
-            <span
-              class="px-3 py-1 bg-white/90 text-[10px] uppercase tracking-[0.25em] font-semibold text-[#1a1a1a] border border-[#ddd]"
-            >
-              {{ product.tier }}
-            </span>
-          </div>
+    <hr class="divider">
 
-          <!-- Prev Arrow -->
-          <button
-            *ngIf="gallery.length > 1"
-            (click)="prevImage()"
-            class="absolute left-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-white/80 hover:bg-white flex items-center justify-center shadow transition-all duration-200 opacity-0 group-hover:opacity-100"
-            type="button"
-          >
-            <lucide-icon
-              [img]="icons.ChevronLeft"
-              class="w-5 h-5"
-            ></lucide-icon>
-          </button>
-
-          <!-- Next Arrow -->
-          <button
-            *ngIf="gallery.length > 1"
-            (click)="nextImage()"
-            class="absolute right-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-white/80 hover:bg-white flex items-center justify-center shadow transition-all duration-200 opacity-0 group-hover:opacity-100"
-            type="button"
-          >
-            <lucide-icon
-              [img]="icons.ChevronRight"
-              class="w-5 h-5"
-            ></lucide-icon>
-          </button>
-        </div>
-
-        <!-- Image Counter + Progress Bar -->
-        <div
-          *ngIf="gallery.length > 1"
-          class="flex items-center gap-3 mt-3 px-1"
-        >
-          <span class="text-xs text-[#888]"
-            >{{ currentImageIndex + 1 }} / {{ gallery.length }}</span
-          >
-          <div class="flex-1 h-[2px] bg-[#ddd] rounded-full overflow-hidden">
-            <div
-              class="h-full bg-[#1a1a1a] rounded-full transition-all duration-300"
-              [style.width.%]="((currentImageIndex + 1) / gallery.length) * 100"
-            ></div>
-          </div>
-        </div>
-
-        <!-- Thumbnail Row -->
-        <div
-          *ngIf="gallery.length > 1"
-          class="flex gap-2 mt-3 overflow-x-auto pb-1"
-        >
-          <button
-            *ngFor="let url of gallery; let i = index"
-            (click)="goToImage(i)"
-            type="button"
-            class="flex-shrink-0 w-16 h-20 overflow-hidden border-2 transition-all duration-200 relative"
-            [class.border-[#1a1a1a]]="i === currentImageIndex"
-            [class.border-transparent]="i !== currentImageIndex"
-          >
-            <img
-              [src]="imageUrlService.getImageUrl(url)"
-              [alt]="product.name"
-              class="w-full h-full object-cover"
-            />
-          </button>
-        </div>
+    <!-- BENEFITS -->
+    <section class="section" *ngIf="landingPage?.benefitsTitle || landingPage?.benefitsContent">
+      <h2>{{ landingPage?.benefitsTitle || 'লুব্রিকেন্ট জেল ব্যবহারের সুবিধাঃ' }}</h2>
+      <div class="benefits-list" [innerHTML]="landingPage?.benefitsContent"></div>
+      <div style="text-align:center;margin-top:28px;">
+        <a (click)="scrollToOrderForm()" class="btn-order">অর্ডার করতে চাই</a>
       </div>
+    </section>
 
-      <!-- ===== RIGHT: Product Info & Order Form ===== -->
-      <div class="lg:sticky lg:top-24 lg:self-start space-y-8">
-        <!-- Header Info -->
-        <div>
-          <h1
-            class="text-3xl lg:text-4xl font-semibold text-[#1a1a1a] leading-tight mb-2"
-          >
-            {{ product.name }}
-          </h1>
-          <p class="text-sm text-[#c8922a] font-medium" *ngIf="product.sku">
-            Product Code: {{ product.sku }}
+    <div class="combo-img-wrap">
+      <img src="https://lovecarebd.online/wp-content/uploads/2026/02/3-combo-tono-hime-Package.webp" alt="3 Combo Package">
+    </div>
+
+    <hr class="divider">
+
+    <!-- REVIEWS -->
+    <section class="section" *ngIf="landingPage?.reviewsTitle || landingPage?.reviewsImages">
+      <h2>{{ landingPage?.reviewsTitle || 'কাস্টমার রিভিউ' }}</h2>
+      <div class="reviews-grid" [innerHTML]="landingPage?.reviewsImages"></div>
+    </section>
+
+    <hr class="divider">
+
+    <!-- SIDE EFFECTS -->
+    <section class="section" *ngIf="landingPage?.sideEffectsTitle || landingPage?.sideEffectsContent">
+      <h2>{{ landingPage?.sideEffectsTitle || 'লুব্রিকেন্ট জেল এর পার্শ্বপ্রতিক্রিয়াঃ' }}</h2>
+      <div class="side-effect-box" [innerHTML]="landingPage?.sideEffectsContent"></div>
+      <div class="combo-img-wrap" style="margin-top:24px;">
+        <img src="https://lovecarebd.online/wp-content/uploads/2026/02/magic-lubricant-plus-gel.webp" alt="Magic Lubricant Plus Gel">
+      </div>
+    </section>
+
+    <hr class="divider">
+
+    <!-- USAGE RULES -->
+    <section class="section" *ngIf="landingPage?.usageTitle || landingPage?.usageContent">
+      <h2>{{ landingPage?.usageTitle || 'লুব্রিকেন্ট জেল ব্যবহারের নিয়মঃ' }}</h2>
+      <div class="usage-list" [innerHTML]="landingPage?.usageContent"></div>
+      <div style="text-align:center;margin-top:28px;">
+        <a (click)="scrollToOrderForm()" class="btn-order">অর্ডার করতে চাই</a>
+      </div>
+    </section>
+
+    <hr class="divider">
+
+    <!-- ORDER FORM -->
+    <div id="order">
+      <div class="form-wrapper">
+        <h2 id="order-form-section">ফর্মটি পূরণ করে অর্ডার করুন</h2>
+
+        <!-- Products -->
+        <div class="products-title">Your Products</div>
+        <div class="products-grid" id="productsGrid">
+          <div *ngFor="let item of offerItems" class="product-card" [class.selected]="item.quantity > 0">
+            <img [src]="item.imageUrl" [alt]="item.name">
+            <div class="p-name">{{ item.name }}</div>
+            <div class="p-price">৳ {{ item.price | number:'1.2-2' }}</div>
+            <div class="qty-ctrl">
+              <button (click)="changeQty(item, -1)">−</button>
+              <input type="number" [value]="item.quantity" min="0" (input)="updateQuantity(item, $event)">
+              <button (click)="changeQty(item, 1)">+</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Billing Details -->
+        <form [formGroup]="checkoutForm" (ngSubmit)="placeOrder()">
+          <div class="billing-title">Billing details</div>
+          <div class="form-group">
+            <label>নাম <span>*</span></label>
+            <input type="text" formControlName="fullName" placeholder="আপনার পুরো নাম লিখুন">
+            <p class="text-[10px] text-red-500 mt-1" *ngIf="checkoutForm.controls.fullName.touched && checkoutForm.controls.fullName.invalid">নাম আবশ্যক</p>
+          </div>
+          <div class="form-group">
+            <label>আপনার ঠিকানা <span>*</span></label>
+            <input type="text" formControlName="address" placeholder="বাড়ি নম্বর, রাস্তা, এলাকা, জেলা">
+            <p class="text-[10px] text-red-500 mt-1" *ngIf="checkoutForm.controls.address.touched && checkoutForm.controls.address.invalid">ঠিকানা আবশ্যক</p>
+          </div>
+          <div class="form-group">
+            <label>আপনার ফোন নাম্বার <span>*</span></label>
+            <input type="tel" formControlName="phone" placeholder="01XXXXXXXXX">
+            <p class="text-[10px] text-red-500 mt-1" *ngIf="checkoutForm.controls.phone.touched && checkoutForm.controls.phone.invalid">ফোন নাম্বার আবশ্যক</p>
+          </div>
+
+          <!-- Shipping -->
+          <div class="shipping-box">
+            <div class="s-title">Shipping</div>
+            <div *ngFor="let method of deliveryMethods" class="shipping-option">
+              <input type="radio" formControlName="deliveryMethodId" [id]="'method-' + method.id" [value]="method.id">
+              <label [for]="'method-' + method.id">{{ method.name }}</label>
+              <span class="s-price">৳ {{ method.cost | number:'1.2-2' }}</span>
+            </div>
+          </div>
+
+          <!-- Order Summary -->
+          <div class="order-summary">
+            <div class="os-title">Your order</div>
+            <table class="os-table">
+              <thead>
+                <tr>
+                  <th>Product</th>
+                  <th>Subtotal</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let item of offerItems">
+                  <ng-container *ngIf="item.quantity > 0">
+                    <td>{{ item.name }} <strong>× {{ item.quantity }}</strong></td>
+                    <td>৳ {{ (item.price * item.quantity) | number:'1.2-2' }}</td>
+                  </ng-container>
+                </tr>
+                <tr *ngIf="subtotal === 0">
+                  <td colspan="2" style="text-align:center;color:#aaa;font-size:13px;">কোনো পণ্য নির্বাচন করা হয়নি</td>
+                </tr>
+              </tbody>
+              <tfoot>
+                <tr>
+                  <td>Subtotal</td>
+                  <td>৳ {{ subtotal | number:'1.2-2' }}</td>
+                </tr>
+                <tr>
+                  <td>Shipping</td>
+                  <td>৳ {{ (subtotal > 0 ? (selectedMethod?.cost || 0) : 0) | number:'1.2-2' }}</td>
+                </tr>
+                <tr class="total-row">
+                  <td><strong>Total</strong></td>
+                  <td><strong>৳ {{ total | number:'1.2-2' }}</strong></td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+
+          <!-- Payment -->
+          <div class="payment-box">
+            <div class="pay-title">Payment Method</div>
+            <div class="cod-badge">
+              <input type="radio" checked disabled>
+              <label><strong>Cash on delivery</strong> — Pay with cash upon delivery.</label>
+            </div>
+          </div>
+
+          <!-- Privacy note -->
+          <p class="privacy-note">
+            আপনার ব্যক্তিগত তথ্য আপনার অর্ডার প্রক্রিয়া করতে, এই ওয়েবসাইটে আপনার অভিজ্ঞতা সমর্থন করতে এবং আমাদের <a href="#">গোপনীয়তা নীতি</a>তে বর্ণিত অন্যান্য উদ্দেশ্যে ব্যবহার করা হবে।
           </p>
-        </div>
 
-        <!-- Price -->
-        <div class="flex items-baseline gap-3">
-          <app-price-display
-            class="text-2xl font-bold text-[#1a1a1a]"
-            [amount]="product.price"
-            size="lg"
-          ></app-price-display>
-          <app-price-display
-            *ngIf="hasDiscount(product)"
-            class="line-through text-[#aaa] text-lg"
-            [amount]="product.compareAtPrice!"
-            size="sm"
-          ></app-price-display>
-          <span
-            *ngIf="hasDiscount(product)"
-            class="px-2 py-1 bg-red-500 text-white text-xs font-bold font-mono rounded"
-          >
-            -{{ getDiscountPercentage(product) }}%
-          </span>
-        </div>
-
-        <!-- Visual Selectors (Bind to Form) -->
-        <div class="space-y-6">
-          <!-- Color Selector -->
-          <div *ngIf="uniqueColors.length > 0" class="space-y-3">
-            <p class="text-sm font-medium text-[#1a1a1a]">
-              Color:
-              <span class="font-normal text-[#555]">{{
-                checkoutForm.controls.selectedColor.value
-              }}</span>
-            </p>
-            <div class="flex flex-wrap gap-2">
-              <button
-                *ngFor="let color of uniqueColors"
-                (click)="selectColor(color.name)"
-                type="button"
-                [title]="color.name"
-                class="w-14 h-18 overflow-hidden border-2 transition-all duration-200 relative"
-                [class.border-[#1a1a1a]]="
-                  color.name === checkoutForm.controls.selectedColor.value
-                "
-                [class.border-[#ddd]]="
-                  color.name !== checkoutForm.controls.selectedColor.value
-                "
-              >
-                <img
-                  *ngIf="getColorImage(color.name) as imgUrl"
-                  [src]="imgUrl"
-                  [alt]="color.name"
-                  class="w-full h-full object-cover"
-                />
-                <div
-                  *ngIf="!getColorImage(color.name)"
-                  class="w-full h-full flex items-center justify-center bg-slate-100"
-                >
-                  <span class="text-[10px] uppercase">{{ color.name }}</span>
-                </div>
-              </button>
-            </div>
-            <p
-              *ngIf="
-                checkoutForm.controls.selectedColor.invalid &&
-                checkoutForm.controls.selectedColor.touched
-              "
-              class="text-xs text-red-500"
-            >
-              Please select a color
-            </p>
-          </div>
-
-          <!-- Size Selector -->
-          <div
-            *ngIf="product.variants && product.variants.length > 0"
-            class="space-y-3"
-          >
-            <div class="flex items-center justify-between">
-              <p class="text-sm font-medium text-[#1a1a1a]">Select Size</p>
-            </div>
-            <div class="flex flex-wrap gap-2">
-              <button
-                *ngFor="let v of product.variants"
-                (click)="checkoutForm.patchValue({ selectedSize: v.size })"
-                type="button"
-                class="px-4 h-10 border text-xs font-medium uppercase tracking-wider transition-all duration-200 min-w-[3rem]"
-                [class.bg-[#1a1a1a]]="
-                  v.size === checkoutForm.controls.selectedSize.value
-                "
-                [class.text-white]="
-                  v.size === checkoutForm.controls.selectedSize.value
-                "
-                [class.border-[#1a1a1a]]="
-                  v.size === checkoutForm.controls.selectedSize.value
-                "
-                [class.bg-white]="
-                  v.size !== checkoutForm.controls.selectedSize.value
-                "
-                [class.text-[#1a1a1a]]="
-                  v.size !== checkoutForm.controls.selectedSize.value
-                "
-                [class.border-[#ccc]]="
-                  v.size !== checkoutForm.controls.selectedSize.value
-                "
-              >
-                {{ v.size }}
-              </button>
-            </div>
-            <p
-              *ngIf="
-                checkoutForm.controls.selectedSize.invalid &&
-                checkoutForm.controls.selectedSize.touched
-              "
-              class="text-xs text-red-500"
-            >
-              Please select a size
-            </p>
-          </div>
-        </div>
-
-        <!-- QUICK ORDER FORM (Integrated) -->
-        <div
-          class="bg-white border border-[#e0e0e0] rounded-xl p-6 shadow-sm mt-8"
-        >
-          <div class="flex items-center gap-2 mb-6 border-b border-[#eee] pb-4">
-            <lucide-icon
-              [img]="icons.Truck"
-              class="w-5 h-5 text-[#1a1a1a]"
-            ></lucide-icon>
-            <h3
-              class="text-lg font-bold text-[#1a1a1a] uppercase tracking-wide"
-            >
-              Quick Order
-            </h3>
-          </div>
-
-          <form
-            [formGroup]="checkoutForm"
-            (ngSubmit)="placeOrder()"
-            class="space-y-5"
-          >
-            <div class="space-y-4">
-              <!-- Name -->
-              <div>
-                <label
-                  class="block text-xs uppercase tracking-widest font-bold text-[#888] mb-1"
-                  >Full Name</label
-                >
-                <input
-                  type="text"
-                  formControlName="fullName"
-                  placeholder="Enter your name"
-                  class="w-full h-12 px-4 bg-[#f9f9f9] border border-[#ddd] focus:border-[#1a1a1a] focus:ring-0 transition-colors text-sm"
-                />
-                <p
-                  class="text-[10px] text-red-500 mt-1"
-                  *ngIf="
-                    checkoutForm.controls.fullName.touched &&
-                    checkoutForm.controls.fullName.invalid
-                  "
-                >
-                  Name is required
-                </p>
-              </div>
-
-              <!-- Phone -->
-              <div>
-                <label
-                  class="block text-xs uppercase tracking-widest font-bold text-[#888] mb-1"
-                  >Mobile Number</label
-                >
-                <input
-                  type="tel"
-                  formControlName="phone"
-                  placeholder="017xxxxxxxx"
-                  class="w-full h-12 px-4 bg-[#f9f9f9] border border-[#ddd] focus:border-[#1a1a1a] focus:ring-0 transition-colors text-sm"
-                />
-                <p
-                  class="text-[10px] text-red-500 mt-1"
-                  *ngIf="
-                    checkoutForm.controls.phone.touched &&
-                    checkoutForm.controls.phone.invalid
-                  "
-                >
-                  Valid phone number is required
-                </p>
-              </div>
-
-              <!-- Address -->
-              <div>
-                <label
-                  class="block text-xs uppercase tracking-widest font-bold text-[#888] mb-1"
-                  >Delivery Address</label
-                >
-                <textarea
-                  formControlName="address"
-                  rows="2"
-                  placeholder="Full address details"
-                  class="w-full p-4 bg-[#f9f9f9] border border-[#ddd] focus:border-[#1a1a1a] focus:ring-0 transition-colors text-sm"
-                ></textarea>
-                <p
-                  class="text-[10px] text-red-500 mt-1"
-                  *ngIf="
-                    checkoutForm.controls.address.touched &&
-                    checkoutForm.controls.address.invalid
-                  "
-                >
-                  Address is required
-                </p>
-              </div>
-
-              <!-- Delivery Method -->
-              <div>
-                <label
-                  class="block text-xs uppercase tracking-widest font-bold text-[#888] mb-2"
-                  >Shipping Method</label
-                >
-                <div class="space-y-2">
-                  <label
-                    *ngFor="let method of deliveryMethods"
-                    class="flex items-center justify-between p-3 border cursor-pointer transition-colors"
-                    [ngClass]="
-                      checkoutForm.controls.deliveryMethodId.value === method.id
-                        ? 'border-[#1a1a1a] bg-[#f9f9f9]'
-                        : 'border-[#ddd] hover:border-[#bbb]'
-                    "
-                  >
-                    <div class="flex items-center gap-3">
-                      <input
-                        type="radio"
-                        formControlName="deliveryMethodId"
-                        [value]="method.id"
-                        class="text-[#1a1a1a] focus:ring-[#1a1a1a]"
-                      />
-                      <div class="flex flex-col">
-                        <span class="text-sm font-bold text-[#1a1a1a]">{{
-                          method.name
-                        }}</span>
-                        <span class="text-[10px] text-[#888]">{{
-                          method.estimatedDays
-                        }}</span>
-                      </div>
-                    </div>
-                    <app-price-display
-                      [amount]="method.cost"
-                      class="text-sm font-semibold"
-                    ></app-price-display>
-                  </label>
-                </div>
-              </div>
-
-              <!-- Quantity Selector -->
-              <div>
-                <label
-                  class="block text-xs uppercase tracking-widest font-bold text-[#888] mb-2"
-                  >Quantity</label
-                >
-                <div
-                  class="flex items-center w-32 h-12 border border-[#ddd] bg-[#f9f9f9]"
-                >
-                  <button
-                    (click)="decreaseQuantity()"
-                    type="button"
-                    class="flex-1 h-full flex items-center justify-center hover:bg-[#eee] transition-colors"
-                  >
-                    <lucide-icon
-                      [img]="icons.Minus"
-                      class="w-4 h-4"
-                    ></lucide-icon>
-                  </button>
-                  <div
-                    class="flex-1 h-full flex items-center justify-center font-bold text-sm"
-                  >
-                    {{ checkoutForm.controls.quantity.value }}
-                  </div>
-                  <button
-                    (click)="increaseQuantity()"
-                    type="button"
-                    class="flex-1 h-full flex items-center justify-center hover:bg-[#eee] transition-colors"
-                  >
-                    <lucide-icon
-                      [img]="icons.Plus"
-                      class="w-4 h-4"
-                    ></lucide-icon>
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <!-- Summary -->
-            <div class="pt-4 border-t border-[#eee]">
-              <div class="flex justify-between items-center mb-2">
-                <span class="text-sm text-[#555]">Subtotal</span>
-                <app-price-display
-                  [amount]="
-                    product.price * checkoutForm.controls.quantity.value
-                  "
-                ></app-price-display>
-              </div>
-              <div class="flex justify-between items-center mb-4">
-                <span class="text-sm text-[#555]">Shipping</span>
-                <app-price-display
-                  [amount]="selectedMethod?.cost ?? 0"
-                ></app-price-display>
-              </div>
-              <div
-                class="flex justify-between items-center border-t border-[#eee] pt-4"
-              >
-                <span class="text-base font-bold text-[#1a1a1a] uppercase"
-                  >Total</span
-                >
-                <app-price-display
-                  [amount]="total"
-                  size="lg"
-                  class="text-[#1a1a1a] font-bold"
-                ></app-price-display>
-              </div>
-            </div>
-
-            <!-- Submit Button -->
-            <button
-              type="submit"
-              [disabled]="isOrdering"
-              class="w-full h-14 bg-[#1a1a1a] text-white text-sm font-bold uppercase tracking-[0.2em] hover:bg-[#333] transition-all disabled:opacity-70 flex items-center justify-center gap-2"
-            >
-              <lucide-icon
-                *ngIf="isOrdering"
-                [img]="icons.Loader2"
-                class="w-5 h-5 animate-spin"
-              ></lucide-icon>
-              <span *ngIf="!isOrdering">Confirm Order</span>
-            </button>
-
-            <p
-              *ngIf="errorMessage"
-              class="text-xs text-red-500 text-center font-semibold"
-            >
-              {{ errorMessage }}
-            </p>
-          </form>
-        </div>
-
-        <!-- Description & Accordions -->
-        <div class="pt-8 border-t border-[#e0e0e0] space-y-6">
-          <div *ngIf="product.description">
-            <h4
-              class="text-sm font-bold uppercase tracking-widest text-[#1a1a1a] mb-2"
-            >
-              Description
-            </h4>
-            <p class="text-sm text-[#555] leading-relaxed">
-              {{ product.description }}
-            </p>
-          </div>
-
-          <div class="border-t border-[#e0e0e0]">
-            <details
-              class="group border-b border-[#e0e0e0]"
-              *ngIf="product.fabricAndCare"
-            >
-              <summary
-                class="flex items-center justify-between py-4 cursor-pointer list-none"
-              >
-                <span class="text-sm font-semibold text-[#1a1a1a]"
-                  >Fabric & Care</span
-                >
-                <span
-                  class="text-[#888] transition-transform duration-300 group-open:rotate-45"
-                >
-                  <lucide-icon [img]="icons.Plus" class="w-4 h-4"></lucide-icon>
-                </span>
-              </summary>
-              <div class="pb-4 text-sm text-[#555] leading-relaxed">
-                {{ product.fabricAndCare }}
-              </div>
-            </details>
-
-            <details class="group border-b border-[#e0e0e0]">
-              <summary
-                class="flex items-center justify-between py-4 cursor-pointer list-none"
-              >
-                <span class="text-sm font-semibold text-[#1a1a1a]"
-                  >Delivery & Returns</span
-                >
-                <span
-                  class="text-[#888] transition-transform duration-300 group-open:rotate-45"
-                >
-                  <lucide-icon [img]="icons.Plus" class="w-4 h-4"></lucide-icon>
-                </span>
-              </summary>
-              <div class="pb-4 text-sm text-[#555] leading-relaxed">
-                {{
-                  product.shippingAndReturns ||
-                    "Standard shipping: 2-3 business days. Easy returns within 7 days."
-                }}
-              </div>
-            </details>
-          </div>
-        </div>
+          <button type="submit" class="btn-submit" [disabled]="isOrdering || subtotal === 0">
+            <lucide-icon *ngIf="isOrdering" [img]="icons.Loader2" class="w-5 h-5 animate-spin inline-block mr-2"></lucide-icon>
+            অর্ডার কনফার্ম করুন &nbsp; <span>৳ {{ total | number:'1.2-2' }}</span>
+          </button>
+          <p *ngIf="errorMessage" class="text-sm text-red-500 text-center font-bold mt-4">{{ errorMessage }}</p>
+        </form>
       </div>
     </div>
+
+    <!-- FOOTER -->
+    <footer class="site-footer">
+      <p>© 2025 Tono Him | LoveCareBD. All Rights Reserved.</p>
+    </footer>
+
   </div>
 </div>
