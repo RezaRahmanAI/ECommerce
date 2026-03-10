@@ -9,6 +9,7 @@ public class ProductLandingPage : BaseEntity
 
     public string Headline { get; set; }
     public string? VideoUrl { get; set; }
+    public string? Subtitle { get; set; }
     
     public string? BenefitsTitle { get; set; }
     public string? BenefitsContent { get; set; } // HTML content

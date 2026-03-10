@@ -1,5 +1,6 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap");
+@import 'quill/dist/quill.snow.css';
 
 @tailwind base;
 @tailwind components;
@@ -155,4 +156,46 @@
   .site-container {
     @apply max-w-[1920px] mx-auto px-6 md:px-12 lg:px-20;
   }
+}
+
+/* QUILL EDITOR GLOBAL STYLES */
+.ql-editor {
+  padding: 0 !important;
+  text-align: left;
+  font-size: inherit;
+  font-family: inherit;
+  color: inherit;
+  line-height: inherit;
+}
+
+.ql-editor ol {
+  list-style: decimal !important;
+  padding-left: 1.5em !important;
+  margin: 1em 0 !important;
+}
+
+.ql-editor ul {
+  list-style: disc !important;
+  padding-left: 1.5em !important;
+  margin: 1em 0 !important;
+}
+
+.ql-editor li {
+  margin-bottom: 0.5em !important;
+  list-style: inherit !important;
+}
+
+.ql-editor p {
+  margin-bottom: 0.8em !important;
+}
+
+.ql-editor h1, .ql-editor h2, .ql-editor h3, .ql-editor h4 {
+  margin-top: 1.2em !important;
+  margin-bottom: 0.5em !important;
+  font-weight: bold !important;
+}
+
+.ql-editor a {
+  color: #1a73e8 !important;
+  text-decoration: underline !important;
 }

@@ -14,6 +14,7 @@ public class ReviewDto
     public DateTime Date { get; set; }
     public bool IsVerifiedPurchase { get; set; }
     public bool IsFeatured { get; set; }
+    public string? ReviewImage { get; set; }
     public int Likes { get; set; }
 }
 
@@ -31,10 +32,13 @@ public class CreateReviewDto
     [Required]
     [MaxLength(1000)]
     public string Comment { get; set; }
+
+    public string? ReviewImage { get; set; }
 }
 
 public class ReviewUpdateDto
 {
     public int Rating { get; set; }
     public string Comment { get; set; }
+    public string? ReviewImage { get; set; }
 }

@@ -16,20 +16,20 @@
           class="size-12 rounded-full bg-gray-100 flex items-center justify-center overflow-hidden"
         >
           <img
-            *ngIf="review.userAvatar"
-            [src]="review.userAvatar"
+            *ngIf="review.customerAvatar"
+            [src]="review.customerAvatar"
             class="w-full h-full object-cover"
           />
           <lucide-icon
-            *ngIf="!review.userAvatar"
+            *ngIf="!review.customerAvatar"
             [img]="icons.User"
             class="w-6 h-6 text-gray-400"
           ></lucide-icon>
         </div>
         <div>
-          <h3 class="font-bold text-gray-800">{{ review.userName }}</h3>
+          <h3 class="font-bold text-gray-800">{{ review.customerName }}</h3>
           <div class="flex items-center gap-1 text-xs text-gray-400">
-            <span>{{ review.createdAt | date: "mediumDate" }}</span>
+            <span>{{ review.date | date: "mediumDate" }}</span>
             <span
               *ngIf="review.isVerifiedPurchase"
               class="text-accent font-bold flex items-center gap-0.5"
@@ -60,6 +60,13 @@
         <p class="text-gray-600 text-sm leading-relaxed mb-4">
           {{ review.comment }}
         </p>
+
+        <!-- Review Image -->
+        <div *ngIf="review.reviewImage" class="mb-4">
+          <img [src]="review.reviewImage" 
+               class="max-w-[200px] h-32 object-cover rounded-xl border border-gray-100 shadow-sm"
+               alt="Review screenshot" />
+        </div>
         <div
           class="flex items-center gap-4 text-xs text-gray-400 border-t border-gray-50 pt-4"
         >
@@ -171,11 +178,41 @@
           class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-3"
           >Comment</label
         >
-        <textarea
+        <quill-editor
           formControlName="comment"
-          rows="4"
-          class="w-full px-4 py-3 rounded-2xl border border-gray-200 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none resize-none"
-        ></textarea>
+          [modules]="quillModules"
+          placeholder="Write your review comment..."
+          class="block w-full"
+        ></quill-editor>
+      </div>
+
+      <!-- Image Upload -->
+      <div class="mb-8">
+        <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Review Screenshot</label>
+        
+        <div class="flex items-start gap-4">
+          <!-- Preview -->
+          <div *ngIf="reviewForm.get('reviewImage')?.value" class="relative group">
+            <img [src]="reviewForm.get('reviewImage')?.value" 
+                 class="size-24 object-cover rounded-2xl border border-gray-100" />
+            <button type="button" 
+                    (click)="removeImage()"
+                    class="absolute -top-2 -right-2 p-1 bg-white shadow-md rounded-full text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">
+              <lucide-icon [img]="icons.Trash2" class="w-4 h-4"></lucide-icon>
+            </button>
+          </div>
+
+          <!-- Upload Button -->
+          <div *ngIf="!reviewForm.get('reviewImage')?.value">
+            <input type="file" #fileInput (change)="onFileSelected($event)" class="hidden" accept="image/*" />
+            <button type="button" 
+                    (click)="fileInput.click()"
+                    class="size-24 rounded-2xl border-2 border-dashed border-gray-200 flex flex-col items-center justify-center text-gray-400 hover:border-primary hover:text-primary transition-all">
+              <lucide-icon [img]="icons.Upload" class="w-6 h-6 mb-1"></lucide-icon>
+              <span class="text-[10px] font-bold uppercase">Upload</span>
+            </button>
+          </div>
+        </div>
       </div>
 
       <div class="flex gap-3">

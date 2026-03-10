@@ -1,36 +1,41 @@
 import { Component, OnInit, inject } from "@angular/core";
 import { CommonModule } from "@angular/common";
+import { QuillModule } from 'ngx-quill';
 import { FormBuilder, ReactiveFormsModule, Validators } from "@angular/forms";
 import { ActivatedRoute, Router, RouterModule } from "@angular/router";
 import { AdminLandingPageService } from "../../services/admin-landing-page.service";
 import { ProductsService } from "../../services/products.service";
 import { AdminProduct } from "../../models/products.models";
-import { LucideAngularModule, ArrowLeft, Save, Loader2, ImagePlus } from "lucide-angular";
+import { LucideAngularModule, ArrowLeft, Save, Loader2, ImagePlus, Trash2 } from "lucide-angular";
+import { ImageUrlService } from "../../../core/services/image-url.service";
 
 @Component({
   selector: "app-admin-landing-page-editor",
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule, LucideAngularModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule, LucideAngularModule, QuillModule],
   templateUrl: "./admin-landing-page-editor.component.html"
 })
 export class AdminLandingPageEditorComponent implements OnInit {
-  readonly icons = { ArrowLeft, Save, Loader2, ImagePlus };
+  readonly icons = { ArrowLeft, Save, Loader2, ImagePlus, Trash2 };
 
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly fb = inject(FormBuilder);
   private readonly landingPageService = inject(AdminLandingPageService);
   private readonly productsService = inject(ProductsService);
+  public readonly imageUrlService = inject(ImageUrlService);
 
   productId!: number;
   product: AdminProduct | null = null;
   isLoading = false;
   isSaving = false;
   error = "";
+  reviewImagesList: string[] = [];
 
   readonly form = this.fb.group({
     headline: ["", Validators.required],
     videoUrl: [""],
+    subtitle: [""],
     benefitsTitle: ["লুব্রিকেন্ট জেল ব্যবহারের সুবিধাঃ"],
     benefitsContent: [""],
     reviewsTitle: ["কাস্টমার রিভিউ"],
@@ -42,6 +47,14 @@ export class AdminLandingPageEditorComponent implements OnInit {
     themeColor: ["#1a1a1a"]
   });
 
+  quillModules = {
+    toolbar: [
+      ['bold', 'italic', 'underline'],
+      [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+      ['clean']
+    ]
+  };
+
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get("id");
     if (id) {
@@ -52,6 +65,7 @@ export class AdminLandingPageEditorComponent implements OnInit {
 
   private loadData(): void {
     this.isLoading = true;
+    this.reviewImagesList = []; // Clear previous data
     
     // Load Product details (optional, just for display)
     this.productsService.getProductById(this.productId).subscribe({
@@ -66,6 +80,7 @@ export class AdminLandingPageEditorComponent implements OnInit {
           this.form.patchValue({
             headline: lp.headline,
             videoUrl: lp.videoUrl,
+            subtitle: lp.subtitle,
             benefitsTitle: lp.benefitsTitle,
             benefitsContent: lp.benefitsContent,
             reviewsTitle: lp.reviewsTitle,
@@ -76,6 +91,19 @@ export class AdminLandingPageEditorComponent implements OnInit {
             usageContent: lp.usageContent,
             themeColor: lp.themeColor
           });
+
+          if (lp.reviewsImages) {
+            try {
+              // Try to parse as JSON array if it looks like one, otherwise treat as single URL or text
+              if (lp.reviewsImages.startsWith("[") && lp.reviewsImages.endsWith("]")) {
+                this.reviewImagesList = JSON.parse(lp.reviewsImages);
+              } else if (lp.reviewsImages.trim()) {
+                this.reviewImagesList = [lp.reviewsImages];
+              }
+            } catch {
+              this.reviewImagesList = [];
+            }
+          }
         }
         this.isLoading = false;
       },
@@ -86,6 +114,27 @@ export class AdminLandingPageEditorComponent implements OnInit {
         this.isLoading = false;
       }
     });
+  }
+
+  onFileSelected(event: any): void {
+    const files: FileList = event.target.files;
+    if (files && files.length > 0) {
+      this.isLoading = true;
+      this.landingPageService.uploadMedia(files).subscribe({
+        next: (urls) => {
+          this.reviewImagesList = [...this.reviewImagesList, ...urls];
+          this.isLoading = false;
+        },
+        error: () => {
+          this.error = "Failed to upload images.";
+          this.isLoading = false;
+        }
+      });
+    }
+  }
+
+  removeImage(index: number): void {
+    this.reviewImagesList.splice(index, 1);
   }
 
   save(): void {
@@ -101,10 +150,11 @@ export class AdminLandingPageEditorComponent implements OnInit {
       productId: this.productId,
       headline: this.form.value.headline || "",
       videoUrl: this.form.value.videoUrl || null,
+      subtitle: this.form.value.subtitle || null,
       benefitsTitle: this.form.value.benefitsTitle || null,
       benefitsContent: this.form.value.benefitsContent || null,
       reviewsTitle: this.form.value.reviewsTitle || null,
-      reviewsImages: this.form.value.reviewsImages || null,
+      reviewsImages: JSON.stringify(this.reviewImagesList),
       sideEffectsTitle: this.form.value.sideEffectsTitle || null,
       sideEffectsContent: this.form.value.sideEffectsContent || null,
       usageTitle: this.form.value.usageTitle || null,

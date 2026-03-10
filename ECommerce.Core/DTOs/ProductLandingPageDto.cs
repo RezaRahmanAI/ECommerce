@@ -6,6 +6,7 @@ public class ProductLandingPageDto
     public int ProductId { get; set; }
     public string Headline { get; set; }
     public string? VideoUrl { get; set; }
+    public string? Subtitle { get; set; }
     public string? BenefitsTitle { get; set; }
     public string? BenefitsContent { get; set; }
     public string? ReviewsTitle { get; set; }
@@ -22,6 +23,7 @@ public class UpdateProductLandingPageDto
     public int ProductId { get; set; }
     public string Headline { get; set; }
     public string? VideoUrl { get; set; }
+    public string? Subtitle { get; set; }
     public string? BenefitsTitle { get; set; }
     public string? BenefitsContent { get; set; }
     public string? ReviewsTitle { get; set; }

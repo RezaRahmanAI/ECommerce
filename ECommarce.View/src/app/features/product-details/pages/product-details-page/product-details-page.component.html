@@ -303,9 +303,8 @@
               *ngIf="vm.product.description"
               class="pt-2 border-t border-[#e0e0e0]"
             >
-              <p class="text-sm text-[#555] leading-relaxed">
-                {{ vm.product.description }}
-              </p>
+              <div class="text-sm text-[#555] leading-relaxed ql-editor" [innerHTML]="vm.product.description">
+              </div>
             </div>
 
             <!-- Accordions -->
@@ -329,8 +328,7 @@
                     ></lucide-icon>
                   </span>
                 </summary>
-                <div class="pb-4 text-sm text-[#555] leading-relaxed">
-                  {{ vm.product.fabricAndCare }}
+                <div class="pb-4 text-sm text-[#555] leading-relaxed ql-editor" [innerHTML]="vm.product.fabricAndCare">
                 </div>
               </details>
 
@@ -350,11 +348,7 @@
                     ></lucide-icon>
                   </span>
                 </summary>
-                <div class="pb-4 text-sm text-[#555] leading-relaxed">
-                  {{
-                    vm.product.shortDescription ||
-                      "Premium quality fabric crafted for comfort and elegance."
-                  }}
+                <div class="pb-4 text-sm text-[#555] leading-relaxed ql-editor" [innerHTML]="vm.product.shortDescription || 'Premium quality fabric crafted for comfort and elegance.'">
                 </div>
               </details>
 
@@ -372,11 +366,7 @@
                     ></lucide-icon>
                   </span>
                 </summary>
-                <div class="pb-4 text-sm text-[#555] leading-relaxed">
-                  {{
-                    vm.product.shippingAndReturns ||
-                      "Hand wash or dry clean recommended. Do not bleach."
-                  }}
+                <div class="pb-4 text-sm text-[#555] leading-relaxed ql-editor" [innerHTML]="vm.product.shippingAndReturns || 'Hand wash or dry clean recommended. Do not bleach.'">
                 </div>
               </details>
             </div>
@@ -520,9 +510,8 @@
                   ></lucide-icon>
                 </ng-container>
               </div>
-              <p class="text-sm text-[#555] leading-relaxed italic">
-                "{{ review.comment }}"
-              </p>
+              <div class="text-sm text-[#555] leading-relaxed italic ql-editor" [innerHTML]="review.comment">
+              </div>
             </div>
           </div>
         </div>

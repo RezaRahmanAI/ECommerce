@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject } from '@angular/core';
+import { QuillModule } from 'ngx-quill';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 
 import { BlogPost } from '../../../features/blog/blog.models';
@@ -9,7 +10,7 @@ import { BlogPostsService } from '../../services/blog-posts.service';
 @Component({
   selector: 'app-admin-blog-posts',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, QuillModule],
   templateUrl: './admin-blog-posts.component.html',
 })
 export class AdminBlogPostsComponent implements OnInit {
@@ -47,6 +48,14 @@ export class AdminBlogPostsComponent implements OnInit {
     featured: [false],
     contentJson: ['[]'],
   });
+
+  quillModules = {
+    toolbar: [
+      ['bold', 'italic', 'underline'],
+      [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+      ['clean']
+    ]
+  };
 
   ngOnInit(): void {
     this.loadPosts();

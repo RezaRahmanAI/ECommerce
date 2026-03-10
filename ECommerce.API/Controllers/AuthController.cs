@@ -26,12 +26,19 @@ public class AuthController : ControllerBase
     [HttpPost("login")]
     public async Task<ActionResult<AuthResponse>> Login(LoginRequest request)
     {
+        var identifier = request.Identifier?.Trim().ToLower();
+        
+        if (string.IsNullOrEmpty(identifier))
+        {
+            return Unauthorized(new { message = "Identifier is required" });
+        }
+
         var user = await _context.Users
-            .FirstOrDefaultAsync(u => u.Email == request.Identifier || u.UserName == request.Identifier || u.PhoneNumber == request.Identifier);
+            .FirstOrDefaultAsync(u => u.Email.ToLower() == identifier || u.UserName.ToLower() == identifier || u.PhoneNumber == request.Identifier.Trim());
 
         if (user == null || string.IsNullOrEmpty(user.PasswordHash) || !BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
         {
-            return Unauthorized(new { message = "Invalid email or password" });
+            return Unauthorized(new { message = "Invalid email/username or password" });
         }
 
         var token = GenerateJwtToken(user);

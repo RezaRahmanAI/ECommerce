@@ -76,7 +76,7 @@ export class ProductsService {
   }
 
   deleteProduct(productId: number): Observable<boolean> {
-    return this.api.delete<boolean>(`/admin/products/${productId}`).pipe(
+    return this.api.post<boolean>(`/admin/products/${productId}/delete`, {}).pipe(
       map((success) => {
         if (success) {
           this.updateCatalogSnapshot((products) =>

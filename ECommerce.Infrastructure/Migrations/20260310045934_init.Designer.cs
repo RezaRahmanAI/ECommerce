@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ECommerce.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260308133506_iiii")]
-    partial class iiii
+    [Migration("20260310045934_init")]
+    partial class init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -72,6 +72,10 @@ namespace ECommerce.Infrastructure.Migrations
 
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("bit");
+
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("nvarchar(max)");
@@ -835,6 +839,9 @@ namespace ECommerce.Infrastructure.Migrations
                     b.Property<string>("SideEffectsTitle")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("Subtitle")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("ThemeColor")
                         .HasColumnType("nvarchar(max)");
 
@@ -941,6 +948,9 @@ namespace ECommerce.Infrastructure.Migrations
                     b.Property<int>("Rating")
                         .HasColumnType("int");
 
+                    b.Property<string>("ReviewImage")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
 
@@ -972,6 +982,9 @@ namespace ECommerce.Infrastructure.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Currency")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("FacebookPixelId")

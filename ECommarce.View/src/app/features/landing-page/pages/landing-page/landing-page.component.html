@@ -1,192 +1,335 @@
-<div class="landing-page-wrapper">
+<div class="font-['Hind_Siliguri',sans-serif] bg-white text-[#333]">
   
-  <!-- HEADER -->
-  <header class="site-header">
-    <div class="logo">Tono Him</div>
-  </header>
-
-  <!-- Loading State -->
-  <div *ngIf="isLoading" class="flex flex-col items-center justify-center min-h-[60vh] gap-4">
-    <lucide-icon [img]="icons.Loader2" class="w-12 h-12 text-[#e63b3b] animate-spin"></lucide-icon>
-    <p class="text-[#555] font-medium tracking-widest text-xs uppercase">Loading...</p>
-  </div>
-
   <div *ngIf="product && !isLoading">
     
-    <!-- HERO -->
-    <section class="hero">
-      <h2 style="font-size:14px;color:#e63b3b;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;">✨ বিশেষ অফার</h2>
-      <h1 *ngIf="landingPage?.headline">{{ landingPage!.headline }}</h1>
-      <p *ngIf="landingPage?.benefitsContent">{{ landingPage!.headline }}</p> <!-- Using headline again as subtitle if benefitsContent is short, or just p -->
-      <a (click)="scrollToOrderForm()" class="btn-order">অর্ডার করতে চাই</a>
-      <br>
-      <img *ngIf="landingPage?.videoUrl; else productHeroImg" [src]="landingPage!.videoUrl" (error)="useFallback($event)" alt="Hero Image">
-      <ng-template #productHeroImg>
-        <img *ngIf="product.imageUrl" [src]="imageUrlService.getImageUrl(product.imageUrl)" [alt]="product.name">
-      </ng-template>
-    </section>
+    <!-- FULL HEIGHT HERO (30/70 Professional Split) -->
+    <section class="h-[100svh] min-h-[600px] flex flex-col items-center relative overflow-hidden bg-black">
+      <!-- Background Texture -->
+      <div class="absolute inset-0 z-0 bg-cover bg-center opacity-70" 
+           style="background-image: linear-gradient(to bottom, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0.9) 100%), url('https://images.unsplash.com/photo-1550684848-fac1c5b4e853?auto=format&fit=crop&q=80&w=2070');"
+           loading="eager">
+      </div>
+      
+      <!-- Content Top Part (30% Height) -->
+      <div class="relative z-10 flex flex-col items-center justify-center h-[35%] w-full max-w-4xl mx-auto px-10 pt-6 text-center">
+        <!-- Brand Name -->
+        <div class="text-white text-[1.8rem] md:text-[2.5rem] font-[900] tracking-[0.2em] leading-none uppercase mb-2 animate-fade-in">
+          Tono Him
+        </div>
+        
+        <!-- Headline -->
+        <h1 *ngIf="landingPage?.headline" 
+            class="text-white text-[1.3rem] md:text-[1.8rem] font-bold leading-tight max-w-2xl animate-fade-in delay-100">
+          {{ landingPage!.headline }}
+        </h1>
+        
+        <!-- Description -->
+        <div *ngIf="landingPage?.subtitle" 
+             class="text-white text-[0.85rem] md:text-[1rem] mt-2 max-w-xl ql-editor hero-subtitle !text-center animate-fade-in delay-200" 
+             [innerHTML]="landingPage?.subtitle">
+        </div>
+        
+        <!-- CTA Button (Slightly smaller for compact top) -->
+        <div class="mt-4 animate-fade-in delay-300">
+          <button (click)="scrollToOrderForm()" 
+                  class="bg-white hover:bg-gray-100 text-[#1a1a1a] px-8 py-3 text-xs uppercase tracking-[0.15em] font-bold transition-colors shadow-xl">
+            Buy It Now
+          </button>
+        </div>
+      </div>
 
-    <hr class="divider">
-
-    <!-- BENEFITS -->
-    <section class="section" *ngIf="landingPage?.benefitsTitle || landingPage?.benefitsContent">
-      <h2>{{ landingPage?.benefitsTitle || 'লুব্রিকেন্ট জেল ব্যবহারের সুবিধাঃ' }}</h2>
-      <div class="benefits-list" [innerHTML]="landingPage?.benefitsContent"></div>
-      <div style="text-align:center;margin-top:28px;">
-        <a (click)="scrollToOrderForm()" class="btn-order">অর্ডার করতে চাই</a>
+      <!-- Product Showcase Bottom Part (70% Height) -->
+      <div class="relative z-10 w-full max-w-4xl mx-auto flex h-[65%] justify-center items-end pb-4">
+        <img *ngIf="product.imageUrl" 
+             [src]="imageUrlService.getImageUrl(product.imageUrl)" 
+             [alt]="product.name" 
+             loading="eager"
+             fetchpriority="high"
+             class="w-auto h-full max-h-full object-contain drop-shadow-[0_20px_50px_rgba(0,0,0,0.8)] animate-hero-visual block">
       </div>
     </section>
 
-    <div class="combo-img-wrap">
-      <img src="https://lovecarebd.online/wp-content/uploads/2026/02/3-combo-tono-hime-Package.webp" alt="3 Combo Package">
-    </div>
+    <!-- BENEFITS SECTION -->
+    <section class="bg-white py-16" *ngIf="landingPage?.benefitsTitle || landingPage?.benefitsContent">
+      <div class="max-w-4xl mx-auto flex flex-col lg:flex-row items-center justify-between gap-10 md:gap-16 px-10">
+        <div class="flex-1 text-center lg:text-left">
+          <div class="mb-6">
+            <p class="text-[10px] uppercase tracking-[0.4em] text-[#c8922a] font-bold mb-2">Why Choose Us</p>
+            <h2 class="text-3xl md:text-4xl font-serif italic text-[#1a1a1a]">
+              {{ landingPage?.benefitsTitle || 'ব্যবহারের সুবিধাঃ' }}
+            </h2>
+          </div>
+          <div class="text-[#555] text-sm md:text-base leading-relaxed mb-8 ql-editor !text-left" [innerHTML]="landingPage?.benefitsContent"></div>
+          <button (click)="scrollToOrderForm()" 
+                  class="bg-[#1a1a1a] text-white px-8 h-12 text-xs font-semibold uppercase tracking-[0.15em] flex items-center justify-center gap-2 mx-auto lg:mx-0 hover:bg-[#333] transition-colors">
+            <lucide-icon [img]="icons.ShoppingCart" class="w-4 h-4"></lucide-icon>
+            Buy It Now
+          </button>
+        </div>
+        <div class="flex-1 flex justify-center">
+          <img *ngIf="product.imageUrl" 
+               [src]="imageUrlService.getImageUrl(product.imageUrl)" 
+               [alt]="product.name" 
+               class="max-w-[320px] w-full border border-[#e0e0e0]">
+        </div>
+      </div>
+    </section>
 
-    <hr class="divider">
+    <!-- USAGE RULES SECTION -->
+    <section class="bg-[#fafafa] py-16" *ngIf="landingPage?.usageTitle || landingPage?.usageContent">
+      <div class="max-w-4xl mx-auto flex flex-col lg:flex-row-reverse items-center justify-between gap-10 md:gap-16 px-10 text-center lg:text-left">
+        <div class="flex-1">
+          <div class="mb-6">
+            <p class="text-[10px] uppercase tracking-[0.4em] text-[#c8922a] font-bold mb-2">How To Use</p>
+            <h2 class="text-3xl md:text-4xl font-serif italic text-[#1a1a1a]">
+              {{ landingPage?.usageTitle || 'লুব্রিকেন্ট জেল ব্যবহারের নিয়মঃ' }}
+            </h2>
+          </div>
+          <div class="text-[#555] text-sm md:text-base leading-relaxed mb-8 ql-editor !text-left" [innerHTML]="landingPage?.usageContent"></div>
+          <button (click)="scrollToOrderForm()" 
+                  class="bg-[#1a1a1a] text-white px-8 h-12 text-xs font-semibold uppercase tracking-[0.15em] flex items-center justify-center gap-2 mx-auto lg:mx-0 hover:bg-[#333] transition-colors">
+            <lucide-icon [img]="icons.ShoppingCart" class="w-4 h-4"></lucide-icon>
+            Buy It Now
+          </button>
+        </div>
+        <div class="flex-1 flex justify-center">
+          <img *ngIf="product.imageUrl" 
+               [src]="imageUrlService.getImageUrl(product.imageUrl)" 
+               [alt]="product.name" 
+               class="max-w-[320px] w-full border border-[#e0e0e0]">
+        </div>
+      </div>
+    </section>
 
     <!-- REVIEWS -->
-    <section class="section" *ngIf="landingPage?.reviewsTitle || landingPage?.reviewsImages">
-      <h2>{{ landingPage?.reviewsTitle || 'কাস্টমার রিভিউ' }}</h2>
-      <div class="reviews-grid" [innerHTML]="landingPage?.reviewsImages"></div>
-    </section>
+    <section class="bg-white py-16 text-center border-t border-[#e0e0e0]" *ngIf="reviews.length > 0">
+      <div class="mb-12">
+        <p class="text-[10px] uppercase tracking-[0.4em] text-[#c8922a] font-bold mb-2">Refined Experience</p>
+        <h2 class="text-3xl md:text-4xl font-serif italic text-[#1a1a1a]">{{ landingPage?.reviewsTitle || 'Customer Testimonies' }}</h2>
+      </div>
+      
+      <div class="relative max-w-4xl mx-auto px-10 overflow-hidden">
+        <!-- Navigation -->
+        <button class="absolute left-0 top-1/2 -translate-y-1/2 w-12 h-12 bg-white border border-[#e0e0e0] flex items-center justify-center text-gray-600 transition-colors hover:border-[#1a1a1a] hover:text-[#1a1a1a] z-20" 
+                (click)="prevReview()" *ngIf="reviews.length > 1">
+          <lucide-icon [img]="icons.ChevronLeft" class="w-5 h-5"></lucide-icon>
+        </button>
+        <button class="absolute right-0 top-1/2 -translate-y-1/2 w-12 h-12 bg-white border border-[#e0e0e0] flex items-center justify-center text-gray-600 transition-colors hover:border-[#1a1a1a] hover:text-[#1a1a1a] z-20" 
+                (click)="nextReview()" *ngIf="reviews.length > 1">
+          <lucide-icon [img]="icons.ChevronRight" class="w-5 h-5"></lucide-icon>
+        </button>
 
-    <hr class="divider">
+        <!-- Slider Track -->
+        <div class="flex transition-transform duration-500 ease-in-out gap-6" 
+             [style.transform]="'translateX(-' + (currentReviewIndex * (100 / (reviews.length > 3 ? 3 : reviews.length))) + '%)'">
+          <div *ngFor="let review of reviews; let i = index" 
+               class="flex-shrink-0 w-full sm:w-1/2 lg:w-1/3 py-2">
+            <div class="bg-white border border-[#e0e0e0] p-6 h-full flex flex-col gap-4 text-left">
+              <!-- If review has an image, show it -->
+              <div class="w-full aspect-square border border-[#e0e0e0] p-1 bg-[#fafafa]" *ngIf="review.reviewImage">
+                <img [src]="imageUrlService.getImageUrl(review.reviewImage)" [alt]="review.customerName" 
+                     loading="lazy"
+                     class="w-full h-full object-cover">
+              </div>
+              
+              <!-- Reviewer Info & Stars -->
+              <div>
+                <div class="flex items-center justify-between mb-2">
+                  <span class="font-semibold text-sm text-[#1a1a1a]">{{ review.customerName }}</span>
+                </div>
+                <!-- Stars (Gold) -->
+                <div class="flex gap-0.5 mb-3">
+                  <lucide-icon *ngFor="let _ of [1,2,3,4,5]" [img]="icons.Star" class="w-3.5 h-3.5 fill-[#c8922a] text-[#c8922a]"></lucide-icon>
+                </div>
+              </div>
+
+              <!-- Comment Aesthetic -->
+              <div class="text-sm text-[#555] leading-relaxed italic ql-editor" [innerHTML]="review.comment">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dots -->
+        <div class="flex justify-center gap-2 mt-8" *ngIf="reviews.length > 1">
+          <div *ngFor="let r of reviews; let i = index" 
+               class="h-1 cursor-pointer transition-all duration-300" 
+               [class]="currentReviewIndex === i ? 'bg-[#1a1a1a] w-8' : 'bg-[#e0e0e0] w-4'"
+               (click)="goToReview(i)">
+          </div>
+        </div>
+      </div>
+    </section>
 
     <!-- SIDE EFFECTS -->
-    <section class="section" *ngIf="landingPage?.sideEffectsTitle || landingPage?.sideEffectsContent">
-      <h2>{{ landingPage?.sideEffectsTitle || 'লুব্রিকেন্ট জেল এর পার্শ্বপ্রতিক্রিয়াঃ' }}</h2>
-      <div class="side-effect-box" [innerHTML]="landingPage?.sideEffectsContent"></div>
-      <div class="combo-img-wrap" style="margin-top:24px;">
-        <img src="https://lovecarebd.online/wp-content/uploads/2026/02/magic-lubricant-plus-gel.webp" alt="Magic Lubricant Plus Gel">
+    <section class="max-w-4xl mx-auto py-16 px-10 border-t border-[#e0e0e0] mt-16 text-center" *ngIf="landingPage?.sideEffectsTitle || landingPage?.sideEffectsContent">
+      <div class="mb-8">
+        <p class="text-[10px] uppercase tracking-[0.4em] text-[#c8922a] font-bold mb-2">Important Notice</p>
+        <h2 class="text-3xl font-serif italic text-[#1a1a1a]">
+          {{ landingPage?.sideEffectsTitle || 'লুব্রিকেন্ট জেল এর পার্শ্বপ্রতিক্রিয়াঃ' }}
+        </h2>
       </div>
+      <div class="bg-[#fafafa] border border-[#e0e0e0] p-6 md:p-8 text-[#555] text-sm md:text-base ql-editor !text-center" [innerHTML]="landingPage?.sideEffectsContent"></div>
     </section>
-
-    <hr class="divider">
-
-    <!-- USAGE RULES -->
-    <section class="section" *ngIf="landingPage?.usageTitle || landingPage?.usageContent">
-      <h2>{{ landingPage?.usageTitle || 'লুব্রিকেন্ট জেল ব্যবহারের নিয়মঃ' }}</h2>
-      <div class="usage-list" [innerHTML]="landingPage?.usageContent"></div>
-      <div style="text-align:center;margin-top:28px;">
-        <a (click)="scrollToOrderForm()" class="btn-order">অর্ডার করতে চাই</a>
-      </div>
-    </section>
-
-    <hr class="divider">
 
     <!-- ORDER FORM -->
-    <div id="order">
-      <div class="form-wrapper">
-        <h2 id="order-form-section">ফর্মটি পূরণ করে অর্ডার করুন</h2>
+    <div id="order" class="bg-white py-16 px-10 border-t border-[#e0e0e0]">
+      <div class="max-w-4xl mx-auto">
+        <div class="text-center mb-10 relative inline-block w-full">
+          <p class="text-[10px] uppercase tracking-[0.4em] text-[#c8922a] font-bold mb-2">Secure Checkout</p>
+          <h2 id="order-form-section" class="text-3xl font-serif italic text-[#1a1a1a]">
+            ফর্মটি পূরণ করে অর্ডার করুন
+          </h2>
+        </div>
 
         <!-- Products -->
-        <div class="products-title">Your Products</div>
-        <div class="products-grid" id="productsGrid">
-          <div *ngFor="let item of offerItems" class="product-card" [class.selected]="item.quantity > 0">
-            <img [src]="item.imageUrl" [alt]="item.name">
-            <div class="p-name">{{ item.name }}</div>
-            <div class="p-price">৳ {{ item.price | number:'1.2-2' }}</div>
-            <div class="qty-ctrl">
-              <button (click)="changeQty(item, -1)">−</button>
-              <input type="number" [value]="item.quantity" min="0" (input)="updateQuantity(item, $event)">
-              <button (click)="changeQty(item, 1)">+</button>
+        <div class="text-[12px] uppercase tracking-widest font-bold text-[#1a1a1a] mb-6 pb-2 border-gray-200 border-b">Your Products</div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-10" id="productsGrid">
+          <div *ngFor="let item of offerItems" 
+               class="bg-white border-2 rounded-none p-4 text-center transition-all cursor-pointer hover:border-[#1a1a1a] hover:shadow-lg" 
+               [class]="item.quantity > 0 ? 'border-[#1a1a1a] shadow-md' : 'border-[#f0f0f0]'">
+            <img [src]="item.imageUrl" [alt]="item.name" loading="lazy" class="w-24 h-24 object-contain mx-auto mb-2">
+            <div class="text-[12px] uppercase tracking-wider font-semibold text-[#1a1a1a] mb-1 leading-tight h-10 flex items-center justify-center">{{ item.name }}</div>
+            <div class="text-base font-bold text-[#c8922a] mb-3">৳ {{ item.price | number:'1.2-2' }}</div>
+            <div class="flex items-center justify-center border border-[#e0e0e0] rounded-none overflow-hidden h-10">
+              <button (click)="changeQty(item, -1)" class="bg-white hover:bg-[#fafafa] w-10 h-full font-bold transition-colors border-r border-[#e0e0e0]">−</button>
+              <input type="number" [value]="item.quantity" min="0" (input)="updateQuantity(item, $event)" 
+                     class="w-12 border-none text-center font-bold text-sm py-1 outline-none bg-transparent text-[#1a1a1a]">
+              <button (click)="changeQty(item, 1)" class="bg-white hover:bg-[#fafafa] w-10 h-full font-bold transition-colors border-l border-[#e0e0e0]">+</button>
             </div>
           </div>
         </div>
 
         <!-- Billing Details -->
-        <form [formGroup]="checkoutForm" (ngSubmit)="placeOrder()">
-          <div class="billing-title">Billing details</div>
-          <div class="form-group">
-            <label>নাম <span>*</span></label>
-            <input type="text" formControlName="fullName" placeholder="আপনার পুরো নাম লিখুন">
-            <p class="text-[10px] text-red-500 mt-1" *ngIf="checkoutForm.controls.fullName.touched && checkoutForm.controls.fullName.invalid">নাম আবশ্যক</p>
-          </div>
-          <div class="form-group">
-            <label>আপনার ঠিকানা <span>*</span></label>
-            <input type="text" formControlName="address" placeholder="বাড়ি নম্বর, রাস্তা, এলাকা, জেলা">
-            <p class="text-[10px] text-red-500 mt-1" *ngIf="checkoutForm.controls.address.touched && checkoutForm.controls.address.invalid">ঠিকানা আবশ্যক</p>
-          </div>
-          <div class="form-group">
-            <label>আপনার ফোন নাম্বার <span>*</span></label>
-            <input type="tel" formControlName="phone" placeholder="01XXXXXXXXX">
-            <p class="text-[10px] text-red-500 mt-1" *ngIf="checkoutForm.controls.phone.touched && checkoutForm.controls.phone.invalid">ফোন নাম্বার আবশ্যক</p>
+        <form [formGroup]="checkoutForm" (ngSubmit)="placeOrder()" class="space-y-6">
+          <div class="text-[12px] uppercase tracking-widest font-bold text-[#1a1a1a] mb-6 pb-2 border-[#1a1a1a] border-b">Billing details</div>
+          
+          <div class="space-y-4">
+            <div class="space-y-2 text-left">
+              <label class="block text-[10px] uppercase tracking-[0.2em] font-bold text-[#888]">আপনার ফোন নাম্বার <span class="text-[#c8922a]">*</span></label>
+              <input type="tel" formControlName="phone" placeholder="01XXXXXXXXX" 
+                     class="w-full px-4 py-3 border border-[#e0e0e0] rounded-none focus:border-[#1a1a1a] outline-none transition-colors bg-white text-sm">
+              <p class="text-[10px] text-red-500" *ngIf="checkoutForm.controls.phone.touched && checkoutForm.controls.phone.invalid">ফোন নাম্বার আবশ্যক</p>
+            </div>
+            
+            <div class="space-y-2 text-left">
+              <label class="block text-[10px] uppercase tracking-[0.2em] font-bold text-[#888]">নাম <span class="text-[#c8922a]">*</span></label>
+              <input type="text" formControlName="fullName" placeholder="আপনার পুরো নাম লিখুন" 
+                     class="w-full px-4 py-3 border border-[#e0e0e0] rounded-none focus:border-[#1a1a1a] outline-none transition-colors bg-white text-sm">
+              <p class="text-[10px] text-red-500" *ngIf="checkoutForm.controls.fullName.touched && checkoutForm.controls.fullName.invalid">নাম আবশ্যক</p>
+            </div>
+
+            <div class="space-y-2 text-left">
+              <label class="block text-[10px] uppercase tracking-[0.2em] font-bold text-[#888]">আপনার ঠিকানা <span class="text-[#c8922a]">*</span></label>
+              <input type="text" formControlName="address" placeholder="বাড়ি নম্বর, রাস্তা, এলাকা, জেলা" 
+                     class="w-full px-4 py-3 border border-[#e0e0e0] rounded-none focus:border-[#1a1a1a] outline-none transition-colors bg-white text-sm">
+              <p class="text-[10px] text-red-500" *ngIf="checkoutForm.controls.address.touched && checkoutForm.controls.address.invalid">ঠিকানা আবশ্যক</p>
+            </div>
+
+            
           </div>
 
           <!-- Shipping -->
-          <div class="shipping-box">
-            <div class="s-title">Shipping</div>
-            <div *ngFor="let method of deliveryMethods" class="shipping-option">
-              <input type="radio" formControlName="deliveryMethodId" [id]="'method-' + method.id" [value]="method.id">
-              <label [for]="'method-' + method.id">{{ method.name }}</label>
-              <span class="s-price">৳ {{ method.cost | number:'1.2-2' }}</span>
+          <div class="bg-white border border-[#e0e0e0] rounded-none p-5 md:p-6 text-left">
+            <div class="text-[12px] uppercase tracking-widest font-bold text-[#1a1a1a] mb-4">Shipping</div>
+            <div *ngFor="let method of deliveryMethods" class="flex items-center gap-3 py-3 border-b border-[#f5f5f3] last:border-0 cursor-pointer">
+              <input type="radio" formControlName="deliveryMethodId" [id]="'method-' + method.id" [value]="method.id" class="accent-[#1a1a1a] w-4 h-4">
+              <label [for]="'method-' + method.id" class="text-sm text-[#555] flex-1 cursor-pointer">{{ method.name }}</label>
+              <span class="font-bold text-[#1a1a1a]">৳ {{ method.cost | number:'1.2-2' }}</span>
             </div>
           </div>
 
           <!-- Order Summary -->
-          <div class="order-summary">
-            <div class="os-title">Your order</div>
-            <table class="os-table">
+          <div class="bg-white border-[1.5px] border-gray-100 rounded-xl overflow-hidden shadow-sm text-left">
+            <div class="p-5 border-b-2 border-gray-100 font-bold text-xl text-gray-800">Your order</div>
+            <table class="w-full border-collapse">
               <thead>
-                <tr>
-                  <th>Product</th>
-                  <th>Subtotal</th>
+                <tr class="border-b border-gray-100 italic text-gray-500 text-sm">
+                  <th class="p-4 text-left font-semibold">Product</th>
+                  <th class="p-4 text-right font-semibold">Subtotal</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody class="divide-y divide-gray-100">
                 <tr *ngFor="let item of offerItems">
                   <ng-container *ngIf="item.quantity > 0">
-                    <td>{{ item.name }} <strong>× {{ item.quantity }}</strong></td>
-                    <td>৳ {{ (item.price * item.quantity) | number:'1.2-2' }}</td>
+                    <td class="p-4">
+                      <div class="flex items-center gap-4">
+                        <img [src]="item.imageUrl" [alt]="item.name" class="w-16 h-16 object-contain rounded-lg bg-white border border-gray-50">
+                        <span class="text-sm font-medium text-gray-600">{{ item.name }}</span>
+                      </div>
+                    </td>
+                    <td class="p-4 text-right whitespace-nowrap">
+                      <span class="text-sm text-gray-500 font-medium">× {{ item.quantity }} &nbsp; ৳ {{ (item.price * item.quantity) | number:'1.2-2' }}</span>
+                    </td>
                   </ng-container>
                 </tr>
                 <tr *ngIf="subtotal === 0">
-                  <td colspan="2" style="text-align:center;color:#aaa;font-size:13px;">কোনো পণ্য নির্বাচন করা হয়নি</td>
+                  <td colspan="2" class="p-6 text-center text-gray-400 text-sm">কোনো পণ্য নির্বাচন করা হয়নি</td>
                 </tr>
               </tbody>
-              <tfoot>
-                <tr>
-                  <td>Subtotal</td>
-                  <td>৳ {{ subtotal | number:'1.2-2' }}</td>
+              <tfoot class="bg-gray-50/50">
+                <tr class="text-sm text-gray-600">
+                  <td class="p-4">Subtotal</td>
+                  <td class="p-4 text-right">৳ {{ subtotal | number:'1.2-2' }}</td>
                 </tr>
-                <tr>
-                  <td>Shipping</td>
-                  <td>৳ {{ (subtotal > 0 ? (selectedMethod?.cost || 0) : 0) | number:'1.2-2' }}</td>
+                <tr class="text-sm text-gray-600">
+                  <td class="p-4">Shipping</td>
+                  <td class="p-4 text-right">৳ {{ (subtotal > 0 ? (selectedMethod?.cost || 0) : 0) | number:'1.2-2' }}</td>
                 </tr>
-                <tr class="total-row">
-                  <td><strong>Total</strong></td>
-                  <td><strong>৳ {{ total | number:'1.2-2' }}</strong></td>
+                <tr class="font-bold text-gray-800 border-t border-gray-100">
+                  <td class="p-4 text-lg">Total</td>
+                  <td class="p-4 text-right text-lg">৳ {{ total | number:'1.2-2' }}</td>
                 </tr>
               </tfoot>
             </table>
           </div>
 
           <!-- Payment -->
-          <div class="payment-box">
-            <div class="pay-title">Payment Method</div>
-            <div class="cod-badge">
-              <input type="radio" checked disabled>
-              <label><strong>Cash on delivery</strong> — Pay with cash upon delivery.</label>
+          <div class="bg-white border border-[#e0e0e0] rounded-none p-5 md:p-6 text-left">
+            <div class="text-[12px] uppercase tracking-widest font-bold text-[#1a1a1a] mb-4">Payment Method</div>
+            <div class="flex items-center gap-3 text-sm text-[#555] font-medium font-sans">
+              <input type="radio" checked disabled class="accent-[#1a1a1a] w-4 h-4">
+              <label><strong class="text-[#1a1a1a]">Cash on delivery</strong> — Pay with cash upon delivery.</label>
             </div>
           </div>
 
           <!-- Privacy note -->
-          <p class="privacy-note">
-            আপনার ব্যক্তিগত তথ্য আপনার অর্ডার প্রক্রিয়া করতে, এই ওয়েবসাইটে আপনার অভিজ্ঞতা সমর্থন করতে এবং আমাদের <a href="#">গোপনীয়তা নীতি</a>তে বর্ণিত অন্যান্য উদ্দেশ্যে ব্যবহার করা হবে।
+          <p class="text-[11px] text-[#888] leading-relaxed mb-6 text-left uppercase tracking-tighter">
+            আপনার ব্যক্তিগত তথ্য আপনার অর্ডার প্রক্রিয়া করতে, এই ওয়েবসাইটে আপনার অভিজ্ঞতা সমর্থন করতে এবং আমাদের <a href="#" class="text-[#c8922a] underline">গোপনীয়তা নীতি</a>তে বর্ণিত অন্যান্য উদ্দেশ্যে ব্যবহার করা হবে।
           </p>
 
-          <button type="submit" class="btn-submit" [disabled]="isOrdering || subtotal === 0">
-            <lucide-icon *ngIf="isOrdering" [img]="icons.Loader2" class="w-5 h-5 animate-spin inline-block mr-2"></lucide-icon>
-            অর্ডার কনফার্ম করুন &nbsp; <span>৳ {{ total | number:'1.2-2' }}</span>
+          <button type="submit" [disabled]="isOrdering || subtotal === 0"
+                  class="w-full bg-[#1a1a1a] text-white py-4 px-6 text-sm uppercase tracking-[0.15em] font-bold transition-colors hover:bg-[#333] active:bg-black disabled:bg-[#ddd] disabled:text-[#888] flex items-center justify-center">
+            <lucide-icon *ngIf="isOrdering" [img]="icons.Loader2" class="w-5 h-5 animate-spin mr-3"></lucide-icon>
+            {{ isOrdering ? 'Processing...' : 'Place Order' }} &nbsp; <span class="ml-2 px-3 py-1 bg-white/20">৳ {{ total | number:'1.2-2' }}</span>
           </button>
-          <p *ngIf="errorMessage" class="text-sm text-red-500 text-center font-bold mt-4">{{ errorMessage }}</p>
+          
+          <p *ngIf="errorMessage" class="text-sm text-red-500 text-center font-bold mt-4 animate-bounce">{{ errorMessage }}</p>
         </form>
       </div>
     </div>
 
     <!-- FOOTER -->
-    <footer class="site-footer">
+    <footer class="bg-gray-100 py-10 px-10 text-center text-gray-500 text-sm">
       <p>© 2025 Tono Him | LoveCareBD. All Rights Reserved.</p>
     </footer>
+
+    <!-- FLOATING CONTACT BUTTONS -->
+    <div class="fixed bottom-6 right-6 flex flex-col gap-4 z-50 transition-all" *ngIf="siteSettings">
+      <a *ngIf="siteSettings.whatsAppNumber || siteSettings.WhatsAppNumber" 
+         [href]="'https://wa.me/' + (siteSettings.whatsAppNumber || siteSettings.WhatsAppNumber)" 
+         target="_blank" 
+         class="w-14 h-14 bg-[#25D366] text-white rounded-full flex items-center justify-center shadow-2xl transition-all hover:scale-110 active:scale-95" 
+         title="WhatsApp">
+        <lucide-icon [img]="icons.MessageSquare" class="w-7 h-7"></lucide-icon>
+      </a>
+      <a *ngIf="siteSettings.contactPhone || siteSettings.ContactPhone" 
+         [href]="'tel:' + (siteSettings.contactPhone || siteSettings.ContactPhone)" 
+         class="w-14 h-14 bg-[#1a73e8] text-white rounded-full flex items-center justify-center shadow-2xl transition-all hover:scale-110 active:scale-95" 
+         title="Call Us">
+        <lucide-icon [img]="icons.Phone" class="w-7 h-7"></lucide-icon>
+      </a>
+    </div>
 
   </div>
 </div>

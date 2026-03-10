@@ -1,17 +1,19 @@
 export interface AdminReview {
   id: number;
-  userName: string;
-  userAvatar: string;
+  customerName: string;
+  customerAvatar: string;
   rating: number;
   comment: string;
   isVerifiedPurchase: boolean;
-  createdAt: string;
+  date: string;
   productId: number;
   productName: string;
+  reviewImage?: string;
   likes: number;
 }
 
 export interface ReviewUpdatePayload {
   rating: number;
   comment: string;
+  reviewImage?: string | null;
 }

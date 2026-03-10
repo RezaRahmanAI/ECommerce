@@ -52,6 +52,7 @@ public class AdminSettingsController : ControllerBase
             TwitterUrl = settings.TwitterUrl,
             YoutubeUrl = settings.YoutubeUrl,
             WhatsAppNumber = settings.WhatsAppNumber,
+            Description = settings.Description,
             Currency = settings.Currency,
             FreeShippingThreshold = settings.FreeShippingThreshold,
             ShippingCharge = settings.ShippingCharge,
@@ -82,6 +83,7 @@ public class AdminSettingsController : ControllerBase
         settings.TwitterUrl = dto.TwitterUrl;
         settings.YoutubeUrl = dto.YoutubeUrl;
         settings.WhatsAppNumber = dto.WhatsAppNumber;
+        settings.Description = dto.Description;
         settings.Currency = dto.Currency;
         settings.FreeShippingThreshold = dto.FreeShippingThreshold;
         settings.ShippingCharge = dto.ShippingCharge;

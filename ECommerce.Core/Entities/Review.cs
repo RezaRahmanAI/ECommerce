@@ -28,5 +28,7 @@ public class Review : BaseEntity
     
     public bool IsApproved { get; set; } = false;
     
+    public string? ReviewImage { get; set; }
+    
     public int Likes { get; set; } = 0;
 }

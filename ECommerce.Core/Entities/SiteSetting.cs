@@ -23,6 +23,7 @@ public class SiteSetting : BaseEntity
     public string? TwitterUrl { get; set; }
     public string? YoutubeUrl { get; set; }
     public string? WhatsAppNumber { get; set; }
+    public string? Description { get; set; }
     
     // Analytics & Retargeting
     public string? FacebookPixelId { get; set; }

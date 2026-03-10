@@ -62,7 +62,7 @@ export class CartService {
   addItem(product: Product, quantity = 1, color?: string, size?: string): void {
     const resolvedColor =
       color ?? product.images?.find((i) => !!i.color)?.color ?? "Default";
-    const resolvedSize = size ?? product.variants[0]?.size ?? "One Size";
+    const resolvedSize = size ?? product.variants?.[0]?.size ?? "One Size";
     const items = this.cartItemsSubject.getValue();
     const existing = items.find(
       (item) =>
@@ -117,7 +117,7 @@ export class CartService {
   ): CartItem {
     const resolvedColor =
       color ?? product.images?.find((i) => !!i.color)?.color ?? "Default";
-    const resolvedSize = size ?? product.variants[0]?.size ?? "One Size";
+    const resolvedSize = size ?? product.variants?.[0]?.size ?? "One Size";
 
     return {
       id: `cart-${product.id}-${resolvedColor}-${resolvedSize}-${Math.random().toString(36).slice(2, 8)}`,

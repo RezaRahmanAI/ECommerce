@@ -36,7 +36,7 @@ export class BlogPostsService {
   }
 
   delete(id: number) {
-    return this.api.delete<boolean>(`/admin/blog/posts/${id}`);
+    return this.api.post<boolean>(`/admin/blog/posts/${id}/delete`, {});
   }
 
   private mapPost(post: BlogPost): BlogPost {

@@ -1,5 +1,6 @@
 import { CommonModule } from "@angular/common";
 import { Component, OnDestroy, OnInit, inject } from "@angular/core";
+import { QuillModule } from 'ngx-quill';
 import { FormBuilder, ReactiveFormsModule, Validators } from "@angular/forms";
 import { Subject, takeUntil } from "rxjs";
 import { AdminReview } from "../../models/reviews.models";
@@ -15,12 +16,13 @@ import {
   Trash2,
   X,
   MessageSquare,
+  Upload,
 } from "lucide-angular";
 
 @Component({
   selector: "app-admin-reviews",
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, LucideAngularModule],
+  imports: [CommonModule, ReactiveFormsModule, LucideAngularModule, QuillModule],
   templateUrl: "./admin-reviews.component.html",
 })
 export class AdminReviewsComponent implements OnInit, OnDestroy {
@@ -34,6 +36,7 @@ export class AdminReviewsComponent implements OnInit, OnDestroy {
     Trash2,
     X,
     MessageSquare,
+    Upload,
   };
   private reviewsService = inject(AdminReviewsService);
   private fb = inject(FormBuilder);
@@ -47,7 +50,16 @@ export class AdminReviewsComponent implements OnInit, OnDestroy {
   reviewForm = this.fb.group({
     rating: [5, [Validators.required, Validators.min(1), Validators.max(5)]],
     comment: ["", [Validators.required]],
+    reviewImage: [null as string | null],
   });
+
+  quillModules = {
+    toolbar: [
+      ['bold', 'italic', 'underline'],
+      [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+      ['clean']
+    ]
+  };
 
   ngOnInit(): void {
     this.loadReviews();
@@ -72,12 +84,31 @@ export class AdminReviewsComponent implements OnInit, OnDestroy {
     this.reviewForm.patchValue({
       rating: review.rating,
       comment: review.comment,
+      reviewImage: review.reviewImage || null,
     });
     this.isModalOpen = true;
   }
 
   closeModal(): void {
     this.isModalOpen = false;
+  }
+
+  onFileSelected(event: any): void {
+    const file = event.target.files[0];
+    if (file) {
+      this.reviewsService.uploadImage(file).subscribe({
+        next: (urls) => {
+          if (urls && urls.length > 0) {
+            this.reviewForm.patchValue({ reviewImage: urls[0] });
+          }
+        },
+        error: (err) => console.error("Upload failed", err),
+      });
+    }
+  }
+
+  removeImage(): void {
+    this.reviewForm.patchValue({ reviewImage: null });
   }
 
   onSubmit(): void {

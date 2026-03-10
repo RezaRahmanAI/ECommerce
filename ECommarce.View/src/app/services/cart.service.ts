@@ -44,10 +44,10 @@ export class CartService {
   }
 
   removeFromCart(itemId: number): Observable<void> {
-    return this.api.delete<void>(`${this.baseUrl}/items/${itemId}`);
+    return this.api.post<void>(`${this.baseUrl}/items/${itemId}/delete`, {});
   }
 
   clearCart(): Observable<void> {
-    return this.api.delete<void>(this.baseUrl);
+    return this.api.post<void>(`${this.baseUrl}/delete`, {});
   }
 }

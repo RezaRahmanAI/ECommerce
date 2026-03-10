@@ -7,6 +7,7 @@ export interface PublicLandingPage {
   productId: number;
   headline: string;
   videoUrl?: string;
+  subtitle?: string;
   benefitsTitle?: string;
   benefitsContent?: string;
   reviewsTitle?: string;

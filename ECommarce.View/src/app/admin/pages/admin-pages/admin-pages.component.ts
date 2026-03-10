@@ -1,5 +1,6 @@
 import { CommonModule } from "@angular/common";
 import { Component, OnDestroy, OnInit, inject } from "@angular/core";
+import { QuillModule } from 'ngx-quill';
 import { FormBuilder, ReactiveFormsModule, Validators } from "@angular/forms";
 import { Subject, takeUntil } from "rxjs";
 import { AdminPage } from "../../models/pages.models";
@@ -17,7 +18,7 @@ import {
 @Component({
   selector: "app-admin-pages",
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, LucideAngularModule],
+  imports: [CommonModule, ReactiveFormsModule, LucideAngularModule, QuillModule],
   templateUrl: "./admin-pages.component.html",
 })
 export class AdminPagesComponent implements OnInit, OnDestroy {
@@ -47,6 +48,14 @@ export class AdminPagesComponent implements OnInit, OnDestroy {
     metaDescription: [""],
     isActive: [true],
   });
+
+  quillModules = {
+    toolbar: [
+      ['bold', 'italic', 'underline'],
+      [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+      ['clean']
+    ]
+  };
 
   ngOnInit(): void {
     this.loadPages();

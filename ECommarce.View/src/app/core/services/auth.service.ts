@@ -34,7 +34,12 @@ export class AuthService {
     if (token) {
       this.api.get<User>("/auth/me").subscribe({
         next: (user) => this.setSession(user, token),
-        error: () => this.clearSession(),
+        error: (err) => {
+          // Only clear session if we get an explicit 401 Unauthorized
+          if (err?.status === 401) {
+            this.clearSession();
+          }
+        },
       });
     }
   }

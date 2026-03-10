@@ -255,11 +255,8 @@
           <h4 class="text-lg font-bold text-primary dark:text-white">
             Written by {{ post.authorName }}
           </h4>
-          <p
-            class="text-sm text-primary/70 dark:text-gray-400 mt-1 mb-2 font-sans"
-          >
-            {{ post.authorBio }}
-          </p>
+          <div class="text-sm text-primary/70 dark:text-gray-400 mt-1 mb-2 font-sans ql-editor" [innerHTML]="post.authorBio">
+          </div>
           <a
             class="text-sm font-medium text-primary hover:underline dark:text-accent"
             [routerLink]="['/blog']"
@@ -362,11 +359,8 @@
               comment.createdAt
             }}</span>
           </div>
-          <p
-            class="text-primary/80 dark:text-gray-300 text-sm leading-relaxed mb-2"
-          >
-            {{ comment.message }}
-          </p>
+          <div class="text-primary/80 dark:text-gray-300 text-sm leading-relaxed mb-2 ql-editor" [innerHTML]="comment.message">
+          </div>
           <button
             class="text-xs font-bold text-primary/60 hover:text-primary dark:text-gray-400 dark:hover:text-white font-sans"
             type="button"
@@ -402,11 +396,8 @@
                   reply.createdAt
                 }}</span>
               </div>
-              <p
-                class="text-primary/80 dark:text-gray-300 text-sm leading-relaxed mb-2"
-              >
-                {{ reply.message }}
-              </p>
+              <div class="text-primary/80 dark:text-gray-300 text-sm leading-relaxed mb-2 ql-editor" [innerHTML]="reply.message">
+              </div>
             </div>
           </div>
         </div>

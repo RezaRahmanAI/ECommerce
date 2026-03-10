@@ -160,9 +160,11 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+// 1. Core security/transport
 app.UseHttpsRedirection();
+app.UseCors("AllowAll"); 
 
-// Response compression MUST be before static files and routing
+// 2. Response optimizations
 app.UseResponseCompression();
 
 // Static files with aggressive caching for production
@@ -179,9 +181,7 @@ app.UseStaticFiles(new StaticFileOptions
 app.UseResponseCaching();
 
 // Global exception handling
-app.UseCors("AllowAll");
-
-app.UseSerilogRequestLogging(); // Enable Serilog request logging
+app.UseSerilogRequestLogging(); 
 app.UseMiddleware<ECommerce.API.Middleware.GlobalExceptionMiddleware>();
 app.UseMiddleware<ECommerce.API.Middleware.IpBlockingMiddleware>();
 app.UseMiddleware<ECommerce.API.Middleware.VisitorTrackingMiddleware>();
@@ -201,7 +201,8 @@ try
         Path.Combine(app.Environment.WebRootPath, "uploads", "categories"),
         Path.Combine(app.Environment.WebRootPath, "uploads", "products"),
         Path.Combine(app.Environment.WebRootPath, "uploads", "banners"),
-        Path.Combine(app.Environment.WebRootPath, "uploads", "subcategories")
+        Path.Combine(app.Environment.WebRootPath, "uploads", "subcategories"),
+        Path.Combine(app.Environment.WebRootPath, "uploads", "reviews")
     };
 
     foreach (var path in uploadPaths)

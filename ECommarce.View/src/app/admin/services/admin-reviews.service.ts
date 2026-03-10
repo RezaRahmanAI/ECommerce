@@ -4,14 +4,15 @@ import { ApiHttpClient } from "../../core/http/http-client";
 
 export interface AdminReview {
   id: number;
-  userName: string;
-  userAvatar: string;
+  customerName: string;
+  customerAvatar: string;
   rating: number;
   comment: string;
   isVerifiedPurchase: boolean;
-  createdAt: string;
+  date: string;
   productId: number;
   productName: string;
+  reviewImage?: string;
   likes: number;
 }
 
@@ -26,13 +27,19 @@ export class AdminReviewsService {
     return this.api.get<AdminReview[]>(this.baseUrl);
   }
 
+  uploadImage(file: File): Observable<string[]> {
+    const formData = new FormData();
+    formData.append("files", file);
+    return this.api.post<string[]>(`${this.baseUrl}/upload-media`, formData);
+  }
+
   delete(id: number): Observable<void> {
-    return this.api.delete<void>(`${this.baseUrl}/${id}`);
+    return this.api.post<void>(`${this.baseUrl}/${id}/delete`, {});
   }
 
   update(
     id: number,
-    payload: { rating: number; comment: string },
+    payload: { rating: number; comment: string; reviewImage?: string | null },
   ): Observable<AdminReview> {
     return this.api.post<AdminReview>(`${this.baseUrl}/${id}`, payload);
   }

@@ -25,6 +25,10 @@ import {
   ArrowRight,
   Plus,
   Minus,
+  ShoppingCart,
+  Phone,
+  MessageSquare,
+  Star,
 } from "lucide-angular";
 
 import { ProductService } from "../../../../core/services/product.service";
@@ -36,7 +40,7 @@ import { ImageUrlService } from "../../../../core/services/image-url.service";
 import { SettingsService } from "../../../../admin/services/settings.service";
 import { DeliveryMethod } from "../../../../admin/models/settings.models";
 import { LandingPageService, PublicLandingPage } from "../../services/landing-page.service";
-import { PriceDisplayComponent } from "../../../../shared/components/price-display/price-display.component";
+import { PublicReviewService, PublicReview } from "../../services/public-review.service";
 
 interface OfferItem {
   id: string | number;
@@ -53,7 +57,6 @@ interface OfferItem {
     CommonModule,
     ReactiveFormsModule,
     RouterModule,
-    PriceDisplayComponent,
     LucideAngularModule,
   ],
   templateUrl: "./landing-page.component.html",
@@ -71,6 +74,10 @@ export class LandingPageComponent implements OnInit {
     ArrowRight,
     Plus,
     Minus,
+    ShoppingCart,
+    Phone,
+    MessageSquare,
+    Star,
   };
   private readonly route = inject(ActivatedRoute);
   private readonly productService = inject(ProductService);
@@ -82,6 +89,7 @@ export class LandingPageComponent implements OnInit {
   private readonly customerOrderApi = inject(CustomerOrderApiService);
   private readonly settingsService = inject(SettingsService);
   private readonly landingPageService = inject(LandingPageService);
+  private readonly publicReviewService = inject(PublicReviewService);
   private readonly cdr = inject(ChangeDetectorRef);
   readonly imageUrlService = inject(ImageUrlService);
 
@@ -93,6 +101,9 @@ export class LandingPageComponent implements OnInit {
   didAutofill = false;
   deliveryMethods: DeliveryMethod[] = [];
   selectedMethod: DeliveryMethod | null = null;
+  siteSettings: any | null = null;
+  reviews: PublicReview[] = [];
+  currentReviewIndex = 0;
 
   offerItems: OfferItem[] = [
     { id: 'bb', name: 'Blueberry Gel -100ml', price: 160, imageUrl: 'https://lovecarebd.online/wp-content/uploads/2026/02/Blueberry-800x800-1-300x300-1-1.jpg', quantity: 0 },
@@ -119,6 +130,27 @@ export class LandingPageComponent implements OnInit {
   });
 
   ngOnInit(): void {
+    // Start fetching global settings in parallel immediately
+    this.settingsService.getPublicDeliveryMethods().pipe(
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe(methods => {
+      this.deliveryMethods = methods;
+      if (methods.length > 0 && !this.checkoutForm.controls.deliveryMethodId.value) {
+        const defaultMethod = methods.find((m) => m.name.toLowerCase().includes("inside")) || methods[0];
+        this.checkoutForm.patchValue({ deliveryMethodId: defaultMethod.id });
+        this.selectedMethod = defaultMethod;
+      }
+      this.cdr.markForCheck();
+    });
+
+    this.settingsService.getPublicSettings().pipe(
+      takeUntilDestroyed(this.destroyRef),
+      catchError(() => of(null))
+    ).subscribe(settings => {
+      this.siteSettings = settings;
+      this.cdr.markForCheck();
+    });
+
     this.loadProductAndSettings();
     this.setupFormWatchers();
   }
@@ -126,92 +158,117 @@ export class LandingPageComponent implements OnInit {
   private loadProductAndSettings(): void {
     this.isLoading = true;
 
-    combineLatest([
-      this.route.paramMap.pipe(
-        map((params) => params.get("slug") ?? ""),
-        filter((slug) => slug.length > 0),
-        switchMap((slug) => 
-          combineLatest([
-            this.productService.getBySlug(slug).pipe(catchError(() => of(null))),
-            this.landingPageService.getLandingPage(slug).pipe(catchError(() => of(null)))
-          ])
-        ),
+    this.route.paramMap.pipe(
+      map((params) => params.get("slug") ?? ""),
+      filter((slug) => slug.length > 0),
+      distinctUntilChanged(),
+      switchMap((slug) => 
+        combineLatest([
+          this.productService.getBySlug(slug).pipe(catchError(() => of(null))),
+          this.landingPageService.getLandingPage(slug).pipe(catchError(() => of(null)))
+        ])
       ),
-      this.settingsService.getPublicDeliveryMethods(),
-    ])
-      .pipe(
-        takeUntilDestroyed(this.destroyRef),
-        switchMap(([ [product, landingPage], methods ]) => {
-          this.product = product;
-          this.landingPage = landingPage;
-          this.deliveryMethods = methods;
+      switchMap(([product, landingPage]) => {
+        if (!product) {
           this.isLoading = false;
+          this.errorMessage = "Product not found.";
+          this.cdr.markForCheck();
+          return of(null);
+        }
 
-          if (product) {
-            // Set defaults
-            const images = product.images ?? [];
-            const variants = product.variants ?? [];
-            
-            const colors = Array.from(
-              new Set(images.map((i: any) => i.color).filter(Boolean))
-            ) as string[];
-            
-            const sizes = Array.from(
-              new Set(variants.map((v: any) => v.size).filter(Boolean))
-            ) as string[];
+        this.product = product;
+        this.landingPage = landingPage;
+        
+        // Load reviews in parallel with product-dependent items
+        const reviews$ = this.publicReviewService.getReviewsByProduct(product.id).pipe(
+          catchError(() => of([] as PublicReview[]))
+        );
 
+        // Fetch offer items if it's an item product
+        const items$ = product.isItemProduct 
+          ? this.productService.getItemProducts().pipe(
+              map(p => p.data),
+              catchError(() => of([]))
+            )
+          : of([]);
+
+        return combineLatest([reviews$, items$]).pipe(
+          tap(([reviews, items]) => {
+            this.processReviews(product, landingPage, reviews);
+            
+            if (product.isItemProduct) {
+              this.offerItems = items.map(item => ({
+                id: item.id,
+                name: item.name,
+                price: item.price,
+                imageUrl: this.imageUrlService.getImageUrl(item.imageUrl || ''),
+                quantity: item.id === product.id ? 1 : 0
+              }));
+              
+              // Ensure current product is first
+              const currentIndex = this.offerItems.findIndex(i => i.id === product.id);
+              if (currentIndex > 0) {
+                const [current] = this.offerItems.splice(currentIndex, 1);
+                this.offerItems.unshift(current);
+              } else if (currentIndex === -1) {
+                this.offerItems.unshift({
+                  id: product.id,
+                  name: product.name,
+                  price: product.price,
+                  imageUrl: this.imageUrlService.getImageUrl(product.imageUrl || ''),
+                  quantity: 1
+                });
+              }
+            }
+
+            // Set default variants
+            const colors = Array.from(new Set(product.images?.map(i => i.color).filter(Boolean))) as string[];
+            const sizes = Array.from(new Set(product.variants?.map(v => v.size).filter(Boolean))) as string[];
             this.checkoutForm.patchValue({
               selectedColor: colors[0] ?? "",
               selectedSize: sizes[0] ?? "",
             });
 
-            // If it's an Item Product, fetch other Item Products for the offer grid
-            if (product.isItemProduct) {
-              return this.productService.getItemProducts().pipe(
-                map(pagination => pagination.data),
-                tap(items => {
-                  // Filter out current product and map to OfferItem
-                  this.offerItems = items
-                    .filter(item => item.id !== product.id)
-                    .map(item => ({
-                      id: item.id,
-                      name: item.name,
-                      price: item.price,
-                      imageUrl: this.imageUrlService.getImageUrl(item.imageUrl || ''),
-                      quantity: 0
-                    }));
-                  
-                  // If there's at least one item, set the first one to quantity 1 (as in the hardcoded example)
-                  if (this.offerItems.length > 0) {
-                    this.offerItems[0].quantity = 1;
-                  }
-                }),
-                catchError(() => of([]))
-              );
-            }
-          }
-          return of([]);
-        })
-      )
-      .subscribe({
-        next: () => {
-          if (this.deliveryMethods.length > 0) {
-            const defaultMethod =
-              this.deliveryMethods.find((m) => m.name.toLowerCase().includes("inside")) ||
-              this.deliveryMethods[0];
-            this.checkoutForm.patchValue({
-              deliveryMethodId: defaultMethod.id,
-            });
-            this.selectedMethod = defaultMethod;
-          }
-          this.cdr.markForCheck();
-        },
-        error: () => {
-          this.isLoading = false;
-          this.errorMessage = "Product not found.";
-          this.cdr.markForCheck();
-        },
-      });
+            this.isLoading = false;
+            this.cdr.markForCheck();
+          })
+        );
+      }),
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe();
+  }
+
+  private processReviews(product: Product, landingPage: PublicLandingPage | null, reviews: PublicReview[]): void {
+    let allReviews = [...reviews];
+    
+    // Add static reviews from landing page config if any
+    if (landingPage?.reviewsImages) {
+      try {
+        const staticImages = JSON.parse(landingPage.reviewsImages);
+        if (Array.isArray(staticImages)) {
+          const staticReviews: PublicReview[] = staticImages.map((url, index) => ({
+            id: -(index + 1),
+            productId: product.id,
+            productName: product.name || "",
+            customerName: "Customer Review",
+            customerAvatar: undefined,
+            rating: 5,
+            comment: "", // No text for static image reviews usually
+            date: new Date().toISOString(),
+            isVerifiedPurchase: true,
+            reviewImage: url,
+            likes: 0
+          }));
+          allReviews = [...staticReviews, ...allReviews];
+        }
+      } catch (e) {
+        console.error("Error parsing static reviews", e);
+      }
+    }
+    
+    this.reviews = allReviews;
+    this.currentReviewIndex = 0; // Reset index to first slide
+    this.cdr.markForCheck();
   }
 
   private setupFormWatchers(): void {
@@ -299,6 +356,26 @@ export class LandingPageComponent implements OnInit {
 
   goToImage(index: number): void {
     this.currentImageIndex = index;
+  }
+
+  // Review Slider Logic
+  prevReview(): void {
+    const len = this.reviews.length;
+    if (len === 0) return;
+    this.currentReviewIndex = (this.currentReviewIndex - 1 + len) % len;
+    this.cdr.markForCheck();
+  }
+
+  nextReview(): void {
+    const len = this.reviews.length;
+    if (len === 0) return;
+    this.currentReviewIndex = (this.currentReviewIndex + 1) % len;
+    this.cdr.markForCheck();
+  }
+
+  goToReview(index: number): void {
+    this.currentReviewIndex = index;
+    this.cdr.markForCheck();
   }
 
   hasDiscount(product: Product): boolean {
@@ -406,16 +483,26 @@ export class LandingPageComponent implements OnInit {
     const form = this.checkoutForm.getRawValue();
 
     // Add selected items to cart
-    selectedItems.forEach(item => {
-       const dummyProduct: any = {
-          id: typeof item.id === 'string' ? 99999 : item.id,
-          name: item.name,
-          price: item.price,
-          imageUrl: item.imageUrl,
-          status: 'Active'
-       };
-       this.cartService.addItem(dummyProduct, item.quantity);
-    });
+    try {
+      selectedItems.forEach(item => {
+        const dummyProduct: any = {
+           id: typeof item.id === 'string' ? 99999 : item.id,
+           name: item.name,
+           price: item.price,
+           imageUrl: item.imageUrl,
+           status: 'Active',
+           variants: [],
+           images: []
+        };
+        this.cartService.addItem(dummyProduct, item.quantity);
+      });
+    } catch (err) {
+      console.error("Error adding items to cart:", err);
+      this.isOrdering = false;
+      this.errorMessage = "An error occurred while preparing your order. Please try again.";
+      this.cdr.markForCheck();
+      return;
+    }
 
     // 2. Persist state to checkout service
     this.checkoutService.updateState({

@@ -1,7 +1,8 @@
 <div class="max-w-5xl mx-auto space-y-6">
   <div
     *ngIf="saveMessage"
-    class="rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm font-medium text-green-800"
+    class="rounded-lg border px-4 py-3 text-sm font-medium animate-in fade-in duration-300"
+    [ngClass]="isSaveError ? 'border-red-200 bg-red-50 text-red-800' : 'border-green-200 bg-green-50 text-green-800'"
   >
     {{ saveMessage }}
   </div>
@@ -165,6 +166,9 @@
                   type="text"
                   formControlName="websiteName"
                 />
+                <p *ngIf="settingsForm.controls.websiteName.touched && settingsForm.controls.websiteName.errors?.['required']" class="mt-1 text-xs text-red-600">
+                  Website name is required.
+                </p>
               </div>
               <div class="col-span-2 md:col-span-1">
                 <label
@@ -178,6 +182,12 @@
                   type="email"
                   formControlName="contactEmail"
                 />
+                <p *ngIf="settingsForm.controls.contactEmail.touched && settingsForm.controls.contactEmail.errors?.['required']" class="mt-1 text-xs text-red-600">
+                  Email is required.
+                </p>
+                <p *ngIf="settingsForm.controls.contactEmail.touched && settingsForm.controls.contactEmail.errors?.['email']" class="mt-1 text-xs text-red-600">
+                  Please enter a valid email address.
+                </p>
               </div>
               <div class="col-span-2 md:col-span-1">
                 <label
@@ -216,6 +226,20 @@
                   id="currency"
                   type="text"
                   formControlName="currency"
+                />
+              </div>
+              <div class="col-span-2 md:col-span-1">
+                <label
+                  class="block text-sm font-medium text-text-main mb-1"
+                  for="shipping-charge"
+                  >Shipping Charge (৳)</label
+                >
+                <input
+                  class="block w-full rounded-lg border-border bg-background-light text-text-main shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
+                  id="shipping-charge"
+                  type="number"
+                  formControlName="shippingCharge"
+                  min="0"
                 />
               </div>
               <div class="col-span-2 md:col-span-1">

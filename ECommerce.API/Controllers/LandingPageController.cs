@@ -1,8 +1,11 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
+using System.Collections.Generic;
+using System.IO;
 using ECommerce.Core.Interfaces;
 using ECommerce.Core.DTOs;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Hosting;
 
 namespace ECommerce.API.Controllers;
 
@@ -11,10 +14,12 @@ namespace ECommerce.API.Controllers;
 public class LandingPageController : ControllerBase
 {
     private readonly IProductLandingPageService _service;
+    private readonly IWebHostEnvironment _environment;
 
-    public LandingPageController(IProductLandingPageService service)
+    public LandingPageController(IProductLandingPageService service, IWebHostEnvironment environment)
     {
         _service = service;
+        _environment = environment;
     }
     [HttpGet("public/{slug}")]
     [ResponseCache(Duration = 60, Location = ResponseCacheLocation.Any, NoStore = false)]
@@ -44,5 +49,32 @@ public class LandingPageController : ControllerBase
     {
         var lp = await _service.SaveAsync(dto);
         return Ok(lp);
+    }
+
+    [Authorize(Roles = "Admin")]
+    [HttpPost("upload-media")]
+    [DisableRequestSizeLimit]
+    public async Task<ActionResult<List<string>>> UploadMedia([FromForm] List<IFormFile> files)
+    {
+        if (files == null || files.Count == 0) return BadRequest("No files uploaded");
+
+        var uploadedUrls = new List<string>();
+        var uploadsFolder = Path.Combine(_environment.WebRootPath, "uploads", "landing-pages");
+        if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
+
+        foreach (var file in files)
+        {
+            if (file.Length > 0)
+            {
+                var fileName = $"{Guid.NewGuid()}{Path.GetExtension(file.FileName)}";
+                var filePath = Path.Combine(uploadsFolder, fileName);
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await file.CopyToAsync(stream);
+                }
+                uploadedUrls.Add($"/uploads/landing-pages/{fileName}");
+            }
+        }
+        return Ok(uploadedUrls);
     }
 }

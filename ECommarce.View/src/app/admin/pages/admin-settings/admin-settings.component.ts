@@ -76,6 +76,7 @@ export class AdminSettingsComponent implements OnInit {
     currency: ["BDT"],
     description: [""],
     freeShippingThreshold: [0],
+    shippingCharge: [0],
     facebookPixelId: [""],
     googleTagId: [""],
     payments: this.formBuilder.group({
@@ -97,6 +98,7 @@ export class AdminSettingsComponent implements OnInit {
   logoPreviewUrl: string | null = null;
   logoError = "";
   saveMessage = "";
+  isSaveError = false;
 
   showZoneForm = false;
   editingZoneId: number | null = null;
@@ -144,6 +146,7 @@ export class AdminSettingsComponent implements OnInit {
         currency: settings.currency,
         description: settings.description,
         freeShippingThreshold: settings.freeShippingThreshold,
+        shippingCharge: settings.shippingCharge,
         facebookPixelId: settings.facebookPixelId,
         googleTagId: settings.googleTagId,
         payments: {
@@ -168,6 +171,7 @@ export class AdminSettingsComponent implements OnInit {
 
   saveChanges(): void {
     this.saveMessage = "";
+    this.isSaveError = false;
 
     if (this.settingsForm.invalid) {
       this.settingsForm.markAllAsTouched();
@@ -189,6 +193,7 @@ export class AdminSettingsComponent implements OnInit {
       currency: formValue.currency,
       description: formValue.description,
       freeShippingThreshold: formValue.freeShippingThreshold,
+      shippingCharge: formValue.shippingCharge,
       stripeEnabled: formValue.payments.stripeEnabled,
       paypalEnabled: formValue.payments.paypalEnabled,
       stripePublishableKey: this.stripePublishableKey,
@@ -198,11 +203,19 @@ export class AdminSettingsComponent implements OnInit {
       googleTagId: formValue.googleTagId,
     };
 
-    this.settingsService.saveSettings(payload).subscribe((settings) => {
-      this.saveMessage = "Settings saved successfully.";
-      this.lastSettings = settings;
-      this.shippingZones = settings.shippingZones || [];
-      this.deliveryMethods = settings.deliveryMethods || [];
+    this.settingsService.saveSettings(payload).subscribe({
+      next: (settings) => {
+        this.saveMessage = "Settings saved successfully.";
+        this.isSaveError = false;
+        this.lastSettings = settings;
+        this.shippingZones = settings.shippingZones || [];
+        this.deliveryMethods = settings.deliveryMethods || [];
+      },
+      error: (err) => {
+        console.error("Failed to save settings", err);
+        this.saveMessage = "Failed to save settings. Please try again.";
+        this.isSaveError = true;
+      },
     });
   }
 

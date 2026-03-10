@@ -79,11 +79,12 @@
         </div>
         <div>
           <label class="text-xs font-semibold text-primary/70">Excerpt</label>
-          <textarea
-            class="mt-1 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm"
-            rows="3"
+          <quill-editor
+            class="block w-full"
+            [modules]="quillModules"
             formControlName="excerpt"
-          ></textarea>
+            placeholder="Excerpt..."
+          ></quill-editor>
         </div>
         <div>
           <label class="text-xs font-semibold text-primary/70">Cover image URL</label>
@@ -112,11 +113,12 @@
         </div>
         <div>
           <label class="text-xs font-semibold text-primary/70">Author bio</label>
-          <textarea
-            class="mt-1 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm"
-            rows="2"
+          <quill-editor
+            class="block w-full"
+            [modules]="quillModules"
             formControlName="authorBio"
-          ></textarea>
+            placeholder="Author bio..."
+          ></quill-editor>
         </div>
         <div class="grid gap-3 sm:grid-cols-2">
           <div>

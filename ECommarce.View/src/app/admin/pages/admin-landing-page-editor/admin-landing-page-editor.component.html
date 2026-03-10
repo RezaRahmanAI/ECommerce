@@ -63,13 +63,13 @@
           </p>
         </div>
         <div>
-          <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Video/Image URL (Optional)</label>
-          <input
-            type="text"
-            formControlName="videoUrl"
-            class="w-full h-11 px-4 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-surface-dark focus:ring-primary focus:border-primary text-slate-900 dark:text-white"
-            placeholder="https://youtube.com/... or https://domain.com/image.jpg"
-          />
+          <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Subtitle / Details (Rich Text)</label>
+          <quill-editor
+            class="block w-full bg-white dark:bg-surface-dark"
+            [modules]="quillModules"
+            formControlName="subtitle"
+            placeholder="Subheadline details..."
+          ></quill-editor>
         </div>
         <div>
           <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Theme Color</label>
@@ -96,12 +96,12 @@
         </div>
         <div>
           <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Content (HTML allowed)</label>
-          <textarea
+          <quill-editor
+            class="block w-full bg-white dark:bg-surface-dark"
+            [modules]="quillModules"
             formControlName="benefitsContent"
-            rows="6"
-            class="w-full p-4 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-surface-dark focus:ring-primary focus:border-primary text-slate-900 dark:text-white"
-            placeholder="<p>Benefit 1</p><p>Benefit 2</p>"
-          ></textarea>
+            placeholder="Benefits Content..."
+          ></quill-editor>
         </div>
       </div>
     </div>
@@ -120,11 +120,12 @@
         </div>
         <div>
           <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Content (HTML allowed)</label>
-          <textarea
+          <quill-editor
+            class="block w-full bg-white dark:bg-surface-dark"
+            [modules]="quillModules"
             formControlName="usageContent"
-            rows="6"
-            class="w-full p-4 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-surface-dark focus:ring-primary focus:border-primary text-slate-900 dark:text-white"
-          ></textarea>
+            placeholder="Usage Content..."
+          ></quill-editor>
         </div>
       </div>
     </div>
@@ -143,11 +144,12 @@
         </div>
         <div>
           <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Content (HTML allowed)</label>
-          <textarea
+          <quill-editor
+            class="block w-full bg-white dark:bg-surface-dark"
+            [modules]="quillModules"
             formControlName="sideEffectsContent"
-            rows="4"
-            class="w-full p-4 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-surface-dark focus:ring-primary focus:border-primary text-slate-900 dark:text-white"
-          ></textarea>
+            placeholder="Side Effects Content..."
+          ></quill-editor>
         </div>
       </div>
     </div>
@@ -165,12 +167,30 @@
           />
         </div>
         <div>
-          <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Reviews Images Content (HTML with img tags)</label>
-          <textarea
-            formControlName="reviewsImages"
-            rows="5"
-            class="w-full p-4 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-surface-dark focus:ring-primary focus:border-primary text-slate-900 dark:text-white"
-          ></textarea>
+          <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Review Images</label>
+          
+          <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mt-2">
+            <!-- Existing Images -->
+            <div *ngFor="let img of reviewImagesList; let i = index" class="relative group aspect-square rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden bg-slate-50 dark:bg-slate-800">
+              <img [src]="imageUrlService.getImageUrl(img)" class="w-full h-full object-cover" />
+              <button 
+                type="button"
+                (click)="removeImage(i)"
+                class="absolute top-1 right-1 w-7 h-7 bg-red-500/80 hover:bg-red-600 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-sm shadow-sm"
+              >
+                <lucide-icon [img]="icons.Trash2" class="w-3.5 h-3.5"></lucide-icon>
+              </button>
+            </div>
+
+            <!-- Upload Button -->
+            <label class="border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-lg flex flex-col items-center justify-center aspect-square cursor-pointer hover:border-primary hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all group">
+              <input type="file" (change)="onFileSelected($event)" multiple class="hidden" accept="image/*" />
+              <div class="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-2 group-hover:bg-primary/10 transition-colors">
+                <lucide-icon [img]="icons.ImagePlus" class="w-5 h-5 text-slate-500 group-hover:text-primary"></lucide-icon>
+              </div>
+              <span class="text-xs font-medium text-slate-500 group-hover:text-primary">Upload Images</span>
+            </label>
+          </div>
         </div>
       </div>
     </div>

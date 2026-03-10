@@ -31,7 +31,7 @@ export class CategoriesService {
   }
 
   delete(id: string): Observable<boolean> {
-    return this.api.delete<boolean>(`/admin/categories/${id}`);
+    return this.api.post<boolean>(`/admin/categories/${id}/delete`, {});
   }
 
   uploadImage(file: File): Observable<string> {

@@ -1,4 +1,5 @@
 import { CommonModule } from "@angular/common";
+import { QuillModule } from 'ngx-quill';
 import { Component, OnDestroy, inject, ElementRef, ViewChild } from "@angular/core";
 import {
   AbstractControl,
@@ -24,7 +25,6 @@ import {
   SubCategory,
   Collection,
 } from "../../models/categories.models";
-import { PriceDisplayComponent } from "../../../shared/components/price-display/price-display.component";
 import { ImageUrlService } from "../../../core/services/image-url.service";
 import {
   LucideAngularModule,
@@ -39,6 +39,8 @@ import {
   PlayCircle,
   PlusCircle,
   Eye,
+  ImagePlus,
+  Trash2
 } from "lucide-angular";
 
 interface MediaFormValue {
@@ -59,8 +61,8 @@ interface MediaFormValue {
     CommonModule,
     ReactiveFormsModule,
     RouterModule,
-    PriceDisplayComponent,
     LucideAngularModule,
+    QuillModule,
   ],
   templateUrl: "./admin-product-form.component.html",
 })
@@ -77,6 +79,8 @@ export class AdminProductFormComponent implements OnDestroy {
     PlayCircle,
     PlusCircle,
     Eye,
+    ImagePlus,
+    Trash2
   };
   private formBuilder = inject(FormBuilder);
   private productsService = inject(ProductsService);
@@ -93,6 +97,7 @@ export class AdminProductFormComponent implements OnDestroy {
 
   mediaError = "";
   private mediaFileMap = new Map<string, File>();
+  reviewImagesList: string[] = [];
 
   @ViewChild("descriptionArea")
   descriptionArea!: ElementRef<HTMLTextAreaElement>;
@@ -116,7 +121,7 @@ export class AdminProductFormComponent implements OnDestroy {
       }),
       landingPage: this.formBuilder.group({
         headline: [""],
-        videoUrl: [""],
+        subtitle: [""],
         benefitsTitle: [""],
         benefitsContent: [""],
         reviewsTitle: [""],
@@ -129,6 +134,14 @@ export class AdminProductFormComponent implements OnDestroy {
     },
     { validators: [this.salePriceValidator] },
   );
+
+  quillModules = {
+    toolbar: [
+      ['bold', 'italic', 'underline'],
+      [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+      ['clean']
+    ]
+  };
 
   categories: Category[] = [];
   filteredSubCategories: SubCategory[] = [];
@@ -301,11 +314,12 @@ export class AdminProductFormComponent implements OnDestroy {
   }
 
   loadLandingPage(productId: number): void {
+    this.reviewImagesList = []; // Reset before loading
     this.landingPageService.getLandingPage(productId).subscribe({
       next: (lp) => {
         this.form.get("landingPage")?.patchValue({
           headline: lp.headline ?? "",
-          videoUrl: lp.videoUrl ?? "",
+          subtitle: lp.subtitle ?? "",
           benefitsTitle: lp.benefitsTitle ?? "",
           benefitsContent: lp.benefitsContent ?? "",
           reviewsTitle: lp.reviewsTitle ?? "",
@@ -315,9 +329,39 @@ export class AdminProductFormComponent implements OnDestroy {
           usageTitle: lp.usageTitle ?? "",
           usageContent: lp.usageContent ?? "",
         });
+
+        if (lp.reviewsImages) {
+          try {
+            if (lp.reviewsImages.startsWith("[") && lp.reviewsImages.endsWith("]")) {
+              this.reviewImagesList = JSON.parse(lp.reviewsImages);
+            } else if (lp.reviewsImages.trim()) {
+              this.reviewImagesList = [lp.reviewsImages];
+            }
+          } catch {
+            this.reviewImagesList = [];
+          }
+        }
       },
       error: () => console.log("No landing page found for this product yet."),
     });
+  }
+
+  onReviewFileSelected(event: any): void {
+    const files: FileList = event.target.files;
+    if (files && files.length > 0) {
+      this.landingPageService.uploadMedia(files).subscribe({
+        next: (urls) => {
+          this.reviewImagesList = [...this.reviewImagesList, ...urls];
+        },
+        error: () => {
+          window.alert("Failed to upload review images.");
+        }
+      });
+    }
+  }
+
+  removeReviewImage(index: number): void {
+    this.reviewImagesList.splice(index, 1);
   }
 
   addColor(): void {
@@ -418,6 +462,9 @@ export class AdminProductFormComponent implements OnDestroy {
     if (!confirmed) {
       return;
     }
+    this.reviewImagesList = [];
+    this.mediaItemsArray.clear();
+    this.mediaFileMap.clear();
     this.resetForm();
     void this.router.navigate(["/admin/products"]);
   }
@@ -493,11 +540,11 @@ export class AdminProductFormComponent implements OnDestroy {
             this.landingPageService.saveLandingPage({
               productId: product.id,
               headline: lpData?.headline || "",
-              videoUrl: lpData?.videoUrl ?? "",
+              subtitle: lpData?.subtitle ?? "",
               benefitsTitle: lpData?.benefitsTitle ?? "",
               benefitsContent: lpData?.benefitsContent ?? "",
               reviewsTitle: lpData?.reviewsTitle ?? "",
-              reviewsImages: lpData?.reviewsImages ?? "",
+              reviewsImages: JSON.stringify(this.reviewImagesList),
               sideEffectsTitle: lpData?.sideEffectsTitle ?? "",
               sideEffectsContent: lpData?.sideEffectsContent ?? "",
               usageTitle: lpData?.usageTitle ?? "",
@@ -817,7 +864,7 @@ export class AdminProductFormComponent implements OnDestroy {
       },
       landingPage: {
         headline: "",
-        videoUrl: "",
+        subtitle: "",
         benefitsTitle: "",
         benefitsContent: "",
         reviewsTitle: "",

@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace ECommerce.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class i : Migration
+    public partial class init : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -32,6 +32,7 @@ namespace ECommerce.Infrastructure.Migrations
                     Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     FullName = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     IsSuspicious = table.Column<bool>(type: "bit", nullable: false),
+                    Role = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     UserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     NormalizedUserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     Email = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
@@ -99,7 +100,7 @@ namespace ECommerce.Infrastructure.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Slug = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Slug = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     Icon = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     ImageUrl = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     MetaTitle = table.Column<string>(type: "nvarchar(max)", nullable: true),
@@ -235,6 +236,7 @@ namespace ECommerce.Infrastructure.Migrations
                     TwitterUrl = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     YoutubeUrl = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     WhatsAppNumber = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     FacebookPixelId = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     GoogleTagId = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Currency = table.Column<string>(type: "nvarchar(max)", nullable: true),
@@ -394,7 +396,7 @@ namespace ECommerce.Infrastructure.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Slug = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Slug = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     ImageUrl = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     DisplayOrder = table.Column<int>(type: "int", nullable: false),
@@ -420,7 +422,7 @@ namespace ECommerce.Infrastructure.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    OrderNumber = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    OrderNumber = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     CustomerName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     CustomerPhone = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     ShippingAddress = table.Column<string>(type: "nvarchar(max)", nullable: false),
@@ -454,7 +456,7 @@ namespace ECommerce.Infrastructure.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Slug = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Slug = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     ImageUrl = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     DisplayOrder = table.Column<int>(type: "int", nullable: false),
@@ -487,10 +489,10 @@ namespace ECommerce.Infrastructure.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Slug = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Slug = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     ShortDescription = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Sku = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Sku = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     ImageUrl = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Price = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     CompareAtPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
@@ -498,6 +500,8 @@ namespace ECommerce.Infrastructure.Migrations
                     StockQuantity = table.Column<int>(type: "int", nullable: false),
                     IsActive = table.Column<bool>(type: "bit", nullable: false),
                     IsNew = table.Column<bool>(type: "bit", nullable: false),
+                    IsFeatured = table.Column<bool>(type: "bit", nullable: false),
+                    IsItemProduct = table.Column<bool>(type: "bit", nullable: false),
                     MetaTitle = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     MetaDescription = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     FabricAndCare = table.Column<string>(type: "nvarchar(max)", nullable: true),
@@ -597,6 +601,39 @@ namespace ECommerce.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "ProductLandingPages",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    ProductId = table.Column<int>(type: "int", nullable: false),
+                    Headline = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    VideoUrl = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Subtitle = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    BenefitsTitle = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    BenefitsContent = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ReviewsTitle = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ReviewsImages = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    SideEffectsTitle = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    SideEffectsContent = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    UsageTitle = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    UsageContent = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ThemeColor = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ProductLandingPages", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_ProductLandingPages_Products_ProductId",
+                        column: x => x.ProductId,
+                        principalTable: "Products",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "ProductVariants",
                 columns: table => new
                 {
@@ -637,6 +674,7 @@ namespace ECommerce.Infrastructure.Migrations
                     IsVerifiedPurchase = table.Column<bool>(type: "bit", nullable: false),
                     IsFeatured = table.Column<bool>(type: "bit", nullable: false),
                     IsApproved = table.Column<bool>(type: "bit", nullable: false),
+                    ReviewImage = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Likes = table.Column<int>(type: "int", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
@@ -697,9 +735,19 @@ namespace ECommerce.Infrastructure.Migrations
                 column: "ParentId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Categories_Slug",
+                table: "Categories",
+                column: "Slug");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Collections_CategoryId",
                 table: "Collections",
                 column: "CategoryId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Collections_Slug",
+                table: "Collections",
+                column: "Slug");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Collections_SubCategoryId",
@@ -733,14 +781,35 @@ namespace ECommerce.Infrastructure.Migrations
                 column: "ProductId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Orders_CreatedAt",
+                table: "Orders",
+                column: "CreatedAt");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Orders_DeliveryMethodId",
                 table: "Orders",
                 column: "DeliveryMethodId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Orders_OrderNumber",
+                table: "Orders",
+                column: "OrderNumber");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Orders_Status",
+                table: "Orders",
+                column: "Status");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_ProductImages_ProductId",
                 table: "ProductImages",
                 column: "ProductId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ProductLandingPages_ProductId",
+                table: "ProductLandingPages",
+                column: "ProductId",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Products_CategoryId",
@@ -751,6 +820,33 @@ namespace ECommerce.Infrastructure.Migrations
                 name: "IX_Products_CollectionId",
                 table: "Products",
                 column: "CollectionId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Products_IsActive",
+                table: "Products",
+                column: "IsActive");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Products_IsFeatured",
+                table: "Products",
+                column: "IsFeatured");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Products_IsNew",
+                table: "Products",
+                column: "IsNew");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Products_Sku",
+                table: "Products",
+                column: "Sku",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Products_Slug",
+                table: "Products",
+                column: "Slug",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Products_SubCategoryId",
@@ -771,6 +867,11 @@ namespace ECommerce.Infrastructure.Migrations
                 name: "IX_SubCategories_CategoryId",
                 table: "SubCategories",
                 column: "CategoryId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_SubCategories_Slug",
+                table: "SubCategories",
+                column: "Slug");
         }
 
         /// <inheritdoc />
@@ -817,6 +918,9 @@ namespace ECommerce.Infrastructure.Migrations
 
             migrationBuilder.DropTable(
                 name: "ProductImages");
+
+            migrationBuilder.DropTable(
+                name: "ProductLandingPages");
 
             migrationBuilder.DropTable(
                 name: "ProductVariants");

@@ -97,15 +97,15 @@
             />
           </label>
 
-          <label class="flex flex-col gap-1.5">
-            <span class="text-sm font-medium text-text-main-light dark:text-text-main-dark">Video URL (YouTube/MP4)</span>
-            <input
-              class="w-full rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark px-4 py-2.5 text-text-main-light dark:text-text-main-dark placeholder:text-text-secondary-light focus:border-[#e63b3b] focus:ring-1 focus:ring-[#e63b3b]"
-              placeholder="https://www.youtube.com/watch?v=..."
-              type="text"
-              formControlName="videoUrl"
-            />
-          </label>
+          <div class="flex flex-col gap-1.5">
+            <span class="text-sm font-medium text-text-main-light dark:text-text-main-dark">Subtitle / Details (Rich Text)</span>
+            <quill-editor
+              class="block w-full"
+              [modules]="quillModules"
+              placeholder="e.g. Get the best results with our premium product"
+              formControlName="subtitle"
+            ></quill-editor>
+          </div>
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-border-light dark:border-border-dark pt-5 mt-2">
             <!-- Benefits -->
@@ -119,11 +119,12 @@
                   formControlName="benefitsTitle"
                 />
               </label>
-              <textarea
-                class="w-full rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark px-3 py-2 text-sm min-h-[100px]"
-                placeholder="Benefits Content (HTML supported)"
+              <quill-editor
+                class="block w-full"
+                [modules]="quillModules"
+                placeholder="Benefits Content..."
                 formControlName="benefitsContent"
-              ></textarea>
+              ></quill-editor>
             </div>
 
             <!-- Usage -->
@@ -137,11 +138,12 @@
                   formControlName="usageTitle"
                 />
               </label>
-              <textarea
-                class="w-full rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark px-3 py-2 text-sm min-h-[100px]"
-                placeholder="Usage Content (HTML supported)"
+              <quill-editor
+                class="block w-full"
+                [modules]="quillModules"
+                placeholder="Usage Content..."
                 formControlName="usageContent"
-              ></textarea>
+              ></quill-editor>
             </div>
 
             <!-- Side Effects -->
@@ -155,11 +157,12 @@
                   formControlName="sideEffectsTitle"
                 />
               </label>
-              <textarea
-                class="w-full rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark px-3 py-2 text-sm min-h-[100px]"
-                placeholder="Side Effects Content (HTML supported)"
+              <quill-editor
+                class="block w-full"
+                [modules]="quillModules"
+                placeholder="Side Effects Content..."
                 formControlName="sideEffectsContent"
-              ></textarea>
+              ></quill-editor>
             </div>
 
             <!-- Reviews -->
@@ -173,11 +176,109 @@
                   formControlName="reviewsTitle"
                 />
               </label>
-              <textarea
-                class="w-full rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark px-3 py-2 text-sm min-h-[100px]"
-                placeholder="Reviews Image URLs (One per line)"
-                formControlName="reviewsImages"
-              ></textarea>
+              
+              <div class="grid grid-cols-2 gap-3 mt-2">
+                <!-- Existing Images -->
+                <div *ngFor="let img of reviewImagesList; let i = index" class="relative group aspect-square rounded-lg border border-border-light dark:border-border-dark overflow-hidden bg-background-light dark:bg-background-dark">
+                  <img [src]="imageUrlService.getImageUrl(img)" class="w-full h-full object-cover" />
+                  <button 
+                    type="button"
+                    (click)="removeReviewImage(i)"
+                    class="absolute top-1 right-1 w-6 h-6 bg-red-500/80 hover:bg-red-600 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-sm"
+                  >
+                    <lucide-icon [img]="icons.Trash2" class="w-3 h-3"></lucide-icon>
+                  </button>
+                </div>
+
+                <!-- Upload Button -->
+                <label class="border-2 border-dashed border-border-light dark:border-border-dark rounded-lg flex flex-col items-center justify-center aspect-square cursor-pointer hover:border-primary hover:bg-gray-50 dark:hover:bg-gray-800 transition-all group">
+                  <input type="file" (change)="onReviewFileSelected($event)" multiple class="hidden" accept="image/*" />
+                  <lucide-icon [img]="icons.ImagePlus" class="w-5 h-5 text-text-secondary-light group-hover:text-primary mb-1"></lucide-icon>
+                  <span class="text-[10px] font-medium text-text-secondary-light group-hover:text-primary text-center px-1">Upload Reviews</span>
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Variants & Inventory Card -->
+      <div class="rounded-xl border border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark p-6 shadow-sm">
+        <div class="mb-4 flex items-center justify-between">
+          <h2 class="text-lg font-bold text-text-main-light dark:text-text-main-dark">Inventory & Variants</h2>
+        </div>
+        
+        <div formGroupName="variants">
+          <!-- Sizes & Stock -->
+          <div class="mb-6">
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="text-sm font-semibold text-text-main-light dark:text-text-main-dark uppercase tracking-wider">Sizes & Stock</h3>
+              <button type="button" (click)="addSize()" class="flex items-center gap-1.5 text-xs font-bold text-primary hover:text-primary/80 transition-colors">
+                <lucide-icon [img]="icons.PlusCircle" class="w-3.5 h-3.5"></lucide-icon>
+                Add Size
+              </button>
+            </div>
+            
+            <div formArrayName="sizes" class="space-y-3">
+              <div *ngFor="let size of sizesArray.controls; let i = index" [formGroupName]="i" class="flex gap-3 items-start animate-in fade-in slide-in-from-top-2 duration-200">
+                <div class="flex-1">
+                  <input
+                    type="text"
+                    formControlName="label"
+                    placeholder="e.g. XL, 42, 100ml"
+                    class="w-full rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary"
+                  />
+                </div>
+                <div class="w-32">
+                  <div class="relative">
+                    <input
+                      type="number"
+                      formControlName="stock"
+                      placeholder="Stock"
+                      class="w-full rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary no-spin"
+                    />
+                    <span class="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-bold text-text-secondary-light uppercase">Qty</span>
+                  </div>
+                </div>
+                <button 
+                  *ngIf="sizesArray.length > 1"
+                  type="button" 
+                  (click)="removeSize(i)"
+                  class="mt-2 text-text-secondary-light hover:text-red-500 transition-colors"
+                >
+                  <lucide-icon [img]="icons.Trash2" class="w-4 h-4"></lucide-icon>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Color Tags (Optional display) -->
+          <div>
+            <div class="flex items-center justify-between mb-3 border-t border-border-light dark:border-border-dark pt-5">
+              <h3 class="text-sm font-semibold text-text-main-light dark:text-text-main-dark uppercase tracking-wider">Color Variations</h3>
+              <button type="button" (click)="addColor()" class="flex items-center gap-1.5 text-xs font-bold text-primary hover:text-primary/80 transition-colors">
+                <lucide-icon [img]="icons.PlusCircle" class="w-3.5 h-3.5"></lucide-icon>
+                Add Color
+              </button>
+            </div>
+            
+            <div formArrayName="colors" class="flex flex-wrap gap-2">
+              <div *ngFor="let color of colorsArray.controls; let i = index" [formGroupName]="i" class="group relative flex items-center gap-2 rounded-full border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark pl-3 pr-8 py-1.5 animate-in zoom-in duration-200">
+                <input
+                  type="text"
+                  formControlName="name"
+                  placeholder="Color name"
+                  class="w-20 bg-transparent text-xs font-medium focus:outline-none"
+                />
+                <button 
+                  *ngIf="colorsArray.length > 1"
+                  type="button" 
+                  (click)="removeColor(i)"
+                  class="absolute right-2 text-text-secondary-light hover:text-red-500 transition-colors"
+                >
+                  <lucide-icon [img]="icons.Trash2" class="w-3 h-3"></lucide-icon>
+                </button>
+              </div>
             </div>
           </div>
         </div>

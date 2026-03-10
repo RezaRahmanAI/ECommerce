@@ -3,6 +3,7 @@ export interface ProductLandingPageDto {
   productId: number;
   headline: string;
   videoUrl?: string;
+  subtitle?: string;
   benefitsTitle?: string;
   benefitsContent?: string;
   reviewsTitle?: string;
@@ -18,6 +19,7 @@ export interface UpdateProductLandingPageDto {
   productId: number;
   headline: string;
   videoUrl?: string;
+  subtitle?: string;
   benefitsTitle?: string;
   benefitsContent?: string;
   reviewsTitle?: string;

@@ -22,6 +22,7 @@ public class SiteSettingsDto
     public string? TwitterUrl { get; set; }
     public string? YoutubeUrl { get; set; }
     public string? WhatsAppNumber { get; set; }
+    public string? Description { get; set; }
     public string? Currency { get; set; }
     public decimal FreeShippingThreshold { get; set; }
     public decimal ShippingCharge { get; set; }

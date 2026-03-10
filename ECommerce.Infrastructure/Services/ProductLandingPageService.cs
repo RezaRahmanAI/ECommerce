@@ -62,6 +62,7 @@ public class ProductLandingPageService : IProductLandingPageService
         lp.UsageTitle = dto.UsageTitle;
         lp.UsageContent = dto.UsageContent;
         lp.ThemeColor = dto.ThemeColor;
+        lp.Subtitle = dto.Subtitle;
 
         await _context.SaveChangesAsync();
 
@@ -84,7 +85,8 @@ public class ProductLandingPageService : IProductLandingPageService
             SideEffectsContent = lp.SideEffectsContent,
             UsageTitle = lp.UsageTitle,
             UsageContent = lp.UsageContent,
-            ThemeColor = lp.ThemeColor
+            ThemeColor = lp.ThemeColor,
+            Subtitle = lp.Subtitle
         };
     }
 }

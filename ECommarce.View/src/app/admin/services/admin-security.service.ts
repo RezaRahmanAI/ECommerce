@@ -26,6 +26,6 @@ export class AdminSecurityService {
   }
 
   unblockIp(id: number): Observable<any> {
-    return this.api.delete(`${this.baseUrl}/unblock-ip/${id}`);
+    return this.api.post(`${this.baseUrl}/unblock-ip/${id}/delete`, {});
   }
 }
