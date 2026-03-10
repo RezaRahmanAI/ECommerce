@@ -36,8 +36,15 @@ public class AuthController : ControllerBase
         var user = await _context.Users
             .FirstOrDefaultAsync(u => u.Email.ToLower() == identifier || u.UserName.ToLower() == identifier || u.PhoneNumber == request.Identifier.Trim());
 
-        if (user == null || string.IsNullOrEmpty(user.PasswordHash) || !BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
+        if (user == null)
         {
+            Console.WriteLine($"[AUTH_DEBUG] User not found for identifier: {identifier}");
+            return Unauthorized(new { message = "Invalid email/username or password" });
+        }
+
+        if (string.IsNullOrEmpty(user.PasswordHash) || !BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
+        {
+            Console.WriteLine($"[AUTH_DEBUG] Password verification failed for user: {user.Email}");
             return Unauthorized(new { message = "Invalid email/username or password" });
         }
 

@@ -44,12 +44,11 @@ export class AuthService {
     }
   }
 
-  login(identifier: string, password: string, rememberMe = true): Observable<User | null> {
+  login(identifier: string, password: string, rememberMe = true): Observable<User> {
     const payload: LoginPayload = { identifier, password, rememberMe };
     return this.api.post<AuthResponse>("/auth/login", payload).pipe(
       tap((response) => this.setSession(response.user, response.token)),
-      map((response) => response.user),
-      catchError(() => of(null)),
+      map((response) => response.user)
     );
   }
 

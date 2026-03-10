@@ -96,19 +96,19 @@ export class LoginPageComponent implements OnInit {
       )
       .subscribe({
         next: (user) => {
-          if (user) {
-            if (rememberMe) {
-              localStorage.setItem("ecommarce-saved-email", email);
-            } else {
-              localStorage.removeItem("ecommarce-saved-email");
-            }
-            void this.router.navigateByUrl("/admin/dashboard");
+          if (rememberMe) {
+            localStorage.setItem("ecommarce-saved-email", email);
           } else {
-            this.errorMessage = "Invalid credentials";
+            localStorage.removeItem("ecommarce-saved-email");
           }
+          void this.router.navigateByUrl("/admin/dashboard");
         },
-        error: () => {
-          this.errorMessage = "Network or server error occurred";
+        error: (err) => {
+          if (err?.status === 401) {
+            this.errorMessage = "Email/Username or Password was incorrect.";
+          } else {
+            this.errorMessage = `Connection error (${err?.status || 'Unknown'}). Please reload and try again.`;
+          }
         },
       });
   }

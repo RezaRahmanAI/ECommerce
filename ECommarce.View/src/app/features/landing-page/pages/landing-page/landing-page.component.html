@@ -3,15 +3,15 @@
   <div *ngIf="product && !isLoading">
     
     <!-- FULL HEIGHT HERO (30/70 Professional Split) -->
-    <section class="h-[100svh] min-h-[600px] flex flex-col items-center relative overflow-hidden bg-black">
+    <section class="min-h-[100svh] flex flex-col items-center relative overflow-y-auto bg-black">
       <!-- Background Texture -->
       <div class="absolute inset-0 z-0 bg-cover bg-center opacity-70" 
            style="background-image: linear-gradient(to bottom, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0.9) 100%), url('https://images.unsplash.com/photo-1550684848-fac1c5b4e853?auto=format&fit=crop&q=80&w=2070');"
            loading="eager">
       </div>
       
-      <!-- Content Top Part (30% Height) -->
-      <div class="relative z-10 flex flex-col items-center justify-center h-[35%] w-full max-w-4xl mx-auto px-10 pt-6 text-center">
+      <!-- Content Top Part (30% approx) -->
+      <div class="relative z-10 flex flex-col items-center justify-center flex-grow-[1] w-full max-w-4xl mx-auto px-4 md:px-6 pt-10 pb-6 text-center">
         <!-- Brand Name -->
         <div class="text-white text-[1.8rem] md:text-[2.5rem] font-[900] tracking-[0.2em] leading-none uppercase mb-2 animate-fade-in">
           Tono Him
@@ -25,8 +25,8 @@
         
         <!-- Description -->
         <div *ngIf="landingPage?.subtitle" 
-             class="text-white text-[0.85rem] md:text-[1rem] mt-2 max-w-xl ql-editor hero-subtitle !text-center animate-fade-in delay-200" 
-             [innerHTML]="landingPage?.subtitle">
+             class="hero-subtitle text-white/90 text-sm md:text-lg max-w-2xl font-light mb-8 break-words animate-fade-in delay-200" 
+             [innerHTML]="landingPage.subtitle">
         </div>
         
         <!-- CTA Button (Slightly smaller for compact top) -->
@@ -38,8 +38,8 @@
         </div>
       </div>
 
-      <!-- Product Showcase Bottom Part (70% Height) -->
-      <div class="relative z-10 w-full max-w-4xl mx-auto flex h-[65%] justify-center items-end pb-4">
+      <!-- Product Showcase Bottom Part (70% approx) -->
+      <div class="relative z-10 w-full max-w-4xl mx-auto flex flex-grow-[2] justify-center items-end pb-8 px-4">
         <img *ngIf="product.imageUrl" 
              [src]="imageUrlService.getImageUrl(product.imageUrl)" 
              [alt]="product.name" 
@@ -51,8 +51,8 @@
 
     <!-- BENEFITS SECTION -->
     <section class="bg-white py-16" *ngIf="landingPage?.benefitsTitle || landingPage?.benefitsContent">
-      <div class="max-w-4xl mx-auto flex flex-col lg:flex-row items-center justify-between gap-10 md:gap-16 px-10">
-        <div class="flex-1 text-center lg:text-left">
+      <div class="max-w-4xl mx-auto flex flex-col lg:flex-row items-center justify-between gap-10 md:gap-16 px-4 md:px-10">
+        <div class="flex-1 text-center lg:text-left break-words">
           <div class="mb-6">
             <p class="text-[10px] uppercase tracking-[0.4em] text-[#c8922a] font-bold mb-2">Why Choose Us</p>
             <h2 class="text-3xl md:text-4xl font-serif italic text-[#1a1a1a]">
@@ -77,8 +77,8 @@
 
     <!-- USAGE RULES SECTION -->
     <section class="bg-[#fafafa] py-16" *ngIf="landingPage?.usageTitle || landingPage?.usageContent">
-      <div class="max-w-4xl mx-auto flex flex-col lg:flex-row-reverse items-center justify-between gap-10 md:gap-16 px-10 text-center lg:text-left">
-        <div class="flex-1">
+      <div class="max-w-4xl mx-auto flex flex-col lg:flex-row-reverse items-center justify-between gap-10 md:gap-16 px-4 md:px-10 text-center lg:text-left">
+        <div class="flex-1 break-words">
           <div class="mb-6">
             <p class="text-[10px] uppercase tracking-[0.4em] text-[#c8922a] font-bold mb-2">How To Use</p>
             <h2 class="text-3xl md:text-4xl font-serif italic text-[#1a1a1a]">
@@ -162,8 +162,8 @@
     </section>
 
     <!-- SIDE EFFECTS -->
-    <section class="max-w-4xl mx-auto py-16 px-10 border-t border-[#e0e0e0] mt-16 text-center" *ngIf="landingPage?.sideEffectsTitle || landingPage?.sideEffectsContent">
-      <div class="mb-8">
+    <section class="max-w-4xl mx-auto py-16 px-4 md:px-10 border-t border-[#e0e0e0] mt-16 text-center" *ngIf="landingPage?.sideEffectsTitle || landingPage?.sideEffectsContent">
+      <div class="mb-8 break-words">
         <p class="text-[10px] uppercase tracking-[0.4em] text-[#c8922a] font-bold mb-2">Important Notice</p>
         <h2 class="text-3xl font-serif italic text-[#1a1a1a]">
           {{ landingPage?.sideEffectsTitle || 'লুব্রিকেন্ট জেল এর পার্শ্বপ্রতিক্রিয়াঃ' }}
@@ -173,7 +173,7 @@
     </section>
 
     <!-- ORDER FORM -->
-    <div id="order" class="bg-white py-16 px-10 border-t border-[#e0e0e0]">
+    <div id="order" class="bg-white py-16 px-4 md:px-10 border-t border-[#e0e0e0]">
       <div class="max-w-4xl mx-auto">
         <div class="text-center mb-10 relative inline-block w-full">
           <p class="text-[10px] uppercase tracking-[0.4em] text-[#c8922a] font-bold mb-2">Secure Checkout</p>
