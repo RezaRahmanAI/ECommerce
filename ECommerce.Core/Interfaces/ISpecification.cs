@@ -12,4 +12,5 @@ public interface ISpecification<T>
     int Skip { get; }
     bool IsPagingEnabled { get; }
     bool IsSplitQuery { get; }
+    bool IgnoreQueryFilters { get; }
 }

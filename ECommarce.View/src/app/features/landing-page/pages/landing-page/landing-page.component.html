@@ -20,13 +20,13 @@
         <!-- Headline -->
         <h1 *ngIf="landingPage?.headline" 
             class="text-white text-[1.3rem] md:text-[1.8rem] font-bold leading-tight max-w-2xl animate-fade-in delay-100">
-          {{ landingPage!.headline }}
+          {{ landingPage?.headline }}
         </h1>
         
         <!-- Description -->
         <div *ngIf="landingPage?.subtitle" 
              class="hero-subtitle text-white/90 text-sm md:text-lg max-w-2xl font-light mb-8 break-words animate-fade-in delay-200" 
-             [innerHTML]="landingPage.subtitle">
+             [innerHTML]="landingPage?.subtitle">
         </div>
         
         <!-- CTA Button (Slightly smaller for compact top) -->

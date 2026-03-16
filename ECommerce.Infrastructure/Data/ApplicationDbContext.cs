@@ -12,6 +12,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 {
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
     {
+        ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
     }
 
     public DbSet<Category> Categories { get; set; }
@@ -38,10 +39,22 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
         base.OnModelCreating(builder);
 
+        // Global query filter for soft deletes (performance optimization)
+        builder.Entity<Category>().HasQueryFilter(c => !c.IsDeleted);
+        builder.Entity<SubCategory>().HasQueryFilter(sc => !sc.IsDeleted);
+        builder.Entity<Product>().HasQueryFilter(p => !p.IsDeleted);
+        builder.Entity<ProductVariant>().HasQueryFilter(pv => !pv.IsDeleted);
+        builder.Entity<Collection>().HasQueryFilter(c => !c.IsDeleted);
+        builder.Entity<BlogPost>().HasQueryFilter(b => !b.IsDeleted);
+        builder.Entity<HeroBanner>().HasQueryFilter(h => !h.IsDeleted);
+        builder.Entity<Page>().HasQueryFilter(p => !p.IsDeleted);
+        builder.Entity<NavigationMenu>().HasQueryFilter(n => !n.IsDeleted);
+
         // Delivery Method Configuration
         builder.Entity<DeliveryMethod>(entity =>
         {
             entity.Property(d => d.Cost).HasColumnType("decimal(18,2)");
+            entity.HasIndex(d => d.IsActive);
         });
 
         // Product Configuration
@@ -66,20 +79,33 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
                   .HasForeignKey(p => p.CollectionId)
                   .OnDelete(DeleteBehavior.Restrict);
 
-            // Indexes for Performance
+            // Performance indexes
             entity.HasIndex(p => p.Slug).IsUnique();
             entity.HasIndex(p => p.Sku).IsUnique();
             entity.HasIndex(p => p.CategoryId);
+            entity.HasIndex(p => p.SubCategoryId);
+            entity.HasIndex(p => p.CollectionId);
             entity.HasIndex(p => p.IsActive);
             entity.HasIndex(p => p.IsFeatured);
             entity.HasIndex(p => p.IsNew);
+            entity.HasIndex(p => p.IsItemProduct);
+            entity.HasIndex(p => p.StockQuantity);
+            entity.HasIndex(p => p.Price);
+            entity.HasIndex(p => p.Tier);
+            entity.HasIndex(p => p.CreatedAt);
+            
+            // Composite indexes for common queries
+            entity.HasIndex(p => new { p.CategoryId, p.IsActive });
+            entity.HasIndex(p => new { p.IsFeatured, p.IsActive });
+            entity.HasIndex(p => new { p.IsNew, p.IsActive });
+            entity.HasIndex(p => new { p.IsActive, p.Price });
         });
 
         // Product Landing Page Configuration
         builder.Entity<ProductLandingPage>(entity =>
         {
             entity.HasOne(lp => lp.Product)
-                  .WithMany() // Assuming a product has one landing page, but avoiding changing Product entity for now
+                  .WithMany()
                   .HasForeignKey(lp => lp.ProductId)
                   .OnDelete(DeleteBehavior.Cascade);
             
@@ -95,6 +121,16 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
                   .WithMany(p => p.Variants)
                   .HasForeignKey(v => v.ProductId)
                   .OnDelete(DeleteBehavior.Cascade);
+            
+            entity.HasIndex(v => v.ProductId);
+            entity.HasIndex(v => v.Sku).IsUnique();
+        });
+
+        // Product Image Configuration
+        builder.Entity<ProductImage>(entity =>
+        {
+            entity.HasIndex(p => p.ProductId);
+            entity.HasIndex(p => p.IsMain);
         });
 
         // Category Self-Referencing Hierarchy
@@ -106,6 +142,9 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
                   .OnDelete(DeleteBehavior.Restrict);
             
             entity.HasIndex(c => c.Slug);
+            entity.HasIndex(c => c.ParentId);
+            entity.HasIndex(c => c.IsActive);
+            entity.HasIndex(c => c.DisplayOrder);
         });
 
         // Category Hierarchy
@@ -117,6 +156,8 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
                   .OnDelete(DeleteBehavior.Cascade);
             
             entity.HasIndex(sc => sc.Slug);
+            entity.HasIndex(sc => sc.CategoryId);
+            entity.HasIndex(sc => sc.IsActive);
         });
 
         builder.Entity<Collection>(entity =>
@@ -127,6 +168,8 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
                   .OnDelete(DeleteBehavior.Cascade);
             
             entity.HasIndex(c => c.Slug);
+            entity.HasIndex(c => c.SubCategoryId);
+            entity.HasIndex(c => c.IsActive);
         });
 
         // Navigation Menu Self-Referencing
@@ -136,6 +179,9 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
                   .WithMany(m => m.ChildMenus)
                   .HasForeignKey(m => m.ParentMenuId)
                   .OnDelete(DeleteBehavior.Restrict);
+                  
+            entity.HasIndex(m => m.IsActive);
+            entity.HasIndex(m => m.DisplayOrder);
         });
 
         // Order Configuration
@@ -155,6 +201,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             entity.HasIndex(o => o.Status);
             entity.HasIndex(o => o.CreatedAt);
             entity.HasIndex(o => o.OrderNumber);
+            entity.HasIndex(o => new { o.Status, o.CreatedAt });
         });
 
         builder.Entity<OrderItem>(entity =>
@@ -165,6 +212,9 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
                   .WithMany()
                   .HasForeignKey(i => i.ProductId)
                   .OnDelete(DeleteBehavior.Restrict);
+                  
+            entity.HasIndex(i => i.OrderId);
+            entity.HasIndex(i => i.ProductId);
         });
 
         // Site Settings
@@ -178,6 +228,38 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         builder.Entity<Customer>(entity =>
         {
             entity.HasIndex(c => c.Phone).IsUnique();
+        });
+
+        // Reviews Configuration
+        builder.Entity<Review>(entity =>
+        {
+            entity.HasIndex(r => r.ProductId);
+            entity.HasIndex(r => r.IsApproved);
+            entity.HasIndex(r => r.CreatedAt);
+            entity.HasIndex(r => new { r.ProductId, r.IsApproved });
+        });
+
+        // Blog Posts Configuration
+        builder.Entity<BlogPost>(entity =>
+        {
+            entity.HasIndex(b => b.Slug);
+            entity.HasIndex(b => b.Status);
+            entity.HasIndex(b => b.CreatedAt);
+        });
+
+        // Hero Banners Configuration
+        builder.Entity<HeroBanner>(entity =>
+        {
+            entity.HasIndex(h => h.IsActive);
+            entity.HasIndex(h => h.DisplayOrder);
+            entity.HasIndex(h => h.StartDate);
+            entity.HasIndex(h => h.EndDate);
+        });
+
+        // Daily Traffic Configuration
+        builder.Entity<DailyTraffic>(entity =>
+        {
+            entity.HasIndex(d => d.Date).IsUnique();
         });
     }
 }

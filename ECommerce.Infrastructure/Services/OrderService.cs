@@ -32,31 +32,31 @@ public class OrderService : IOrderService
         var items = new List<OrderItem>();
         
         var productIds = orderDto.Items.Select(i => i.ProductId).Distinct().ToList();
-        var products = await _unitOfWork.Repository<Product>().ListAsync(new BaseSpecification<Product>(p => productIds.Contains(p.Id)));
-        var productsDict = products.ToDictionary(p => p.Id);
+        
+        var productsTask = _unitOfWork.Repository<Product>().ListAsync(new BaseSpecification<Product>(p => productIds.Contains(p.Id)));
+        
+        var hasVariants = orderDto.Items.Any(i => !string.IsNullOrEmpty(i.Size));
+        var variantsTask = hasVariants 
+            ? _unitOfWork.Repository<ProductVariant>().ListAsync(new BaseSpecification<ProductVariant>(v => productIds.Contains(v.ProductId)))
+            : Task.FromResult<IReadOnlyList<ProductVariant>>(new List<ProductVariant>());
 
-        // Pre-fetch all variants needed
-        var variantsList = new List<ProductVariant>();
-        var itemsWithVariants = orderDto.Items.Where(i => !string.IsNullOrEmpty(i.Size)).ToList();
-        if (itemsWithVariants.Any())
-        {
-            var variantCriteria = itemsWithVariants.Select(i => new { i.ProductId, i.Size }).ToList();
-            // Since we can't easily express multiple ANDs in a single simple spec without complex logic, 
-            // we fetch all variants for these products and filter in memory, or use a more specific spec if available.
-            var allVariantsForProducts = await _unitOfWork.Repository<ProductVariant>().ListAsync(new BaseSpecification<ProductVariant>(v => productIds.Contains(v.ProductId)));
-            variantsList = allVariantsForProducts.ToList();
-        }
+        var siteSettingsTask = _unitOfWork.Repository<SiteSetting>().ListAllAsync();
+        
+        await Task.WhenAll(productsTask, variantsTask, siteSettingsTask);
+        
+        var products = await productsTask;
+        var productsDict = products.ToDictionary(p => p.Id);
+        var variantsList = (await variantsTask).ToList();
+        var siteSettings = await siteSettingsTask;
 
         foreach (var itemDto in orderDto.Items)
         {
             if (!productsDict.TryGetValue(itemDto.ProductId, out var product))
                 throw new KeyNotFoundException($"Product {itemDto.ProductId} not found");
 
-            // Deduct from Main Product Stock
             if (product.StockQuantity < itemDto.Quantity) throw new InvalidOperationException($"Insufficient stock for {product.Name}");
             product.StockQuantity -= itemDto.Quantity;
 
-            // Deduct from Variant Stock if size provided
             if (!string.IsNullOrEmpty(itemDto.Size))
             {
                 var variant = variantsList.FirstOrDefault(v => v.ProductId == product.Id && v.Size == itemDto.Size);
@@ -87,31 +87,28 @@ public class OrderService : IOrderService
         var subtotal = items.Sum(i => i.TotalPrice);
         decimal shippingCost = 0;
         
-        // Fetch Site Settings for Free Shipping Threshold
-        var siteSettings = await _unitOfWork.Repository<SiteSetting>().ListAllAsync();
         var settings = siteSettings.FirstOrDefault();
         var freeShippingThreshold = settings?.FreeShippingThreshold ?? 0;
 
-        // Lookup delivery method if provided
+        DeliveryMethod? method = null;
         if (orderDto.DeliveryMethodId.HasValue)
         {
-            var method = await _unitOfWork.Repository<DeliveryMethod>().GetByIdAsync(orderDto.DeliveryMethodId.Value);
-            if (method != null)
+            method = await _unitOfWork.Repository<DeliveryMethod>().GetByIdAsync(orderDto.DeliveryMethodId.Value);
+        }
+        
+        if (method != null)
+        {
+            if (freeShippingThreshold > 0 && subtotal >= freeShippingThreshold)
             {
-                if (freeShippingThreshold > 0 && subtotal >= freeShippingThreshold)
-                {
-                    shippingCost = 0;
-                }
-                else
-                {
-                    shippingCost = method.Cost;
-                }
+                shippingCost = 0;
+            }
+            else
+            {
+                shippingCost = method.Cost;
             }
         }
         else
         {
-             // If no delivery method is selected, we should strictly require it or default to 0/handling
-             // ideally the frontend forces a selection.
              shippingCost = 0; 
         }
 
@@ -151,6 +148,18 @@ public class OrderService : IOrderService
     {
         var spec = new BaseSpecification<Order>();
         spec.AddInclude(x => x.Items);
+        spec.ApplySplitQuery();
+        var orders = await _unitOfWork.Repository<Order>().ListAsync(spec);
+            
+        return _mapper.Map<IReadOnlyList<Order>, IReadOnlyList<OrderDto>>(orders);
+    }
+
+    public async Task<IReadOnlyList<OrderDto>> GetOrdersByPhoneAsync(string phone)
+    {
+        var spec = new BaseSpecification<Order>(x => x.CustomerPhone == phone);
+        spec.AddInclude(x => x.Items);
+        spec.ApplySplitQuery();
+        spec.AddOrderByDescending(x => x.CreatedAt);
         var orders = await _unitOfWork.Repository<Order>().ListAsync(spec);
             
         return _mapper.Map<IReadOnlyList<Order>, IReadOnlyList<OrderDto>>(orders);
@@ -160,6 +169,7 @@ public class OrderService : IOrderService
     {
         var spec = new BaseSpecification<Order>(x => x.Id == id);
         spec.AddInclude(x => x.Items);
+        spec.ApplySplitQuery();
         var order = await _unitOfWork.Repository<Order>().GetEntityWithSpec(spec);
 
         return _mapper.Map<Order, OrderDto>(order);
@@ -175,7 +185,6 @@ public class OrderService : IOrderService
 
         if (Enum.TryParse<OrderStatus>(status, true, out var newStatus))
         {
-            // Restore stock if cancelling
             if (newStatus == OrderStatus.Cancelled && order.Status != OrderStatus.Cancelled)
             {
                 var productIds = order.Items.Select(i => i.ProductId).Distinct().ToList();
@@ -204,7 +213,6 @@ public class OrderService : IOrderService
                 }
             }
 
-            // Courier Integration: Send to Steadfast when confirmed
             if (newStatus == OrderStatus.Confirmed && order.Status != OrderStatus.Confirmed)
             {
                 if (order.SteadfastConsignmentId == null)
@@ -232,6 +240,7 @@ public class OrderService : IOrderService
 
     public async Task<(IReadOnlyList<OrderDto> Items, int Total)> GetOrdersForAdminAsync(string? searchTerm, string? status, string? dateRange, int page, int pageSize)
     {
+        pageSize = Math.Min(pageSize, 100);
         var spec = new OrdersWithFiltersForAdminSpecification(searchTerm, status, dateRange);
         var total = await _unitOfWork.Repository<Order>().CountAsync(spec);
         

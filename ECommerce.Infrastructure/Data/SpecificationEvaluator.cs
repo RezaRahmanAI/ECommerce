@@ -41,6 +41,11 @@ public class SpecificationEvaluator<T> where T : BaseEntity
             query = query.AsSplitQuery();
         }
 
+        if (spec.IgnoreQueryFilters)
+        {
+            query = query.IgnoreQueryFilters();
+        }
+
         return query;
     }
 }

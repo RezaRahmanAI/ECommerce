@@ -10,12 +10,13 @@ namespace ECommerce.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[ResponseCache(Duration = 60, VaryByHeader = "Accept-Encoding", VaryByQueryKeys = new[] { "sort", "categoryId", "subCategoryId", "collectionId", "categorySlug", "searchTerm", "isNew", "isFeatured" })]
 public class ProductsController : ControllerBase
 {
     private readonly IGenericRepository<Product> _productsRepo;
     private readonly IGenericRepository<Category> _categoryRepo;
     private readonly IMapper _mapper;
-    private readonly IProductService _productService; // Injected Service
+    private readonly IProductService _productService;
 
     public ProductsController(
         IGenericRepository<Product> productsRepo, 
@@ -48,6 +49,7 @@ public class ProductsController : ControllerBase
         [FromQuery] int pageIndex = 1,
         [FromQuery] int pageSize = 12)
     {
+        pageSize = Math.Min(pageSize, 100); // Cap max page size
         var skip = (pageIndex - 1) * pageSize;
         var take = pageSize;
 
@@ -63,16 +65,12 @@ public class ProductsController : ControllerBase
     }
 
     [HttpGet("{slug}")]
-    [ResponseCache(Duration = 60, VaryByQueryKeys = new[] { "slug" })]
+    [ResponseCache(Duration = 120, VaryByQueryKeys = new[] { "slug" })]
     public async Task<ActionResult<ProductDto>> GetProduct(string slug)
     {
         var product = await _productService.GetProductBySlugAsync(slug);
         if (product == null) return NotFound();
         return Ok(product);
     }
-    
-
-
-    // Removed manual JSON parsing methods as they are handled in Service
 
 }

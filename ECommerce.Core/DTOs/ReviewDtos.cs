@@ -42,3 +42,12 @@ public class ReviewUpdateDto
     public string Comment { get; set; }
     public string? ReviewImage { get; set; }
 }
+
+public class PaginatedReviewsDto
+{
+    public int PageIndex { get; set; }
+    public int PageSize { get; set; }
+    public int TotalItems { get; set; }
+    public int TotalPages => (int)Math.Ceiling(TotalItems / (double)PageSize);
+    public IReadOnlyList<ReviewDto> Reviews { get; set; }
+}

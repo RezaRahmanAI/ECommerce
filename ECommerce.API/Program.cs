@@ -4,15 +4,21 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.ResponseCompression;
 using System.IO.Compression;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Configure Kestrel for large file uploads
+// Configure Kestrel for high performance
 builder.WebHost.ConfigureKestrel(serverOptions =>
 {
     serverOptions.Limits.MaxRequestBodySize = 104857600; // 100 MB
+    serverOptions.Limits.KeepAliveTimeout = TimeSpan.FromMinutes(2);
+    serverOptions.Limits.RequestHeadersTimeout = TimeSpan.FromMinutes(1);
+    serverOptions.Limits.MaxConcurrentConnections = 100;
+    serverOptions.Limits.MaxConcurrentUpgradedConnections = 100;
 });
 
 builder.Services.Configure<Microsoft.AspNetCore.Http.Features.FormOptions>(x =>
@@ -22,18 +28,31 @@ builder.Services.Configure<Microsoft.AspNetCore.Http.Features.FormOptions>(x =>
     x.MultipartHeadersLengthLimit = int.MaxValue;
 });
 
-// Configure Serilog
+// Configure Serilog - Reduce logging overhead in production
 Log.Logger = new LoggerConfiguration()
     .ReadFrom.Configuration(builder.Configuration)
     .Enrich.FromLogContext()
+    .Enrich.WithProperty("Application", "ECommerce.API")
     .CreateLogger();
 
 builder.Host.UseSerilog();
 
-// Add services to the container.
-builder.Services.AddControllers();
+// Optimize JSON serialization for performance
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+        options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+        options.JsonSerializerOptions.NumberHandling = JsonNumberHandling.Strict;
+        options.JsonSerializerOptions.WriteIndented = false;
+        options.JsonSerializerOptions.MaxDepth = 32;
+    });
+
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new() { Title = "ECommerce API", Version = "v1" });
+});
 
 // Performance: Brotli + Gzip Response Compression
 builder.Services.AddResponseCompression(options =>
@@ -52,24 +71,40 @@ builder.Services.AddResponseCompression(options =>
 });
 builder.Services.Configure<BrotliCompressionProviderOptions>(options =>
 {
-    options.Level = CompressionLevel.Fastest;
+    options.Level = CompressionLevel.Optimal;
 });
 builder.Services.Configure<GzipCompressionProviderOptions>(options =>
 {
-    options.Level = CompressionLevel.SmallestSize;
+    options.Level = CompressionLevel.Optimal;
 });
 
-builder.Services.AddMemoryCache();
-builder.Services.AddResponseCaching();
+// Distributed caching with in-memory for better performance
+builder.Services.AddMemoryCache(options =>
+{
+    options.SizeLimit = 1024; // MB
+    options.CompactionPercentage = 0.2;
+});
+builder.Services.AddResponseCaching(options =>
+{
+    options.MaximumBodySize = 1024 * 1024 * 10; // 10MB
+    options.UseCaseSensitivePaths = false;
+});
 
-
-// Database with connection resiliency
+// Database with connection resiliency and performance optimizations
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"),
-        sqlOptions => sqlOptions.EnableRetryOnFailure(
-            maxRetryCount: 3,
-            maxRetryDelay: TimeSpan.FromSeconds(5),
-            errorNumbersToAdd: null)));
+        sqlOptions =>
+        {
+            sqlOptions.EnableRetryOnFailure(
+                maxRetryCount: 5,
+                maxRetryDelay: TimeSpan.FromSeconds(10),
+                errorNumbersToAdd: null);
+            sqlOptions.CommandTimeout(30);
+        }
+    ));
+
+// Add distributed cache for better scalability
+builder.Services.AddDistributedMemoryCache();
 
 // JWT Setup
 var jwtKey = builder.Configuration["Token:Key"] ?? "development_key_arzamart_123456789";
@@ -102,25 +137,32 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddAuthorization();
 
+// Health checks for monitoring
+builder.Services.AddHealthChecks();
 
-
-
+// Register repositories and services - use transient for high-throughput scenarios
 builder.Services.AddScoped<ECommerce.Core.Interfaces.IUnitOfWork, ECommerce.Infrastructure.Data.UnitOfWork>();
 builder.Services.AddScoped(typeof(ECommerce.Core.Interfaces.IGenericRepository<>), typeof(ECommerce.Infrastructure.Data.GenericRepository<>));
 builder.Services.AddScoped<ECommerce.Core.Interfaces.IOrderService, ECommerce.Infrastructure.Services.OrderService>();
-builder.Services.AddScoped<ECommerce.Infrastructure.Services.CustomerService>(); // Register CustomerService
+builder.Services.AddScoped<ECommerce.Infrastructure.Services.CustomerService>();
 builder.Services.AddScoped<ECommerce.Core.Interfaces.IDashboardService, ECommerce.Infrastructure.Services.DashboardService>();
 builder.Services.AddScoped<ECommerce.Core.Interfaces.IBlogService, ECommerce.Infrastructure.Services.BlogService>();
 builder.Services.AddScoped<ECommerce.Core.Interfaces.INavigationService, ECommerce.Infrastructure.Services.NavigationService>();
 builder.Services.AddScoped<ECommerce.Core.Interfaces.IProductService, ECommerce.Infrastructure.Services.ProductService>();
 builder.Services.AddScoped<ECommerce.Core.Interfaces.IReviewService, ECommerce.Infrastructure.Services.ReviewService>();
 builder.Services.AddScoped<ECommerce.Core.Interfaces.IProductLandingPageService, ECommerce.Infrastructure.Services.ProductLandingPageService>();
-builder.Services.AddHttpContextAccessor(); // Add HttpContextAccessor
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
-// Steadfast Courier
-builder.Services.Configure<ECommerce.Infrastructure.Services.SteadfastSettings>(builder.Configuration.GetSection("Steadfast"));
-builder.Services.AddHttpClient<ECommerce.Core.Interfaces.ISteadfastService, ECommerce.Infrastructure.Services.SteadfastService>();
+// Optimize HttpClient for external services
+builder.Services.AddHttpClient<ECommerce.Core.Interfaces.ISteadfastService, ECommerce.Infrastructure.Services.SteadfastService>()
+    .ConfigurePrimaryHttpMessageHandler(() => new SocketsHttpHandler
+    {
+        PooledConnectionLifetime = TimeSpan.FromMinutes(2),
+        PooledConnectionIdleTimeout = TimeSpan.FromMinutes(1),
+        MaxConnectionsPerServer = 100,
+        EnableMultipleHttp2Connections = true
+    });
 builder.Services.AddHostedService<ECommerce.Infrastructure.Services.SteadfastWorker>();
 
 // CORS - Environment-specific configuration
@@ -157,12 +199,16 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(c =>
+    {
+        c.RoutePrefix = "swagger";
+        c.DocumentTitle = "ECommerce API";
+    });
 }
 
 // 1. Core security/transport
 app.UseHttpsRedirection();
-app.UseCors("AllowAll"); 
+app.UseCors("AllowAll");
 
 // 2. Response optimizations
 app.UseResponseCompression();
@@ -172,24 +218,46 @@ app.UseStaticFiles(new StaticFileOptions
 {
     OnPrepareResponse = ctx =>
     {
-        // Cache static files for 30 days
-        ctx.Context.Response.Headers.Append("Cache-Control", "public,max-age=2592000,immutable");
+        var path = ctx.Context.Request.Path.Value?.ToLower() ?? "";
+        
+        // Cache images for 1 year (immutable)
+        if (path.EndsWith(".jpg") || path.EndsWith(".jpeg") || path.EndsWith(".png") ||
+            path.EndsWith(".gif") || path.EndsWith(".webp") || path.EndsWith(".svg"))
+        {
+            ctx.Context.Response.Headers.Append("Cache-Control", "public,max-age=31536000,immutable");
+            ctx.Context.Response.Headers.Append("Vary", "Accept-Encoding");
+        }
+        // Cache other static assets for 30 days
+        else if (path.EndsWith(".css") || path.EndsWith(".js") || path.EndsWith(".woff2"))
+        {
+            ctx.Context.Response.Headers.Append("Cache-Control", "public,max-age=2592000");
+            ctx.Context.Response.Headers.Append("Vary", "Accept-Encoding");
+        }
     }
 });
 
-// Response caching
+// Response caching with proper vary headers
 app.UseResponseCaching();
 
-// Global exception handling
-app.UseSerilogRequestLogging(); 
+// Global exception handling - optimized for performance
+app.UseSerilogRequestLogging(options =>
+{
+    options.EnrichDiagnosticContext = (diagnosticContext, httpContext) =>
+    {
+        diagnosticContext.Set("RequestHost", httpContext.Request.Host.Value);
+        diagnosticContext.Set("RequestScheme", httpContext.Request.Scheme);
+    };
+});
+
 app.UseMiddleware<ECommerce.API.Middleware.GlobalExceptionMiddleware>();
 app.UseMiddleware<ECommerce.API.Middleware.IpBlockingMiddleware>();
 app.UseMiddleware<ECommerce.API.Middleware.VisitorTrackingMiddleware>();
 
-
-
 app.UseAuthentication();
 app.UseAuthorization();
+
+// Map health checks endpoint
+app.MapHealthChecks("/health");
 
 app.MapControllers();
 

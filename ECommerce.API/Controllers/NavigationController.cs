@@ -13,7 +13,7 @@ public class NavigationController : BaseApiController
     }
 
     [HttpGet("mega-menu")]
-    [ResponseCache(Duration = 300)]
+    [ResponseCache(Duration = 600, VaryByHeader = "Accept-Encoding")]
     public async Task<IActionResult> GetMegaMenu()
     {
         var menu = await _navigationService.GetMegaMenuAsync();

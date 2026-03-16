@@ -22,6 +22,8 @@ public class BlogService : IBlogService
     public async Task<List<BlogPostDto>> GetAllPostsAsync()
     {
         return await _context.BlogPosts
+            .AsNoTracking()
+            .Where(p => p.Status == BlogPostStatus.Published)
             .OrderByDescending(p => p.CreatedAt)
             .Select(p => MapToDto(p))
             .ToListAsync();
@@ -29,13 +31,17 @@ public class BlogService : IBlogService
 
     public async Task<BlogPostDto?> GetPostByIdAsync(int id)
     {
-        var post = await _context.BlogPosts.FindAsync(id);
+        var post = await _context.BlogPosts
+            .AsNoTracking()
+            .FirstOrDefaultAsync(p => p.Id == id);
         return post == null ? null : MapToDto(post);
     }
 
     public async Task<BlogPostDto?> GetPostBySlugAsync(string slug)
     {
-        var post = await _context.BlogPosts.FirstOrDefaultAsync(p => p.Slug == slug);
+        var post = await _context.BlogPosts
+            .AsNoTracking()
+            .FirstOrDefaultAsync(p => p.Slug == slug && p.Status == BlogPostStatus.Published);
         return post == null ? null : MapToDto(post);
     }
 
@@ -90,7 +96,7 @@ public class BlogService : IBlogService
         var post = await _context.BlogPosts.FindAsync(id);
         if (post == null) return false;
 
-        _context.BlogPosts.Remove(post);
+        post.IsDeleted = true;
         await _context.SaveChangesAsync();
 
         return true;

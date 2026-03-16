@@ -21,8 +21,9 @@ public class LandingPageController : ControllerBase
         _service = service;
         _environment = environment;
     }
+
     [HttpGet("public/{slug}")]
-    [ResponseCache(Duration = 60, Location = ResponseCacheLocation.Any, NoStore = false)]
+    [ResponseCache(Duration = 120, VaryByHeader = "Accept-Encoding")]
     public async Task<ActionResult<ProductLandingPageDto>> GetPublic(string slug)
     {
         var lp = await _service.GetByProductSlugAsync(slug);
@@ -54,6 +55,7 @@ public class LandingPageController : ControllerBase
     [Authorize(Roles = "Admin")]
     [HttpPost("upload-media")]
     [DisableRequestSizeLimit]
+    [RequestFormLimits(MultipartBodyLengthLimit = 104857600)]
     public async Task<ActionResult<List<string>>> UploadMedia([FromForm] List<IFormFile> files)
     {
         if (files == null || files.Count == 0) return BadRequest("No files uploaded");
@@ -62,19 +64,21 @@ public class LandingPageController : ControllerBase
         var uploadsFolder = Path.Combine(_environment.WebRootPath, "uploads", "landing-pages");
         if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
 
+        var tasks = new List<Task<string>>();
+        
         foreach (var file in files)
         {
             if (file.Length > 0)
             {
                 var fileName = $"{Guid.NewGuid()}{Path.GetExtension(file.FileName)}";
                 var filePath = Path.Combine(uploadsFolder, fileName);
-                using (var stream = new FileStream(filePath, FileMode.Create))
-                {
-                    await file.CopyToAsync(stream);
-                }
+                
+                await using var stream = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.None, 81920, true);
+                await file.CopyToAsync(stream);
                 uploadedUrls.Add($"/uploads/landing-pages/{fileName}");
             }
         }
+        
         return Ok(uploadedUrls);
     }
 }

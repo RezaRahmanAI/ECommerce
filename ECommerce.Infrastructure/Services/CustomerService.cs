@@ -19,8 +19,8 @@ public class CustomerService
 
     public async Task<Customer?> GetCustomerByPhoneAsync(string phone)
     {
-        // Normalize phone number if needed
         return await _context.Customers
+            .AsNoTracking()
             .FirstOrDefaultAsync(c => c.Phone == phone);
     }
 
@@ -41,7 +41,6 @@ public class CustomerService
         }
         else
         {
-            // Update existing customer info
             customer.Name = name;
             customer.Address = address;
             customer.DeliveryDetails = deliveryDetails;
@@ -52,9 +51,11 @@ public class CustomerService
         await _context.SaveChangesAsync();
         return customer;
     }
+
     public async Task<(List<Customer> Items, int Total)> GetCustomersAsync(string? searchTerm, int page, int pageSize)
     {
-        var query = _context.Customers.AsQueryable();
+        pageSize = Math.Min(pageSize, 100);
+        var query = _context.Customers.AsNoTracking();
 
         if (!string.IsNullOrWhiteSpace(searchTerm))
         {
@@ -70,9 +71,12 @@ public class CustomerService
 
         return (items, total);
     }
+
     public async Task<Customer?> GetCustomerByIdAsync(int id)
     {
-        return await _context.Customers.FindAsync(id);
+        return await _context.Customers
+            .AsNoTracking()
+            .FirstOrDefaultAsync(c => c.Id == id);
     }
 
     public async Task UpdateCustomerAsync(Customer customer)

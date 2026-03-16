@@ -48,14 +48,12 @@ public class AdminProductsController : ControllerBase
             {
                 if (file.Length > 0)
                 {
-                    var fileExtension = Path.GetExtension(file.FileName);
+                    var fileExtension = Path.GetExtension(file.FileName).ToLowerInvariant();
                     var fileName = $"{Guid.NewGuid()}{fileExtension}";
                     var filePath = Path.Combine(uploadsFolder, fileName);
 
-                    using (var stream = new FileStream(filePath, FileMode.Create))
-                    {
-                        await file.CopyToAsync(stream);
-                    }
+                    await using var stream = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.None, 81920, true);
+                    await file.CopyToAsync(stream);
 
                     uploadedUrls.Add($"/uploads/products/{fileName}");
                 }

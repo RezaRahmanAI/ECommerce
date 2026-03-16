@@ -8,6 +8,7 @@ namespace ECommerce.API.Controllers;
 
 [ApiController]
 [Route("api/banners")]
+[ResponseCache(Duration = 300, VaryByHeader = "Accept-Encoding")]
 public class BannersController : ControllerBase
 {
     private readonly IGenericRepository<HeroBanner> _bannerRepo;

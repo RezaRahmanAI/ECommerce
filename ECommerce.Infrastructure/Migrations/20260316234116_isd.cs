@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace ECommerce.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class init : Migration
+    public partial class isd : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -76,7 +76,7 @@ namespace ECommerce.Infrastructure.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Title = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Slug = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Slug = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     Content = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Excerpt = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     FeaturedImage = table.Column<string>(type: "nvarchar(max)", nullable: true),
@@ -86,7 +86,8 @@ namespace ECommerce.Infrastructure.Migrations
                     Tags = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     ViewCount = table.Column<int>(type: "int", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -109,7 +110,8 @@ namespace ECommerce.Infrastructure.Migrations
                     IsActive = table.Column<bool>(type: "bit", nullable: false),
                     ParentId = table.Column<int>(type: "int", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -134,7 +136,8 @@ namespace ECommerce.Infrastructure.Migrations
                     DeliveryDetails = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     IsSuspicious = table.Column<bool>(type: "bit", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -151,7 +154,8 @@ namespace ECommerce.Infrastructure.Migrations
                     PageViews = table.Column<int>(type: "int", nullable: false),
                     UniqueVisitors = table.Column<int>(type: "int", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -169,7 +173,8 @@ namespace ECommerce.Infrastructure.Migrations
                     EstimatedDays = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
                     IsActive = table.Column<bool>(type: "bit", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -193,7 +198,8 @@ namespace ECommerce.Infrastructure.Migrations
                     StartDate = table.Column<DateTime>(type: "datetime2", nullable: true),
                     EndDate = table.Column<DateTime>(type: "datetime2", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -213,7 +219,8 @@ namespace ECommerce.Infrastructure.Migrations
                     MetaDescription = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     IsActive = table.Column<bool>(type: "bit", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -243,7 +250,8 @@ namespace ECommerce.Infrastructure.Migrations
                     FreeShippingThreshold = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     ShippingCharge = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -371,7 +379,8 @@ namespace ECommerce.Infrastructure.Migrations
                     CategoryId = table.Column<int>(type: "int", nullable: true),
                     ParentMenuId = table.Column<int>(type: "int", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -403,7 +412,8 @@ namespace ECommerce.Infrastructure.Migrations
                     IsActive = table.Column<bool>(type: "bit", nullable: false),
                     CategoryId = table.Column<int>(type: "int", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -437,7 +447,8 @@ namespace ECommerce.Infrastructure.Migrations
                     SteadfastTrackingCode = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     SteadfastStatus = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -464,7 +475,8 @@ namespace ECommerce.Infrastructure.Migrations
                     SubCategoryId = table.Column<int>(type: "int", nullable: false),
                     CategoryId = table.Column<int>(type: "int", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -506,14 +518,15 @@ namespace ECommerce.Infrastructure.Migrations
                     MetaDescription = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     FabricAndCare = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     ShippingAndReturns = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Tier = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Tier = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     Tags = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     SortOrder = table.Column<int>(type: "int", nullable: false),
                     CategoryId = table.Column<int>(type: "int", nullable: false),
                     SubCategoryId = table.Column<int>(type: "int", nullable: true),
                     CollectionId = table.Column<int>(type: "int", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -553,7 +566,8 @@ namespace ECommerce.Infrastructure.Migrations
                     UnitPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     Quantity = table.Column<int>(type: "int", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -587,7 +601,8 @@ namespace ECommerce.Infrastructure.Migrations
                     Color = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     ProductId = table.Column<int>(type: "int", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -620,7 +635,8 @@ namespace ECommerce.Infrastructure.Migrations
                     UsageContent = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     ThemeColor = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -639,14 +655,15 @@ namespace ECommerce.Infrastructure.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Sku = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Sku = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     Size = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Price = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
                     StockQuantity = table.Column<int>(type: "int", nullable: false),
                     IsActive = table.Column<bool>(type: "bit", nullable: false),
                     ProductId = table.Column<int>(type: "int", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -677,7 +694,8 @@ namespace ECommerce.Infrastructure.Migrations
                     ReviewImage = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Likes = table.Column<int>(type: "int", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -730,6 +748,31 @@ namespace ECommerce.Infrastructure.Migrations
                 filter: "[NormalizedUserName] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
+                name: "IX_BlogPosts_CreatedAt",
+                table: "BlogPosts",
+                column: "CreatedAt");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_BlogPosts_Slug",
+                table: "BlogPosts",
+                column: "Slug");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_BlogPosts_Status",
+                table: "BlogPosts",
+                column: "Status");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Categories_DisplayOrder",
+                table: "Categories",
+                column: "DisplayOrder");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Categories_IsActive",
+                table: "Categories",
+                column: "IsActive");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Categories_ParentId",
                 table: "Categories",
                 column: "ParentId");
@@ -743,6 +786,11 @@ namespace ECommerce.Infrastructure.Migrations
                 name: "IX_Collections_CategoryId",
                 table: "Collections",
                 column: "CategoryId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Collections_IsActive",
+                table: "Collections",
+                column: "IsActive");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Collections_Slug",
@@ -761,9 +809,50 @@ namespace ECommerce.Infrastructure.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_DailyTraffics_Date",
+                table: "DailyTraffics",
+                column: "Date",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_DeliveryMethods_IsActive",
+                table: "DeliveryMethods",
+                column: "IsActive");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_HeroBanners_DisplayOrder",
+                table: "HeroBanners",
+                column: "DisplayOrder");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_HeroBanners_EndDate",
+                table: "HeroBanners",
+                column: "EndDate");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_HeroBanners_IsActive",
+                table: "HeroBanners",
+                column: "IsActive");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_HeroBanners_StartDate",
+                table: "HeroBanners",
+                column: "StartDate");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_NavigationMenus_CategoryId",
                 table: "NavigationMenus",
                 column: "CategoryId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_NavigationMenus_DisplayOrder",
+                table: "NavigationMenus",
+                column: "DisplayOrder");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_NavigationMenus_IsActive",
+                table: "NavigationMenus",
+                column: "IsActive");
 
             migrationBuilder.CreateIndex(
                 name: "IX_NavigationMenus_ParentMenuId",
@@ -801,6 +890,16 @@ namespace ECommerce.Infrastructure.Migrations
                 column: "Status");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Orders_Status_CreatedAt",
+                table: "Orders",
+                columns: new[] { "Status", "CreatedAt" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ProductImages_IsMain",
+                table: "ProductImages",
+                column: "IsMain");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_ProductImages_ProductId",
                 table: "ProductImages",
                 column: "ProductId");
@@ -817,9 +916,19 @@ namespace ECommerce.Infrastructure.Migrations
                 column: "CategoryId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Products_CategoryId_IsActive",
+                table: "Products",
+                columns: new[] { "CategoryId", "IsActive" });
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Products_CollectionId",
                 table: "Products",
                 column: "CollectionId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Products_CreatedAt",
+                table: "Products",
+                column: "CreatedAt");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Products_IsActive",
@@ -827,14 +936,39 @@ namespace ECommerce.Infrastructure.Migrations
                 column: "IsActive");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Products_IsActive_Price",
+                table: "Products",
+                columns: new[] { "IsActive", "Price" });
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Products_IsFeatured",
                 table: "Products",
                 column: "IsFeatured");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Products_IsFeatured_IsActive",
+                table: "Products",
+                columns: new[] { "IsFeatured", "IsActive" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Products_IsItemProduct",
+                table: "Products",
+                column: "IsItemProduct");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Products_IsNew",
                 table: "Products",
                 column: "IsNew");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Products_IsNew_IsActive",
+                table: "Products",
+                columns: new[] { "IsNew", "IsActive" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Products_Price",
+                table: "Products",
+                column: "Price");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Products_Sku",
@@ -849,9 +983,19 @@ namespace ECommerce.Infrastructure.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_Products_StockQuantity",
+                table: "Products",
+                column: "StockQuantity");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Products_SubCategoryId",
                 table: "Products",
                 column: "SubCategoryId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Products_Tier",
+                table: "Products",
+                column: "Tier");
 
             migrationBuilder.CreateIndex(
                 name: "IX_ProductVariants_ProductId",
@@ -859,14 +1003,41 @@ namespace ECommerce.Infrastructure.Migrations
                 column: "ProductId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_ProductVariants_Sku",
+                table: "ProductVariants",
+                column: "Sku",
+                unique: true,
+                filter: "[Sku] IS NOT NULL");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Reviews_CreatedAt",
+                table: "Reviews",
+                column: "CreatedAt");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Reviews_IsApproved",
+                table: "Reviews",
+                column: "IsApproved");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Reviews_ProductId",
                 table: "Reviews",
                 column: "ProductId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Reviews_ProductId_IsApproved",
+                table: "Reviews",
+                columns: new[] { "ProductId", "IsApproved" });
+
+            migrationBuilder.CreateIndex(
                 name: "IX_SubCategories_CategoryId",
                 table: "SubCategories",
                 column: "CategoryId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_SubCategories_IsActive",
+                table: "SubCategories",
+                column: "IsActive");
 
             migrationBuilder.CreateIndex(
                 name: "IX_SubCategories_Slug",

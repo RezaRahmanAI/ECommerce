@@ -9,6 +9,7 @@ namespace ECommerce.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[ResponseCache(Duration = 600, VaryByHeader = "Accept-Encoding")]
 public class CategoriesController : ControllerBase
 {
     private readonly IGenericRepository<Category> _categoryRepo;
@@ -21,7 +22,7 @@ public class CategoriesController : ControllerBase
     }
 
     [HttpGet]
-    [ResponseCache(Duration = 300)] // 5 minutes cache
+    [ResponseCache(Duration = 600)]
     public async Task<ActionResult<IReadOnlyList<CategoryDto>>> GetCategories()
     {
         var spec = new CategoriesWithSubCategoriesSpec();

@@ -31,17 +31,19 @@ public class BaseSpecification<T> : ISpecification<T>
 
     public bool IsSplitQuery { get; private set; }
 
+    public bool IgnoreQueryFilters { get; private set; }
+
     public void AddInclude(Expression<Func<T, object>> includeExpression)
     {
         Includes.Add(includeExpression);
     }
 
-    protected void AddOrderBy(Expression<Func<T, object>> orderByExpression)
+    public void AddOrderBy(Expression<Func<T, object>> orderByExpression)
     {
         OrderBy = orderByExpression;
     }
 
-    protected void AddOrderByDescending(Expression<Func<T, object>> orderByDescExpression)
+    public void AddOrderByDescending(Expression<Func<T, object>> orderByDescExpression)
     {
         OrderByDescending = orderByDescExpression;
     }
@@ -53,8 +55,13 @@ public class BaseSpecification<T> : ISpecification<T>
         IsPagingEnabled = true;
     }
 
-    protected void ApplySplitQuery()
+    public void ApplySplitQuery()
     {
         IsSplitQuery = true;
+    }
+
+    protected void ApplyIgnoreQueryFilters()
+    {
+        IgnoreQueryFilters = true;
     }
 }
