@@ -182,25 +182,9 @@
                   type="email"
                   formControlName="contactEmail"
                 />
-                <p *ngIf="settingsForm.controls.contactEmail.touched && settingsForm.controls.contactEmail.errors?.['required']" class="mt-1 text-xs text-red-600">
-                  Email is required.
-                </p>
                 <p *ngIf="settingsForm.controls.contactEmail.touched && settingsForm.controls.contactEmail.errors?.['email']" class="mt-1 text-xs text-red-600">
                   Please enter a valid email address.
                 </p>
-              </div>
-              <div class="col-span-2 md:col-span-1">
-                <label
-                  class="block text-sm font-medium text-text-main mb-1"
-                  for="contact-phone"
-                  >Contact Phone</label
-                >
-                <input
-                  class="block w-full rounded-lg border-border bg-background-light text-text-main shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
-                  id="contact-phone"
-                  type="text"
-                  formControlName="contactPhone"
-                />
               </div>
               <div class="col-span-2 md:col-span-1">
                 <label
@@ -296,7 +280,7 @@
           <div class="p-6 border-b border-border">
             <h3 class="text-lg font-bold text-text-main">Social Links</h3>
             <p class="text-sm text-text-secondary">
-              Connect your social media profiles.
+              Keep only the Messenger link used across the storefront.
             </p>
           </div>
           <div class="p-6">
@@ -305,56 +289,14 @@
                 <label
                   class="block text-sm font-medium text-text-main mb-1"
                   for="facebook-url"
-                  >Facebook / Messenger URL</label
+                  >Messenger URL</label
                 >
                 <input
                   class="block w-full rounded-lg border-border bg-background-light text-text-main shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
                   id="facebook-url"
                   type="url"
                   formControlName="facebookUrl"
-                  placeholder="https://facebook.com/yourpage"
-                />
-              </div>
-              <div class="col-span-1">
-                <label
-                  class="block text-sm font-medium text-text-main mb-1"
-                  for="instagram-url"
-                  >Instagram URL</label
-                >
-                <input
-                  class="block w-full rounded-lg border-border bg-background-light text-text-main shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
-                  id="instagram-url"
-                  type="url"
-                  formControlName="instagramUrl"
-                  placeholder="https://instagram.com/yourhandle"
-                />
-              </div>
-              <div class="col-span-1">
-                <label
-                  class="block text-sm font-medium text-text-main mb-1"
-                  for="twitter-url"
-                  >Twitter (X) URL</label
-                >
-                <input
-                  class="block w-full rounded-lg border-border bg-background-light text-text-main shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
-                  id="twitter-url"
-                  type="url"
-                  formControlName="twitterUrl"
-                  placeholder="https://twitter.com/yourhandle"
-                />
-              </div>
-              <div class="col-span-1">
-                <label
-                  class="block text-sm font-medium text-text-main mb-1"
-                  for="youtube-url"
-                  >YouTube URL</label
-                >
-                <input
-                  class="block w-full rounded-lg border-border bg-background-light text-text-main shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
-                  id="youtube-url"
-                  type="url"
-                  formControlName="youtubeUrl"
-                  placeholder="https://youtube.com/@yourchannel"
+                  placeholder="https://m.me/yourpage"
                 />
               </div>
             </div>
