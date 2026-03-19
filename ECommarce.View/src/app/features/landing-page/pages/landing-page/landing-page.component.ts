@@ -255,8 +255,9 @@ export class LandingPageComponent implements OnInit {
     ).subscribe();
   }
 
-  private processReviews(product: Product, landingPage: PublicLandingPage | null, reviews: PublicReview[]): void {
-    let allReviews = [...reviews];
+  private processReviews(product: Product, landingPage: PublicLandingPage | null, reviews: PublicReview[] | null | undefined): void {
+    const normalizedReviews = Array.isArray(reviews) ? reviews : [];
+    let allReviews = [...normalizedReviews];
 
     // Add static reviews from landing page config if any
     if (landingPage?.reviewsImages) {
