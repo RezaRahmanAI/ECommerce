@@ -28,60 +28,38 @@ public class DashboardService : IDashboardService
         return await _cache.GetOrCreateAsync(DashboardStatsCacheKey, async entry =>
         {
             entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5);
+            entry.SetSize(1); // Required when SizeLimit is set in Program.cs
 
             var validStatuses = new[] { OrderStatus.Pending, OrderStatus.Confirmed, OrderStatus.Processing, OrderStatus.Packed, OrderStatus.Shipped, OrderStatus.Delivered };
 
-            var totalOrdersTask = _context.Orders.AsNoTracking().CountAsync();
-            var totalProductsTask = _context.Products.AsNoTracking().CountAsync();
-            var totalCustomersTask = _context.Users.AsNoTracking().CountAsync();
+            // Sequential execution – DbContext is not thread-safe
+            var totalOrders = await _context.Orders.AsNoTracking().CountAsync();
+            var totalProducts = await _context.Products.AsNoTracking().CountAsync();
+            var totalCustomers = await _context.Users.AsNoTracking().CountAsync();
             
-            var deliveredOrdersTask = _context.Orders.AsNoTracking().CountAsync(o => o.Status == OrderStatus.Delivered);
-            var pendingOrdersTask = _context.Orders.AsNoTracking().CountAsync(o => o.Status == OrderStatus.Pending || o.Status == OrderStatus.Confirmed || o.Status == OrderStatus.Processing);
-            var shippedOrdersTask = _context.Orders.AsNoTracking().CountAsync(o => o.Status == OrderStatus.Shipped);
-            var cancelledOrdersTask = _context.Orders.AsNoTracking().CountAsync(o => o.Status == OrderStatus.Cancelled);
+            var deliveredOrders = await _context.Orders.AsNoTracking().CountAsync(o => o.Status == OrderStatus.Delivered);
+            var pendingOrders = await _context.Orders.AsNoTracking().CountAsync(o => o.Status == OrderStatus.Pending || o.Status == OrderStatus.Confirmed || o.Status == OrderStatus.Processing);
+            var shippedOrders = await _context.Orders.AsNoTracking().CountAsync(o => o.Status == OrderStatus.Shipped);
+            var cancelledOrders = await _context.Orders.AsNoTracking().CountAsync(o => o.Status == OrderStatus.Cancelled);
 
-            var totalRevenueTask = _context.Orders
+            var totalRevenue = await _context.Orders
                 .AsNoTracking()
                 .Where(o => validStatuses.Contains(o.Status))
                 .SumAsync(o => (decimal?)o.Total);
 
-            var totalItemsSoldTask = _context.Orders
+            var totalItemsSold = await _context.Orders
                 .AsNoTracking()
                 .Where(o => validStatuses.Contains(o.Status))
                 .SelectMany(o => o.Items)
                 .SumAsync(i => (int?)i.Quantity);
 
-            var totalPurchaseCostTask = _context.Orders
+            var totalPurchaseCost = await _context.Orders
                 .AsNoTracking()
                 .Where(o => validStatuses.Contains(o.Status))
                 .SelectMany(o => o.Items)
                 .SumAsync(i => (decimal?)(i.Product.PurchaseRate * i.Quantity));
 
-            await Task.WhenAll(
-                totalOrdersTask,
-                totalProductsTask,
-                totalCustomersTask,
-                deliveredOrdersTask,
-                pendingOrdersTask,
-                shippedOrdersTask,
-                cancelledOrdersTask,
-                totalRevenueTask,
-                totalItemsSoldTask,
-                totalPurchaseCostTask
-            );
-
-            var totalOrders = await totalOrdersTask;
-            var totalProducts = await totalProductsTask;
-            var totalCustomers = await totalCustomersTask;
-            var deliveredOrders = await deliveredOrdersTask;
-            var pendingOrders = await pendingOrdersTask;
-            var shippedOrders = await shippedOrdersTask;
-            var cancelledOrders = await cancelledOrdersTask;
-            var totalRevenue = await totalRevenueTask;
-            var totalItemsSold = await totalItemsSoldTask;
-            var totalPurchaseCost = await totalPurchaseCostTask;
-
-            var avgSellingPrice = totalItemsSold > 0 ? (totalRevenue ?? 0) / totalItemsSold : 0m;
+            var avgSellingPrice = totalItemsSold > 0 ? (totalRevenue ?? 0) / (decimal)totalItemsSold : 0m;
 
             return new DashboardStatsDto
             {
@@ -94,7 +72,7 @@ public class DashboardService : IDashboardService
                 ReturnedOrders = 0,
                 CustomerQueries = 0,
                 TotalPurchaseCost = totalPurchaseCost ?? 0,
-                AverageSellingPrice = avgSellingPrice ?? 0,
+                AverageSellingPrice = avgSellingPrice,
                 ReturnValue = 0,
                 ReturnRate = "0%"
             };

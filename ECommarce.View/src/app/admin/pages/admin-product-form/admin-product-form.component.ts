@@ -483,6 +483,8 @@ export class AdminProductFormComponent implements OnDestroy {
 
       // Log detailed validation errors
       const invalidFields: string[] = [];
+      const formErrors = this.form.errors;
+      
       Object.keys(this.form.controls).forEach((key) => {
         const control = this.form.get(key);
         if (control?.invalid) {
@@ -493,15 +495,30 @@ export class AdminProductFormComponent implements OnDestroy {
 
       console.error("Form validation failed", {
         formValid: this.form.valid,
-        formErrors: this.form.errors,
+        formErrors: formErrors,
         mediaCount: this.mediaItemsArray.length,
         invalidFields: invalidFields,
         formValue: this.form.value,
       });
 
-      window.alert(
-        `Please fill in all required fields: ${invalidFields.join(", ")}`,
-      );
+      let alertMessage = "";
+      if (invalidFields.length > 0) {
+        alertMessage += `Please fill in all required fields: ${invalidFields.join(", ")}\n`;
+      }
+      if (formErrors) {
+        if (formErrors['salePriceExceedsBase']) {
+          alertMessage += `Validation Error: Discounted price cannot be higher than the main price.\n`;
+        } else if (formErrors['salePriceTooLow']) {
+           alertMessage += `Validation Error: Main price must be lower than the Compare at Price (to show a discount).\n`;
+        } else {
+          alertMessage += `Form Error: ${JSON.stringify(formErrors)}\n`;
+        }
+      }
+      if (this.mediaItemsArray.length === 0) {
+        alertMessage += `Media Error: Add at least one image or video for the product.\n`;
+      }
+
+      window.alert(alertMessage || "Please check the form for errors.");
       return;
     }
 
@@ -616,14 +633,20 @@ export class AdminProductFormComponent implements OnDestroy {
     const basePrice = Number(control.get("price")?.value ?? 0);
     const salePriceControl = control.get("salePrice");
     const salePrice = salePriceControl?.value;
-    if (salePrice === null || salePrice === undefined) {
+    
+    // If no sale price (compare at price), it's valid
+    if (salePrice === null || salePrice === undefined || salePrice === "" || salePrice === 0) {
       return null;
     }
+    
     const saleValue = Number(salePrice);
     if (Number.isNaN(saleValue)) {
       return null;
     }
-    return saleValue > basePrice ? { salePriceExceedsBase: true } : null;
+
+    // "Compare at Price" (saleValue) should be HIGHER than the current "Price" (basePrice)
+    // If user sets SalePrice < Price, it's technically invalid for a discount display
+    return saleValue < basePrice ? { salePriceTooLow: true } : null;
   }
 
   private addFiles(files: File[]): void {

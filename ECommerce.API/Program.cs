@@ -155,6 +155,7 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
 // Optimize HttpClient for external services
+builder.Services.Configure<ECommerce.Infrastructure.Services.SteadfastSettings>(builder.Configuration.GetSection("Steadfast"));
 builder.Services.AddHttpClient<ECommerce.Core.Interfaces.ISteadfastService, ECommerce.Infrastructure.Services.SteadfastService>()
     .ConfigurePrimaryHttpMessageHandler(() => new SocketsHttpHandler
     {
