@@ -355,7 +355,7 @@ export class AdminOrdersComponent implements OnInit, OnDestroy {
     return {
       searchTerm: this.searchControl.value,
       status: this.selectedStatus,
-      dateRange: "Custom",
+      dateRange: this.startDate || this.endDate ? "Custom" : "All Time",
       startDate: this.startDate,
       endDate: this.endDate,
       page: this.page,
