@@ -44,6 +44,7 @@ import { SettingsService } from "../../../../admin/services/settings.service";
 import { DeliveryMethod } from "../../../../admin/models/settings.models";
 import { LandingPageService, PublicLandingPage } from "../../services/landing-page.service";
 import { PublicReviewService, PublicReview } from "../../services/public-review.service";
+import { SiteSettingsService, SiteSettings } from "../../../../core/services/site-settings.service";
 
 interface OfferItem {
   id: string | number;
@@ -94,6 +95,7 @@ export class LandingPageComponent implements OnInit {
   private readonly settingsService = inject(SettingsService);
   private readonly landingPageService = inject(LandingPageService);
   private readonly publicReviewService = inject(PublicReviewService);
+  private readonly siteSettingsService = inject(SiteSettingsService);
   private readonly cdr = inject(ChangeDetectorRef);
   readonly imageUrlService = inject(ImageUrlService);
 
@@ -105,7 +107,7 @@ export class LandingPageComponent implements OnInit {
   didAutofill = false;
   deliveryMethods: DeliveryMethod[] = [];
   selectedMethod: DeliveryMethod | null = null;
-  siteSettings: any | null = null;
+  siteSettings: SiteSettings | null = null;
   reviews: PublicReview[] = [];
   currentReviewIndex = 0;
 
@@ -157,6 +159,17 @@ export class LandingPageComponent implements OnInit {
       catchError(() => of(null))
     ).subscribe(settings => {
       this.siteSettings = settings;
+      this.cdr.markForCheck();
+    });
+
+    this.siteSettingsService.getSettings().pipe(
+      takeUntilDestroyed(this.destroyRef),
+      catchError(() => of(null))
+    ).subscribe(settings => {
+      this.siteSettings = {
+        ...(this.siteSettings || {}),
+        ...(settings || {}),
+      } as SiteSettings | null;
       this.cdr.markForCheck();
     });
 
@@ -590,4 +603,3 @@ export class LandingPageComponent implements OnInit {
     }
   }
 }
-

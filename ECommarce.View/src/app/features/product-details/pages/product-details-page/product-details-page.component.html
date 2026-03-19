@@ -269,6 +269,39 @@
 
             <!-- Action Buttons -->
             <div class="flex flex-col gap-3 pt-2">
+              <div
+                *ngIf="siteSettings?.facebookUrl || siteSettings?.whatsAppNumber"
+                class="flex flex-col gap-3"
+              >
+                <a
+                  *ngIf="siteSettings?.facebookUrl"
+                  [href]="siteSettings?.facebookUrl"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="w-full h-12 bg-[#0084FF] text-white text-sm font-semibold hover:bg-[#0077e6] transition-colors flex items-center justify-center gap-2"
+                >
+                  <lucide-icon
+                    [img]="icons.MessageCircle"
+                    class="w-4 h-4"
+                  ></lucide-icon>
+                  Chat with us
+                </a>
+
+                <a
+                  *ngIf="siteSettings?.whatsAppNumber"
+                  [href]="'https://wa.me/' + siteSettings?.whatsAppNumber"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="w-full h-12 bg-[#25D366] text-white text-sm font-semibold hover:bg-[#20bd5a] transition-colors flex items-center justify-center gap-2"
+                >
+                  <lucide-icon
+                    [img]="icons.MessageSquare"
+                    class="w-4 h-4"
+                  ></lucide-icon>
+                  WhatsApp Us
+                </a>
+              </div>
+
               <!-- Add to Bag -->
               <button
                 (click)="addToCart(vm.product)"

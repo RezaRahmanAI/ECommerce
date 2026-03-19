@@ -30,7 +30,23 @@
         </div>
         
         <!-- CTA Button (Slightly smaller for compact top) -->
-        <div class="mt-4 animate-fade-in delay-300">
+        <div class="mt-4 animate-fade-in delay-300 flex flex-col gap-3 w-full max-w-[540px]">
+          <a *ngIf="siteSettings?.facebookUrl"
+             [href]="siteSettings?.facebookUrl"
+             target="_blank"
+             rel="noopener noreferrer"
+             class="w-full h-12 bg-[#0084FF] hover:bg-[#0077e6] text-white text-sm font-semibold transition-colors flex items-center justify-center gap-2 shadow-xl">
+            <lucide-icon [img]="icons.MessageSquare" class="w-4 h-4"></lucide-icon>
+            Chat with us
+          </a>
+          <a *ngIf="siteSettings?.whatsAppNumber"
+             [href]="'https://wa.me/' + siteSettings?.whatsAppNumber"
+             target="_blank"
+             rel="noopener noreferrer"
+             class="w-full h-12 bg-[#25D366] hover:bg-[#20bd5a] text-white text-sm font-semibold transition-colors flex items-center justify-center gap-2 shadow-xl">
+            <lucide-icon [img]="icons.MessageSquare" class="w-4 h-4"></lucide-icon>
+            WhatsApp Us
+          </a>
           <button (click)="scrollToOrderForm()" 
                   class="bg-white hover:bg-gray-100 text-[#1a1a1a] px-8 py-3 text-xs uppercase tracking-[0.15em] font-bold transition-colors shadow-xl">
             Buy It Now
@@ -60,11 +76,29 @@
             </h2>
           </div>
           <div class="text-[#555] text-sm md:text-base leading-relaxed mb-8 ql-editor !text-left" [innerHTML]="landingPage?.benefitsContent"></div>
-          <button (click)="scrollToOrderForm()" 
-                  class="bg-[#1a1a1a] text-white px-8 h-12 text-xs font-semibold uppercase tracking-[0.15em] flex items-center justify-center gap-2 mx-auto lg:mx-0 hover:bg-[#333] transition-colors">
-            <lucide-icon [img]="icons.ShoppingCart" class="w-4 h-4"></lucide-icon>
-            Buy It Now
-          </button>
+          <div class="flex flex-col gap-3 mx-auto lg:mx-0 w-full max-w-[420px] lg:max-w-none">
+            <a *ngIf="siteSettings?.facebookUrl"
+               [href]="siteSettings?.facebookUrl"
+               target="_blank"
+               rel="noopener noreferrer"
+               class="bg-[#0084FF] text-white px-8 h-12 text-sm font-semibold flex items-center justify-center gap-2 hover:bg-[#0077e6] transition-colors">
+              <lucide-icon [img]="icons.MessageSquare" class="w-4 h-4"></lucide-icon>
+              Chat with us
+            </a>
+            <a *ngIf="siteSettings?.whatsAppNumber"
+               [href]="'https://wa.me/' + siteSettings?.whatsAppNumber"
+               target="_blank"
+               rel="noopener noreferrer"
+               class="bg-[#25D366] text-white px-8 h-12 text-sm font-semibold flex items-center justify-center gap-2 hover:bg-[#20bd5a] transition-colors">
+              <lucide-icon [img]="icons.MessageSquare" class="w-4 h-4"></lucide-icon>
+              WhatsApp Us
+            </a>
+            <button (click)="scrollToOrderForm()" 
+                    class="bg-[#1a1a1a] text-white px-8 h-12 text-xs font-semibold uppercase tracking-[0.15em] flex items-center justify-center gap-2 mx-auto lg:mx-0 hover:bg-[#333] transition-colors w-full">
+              <lucide-icon [img]="icons.ShoppingCart" class="w-4 h-4"></lucide-icon>
+              Buy It Now
+            </button>
+          </div>
         </div>
         <div class="flex-1 flex justify-center">
           <img *ngIf="product.imageUrl" 
@@ -86,11 +120,29 @@
             </h2>
           </div>
           <div class="text-[#555] text-sm md:text-base leading-relaxed mb-8 ql-editor !text-left" [innerHTML]="landingPage?.usageContent"></div>
-          <button (click)="scrollToOrderForm()" 
-                  class="bg-[#1a1a1a] text-white px-8 h-12 text-xs font-semibold uppercase tracking-[0.15em] flex items-center justify-center gap-2 mx-auto lg:mx-0 hover:bg-[#333] transition-colors">
-            <lucide-icon [img]="icons.ShoppingCart" class="w-4 h-4"></lucide-icon>
-            Buy It Now
-          </button>
+          <div class="flex flex-col gap-3 mx-auto lg:mx-0 w-full max-w-[420px] lg:max-w-none">
+            <a *ngIf="siteSettings?.facebookUrl"
+               [href]="siteSettings?.facebookUrl"
+               target="_blank"
+               rel="noopener noreferrer"
+               class="bg-[#0084FF] text-white px-8 h-12 text-sm font-semibold flex items-center justify-center gap-2 hover:bg-[#0077e6] transition-colors">
+              <lucide-icon [img]="icons.MessageSquare" class="w-4 h-4"></lucide-icon>
+              Chat with us
+            </a>
+            <a *ngIf="siteSettings?.whatsAppNumber"
+               [href]="'https://wa.me/' + siteSettings?.whatsAppNumber"
+               target="_blank"
+               rel="noopener noreferrer"
+               class="bg-[#25D366] text-white px-8 h-12 text-sm font-semibold flex items-center justify-center gap-2 hover:bg-[#20bd5a] transition-colors">
+              <lucide-icon [img]="icons.MessageSquare" class="w-4 h-4"></lucide-icon>
+              WhatsApp Us
+            </a>
+            <button (click)="scrollToOrderForm()" 
+                    class="bg-[#1a1a1a] text-white px-8 h-12 text-xs font-semibold uppercase tracking-[0.15em] flex items-center justify-center gap-2 mx-auto lg:mx-0 hover:bg-[#333] transition-colors w-full">
+              <lucide-icon [img]="icons.ShoppingCart" class="w-4 h-4"></lucide-icon>
+              Buy It Now
+            </button>
+          </div>
         </div>
         <div class="flex-1 flex justify-center">
           <img *ngIf="product.imageUrl" 
