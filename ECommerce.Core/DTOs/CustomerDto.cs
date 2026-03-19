@@ -6,6 +6,8 @@ public class CustomerDto
     public string Phone { get; set; }
     public string Name { get; set; }
     public string Address { get; set; }
+    public string? City { get; set; }
+    public string? Area { get; set; }
     public string? DeliveryDetails { get; set; }
     public DateTime CreatedAt { get; set; }
 }
@@ -15,5 +17,7 @@ public class CustomerProfileRequest
     public string Phone { get; set; }
     public string Name { get; set; }
     public string Address { get; set; }
+    public string? City { get; set; }
+    public string? Area { get; set; }
     public string? DeliveryDetails { get; set; }
 }

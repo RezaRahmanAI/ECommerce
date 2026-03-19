@@ -8,6 +8,9 @@ export interface CustomerLookupResponse {
   name: string;
   phone: string;
   address: string;
+  city?: string;
+  area?: string;
+  deliveryDetails?: string;
 }
 
 export interface OrderItemRequest {

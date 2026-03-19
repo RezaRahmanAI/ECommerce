@@ -52,3 +52,9 @@ export interface DailyTraffic {
   pageViews: number;
   uniqueVisitors: number;
 }
+ 
+export interface CategorySales {
+  categoryName: string;
+  amount: number;
+  orderCount: number;
+}

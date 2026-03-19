@@ -219,6 +219,33 @@
               <p class="text-[10px] text-red-500" *ngIf="checkoutForm.controls.fullName.touched && checkoutForm.controls.fullName.invalid">নাম আবশ্যক</p>
             </div>
 
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div class="space-y-2 text-left">
+                <label class="block text-[10px] uppercase tracking-[0.2em] font-bold text-[#888]">জেলা <span class="text-[#c8922a]">*</span></label>
+                <div class="relative w-full">
+                  <select formControlName="district" 
+                          class="w-full px-4 py-3 border border-[#e0e0e0] rounded-none focus:border-[#1a1a1a] outline-none transition-colors bg-white text-sm appearance-none">
+                    <option value="">জেলা নির্বাচন করুন</option>
+                    <option *ngFor="let district of districts" [value]="district">{{ district }}</option>
+                  </select>
+                  <lucide-icon [img]="icons.ChevronDown" class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"></lucide-icon>
+                </div>
+              </div>
+
+              <div class="space-y-2 text-left">
+                <label class="block text-[10px] uppercase tracking-[0.2em] font-bold text-[#888]">এলাকা <span class="text-[#c8922a]">*</span></label>
+                <div class="relative w-full">
+                  <select formControlName="area" 
+                          class="w-full px-4 py-3 border border-[#e0e0e0] rounded-none focus:border-[#1a1a1a] outline-none transition-colors bg-white text-sm appearance-none"
+                          [disabled]="!checkoutForm.get('district')?.value">
+                    <option value="">এলাকা নির্বাচন করুন</option>
+                    <option *ngFor="let area of availableAreas" [value]="area">{{ area }}</option>
+                  </select>
+                  <lucide-icon [img]="icons.ChevronDown" class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"></lucide-icon>
+                </div>
+              </div>
+            </div>
+
             <div class="space-y-2 text-left">
               <label class="block text-[10px] uppercase tracking-[0.2em] font-bold text-[#888]">আপনার ঠিকানা <span class="text-[#c8922a]">*</span></label>
               <input type="text" formControlName="address" placeholder="বাড়ি নম্বর, রাস্তা, এলাকা, জেলা" 

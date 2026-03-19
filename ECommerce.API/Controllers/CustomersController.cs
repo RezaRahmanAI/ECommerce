@@ -39,6 +39,8 @@ public class CustomersController : ControllerBase
             Phone = customer.Phone,
             Name = customer.Name,
             Address = customer.Address,
+            City = customer.City,
+            Area = customer.Area,
             DeliveryDetails = customer.DeliveryDetails,
             CreatedAt = customer.CreatedAt
         });
@@ -56,6 +58,8 @@ public class CustomersController : ControllerBase
             request.Phone, 
             request.Name, 
             request.Address, 
+            request.City,
+            request.Area,
             request.DeliveryDetails
         );
 
@@ -65,6 +69,8 @@ public class CustomersController : ControllerBase
             Phone = customer.Phone,
             Name = customer.Name,
             Address = customer.Address,
+            City = customer.City,
+            Area = customer.Area,
             DeliveryDetails = customer.DeliveryDetails,
             CreatedAt = customer.CreatedAt
         });

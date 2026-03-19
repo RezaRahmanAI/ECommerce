@@ -23,30 +23,38 @@ export class OrdersService {
   getOrders(
     params: OrdersQueryParams,
   ): Observable<{ items: Order[]; total: number }> {
-    const queryParams = new HttpParams({
-      fromObject: {
-        searchTerm: params.searchTerm,
-        status: params.status,
-        dateRange: params.dateRange,
-        page: params.page,
-        pageSize: params.pageSize,
-      },
-    });
-
+    let queryParams = new HttpParams()
+      .set("searchTerm", params.searchTerm)
+      .set("status", params.status)
+      .set("dateRange", params.dateRange)
+      .set("page", params.page.toString())
+      .set("pageSize", params.pageSize.toString());
+ 
+    if (params.startDate) {
+      queryParams = queryParams.set("startDate", params.startDate);
+    }
+    if (params.endDate) {
+      queryParams = queryParams.set("endDate", params.endDate);
+    }
+ 
     return this.api.get<{ items: Order[]; total: number }>("/admin/orders", {
       params: queryParams,
     });
   }
 
   getFilteredOrders(params: OrdersQueryParams): Observable<Order[]> {
-    const queryParams = new HttpParams({
-      fromObject: {
-        searchTerm: params.searchTerm,
-        status: params.status,
-        dateRange: params.dateRange,
-      },
-    });
-
+    let queryParams = new HttpParams()
+      .set("searchTerm", params.searchTerm)
+      .set("status", params.status)
+      .set("dateRange", params.dateRange);
+ 
+    if (params.startDate) {
+      queryParams = queryParams.set("startDate", params.startDate);
+    }
+    if (params.endDate) {
+      queryParams = queryParams.set("endDate", params.endDate);
+    }
+ 
     return this.api.get<Order[]>("/admin/orders/filtered", {
       params: queryParams,
     });

@@ -24,6 +24,13 @@
         >
           {{ order.status }}
         </span>
+        <select
+          class="ml-2 text-xs border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 rounded px-2 py-1 focus:ring-1 focus:ring-primary cursor-pointer text-gray-500 hover:text-primary transition-colors"
+          [value]="order.status"
+          (change)="updateStatus(order.id, $any($event.target).value)"
+        >
+          <option *ngFor="let s of statusOptions" [value]="s">{{ s }}</option>
+        </select>
       </h2>
       <p class="text-gray-500 dark:text-gray-400 text-sm mt-1">
         Placed on {{ order.createdAt | date: "medium" }}

@@ -161,6 +161,7 @@ export class CartService {
       tax,
       shipping,
       total,
+      discount: 0,
       freeShippingThreshold: this.freeShippingThreshold,
       freeShippingRemaining,
       freeShippingProgress,

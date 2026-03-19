@@ -112,9 +112,9 @@ public class ProductUpdateDto
 
 public class ProductVariantEditDto
 {
-    public string Label { get; set; }
+    public string Label { get; set; } = null!;
     public decimal Price { get; set; }
-    public string Sku { get; set; }
+    public string Sku { get; set; } = null!;
     public int Inventory { get; set; }
     [JsonPropertyName("imageUrl")]
     public string? ImageUrl { get; set; }

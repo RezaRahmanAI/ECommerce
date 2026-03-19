@@ -18,7 +18,10 @@ import {
   StatusDistribution,
   CustomerGrowth,
   DailyTraffic,
+  CategorySales,
 } from "../../models/admin-dashboard.models";
+import { ChartConfiguration, ChartData, ChartType } from "chart.js";
+import { BaseChartDirective } from "ng2-charts";
 
 import { AdminDashboardService } from "../../services/admin-dashboard.service";
 import { PriceDisplayComponent } from "../../../shared/components/price-display/price-display.component";
@@ -44,6 +47,7 @@ import {
     RouterModule,
     PriceDisplayComponent,
     LucideAngularModule,
+    BaseChartDirective,
   ],
   templateUrl: "./dashboard-overview.component.html",
 })
@@ -92,6 +96,63 @@ export class DashboardOverviewComponent {
   dailyTraffic$: Observable<DailyTraffic> = this.createLiveStream(() =>
     this.adminDashboardService.getDailyTraffic(),
   );
+  categorySales$: Observable<CategorySales[]> = this.createLiveStream(() =>
+    this.adminDashboardService.getSalesByCategory(),
+  );
+ 
+  // Pie Chart Configuration
+  public pieChartOptions: ChartConfiguration["options"] = {
+    responsive: true,
+    plugins: {
+      legend: {
+        display: true,
+        position: "bottom",
+      },
+    },
+  };
+  public pieChartType: ChartType = "pie";
+  public doughnutChartType: ChartType = "doughnut";
+
+  getPieChartData(sales: CategorySales[]): ChartData<"pie"> {
+    return {
+      labels: sales.map((s) => s.categoryName),
+      datasets: [
+        {
+          data: sales.map((s) => s.amount),
+          backgroundColor: [
+            "#3b82f6",
+            "#10b981",
+            "#f59e0b",
+            "#ef4444",
+            "#8b5cf6",
+            "#ec4899",
+            "#6366f1",
+          ],
+        },
+      ],
+    };
+  }
+
+  getDistributionChartData(
+    distribution: StatusDistribution[],
+  ): ChartData<"doughnut"> {
+    return {
+      labels: distribution.map((d) => d.status),
+      datasets: [
+        {
+          data: distribution.map((d) => d.count),
+          backgroundColor: [
+            "#fbbf24",
+            "#34d399",
+            "#60a5fa",
+            "#a78bfa",
+            "#f87171",
+            "#94a3b8",
+          ],
+        },
+      ],
+    };
+  }
 
   timeRanges = ["Last 7 Days", "Last 30 Days", "Last 12 Months", "All Time"];
   selectedRange = this.timeRanges[1];

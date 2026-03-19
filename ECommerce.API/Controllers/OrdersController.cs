@@ -53,7 +53,8 @@ public class OrdersController : ControllerBase
 
         try
         {
-            var order = await _orderService.CreateOrderAsync(orderDto);
+            var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString();
+            var order = await _orderService.CreateOrderAsync(orderDto, ipAddress);
             
             // Return format expected by frontend:
             // { orderId: string, name, phone, address, deliveryDetails, itemsCount, total, createdAt }

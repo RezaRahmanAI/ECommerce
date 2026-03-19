@@ -90,6 +90,20 @@ export class AuthService {
     return !!this.userSubject.value;
   }
 
+  isLoggedIn(): boolean {
+    return !!this.userSubject.value;
+  }
+
+  customerPhoneLogin(phone: string): Observable<User | null> {
+    return this.api.get<User>(`/customers/lookup?phone=${phone}`).pipe(
+      tap((user) => {
+        if (user) {
+          this.setSession(user, this.getAccessToken() || "");
+        }
+      }),
+    );
+  }
+
   currentUserSnapshot(): User | null {
     return this.userSubject.value;
   }

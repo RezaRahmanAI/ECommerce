@@ -248,4 +248,24 @@ public class DashboardService : IDashboardService
             Count = x.Count
         }).ToList();
     }
+    public async Task<List<CategorySalesDto>> GetSalesByCategoryAsync()
+    {
+        var validStatuses = new[] { OrderStatus.Pending, OrderStatus.Confirmed, OrderStatus.Processing, OrderStatus.Packed, OrderStatus.Shipped, OrderStatus.Delivered };
+
+        var data = await _context.Orders
+            .AsNoTracking()
+            .Where(o => validStatuses.Contains(o.Status))
+            .SelectMany(o => o.Items)
+            .GroupBy(i => i.Product.Category.Name)
+            .Select(g => new CategorySalesDto
+            {
+                CategoryName = g.Key ?? "Uncategorized",
+                Amount = g.Sum(i => i.UnitPrice * i.Quantity),
+                OrderCount = g.Select(i => i.OrderId).Distinct().Count()
+            })
+            .OrderByDescending(x => x.Amount)
+            .ToListAsync();
+
+        return data;
+    }
 }

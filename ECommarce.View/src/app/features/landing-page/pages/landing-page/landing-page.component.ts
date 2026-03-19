@@ -29,7 +29,10 @@ import {
   Phone,
   MessageSquare,
   Star,
+  ChevronDown,
 } from "lucide-angular";
+import { BANGLADESH_LOCATIONS } from "../../../../core/utils/bangladesh-locations";
+import { CheckoutState } from "../../../../core/models/checkout";
 
 import { ProductService } from "../../../../core/services/product.service";
 import { Product } from "../../../../core/models/product";
@@ -78,6 +81,7 @@ export class LandingPageComponent implements OnInit {
     Phone,
     MessageSquare,
     Star,
+    ChevronDown,
   };
   private readonly route = inject(ActivatedRoute);
   private readonly productService = inject(ProductService);
@@ -118,9 +122,14 @@ export class LandingPageComponent implements OnInit {
     { id: 'sbgmc', name: 'Strawberry, Blueberry, Grape –Con*dom Combo', price: 530, imageUrl: 'https://lovecarebd.online/wp-content/uploads/2026/03/TONO-HIME-Strawberry-Blueberry-Grape-–-Magic-Condom-Combo-300x300-1.webp', quantity: 1 },
   ];
 
+  districts = Object.keys(BANGLADESH_LOCATIONS).sort();
+  availableAreas: string[] = [];
+
   readonly checkoutForm = this.formBuilder.nonNullable.group({
     fullName: ["", [Validators.required, Validators.minLength(2)]],
     phone: ["", [Validators.required, Validators.minLength(7)]],
+    district: ["Dhaka", [Validators.required]],
+    area: ["", [Validators.required]],
     address: ["", [Validators.required, Validators.minLength(5)]],
     deliveryDetails: ["Standard Delivery", [Validators.required]],
     deliveryMethodId: [0, Validators.required],
@@ -153,6 +162,14 @@ export class LandingPageComponent implements OnInit {
 
     this.loadProductAndSettings();
     this.setupFormWatchers();
+    
+    // Initial area load for default district
+    this.updateAreas("Dhaka");
+  }
+
+  private updateAreas(district: string): void {
+    this.availableAreas = BANGLADESH_LOCATIONS[district] || [];
+    this.cdr.markForCheck();
   }
 
   private loadProductAndSettings(): void {
@@ -162,7 +179,7 @@ export class LandingPageComponent implements OnInit {
       map((params) => params.get("slug") ?? ""),
       filter((slug) => slug.length > 0),
       distinctUntilChanged(),
-      switchMap((slug) => 
+      switchMap((slug) =>
         combineLatest([
           this.productService.getBySlug(slug).pipe(catchError(() => of(null))),
           this.landingPageService.getLandingPage(slug).pipe(catchError(() => of(null)))
@@ -178,24 +195,24 @@ export class LandingPageComponent implements OnInit {
 
         this.product = product;
         this.landingPage = landingPage;
-        
+
         // Load reviews in parallel with product-dependent items
         const reviews$ = this.publicReviewService.getReviewsByProduct(product.id).pipe(
           catchError(() => of([] as PublicReview[]))
         );
 
         // Fetch offer items if it's an item product
-        const items$ = product.isItemProduct 
+        const items$ = product.isItemProduct
           ? this.productService.getItemProducts().pipe(
-              map(p => p.data),
-              catchError(() => of([]))
-            )
+            map(p => p.data),
+            catchError(() => of([]))
+          )
           : of([]);
 
         return combineLatest([reviews$, items$]).pipe(
           tap(([reviews, items]) => {
             this.processReviews(product, landingPage, reviews);
-            
+
             if (product.isItemProduct) {
               this.offerItems = items.map(item => ({
                 id: item.id,
@@ -204,7 +221,7 @@ export class LandingPageComponent implements OnInit {
                 imageUrl: this.imageUrlService.getImageUrl(item.imageUrl || ''),
                 quantity: item.id === product.id ? 1 : 0
               }));
-              
+
               // Ensure current product is first
               const currentIndex = this.offerItems.findIndex(i => i.id === product.id);
               if (currentIndex > 0) {
@@ -240,7 +257,7 @@ export class LandingPageComponent implements OnInit {
 
   private processReviews(product: Product, landingPage: PublicLandingPage | null, reviews: PublicReview[]): void {
     let allReviews = [...reviews];
-    
+
     // Add static reviews from landing page config if any
     if (landingPage?.reviewsImages) {
       try {
@@ -265,7 +282,7 @@ export class LandingPageComponent implements OnInit {
         console.error("Error parsing static reviews", e);
       }
     }
-    
+
     this.reviews = allReviews;
     this.currentReviewIndex = 0; // Reset index to first slide
     this.cdr.markForCheck();
@@ -306,6 +323,27 @@ export class LandingPageComponent implements OnInit {
           this.deliveryMethods.find((m) => m.id === id) || null;
         this.cdr.markForCheck();
       });
+
+    this.checkoutForm.controls.district.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((district) => {
+        this.updateAreas(district);
+        this.checkoutForm.patchValue({ area: "" });
+        this.updateDeliveryMethodByDistrict(district);
+      });
+  }
+
+  private updateDeliveryMethodByDistrict(district: string): void {
+    const isDhaka = district.toLowerCase() === "dhaka";
+    const method = this.deliveryMethods.find((m) =>
+      isDhaka
+        ? m.name.toLowerCase().includes("inside")
+        : m.name.toLowerCase().includes("outside"),
+    );
+    if (method) {
+      this.checkoutForm.patchValue({ deliveryMethodId: method.id });
+      this.selectedMethod = method;
+    }
   }
 
   get subtotal(): number {
@@ -417,9 +455,9 @@ export class LandingPageComponent implements OnInit {
   }
 
   updateQuantity(item: any, event: any): void {
-     const val = parseInt(event.target.value) || 0;
-     item.quantity = Math.max(0, val);
-     this.cdr.markForCheck();
+    const val = parseInt(event.target.value) || 0;
+    item.quantity = Math.max(0, val);
+    this.cdr.markForCheck();
   }
 
   increaseQuantity(): void {
@@ -472,12 +510,12 @@ export class LandingPageComponent implements OnInit {
 
     // For landing page, we bypass the normal cart and create a "virtual" cart with items from offerItems
     this.cartService.clearCart();
-    
+
     const selectedItems = this.offerItems.filter(i => i.quantity > 0);
     if (selectedItems.length === 0) {
-       this.errorMessage = "Please select at least one product.";
-       this.cdr.markForCheck();
-       return;
+      this.errorMessage = "Please select at least one product.";
+      this.cdr.markForCheck();
+      return;
     }
 
     const form = this.checkoutForm.getRawValue();
@@ -486,13 +524,13 @@ export class LandingPageComponent implements OnInit {
     try {
       selectedItems.forEach(item => {
         const dummyProduct: any = {
-           id: typeof item.id === 'string' ? 99999 : item.id,
-           name: item.name,
-           price: item.price,
-           imageUrl: item.imageUrl,
-           status: 'Active',
-           variants: [],
-           images: []
+          id: typeof item.id === 'string' ? 99999 : item.id,
+          name: item.name,
+          price: item.price,
+          imageUrl: item.imageUrl,
+          status: 'Active',
+          variants: [],
+          images: []
         };
         this.cartService.addItem(dummyProduct, item.quantity);
       });
@@ -509,6 +547,8 @@ export class LandingPageComponent implements OnInit {
       fullName: form.fullName,
       phone: form.phone,
       address: form.address,
+      city: form.district,
+      area: form.area,
       deliveryDetails: form.deliveryDetails,
       deliveryMethodId: form.deliveryMethodId,
     });
@@ -534,10 +574,10 @@ export class LandingPageComponent implements OnInit {
     const el = document.getElementById("order-form-section");
     if (el) {
       el.scrollIntoView({ behavior: "smooth", block: "start" });
-      
+
       setTimeout(() => {
-         const nameInput = document.querySelector('input[formControlName="fullName"]') as HTMLElement;
-         if (nameInput) nameInput.focus();
+        const nameInput = document.querySelector('input[formControlName="fullName"]') as HTMLElement;
+        if (nameInput) nameInput.focus();
       }, 500);
     }
   }

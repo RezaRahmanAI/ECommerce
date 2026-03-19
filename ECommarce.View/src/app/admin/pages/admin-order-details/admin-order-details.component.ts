@@ -51,6 +51,16 @@ export class AdminOrderDetailsComponent implements OnInit {
   readonly imageUrlService = inject(ImageUrlService);
 
   order$: Observable<OrderDetail> | null = null;
+  statusOptions: OrderStatus[] = [
+    "Pending",
+    "Confirmed",
+    "Processing",
+    "Packed",
+    "Shipped",
+    "Delivered",
+    "Cancelled",
+    "Refund",
+  ];
 
   ngOnInit(): void {
     this.order$ = this.route.paramMap.pipe(
@@ -69,6 +79,8 @@ export class AdminOrderDetailsComponent implements OnInit {
         return "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-200";
       case "Processing":
         return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-200";
+      case "Packed":
+        return "bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-200";
       case "Shipped":
         return "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-200";
       case "Delivered":

@@ -43,7 +43,9 @@ export interface OrderDetail extends Order {
 export interface OrdersQueryParams {
   searchTerm: string;
   status: "All" | OrderStatus;
-  dateRange: "Last 7 Days" | "Last 30 Days" | "This Year" | "All Time";
+  dateRange: "Last 7 Days" | "Last 30 Days" | "This Year" | "All Time" | "Custom";
+  startDate?: string;
+  endDate?: string;
   page: number;
   pageSize: number;
 }

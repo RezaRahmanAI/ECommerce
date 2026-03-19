@@ -1,309 +1,414 @@
-<main class="flex-grow">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
+<main
+  class="bg-slate-50 min-h-screen pb-12 pt-4 dark:bg-slate-950 md:pt-8"
+  *ngIf="vm$ | async as vm"
+>
+  <div class="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
     <div
-      class="lg:grid lg:grid-cols-12 lg:gap-x-12 xl:gap-x-16"
-      *ngIf="vm$ | async as vm"
+      class="mb-6 flex flex-col justify-between gap-4 md:mb-10 md:flex-row md:items-center"
     >
+      <div>
+        <h1
+          class="font-serif text-3xl font-bold tracking-tight text-slate-900 dark:text-white md:text-4xl"
+        >
+          Checkout
+        </h1>
+        <p class="mt-2 text-slate-500 dark:text-slate-400">
+          Complete your order by providing your shipping details
+        </p>
+      </div>
+      <a
+        routerLink="/cart"
+        class="inline-flex items-center gap-2 text-sm font-medium text-primary hover:text-primary-hover transition-colors"
+      >
+        <lucide-icon [img]="icons.ArrowLeft" class="h-4 w-4"></lucide-icon>
+        Back to Cart
+      </a>
+    </div>
+
+    <div class="grid grid-cols-1 gap-8 lg:grid-cols-12">
+      <!-- Checkout Form -->
       <div class="lg:col-span-7">
-        <div class="mb-8">
-          <h1 class="text-2xl font-bold text-slate-900 dark:text-white">
-            Place your order
-          </h1>
-          <p class="text-sm text-slate-500 dark:text-slate-400">
-            Enter your delivery details to place the order. Returning customers
-            can provide their phone number to autofill saved information.
-          </p>
-        </div>
-
-        <form [formGroup]="checkoutForm" class="space-y-6">
+        <form [formGroup]="checkoutForm" (ngSubmit)="placeOrder()" class="space-y-6">
           <div
-            class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4"
+            class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900"
           >
-            <div>
-              <label
-                class="block text-sm font-medium text-slate-700 dark:text-slate-300"
-                for="full-name"
-                >Full name</label
+            <div
+              class="border-b border-slate-100 bg-slate-50/50 px-6 py-4 dark:border-slate-800 dark:bg-slate-800/50"
+            >
+              <h2
+                class="flex items-center gap-2 text-lg font-bold text-slate-900 dark:text-white"
               >
-              <input
-                class="mt-1 block w-full rounded-lg border-slate-300 dark:border-slate-700 dark:bg-slate-800 shadow-sm focus:border-primary focus:ring-primary sm:text-sm py-3"
-                id="full-name"
-                type="text"
-                formControlName="fullName"
-                placeholder="Amina Noor"
-              />
-              <p
-                class="text-xs text-red-500 mt-1"
-                *ngIf="
-                  checkoutForm.controls.fullName.touched &&
-                  checkoutForm.controls.fullName.invalid
-                "
-              >
-                Your name is required.
-              </p>
+                <lucide-icon [img]="icons.User" class="h-5 w-5 text-primary"></lucide-icon>
+                Customer Information
+              </h2>
             </div>
+            <div class="p-6 space-y-4">
+              <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div class="space-y-2">
+                  <label
+                    for="fullName"
+                    class="block text-sm font-medium text-slate-700 dark:text-slate-300"
+                  >
+                    Full Name <span class="text-red-500">*</span>
+                  </label>
+                  <div class="relative">
+                    <lucide-icon
+                      [img]="icons.User"
+                      class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"
+                    ></lucide-icon>
+                    <input
+                      id="fullName"
+                      formControlName="fullName"
+                      type="text"
+                      placeholder="Enter your full name"
+                      class="w-full rounded-xl border border-slate-200 bg-slate-50 py-3 pl-10 pr-4 text-slate-900 ring-primary transition-all focus:border-primary focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/10 dark:border-slate-800 dark:bg-slate-950 dark:text-white"
+                      [class.border-red-500]="
+                        checkoutForm.get('fullName')?.invalid &&
+                        checkoutForm.get('fullName')?.touched
+                      "
+                    />
+                  </div>
+                </div>
 
-            <div>
-              <label
-                class="block text-sm font-medium text-slate-700 dark:text-slate-300"
-                for="phone"
-                >Phone number</label
-              >
-              <input
-                class="mt-1 block w-full rounded-lg border-slate-300 dark:border-slate-700 dark:bg-slate-800 shadow-sm focus:border-primary focus:ring-primary sm:text-sm py-3"
-                id="phone"
-                type="tel"
-                formControlName="phone"
-                placeholder="+1 (555) 123-4567"
-              />
-              <p
-                class="text-xs text-slate-500 dark:text-slate-400 mt-1"
-                *ngIf="didAutofill"
-              >
-                Saved details found and autofilled.
-              </p>
-              <p
-                class="text-xs text-red-500 mt-1"
-                *ngIf="
-                  checkoutForm.controls.phone.touched &&
-                  checkoutForm.controls.phone.invalid
-                "
-              >
-                A valid phone number is required.
-              </p>
+                <div class="space-y-2">
+                  <label
+                    for="phone"
+                    class="block text-sm font-medium text-slate-700 dark:text-slate-300"
+                  >
+                    Phone Number <span class="text-red-500">*</span>
+                  </label>
+                  <div class="relative">
+                    <lucide-icon
+                      [img]="icons.Phone"
+                      class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"
+                    ></lucide-icon>
+                    <input
+                      id="phone"
+                      formControlName="phone"
+                      type="tel"
+                      placeholder="e.g. 017XXXXXXXX"
+                      class="w-full rounded-xl border border-slate-200 bg-slate-50 py-3 pl-10 pr-4 text-slate-900 ring-primary transition-all focus:border-primary focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/10 dark:border-slate-800 dark:bg-slate-950 dark:text-white"
+                      [class.border-red-500]="
+                        checkoutForm.get('phone')?.invalid &&
+                        checkoutForm.get('phone')?.touched
+                      "
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <!-- Location Selectors -->
+              <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <!-- District Select -->
+                <div class="relative space-y-2">
+                  <label class="block text-sm font-medium text-slate-700 dark:text-slate-300">
+                    District <span class="text-red-500">*</span>
+                  </label>
+                  <div class="relative">
+                    <button
+                      type="button"
+                      (click)="toggleCityDropdown()"
+                      class="flex w-full items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-left transition-all hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-950"
+                      [class.border-primary]="isCityDropdownOpen"
+                    >
+                      <span [class.text-slate-400]="!checkoutForm.get('city')?.value">
+                        {{ checkoutForm.get("city")?.value || "Select District" }}
+                      </span>
+                      <lucide-icon
+                        [img]="isCityDropdownOpen ? icons.ChevronUp : icons.ChevronDown"
+                        class="h-4 w-4 text-slate-400"
+                      ></lucide-icon>
+                    </button>
+
+                    <!-- Dropdown Content -->
+                    <div
+                      *ngIf="isCityDropdownOpen"
+                      class="animate-fade-in-down absolute z-50 mt-2 w-full overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xl dark:border-slate-800 dark:bg-slate-900"
+                    >
+                      <div class="border-b border-slate-100 p-2 dark:border-slate-800">
+                        <div class="relative">
+                          <lucide-icon
+                            [img]="icons.Search"
+                            class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"
+                          ></lucide-icon>
+                          <input
+                            type="text"
+                            placeholder="Search district..."
+                            (input)="filterCities($event)"
+                            [value]="citySearch"
+                            class="w-full rounded-lg bg-slate-50 py-2 pl-9 pr-3 text-sm focus:outline-none dark:bg-slate-800"
+                            (click)="$event.stopPropagation()"
+                          />
+                        </div>
+                      </div>
+                      <div class="custom-scrollbar max-h-60 overflow-y-auto p-1">
+                        <button
+                          *ngFor="let city of filteredCities"
+                          type="button"
+                          (click)="selectCity(city)"
+                          class="w-full rounded-lg px-3 py-2 text-left text-sm transition-colors hover:bg-primary/10 hover:text-primary dark:text-slate-300"
+                        >
+                          {{ city }}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Area Select -->
+                <div class="relative space-y-2">
+                  <label class="block text-sm font-medium text-slate-700 dark:text-slate-300">
+                    Area/Upazila <span class="text-red-500">*</span>
+                  </label>
+                  <div class="relative">
+                    <button
+                      type="button"
+                      (click)="toggleAreaDropdown()"
+                      class="flex w-full items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-left transition-all hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-950"
+                      [class.opacity-50]="!checkoutForm.get('city')?.value"
+                      [class.border-primary]="isAreaDropdownOpen"
+                    >
+                      <span [class.text-slate-400]="!checkoutForm.get('area')?.value">
+                        {{ checkoutForm.get("area")?.value || "Select Area" }}
+                      </span>
+                      <lucide-icon
+                        [img]="isAreaDropdownOpen ? icons.ChevronUp : icons.ChevronDown"
+                        class="h-4 w-4 text-slate-400"
+                      ></lucide-icon>
+                    </button>
+
+                    <!-- Dropdown Content -->
+                    <div
+                      *ngIf="isAreaDropdownOpen"
+                      class="animate-fade-in-down absolute z-50 mt-2 w-full overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xl dark:border-slate-800 dark:bg-slate-900"
+                    >
+                      <div class="border-b border-slate-100 p-2 dark:border-slate-800">
+                        <div class="relative">
+                          <lucide-icon
+                            [img]="icons.Search"
+                            class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"
+                          ></lucide-icon>
+                          <input
+                            type="text"
+                            placeholder="Search area..."
+                            (input)="filterAreas($event)"
+                            [value]="areaSearch"
+                            class="w-full rounded-lg bg-slate-50 py-2 pl-9 pr-3 text-sm focus:outline-none dark:bg-slate-800"
+                            (click)="$event.stopPropagation()"
+                          />
+                        </div>
+                      </div>
+                      <div class="custom-scrollbar max-h-60 overflow-y-auto p-1">
+                        <button
+                          *ngFor="let area of filteredAreas"
+                          type="button"
+                          (click)="selectArea(area)"
+                          class="w-full rounded-lg px-3 py-2 text-left text-sm transition-colors hover:bg-primary/10 hover:text-primary dark:text-slate-300"
+                        >
+                          {{ area }}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="space-y-2">
+                <label
+                  for="address"
+                  class="block text-sm font-medium text-slate-700 dark:text-slate-300"
+                >
+                  Full Address <span class="text-red-500">*</span>
+                </label>
+                <div class="relative">
+                  <lucide-icon
+                    [img]="icons.MapPin"
+                    class="absolute left-3 top-4 h-4 w-4 text-slate-400"
+                  ></lucide-icon>
+                  <textarea
+                    id="address"
+                    formControlName="address"
+                    rows="2"
+                    placeholder="House no, Road no, Village, etc."
+                    class="min-h-[100px] w-full rounded-xl border border-slate-200 bg-slate-50 py-3 pl-10 pr-4 text-slate-900 ring-primary transition-all focus:border-primary focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/10 dark:border-slate-800 dark:bg-slate-950 dark:text-white"
+                  ></textarea>
+                </div>
+              </div>
             </div>
+          </div>
 
-            <div>
-              <label
-                class="block text-sm font-medium text-slate-700 dark:text-slate-300"
-                for="address"
-                >Delivery address</label
+          <!-- Shipping Methods -->
+          <div
+            class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900"
+          >
+            <div
+              class="border-b border-slate-100 bg-slate-50/50 px-6 py-4 dark:border-slate-800 dark:bg-slate-800/50"
+            >
+              <h2
+                class="flex items-center gap-2 text-lg font-bold text-slate-900 dark:text-white"
               >
-              <textarea
-                class="mt-1 block w-full rounded-lg border-slate-300 dark:border-slate-700 dark:bg-slate-800 shadow-sm focus:border-primary focus:ring-primary sm:text-sm py-3"
-                id="address"
-                rows="3"
-                formControlName="address"
-                placeholder="Street, city, and any landmarks"
-              ></textarea>
-              <p
-                class="text-xs text-red-500 mt-1"
-                *ngIf="
-                  checkoutForm.controls.address.touched &&
-                  checkoutForm.controls.address.invalid
-                "
-              >
-                Your delivery address is required.
-              </p>
+                <lucide-icon [img]="icons.Truck" class="h-5 w-5 text-primary"></lucide-icon>
+                Delivery Method
+              </h2>
             </div>
-
-            <div>
-              <label
-                class="block text-sm font-medium text-slate-700 dark:text-slate-300"
-                for="delivery-details"
-                >Product delivery details</label
-              >
-              <textarea
-                class="mt-1 block w-full rounded-lg border-slate-300 dark:border-slate-700 dark:bg-slate-800 shadow-sm focus:border-primary focus:ring-primary sm:text-sm py-3"
-                id="delivery-details"
-                rows="4"
-                formControlName="deliveryDetails"
-                placeholder="Preferred delivery time, drop-off notes, or other instructions"
-              ></textarea>
-              <p
-                class="text-xs text-red-500 mt-1"
-                *ngIf="
-                  checkoutForm.controls.deliveryDetails.touched &&
-                  checkoutForm.controls.deliveryDetails.invalid
-                "
-              >
-                Please add delivery instructions.
-              </p>
-            </div>
-
-            <hr class="border-slate-200 dark:border-slate-800" />
-
-            <div *ngIf="vm.deliveryMethods.length > 0">
-              <label
-                class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-4"
-                >Delivery Method</label
-              >
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="p-6">
+              <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <label
                   *ngFor="let method of vm.deliveryMethods"
-                  class="relative flex cursor-pointer rounded-lg border bg-white dark:bg-slate-900 p-4 shadow-sm focus:outline-none transition-all"
-                  [ngClass]="
-                    checkoutForm.get('deliveryMethodId')?.value === method.id
-                      ? 'border-primary ring-2 ring-primary bg-primary/5'
-                      : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700'
-                  "
+                  class="group relative cursor-pointer"
                 >
                   <input
                     type="radio"
-                    [value]="method.id"
                     formControlName="deliveryMethodId"
-                    class="sr-only"
+                    [value]="method.id"
+                    class="peer sr-only"
                   />
-                  <span class="flex flex-1">
-                    <span class="flex flex-col">
-                      <span
-                        class="block text-sm font-bold text-slate-900 dark:text-white uppercase tracking-tight"
-                        >{{ method.name }}</span
+                  <div
+                    class="flex h-full flex-col rounded-xl border-2 border-slate-100 p-4 transition-all hover:bg-slate-50 peer-checked:border-primary peer-checked:bg-primary/5 dark:border-slate-800 dark:hover:bg-slate-800/50"
+                  >
+                    <div class="mb-2 flex items-center justify-between">
+                      <p class="font-bold text-slate-900 dark:text-white">
+                        {{ method.name }}
+                      </p>
+                      <div
+                        class="flex h-5 w-5 items-center justify-center rounded-full border border-slate-300 bg-white peer-checked:border-primary dark:border-slate-600 dark:bg-slate-800"
                       >
-                      <span
-                        class="mt-1 flex items-center text-xs text-slate-500 dark:text-slate-400"
-                      >
-                        {{ method.estimatedDays || "Standard Delivery" }}
-                      </span>
-                      <span
-                        class="mt-2 text-sm font-bold text-primary dark:text-accent"
-                        >৳{{ method.cost }}</span
-                      >
-                    </span>
-                  </span>
-                  <lucide-icon
-                    [img]="icons.CheckCircle2"
-                    class="w-5 h-5 text-primary"
-                    [ngClass]="
-                      checkoutForm.get('deliveryMethodId')?.value === method.id
-                        ? 'opacity-100'
-                        : 'opacity-0'
-                    "
-                  ></lucide-icon>
+                        <div
+                          class="h-2.5 w-2.5 rounded-full bg-primary opacity-0 transition-opacity peer-checked:opacity-100"
+                          [class.opacity-100]="
+                            checkoutForm.get('deliveryMethodId')?.value === method.id
+                          "
+                        ></div>
+                      </div>
+                    </div>
+                    <p class="text-sm text-slate-500">{{ method.estimatedDays }}</p>
+                    <p class="mt-4 font-bold text-primary">
+                      {{
+                        method.cost === 0
+                          ? "Free"
+                          : ("\u09F3" + (method.cost | number: "1.2-2"))
+                      }}
+                    </p>
+                  </div>
                 </label>
               </div>
             </div>
           </div>
 
-          <div
-            class="flex flex-col-reverse sm:flex-row sm:justify-between items-center gap-4"
-          >
-            <a
-              class="flex items-center text-sm font-medium text-primary hover:text-primary/80 dark:text-accent dark:hover:text-accent/80 transition-colors"
-              routerLink="/cart"
-            >
-              <lucide-icon
-                [img]="icons.ArrowLeft"
-                class="w-4 h-4 mr-1"
-              ></lucide-icon>
-              Return to cart
-            </a>
-            <button
-              class="w-full sm:w-auto bg-primary hover:bg-primary/90 text-white rounded-lg px-8 py-4 text-base font-semibold shadow-md transition-all hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
-              type="button"
-              (click)="placeOrder()"
-              [disabled]="isLoading"
-            >
-              {{ isLoading ? "Placing order..." : "Place Order" }}
-            </button>
-          </div>
-
-          <p class="text-sm text-red-500" *ngIf="errorMessage">
-            {{ errorMessage }}
-          </p>
         </form>
       </div>
 
-      <div class="mt-10 lg:mt-0 lg:col-span-5">
-        <div class="sticky top-24">
-          <h2 class="sr-only">Order Summary</h2>
+      <!-- Order Summary Sidebar -->
+      <div class="lg:col-span-5">
+        <div class="sticky top-8 space-y-6">
           <div
-            class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden"
+            class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900"
           >
+            <div
+              class="border-b border-slate-100 bg-slate-50/50 px-6 py-4 dark:border-slate-800 dark:bg-slate-800/50"
+            >
+              <h2 class="text-lg font-bold text-slate-900 dark:text-white">Order Summary</h2>
+            </div>
             <div class="p-6">
-              <ul
-                class="divide-y divide-slate-200 dark:divide-slate-800"
-                role="list"
-              >
-                <li
-                  class="flex py-6 first:pt-0"
-                  *ngFor="let item of vm.cartItems; trackBy: trackCartItem"
+              <!-- Cart Items -->
+              <div class="mb-6 space-y-4">
+                <div
+                  *ngFor="let item of vm.cartItems"
+                  class="flex items-center gap-4 border-b border-slate-50 pb-4 last:border-0 last:pb-0 dark:border-slate-800/50"
                 >
                   <div
-                    class="h-24 w-24 flex-shrink-0 overflow-hidden rounded-md border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 relative"
+                    class="h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg bg-slate-100 dark:bg-slate-800"
                   >
-                    <span
-                      class="absolute top-0 right-0 -mr-2 -mt-2 w-6 h-6 rounded-full bg-slate-500 text-white text-xs flex items-center justify-center z-10 shadow-sm"
-                    >
-                      {{ item.quantity }}
-                    </span>
                     <img
-                      class="h-full w-full object-cover object-center"
-                      [attr.data-alt]="item.imageAlt"
                       [src]="imageUrlService.getImageUrl(item.imageUrl)"
+                      [alt]="item.name"
+                      class="h-full w-full object-cover"
                     />
                   </div>
-                  <div class="ml-4 flex flex-1 flex-col">
-                    <div>
-                      <div
-                        class="flex justify-between text-base font-medium text-slate-900 dark:text-white"
+                  <div class="flex-1 min-w-0">
+                    <p class="font-medium text-slate-900 dark:text-white truncate">
+                      {{ item.name }}
+                    </p>
+                    <p class="text-sm text-slate-500">Qty: {{ item.quantity }}</p>
+                    <div *ngIf="item.color || item.size" class="mt-1 flex gap-2 text-xs">
+                      <span
+                        *ngIf="item.color"
+                        class="rounded-full bg-slate-100 px-2 py-0.5 dark:bg-slate-800"
+                        >Color: {{ item.color }}</span
                       >
-                        <h3>{{ item.name }}</h3>
-                        <app-price-display
-                          class="ml-4"
-                          [amount]="item.price"
-                          size="sm"
-                        ></app-price-display>
-                      </div>
-                      <p
-                        class="mt-1 text-sm text-slate-500 dark:text-slate-400"
+                      <span
+                        *ngIf="item.size"
+                        class="rounded-full bg-slate-100 px-2 py-0.5 dark:bg-slate-800"
+                        >Size: {{ item.size }}</span
                       >
-                        {{ item.color }}
-                      </p>
-                      <p
-                        class="mt-1 text-sm text-slate-500 dark:text-slate-400"
-                      >
-                        Size: {{ item.size }}
-                      </p>
                     </div>
                   </div>
-                </li>
-              </ul>
-            </div>
-            <div
-              class="p-6 border-t border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/20 space-y-4"
-            >
-              <div class="flex items-center justify-between">
-                <p class="text-sm text-slate-600 dark:text-slate-400">
-                  Subtotal
-                </p>
-                <app-price-display
-                  class="text-sm font-medium text-slate-900 dark:text-white"
-                  [amount]="vm.summary.subtotal"
-                  size="sm"
-                ></app-price-display>
+                  <div class="text-right">
+                    <p class="font-bold text-slate-900 dark:text-white">
+                      <app-price-display
+                        [amount]="item.price * item.quantity"
+                      ></app-price-display>
+                    </p>
+                  </div>
+                </div>
               </div>
-              <div class="flex items-center justify-between">
-                <p class="text-sm text-slate-600 dark:text-slate-400">
-                  Shipping
-                </p>
-                <p class="text-sm font-medium text-slate-900 dark:text-white">
-                  <ng-container
-                    *ngIf="vm.summary.shipping === 0; else checkoutShipping"
-                  >
-                    Free
-                  </ng-container>
-                  <ng-template #checkoutShipping>
-                    <app-price-display
-                      [amount]="vm.summary.shipping"
-                      size="sm"
-                    ></app-price-display>
-                  </ng-template>
+
+              <!-- Costs -->
+              <div class="space-y-3 border-t border-slate-100 pt-6 dark:border-slate-800">
+                <div class="flex justify-between text-slate-600 dark:text-slate-400">
+                  <span>Subtotal</span>
+                  <app-price-display [amount]="vm.summary.subtotal"></app-price-display>
+                </div>
+                <div class="flex justify-between text-slate-600 dark:text-slate-400">
+                  <div class="flex items-center gap-1">
+                    <span>Shipping</span>
+                    <span
+                      *ngIf="vm.isFreeShipping"
+                      class="rounded-full bg-green-100 px-2 py-0.5 text-[10px] font-bold text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                    >
+                      FREE
+                    </span>
+                  </div>
+                  <span [class.line-through]="vm.isFreeShipping && vm.summary.shipping > 0">
+                    <app-price-display [amount]="vm.summary.shipping"></app-price-display>
+                  </span>
+                </div>
+                <div
+                  class="flex justify-between text-lg font-bold text-slate-900 dark:text-white pt-3 border-t border-slate-100 dark:border-slate-800"
+                >
+                  <span>Total</span>
+                  <app-price-display [amount]="vm.summary.total"></app-price-display>
+                </div>
+              </div>
+
+              <div *ngIf="errorMessage" class="mt-4 rounded-xl bg-red-50 p-4 dark:bg-red-950/30">
+                <p class="text-sm text-red-600 dark:text-red-400 italic">
+                  {{ errorMessage }}
                 </p>
               </div>
 
-              <div
-                class="flex items-center justify-between pt-4 border-t border-slate-200 dark:border-slate-700"
+              <button
+                type="submit"
+                (click)="placeOrder()"
+                [disabled]="isLoading || checkoutForm.invalid"
+                class="group mt-6 w-full relative flex items-center justify-center gap-3 overflow-hidden rounded-xl bg-primary px-8 py-4 font-bold text-white transition-all hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-50"
               >
-                <p class="text-base font-bold text-primary dark:text-white">
-                  Total
-                </p>
-                <div class="text-right">
-                  <app-price-display
-                    class="text-primary dark:text-white"
-                    [amount]="vm.summary.total"
-                    size="lg"
-                  ></app-price-display>
+                <lucide-icon
+                  *ngIf="isLoading"
+                  [img]="icons.CheckCircle2"
+                  class="h-5 w-5 animate-spin"
+                ></lucide-icon>
+                <span *ngIf="!isLoading">Place Order</span>
+                <span *ngIf="isLoading">Processing...</span>
+                <div
+                  class="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-1000 group-hover:translate-x-full"
+                ></div>
+              </button>
+
+              <div class="mt-6 flex items-center justify-center gap-4 text-xs text-slate-400">
+                <div class="flex items-center gap-1">
+                  <lucide-icon [img]="icons.CheckCircle2" class="h-3 w-3 text-green-500"></lucide-icon>
+                  Secure SSL
                 </div>
               </div>
             </div>

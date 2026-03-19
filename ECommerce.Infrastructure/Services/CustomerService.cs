@@ -24,10 +24,10 @@ public class CustomerService
             .FirstOrDefaultAsync(c => c.Phone == phone);
     }
 
-    public async Task<Customer> CreateOrUpdateCustomerAsync(string phone, string name, string address, string? deliveryDetails)
+    public async Task<Customer> CreateOrUpdateCustomerAsync(string phone, string name, string address, string? city, string? area, string? deliveryDetails, string? ip = null)
     {
-        var customer = await GetCustomerByPhoneAsync(phone);
-
+        var customer = await _context.Customers.FirstOrDefaultAsync(c => c.Phone == phone);
+ 
         if (customer == null)
         {
             customer = new Customer
@@ -35,7 +35,11 @@ public class CustomerService
                 Phone = phone,
                 Name = name,
                 Address = address,
-                DeliveryDetails = deliveryDetails
+                City = city,
+                Area = area,
+                DeliveryDetails = deliveryDetails,
+                LastKnownIp = ip,
+                CreatedAt = DateTime.UtcNow
             };
             _context.Customers.Add(customer);
         }
@@ -43,11 +47,14 @@ public class CustomerService
         {
             customer.Name = name;
             customer.Address = address;
+            customer.City = city;
+            customer.Area = area;
             customer.DeliveryDetails = deliveryDetails;
+            customer.LastKnownIp = ip;
             customer.UpdatedAt = DateTime.UtcNow;
             _context.Customers.Update(customer);
         }
-
+ 
         await _context.SaveChangesAsync();
         return customer;
     }

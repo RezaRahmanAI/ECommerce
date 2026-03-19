@@ -6,7 +6,6 @@ import {
   LayoutDashboard,
   ShoppingBag,
   Package,
-  Warehouse,
   GalleryVertical,
   FileText,
   MessageSquare,
@@ -63,17 +62,13 @@ export class AdminSidebarComponent implements OnInit {
 
   ngOnInit() {
     // Open menu if we are on a products route
-    if (
-      this.router.url.includes("/admin/products") ||
-      this.router.url.includes("/admin/inventory")
-    ) {
+    if (this.router.url.includes("/admin/products")) {
       this.isProductsMenuOpen = true;
     }
   }
 
   navItems: AdminNavItem[] = [
     { label: "Orders", icon: ShoppingBag, route: "/admin/orders" },
-    { label: "Inventory", icon: Warehouse, route: "/admin/inventory" },
 
     { label: "Banners", icon: GalleryVertical, route: "/admin/banners" },
     { label: "Content Pages", icon: FileText, route: "/admin/pages" },

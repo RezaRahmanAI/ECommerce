@@ -10,6 +10,8 @@ export interface Customer {
   address: string;
   deliveryDetails?: string;
   isSuspicious: boolean;
+  isBlocked: boolean;
+  lastKnownIp?: string;
   createdAt: string;
   updatedAt?: string;
 }
@@ -56,5 +58,13 @@ export class AdminCustomersService {
 
   unflagCustomer(id: number): Observable<any> {
     return this.api.post(`${this.baseUrl}/${id}/unflag`, {});
+  }
+ 
+  blockCustomer(id: number): Observable<any> {
+    return this.api.post(`${this.baseUrl}/${id}/block`, {});
+  }
+ 
+  unblockCustomer(id: number): Observable<any> {
+    return this.api.post(`${this.baseUrl}/${id}/unblock`, {});
   }
 }

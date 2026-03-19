@@ -18,7 +18,6 @@ public class OrderService : IOrderService
     private readonly IMapper _mapper;
     private readonly CustomerService _customerService;
     private readonly ISteadfastService _steadfastService;
-
     public OrderService(IUnitOfWork unitOfWork, IMapper mapper, CustomerService customerService, ISteadfastService steadfastService)
     {
         _unitOfWork = unitOfWork;
@@ -27,27 +26,27 @@ public class OrderService : IOrderService
         _steadfastService = steadfastService;
     }
 
-    public async Task<OrderDto> CreateOrderAsync(OrderCreateDto orderDto)
+    public async Task<OrderDto> CreateOrderAsync(OrderCreateDto orderDto, string? ipAddress = null)
     {
+        var customerRecord = await _customerService.GetCustomerByPhoneAsync(orderDto.Phone);
+        if (customerRecord != null && customerRecord.IsBlocked)
+        {
+            throw new InvalidOperationException("This phone number is blocked and cannot place orders.");
+        }
+ 
         var items = new List<OrderItem>();
         
         var productIds = orderDto.Items.Select(i => i.ProductId).Distinct().ToList();
         
-        var productsTask = _unitOfWork.Repository<Product>().ListAsync(new BaseSpecification<Product>(p => productIds.Contains(p.Id)));
-        
-        var hasVariants = orderDto.Items.Any(i => !string.IsNullOrEmpty(i.Size));
-        var variantsTask = hasVariants 
-            ? _unitOfWork.Repository<ProductVariant>().ListAsync(new BaseSpecification<ProductVariant>(v => productIds.Contains(v.ProductId)))
-            : Task.FromResult<IReadOnlyList<ProductVariant>>(new List<ProductVariant>());
-
-        var siteSettingsTask = _unitOfWork.Repository<SiteSetting>().ListAllAsync();
-        
-        await Task.WhenAll(productsTask, variantsTask, siteSettingsTask);
-        
-        var products = await productsTask;
+        var products = await _unitOfWork.Repository<Product>().ListAsync(new BaseSpecification<Product>(p => productIds.Contains(p.Id)));
         var productsDict = products.ToDictionary(p => p.Id);
-        var variantsList = (await variantsTask).ToList();
-        var siteSettings = await siteSettingsTask;
+
+        var hasVariants = orderDto.Items.Any(i => !string.IsNullOrEmpty(i.Size));
+        var variantsList = hasVariants 
+            ? (await _unitOfWork.Repository<ProductVariant>().ListAsync(new BaseSpecification<ProductVariant>(v => productIds.Contains(v.ProductId)))).ToList()
+            : new List<ProductVariant>();
+
+        var siteSettings = await _unitOfWork.Repository<SiteSetting>().ListAllAsync();
 
         foreach (var itemDto in orderDto.Items)
         {
@@ -118,6 +117,8 @@ public class OrderService : IOrderService
             CustomerName = orderDto.Name,
             CustomerPhone = orderDto.Phone,
             ShippingAddress = orderDto.Address,
+            City = orderDto.City,
+            Area = orderDto.Area,
             DeliveryDetails = orderDto.DeliveryDetails,
             Items = items,
             SubTotal = subtotal,
@@ -129,16 +130,20 @@ public class OrderService : IOrderService
         };
         
         order.Total = order.SubTotal + order.Tax + order.ShippingCost;
-
+        order.CreatedIp = ipAddress;
+ 
         _unitOfWork.Repository<Order>().Add(order);
-        
+  
         await _unitOfWork.Complete();
-
+ 
         await _customerService.CreateOrUpdateCustomerAsync(
             orderDto.Phone,
             orderDto.Name,
             orderDto.Address,
-            orderDto.DeliveryDetails
+            orderDto.City,
+            orderDto.Area,
+            orderDto.DeliveryDetails,
+            ipAddress
         );
         
         return _mapper.Map<Order, OrderDto>(order);
@@ -238,10 +243,10 @@ public class OrderService : IOrderService
         return false;
     }
 
-    public async Task<(IReadOnlyList<OrderDto> Items, int Total)> GetOrdersForAdminAsync(string? searchTerm, string? status, string? dateRange, int page, int pageSize)
+    public async Task<(IReadOnlyList<OrderDto> Items, int Total)> GetOrdersForAdminAsync(string? searchTerm, string? status, string? dateRange, int page, int pageSize, DateTime? startDate = null, DateTime? endDate = null)
     {
         pageSize = Math.Min(pageSize, 100);
-        var spec = new OrdersWithFiltersForAdminSpecification(searchTerm, status, dateRange);
+        var spec = new OrdersWithFiltersForAdminSpecification(searchTerm, status, dateRange, startDate, endDate);
         var total = await _unitOfWork.Repository<Order>().CountAsync(spec);
         
         spec.ApplyPaging(pageSize * (page - 1), pageSize);

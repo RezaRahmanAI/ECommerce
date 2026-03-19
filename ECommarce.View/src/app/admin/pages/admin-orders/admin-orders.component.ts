@@ -6,7 +6,7 @@ import {
   OnInit,
   inject,
 } from "@angular/core";
-import { FormControl, ReactiveFormsModule } from "@angular/forms";
+import { FormControl, ReactiveFormsModule, FormsModule } from "@angular/forms";
 import { RouterModule } from "@angular/router";
 import { debounceTime, distinctUntilChanged, Subject, takeUntil } from "rxjs";
 import {
@@ -49,6 +49,7 @@ interface OrderStats {
   imports: [
     CommonModule,
     ReactiveFormsModule,
+    FormsModule,
     RouterModule,
     PriceDisplayComponent,
     LucideAngularModule,
@@ -140,15 +141,8 @@ export class AdminOrdersComponent implements OnInit, OnDestroy {
     if (nextStatus === "Shipped") return "Mark as Shipped";
     return "Mark as Delivered";
   }
-  dateRanges: OrdersQueryParams["dateRange"][] = [
-    "Last 7 Days",
-    "Last 30 Days",
-    "This Year",
-    "All Time",
-  ];
-
-  selectedStatus: OrdersQueryParams["status"] = "All";
-  selectedDateRange: OrdersQueryParams["dateRange"] = "Last 30 Days";
+  startDate: string = "";
+  endDate: string = "";
 
   statusMenuOpen = false;
   dateMenuOpen = false;
@@ -205,14 +199,9 @@ export class AdminOrdersComponent implements OnInit, OnDestroy {
   toggleStatusMenu(event: Event): void {
     event.stopPropagation();
     this.statusMenuOpen = !this.statusMenuOpen;
-    this.dateMenuOpen = false;
   }
 
-  toggleDateMenu(event: Event): void {
-    event.stopPropagation();
-    this.dateMenuOpen = !this.dateMenuOpen;
-    this.statusMenuOpen = false;
-  }
+  selectedStatus: OrdersQueryParams["status"] = "All";
 
   setStatusFilter(status: OrdersQueryParams["status"], event: Event): void {
     event.stopPropagation();
@@ -221,11 +210,15 @@ export class AdminOrdersComponent implements OnInit, OnDestroy {
     this.page = 1;
     this.loadOrders();
   }
-
-  setDateRange(range: OrdersQueryParams["dateRange"], event: Event): void {
-    event.stopPropagation();
-    this.selectedDateRange = range;
-    this.dateMenuOpen = false;
+ 
+  applyCustomDate(): void {
+    this.page = 1;
+    this.loadOrders();
+  }
+ 
+  clearDates(): void {
+    this.startDate = "";
+    this.endDate = "";
     this.page = 1;
     this.loadOrders();
   }
@@ -263,6 +256,14 @@ export class AdminOrdersComponent implements OnInit, OnDestroy {
     this.actionMenuOpenId = null;
   }
 
+  changeStatus(order: Order, status: OrderStatus, event: Event): void {
+    event.stopPropagation();
+    this.ordersService.updateStatus(order.id, status).subscribe(() => {
+      this.loadOrders(false);
+    });
+    this.actionMenuOpenId = null;
+  }
+ 
   markNextStatus(order: Order, event: Event): void {
     event.stopPropagation();
     const nextStatus = this.getNextStatus(order.status);
@@ -354,7 +355,9 @@ export class AdminOrdersComponent implements OnInit, OnDestroy {
     return {
       searchTerm: this.searchControl.value,
       status: this.selectedStatus,
-      dateRange: this.selectedDateRange,
+      dateRange: "Custom",
+      startDate: this.startDate,
+      endDate: this.endDate,
       page: this.page,
       pageSize: this.pageSize,
     };

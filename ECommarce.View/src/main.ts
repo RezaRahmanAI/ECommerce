@@ -11,6 +11,7 @@ import {
   withInterceptors,
   withFetch,
 } from "@angular/common/http";
+import { provideCharts, withDefaultRegisterables } from "ng2-charts";
 
 import { AppComponent } from "./app/app.component";
 import { appRoutes } from "./app/app.routes";
@@ -46,5 +47,6 @@ bootstrapApplication(AppComponent, {
         baseUrl: environment.apiBaseUrl,
       },
     },
+    provideCharts(withDefaultRegisterables()),
   ],
 }).catch((err) => console.error(err));

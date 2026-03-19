@@ -48,7 +48,9 @@
     "ngx-quill": "^26.0.0",
     "quill": "^2.0.3",
     "rxjs": "^7.8.1",
-    "zone.js": "^0.14.7"
+    "zone.js": "^0.14.7",
+    "chart.js": "^4.4.4",
+    "ng2-charts": "^6.0.1"
   },
   "devDependencies": {
     "@angular-devkit/build-angular": "^18.2.0",

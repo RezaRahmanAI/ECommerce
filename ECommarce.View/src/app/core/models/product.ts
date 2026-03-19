@@ -11,7 +11,9 @@ export interface ProductVariant {
   sku?: string;
   size?: string;
   price?: number;
+  compareAtPrice?: number;
   stockQuantity: number;
+  isDefault?: boolean;
 }
 
 export interface Product {

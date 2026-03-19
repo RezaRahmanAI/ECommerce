@@ -22,6 +22,8 @@ public class Order : BaseEntity
     public string CustomerName { get; set; }
     public string CustomerPhone { get; set; }
     public string ShippingAddress { get; set; }
+    public string? City { get; set; }
+    public string? Area { get; set; }
     public string? DeliveryDetails { get; set; }
     
     // Financials
@@ -41,6 +43,7 @@ public class Order : BaseEntity
     public long? SteadfastConsignmentId { get; set; }
     public string? SteadfastTrackingCode { get; set; }
     public string? SteadfastStatus { get; set; }
+    public string? CreatedIp { get; set; }
 }
 
 public class OrderItem : BaseEntity
