@@ -395,15 +395,15 @@
 
     <!-- FLOATING CONTACT BUTTONS -->
     <div class="fixed bottom-6 right-6 flex flex-col gap-4 z-50 transition-all" *ngIf="siteSettings">
-      <a *ngIf="siteSettings.whatsAppNumber || siteSettings.WhatsAppNumber" 
-         [href]="'https://wa.me/' + (siteSettings.whatsAppNumber || siteSettings.WhatsAppNumber)" 
+      <a *ngIf="whatsappContact" 
+         [href]="'https://wa.me/' + whatsappContact" 
          target="_blank" 
          class="w-14 h-14 bg-[#25D366] text-white rounded-full flex items-center justify-center shadow-2xl transition-all hover:scale-110 active:scale-95" 
          title="WhatsApp">
         <lucide-icon [img]="icons.MessageSquare" class="w-7 h-7"></lucide-icon>
       </a>
-      <a *ngIf="siteSettings.contactPhone || siteSettings.ContactPhone" 
-         [href]="'tel:' + (siteSettings.contactPhone || siteSettings.ContactPhone)" 
+      <a *ngIf="phoneContact" 
+         [href]="'tel:' + phoneContact" 
          class="w-14 h-14 bg-[#1a73e8] text-white rounded-full flex items-center justify-center shadow-2xl transition-all hover:scale-110 active:scale-95" 
          title="Call Us">
         <lucide-icon [img]="icons.Phone" class="w-7 h-7"></lucide-icon>

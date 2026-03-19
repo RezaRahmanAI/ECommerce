@@ -108,6 +108,8 @@ export class LandingPageComponent implements OnInit {
   deliveryMethods: DeliveryMethod[] = [];
   selectedMethod: DeliveryMethod | null = null;
   siteSettings: SiteSettings | null = null;
+  whatsappContact = "";
+  phoneContact = "";
   reviews: PublicReview[] = [];
   currentReviewIndex = 0;
 
@@ -158,19 +160,14 @@ export class LandingPageComponent implements OnInit {
       takeUntilDestroyed(this.destroyRef),
       catchError(() => of(null))
     ).subscribe(settings => {
-      this.siteSettings = settings;
-      this.cdr.markForCheck();
+      this.updateSiteSettings(settings);
     });
 
     this.siteSettingsService.getSettings().pipe(
       takeUntilDestroyed(this.destroyRef),
       catchError(() => of(null))
     ).subscribe(settings => {
-      this.siteSettings = {
-        ...(this.siteSettings || {}),
-        ...(settings || {}),
-      } as SiteSettings | null;
-      this.cdr.markForCheck();
+      this.updateSiteSettings(settings);
     });
 
     this.loadProductAndSettings();
@@ -178,6 +175,25 @@ export class LandingPageComponent implements OnInit {
     
     // Initial area load for default district
     this.updateAreas("Dhaka");
+  }
+
+
+  private updateSiteSettings(settings: Partial<SiteSettings> | null): void {
+    if (!settings) {
+      return;
+    }
+
+    this.siteSettings = {
+      websiteName: settings.websiteName ?? this.siteSettings?.websiteName ?? "",
+      currency: settings.currency ?? this.siteSettings?.currency ?? "",
+      freeShippingThreshold: settings.freeShippingThreshold ?? this.siteSettings?.freeShippingThreshold ?? 0,
+      shippingCharge: settings.shippingCharge ?? this.siteSettings?.shippingCharge ?? 0,
+      ...this.siteSettings,
+      ...settings,
+    };
+    this.whatsappContact = this.siteSettings.whatsAppNumber ?? "";
+    this.phoneContact = this.siteSettings.contactPhone ?? "";
+    this.cdr.markForCheck();
   }
 
   private updateAreas(district: string): void {
