@@ -112,6 +112,7 @@ export class LandingPageComponent implements OnInit {
   phoneContact = "";
   reviews: PublicReview[] = [];
   currentReviewIndex = 0;
+  protected date = new Date();
 
   offerItems: OfferItem[] = [
     { id: 'bb', name: 'Blueberry Gel -100ml', price: 160, imageUrl: 'https://lovecarebd.online/wp-content/uploads/2026/02/Blueberry-800x800-1-300x300-1-1.jpg', quantity: 0 },
@@ -185,9 +186,7 @@ export class LandingPageComponent implements OnInit {
 
     this.siteSettings = {
       websiteName: settings.websiteName ?? this.siteSettings?.websiteName ?? "",
-      currency: settings.currency ?? this.siteSettings?.currency ?? "",
       freeShippingThreshold: settings.freeShippingThreshold ?? this.siteSettings?.freeShippingThreshold ?? 0,
-      shippingCharge: settings.shippingCharge ?? this.siteSettings?.shippingCharge ?? 0,
       ...this.siteSettings,
       ...settings,
     };

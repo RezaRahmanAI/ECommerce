@@ -1,9 +1,22 @@
-export interface DeliveryMethod {
-  id: number;
-  name: string;
-  cost: number;
-  estimatedDays?: string;
-  isActive: boolean;
+export interface AdminSettings {
+  websiteName: string;
+  logoUrl?: string;
+  contactEmail?: string;
+  contactPhone?: string;
+  facebookUrl?: string;
+  instagramUrl?: string;
+  twitterUrl?: string;
+  youtubeUrl?: string;
+  whatsAppNumber?: string;
+  freeShippingThreshold: number;
+  deliveryMethods: DeliveryMethod[];
+  shippingZones: ShippingZone[];
+  // Payment fields
+  stripeEnabled?: boolean;
+  paypalEnabled?: boolean;
+  stripePublishableKey?: string;
+  facebookPixelId?: string;
+  googleTagId?: string;
 }
 
 export interface ShippingZone {
@@ -13,27 +26,10 @@ export interface ShippingZone {
   rates: string[];
 }
 
-export interface AdminSettings {
-  websiteName: string;
-  logoUrl?: string;
-  contactEmail?: string;
-  contactPhone?: string;
-  address?: string;
-  facebookUrl?: string;
-  instagramUrl?: string;
-  twitterUrl?: string;
-  youtubeUrl?: string;
-  whatsAppNumber?: string;
-  currency?: string;
-  freeShippingThreshold?: number;
-  shippingCharge?: number;
-  deliveryMethods: DeliveryMethod[];
-  shippingZones: ShippingZone[];
-  // Deprecated/Legacy fields mapped if necessary or removed
-  stripeEnabled?: boolean;
-  paypalEnabled?: boolean;
-  stripePublishableKey?: string;
-  description?: string;
-  facebookPixelId?: string;
-  googleTagId?: string;
+export interface DeliveryMethod {
+  id: number;
+  name: string;
+  cost: number;
+  estimatedDays?: string;
+  isActive: boolean;
 }

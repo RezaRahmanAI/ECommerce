@@ -46,19 +46,16 @@ public class AdminSettingsController : ControllerBase
             LogoUrl = settings.LogoUrl,
             ContactEmail = settings.ContactEmail,
             ContactPhone = settings.ContactPhone,
-            Address = settings.Address,
             FacebookUrl = settings.FacebookUrl,
             InstagramUrl = settings.InstagramUrl,
             TwitterUrl = settings.TwitterUrl,
             YoutubeUrl = settings.YoutubeUrl,
             WhatsAppNumber = settings.WhatsAppNumber,
-            Description = settings.Description,
-            Currency = settings.Currency,
             FreeShippingThreshold = settings.FreeShippingThreshold,
-            ShippingCharge = settings.ShippingCharge,
             FacebookPixelId = settings.FacebookPixelId,
             GoogleTagId = settings.GoogleTagId,
-            DeliveryMethods = await _context.DeliveryMethods.ToListAsync()
+            DeliveryMethods = await _context.DeliveryMethods.ToListAsync(),
+            ShippingZones = await _context.ShippingZones.ToListAsync()
         });
     }
 
@@ -77,20 +74,17 @@ public class AdminSettingsController : ControllerBase
         settings.LogoUrl = dto.LogoUrl;
         settings.ContactEmail = dto.ContactEmail;
         settings.ContactPhone = dto.ContactPhone;
-        settings.Address = dto.Address;
         settings.FacebookUrl = dto.FacebookUrl;
         settings.InstagramUrl = dto.InstagramUrl;
         settings.TwitterUrl = dto.TwitterUrl;
         settings.YoutubeUrl = dto.YoutubeUrl;
         settings.WhatsAppNumber = dto.WhatsAppNumber;
-        settings.Description = dto.Description;
-        settings.Currency = dto.Currency;
         settings.FreeShippingThreshold = dto.FreeShippingThreshold;
-        settings.ShippingCharge = dto.ShippingCharge;
         settings.FacebookPixelId = dto.FacebookPixelId;
         settings.GoogleTagId = dto.GoogleTagId;
         settings.UpdatedAt = DateTime.UtcNow;
 
+        _context.SiteSettings.Update(settings);
         await _context.SaveChangesAsync();
 
         return Ok(dto);
@@ -165,6 +159,50 @@ public class AdminSettingsController : ControllerBase
         if (method == null) return NotFound();
 
         _context.DeliveryMethods.Remove(method);
+        await _context.SaveChangesAsync();
+        return NoContent();
+    }
+
+    // Shipping Zones CRUD
+    [HttpGet("shipping-zones")]
+    public async Task<ActionResult<IEnumerable<ShippingZone>>> GetShippingZones()
+    {
+        return await _context.ShippingZones.ToListAsync();
+    }
+
+    [HttpPost("shipping-zones")]
+    public async Task<ActionResult<ShippingZone>> CreateShippingZone([FromBody] ShippingZone zone)
+    {
+        zone.CreatedAt = DateTime.UtcNow;
+        _context.ShippingZones.Add(zone);
+        await _context.SaveChangesAsync();
+
+        return CreatedAtAction(nameof(GetShippingZones), new { id = zone.Id }, zone);
+    }
+
+    [HttpPost("shipping-zones/{id}")]
+    public async Task<IActionResult> UpdateShippingZone(int id, [FromBody] ShippingZone zoneDto)
+    {
+        var zone = await _context.ShippingZones.FindAsync(id);
+        if (zone == null) return NotFound();
+
+        zone.Name = zoneDto.Name;
+        zone.Region = zoneDto.Region;
+        zone.Rates = zoneDto.Rates;
+        zone.IsActive = zoneDto.IsActive;
+        zone.UpdatedAt = DateTime.UtcNow;
+
+        await _context.SaveChangesAsync();
+        return NoContent();
+    }
+
+    [HttpPost("shipping-zones/{id}/delete")]
+    public async Task<IActionResult> DeleteShippingZone(int id)
+    {
+        var zone = await _context.ShippingZones.FindAsync(id);
+        if (zone == null) return NotFound();
+
+        _context.ShippingZones.Remove(zone);
         await _context.SaveChangesAsync();
         return NoContent();
     }

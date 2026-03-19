@@ -21,7 +21,7 @@
     <div>
       <h1 class="text-3xl font-bold text-text-main tracking-tight">Settings</h1>
       <p class="text-text-secondary mt-1">
-        Manage store configuration, contact info, and social links.
+        Manage store configuration and contact info.
       </p>
     </div>
     <div class="flex gap-3">
@@ -202,35 +202,8 @@
               <div class="col-span-2 md:col-span-1">
                 <label
                   class="block text-sm font-medium text-text-main mb-1"
-                  for="currency"
-                  >Currency</label
-                >
-                <input
-                  class="block w-full rounded-lg border-border bg-background-light text-text-main shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
-                  id="currency"
-                  type="text"
-                  formControlName="currency"
-                />
-              </div>
-              <div class="col-span-2 md:col-span-1">
-                <label
-                  class="block text-sm font-medium text-text-main mb-1"
-                  for="shipping-charge"
-                  >Shipping Charge (৳)</label
-                >
-                <input
-                  class="block w-full rounded-lg border-border bg-background-light text-text-main shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
-                  id="shipping-charge"
-                  type="number"
-                  formControlName="shippingCharge"
-                  min="0"
-                />
-              </div>
-              <div class="col-span-2 md:col-span-1">
-                <label
-                  class="block text-sm font-medium text-text-main mb-1"
                   for="free-shipping-threshold"
-                  >Free Shipping Threshold</label
+                  >Free Shipping Threshold (৳)</label
                 >
                 <input
                   class="block w-full rounded-lg border-border bg-background-light text-text-main shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
@@ -239,35 +212,6 @@
                   formControlName="freeShippingThreshold"
                   min="0"
                 />
-              </div>
-              <div class="col-span-2">
-                <label
-                  class="block text-sm font-medium text-text-main mb-1"
-                  for="address"
-                  >Address</label
-                >
-                <textarea
-                  class="block w-full rounded-lg border-border bg-background-light text-text-main shadow-sm focus:border-primary focus:ring-primary sm:text-sm resize-none"
-                  id="address"
-                  rows="2"
-                  formControlName="address"
-                ></textarea>
-              </div>
-              <div class="col-span-2">
-                <label
-                  class="block text-sm font-medium text-text-main mb-1"
-                  for="description"
-                  >Store Description</label
-                >
-                <textarea
-                  class="block w-full rounded-lg border-border bg-background-light text-text-main shadow-sm focus:border-primary focus:ring-primary sm:text-sm resize-none"
-                  id="description"
-                  rows="3"
-                  formControlName="description"
-                ></textarea>
-                <p class="mt-2 text-xs text-text-secondary">
-                  Brief description for SEO and footer content.
-                </p>
               </div>
             </div>
           </div>
@@ -280,7 +224,7 @@
           <div class="p-6 border-b border-border">
             <h3 class="text-lg font-bold text-text-main">Social Links</h3>
             <p class="text-sm text-text-secondary">
-              Keep only the Messenger link used across the storefront.
+              Messenger link used across the storefront.
             </p>
           </div>
           <div class="p-6">
@@ -346,126 +290,6 @@
         </div>
       </section>
 
-      <!-- Payments Section (Keep as is, binding to payment form group) -->
-      <section
-        *ngIf="activeTab === 'Payments'"
-        class="bg-surface rounded-xl border border-border shadow-sm overflow-hidden"
-      >
-        <div
-          class="p-6 border-b border-border flex justify-between items-center"
-        >
-          <div>
-            <h3 class="text-lg font-bold text-text-main">Payment Gateways</h3>
-            <p class="text-sm text-text-secondary">
-              Manage how you accept payments.
-            </p>
-          </div>
-        </div>
-        <div
-          class="p-6 grid grid-cols-1 lg:grid-cols-2 gap-6"
-          formGroupName="payments"
-        >
-          <!-- Stripe Card -->
-          <div
-            class="border border-border rounded-xl p-5 flex flex-col justify-between relative overflow-hidden group hover:border-primary transition-colors bg-white"
-          >
-            <div class="flex justify-between items-start mb-4">
-              <div class="flex items-center gap-3">
-                <div
-                  class="size-10 bg-[#635BFF] text-white rounded-lg flex items-center justify-center font-bold text-xl"
-                >
-                  S
-                </div>
-                <div>
-                  <h4 class="font-bold text-text-main">Stripe</h4>
-                  <p class="text-xs text-text-secondary">
-                    Credit Card, Apple Pay
-                  </p>
-                </div>
-              </div>
-              <div
-                class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in"
-              >
-                <input
-                  class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer checked:right-0 checked:border-primary transition-all duration-300"
-                  id="stripe-toggle"
-                  name="toggle"
-                  type="checkbox"
-                  formControlName="stripeEnabled"
-                />
-                <label
-                  class="toggle-label block overflow-hidden h-5 rounded-full bg-accent cursor-pointer"
-                  for="stripe-toggle"
-                  [ngClass]="stripeEnabled ? '' : 'bg-gray-300'"
-                ></label>
-              </div>
-            </div>
-            <div class="space-y-3 mb-4">
-              <div>
-                <label
-                  class="text-[10px] uppercase font-bold text-text-secondary tracking-wider"
-                  >Publishable Key</label
-                >
-                <div
-                  class="flex items-center bg-background-light rounded border border-border px-2 py-1.5 mt-1"
-                >
-                  <code class="text-xs text-text-main truncate flex-1">{{
-                    stripePublishableKey
-                  }}</code>
-                  <button
-                    class="text-text-secondary hover:text-primary"
-                    type="button"
-                    (click)="copyStripeKey()"
-                  >
-                    <lucide-icon
-                      [img]="icons.Copy"
-                      class="w-4 h-4"
-                    ></lucide-icon>
-                  </button>
-                </div>
-                <p *ngIf="copiedKey" class="mt-1 text-xs text-green-600">
-                  Copied
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <!-- Paypal Card -->
-          <div
-            class="border border-border rounded-xl p-5 flex flex-col justify-between relative overflow-hidden group hover:border-primary transition-colors bg-white"
-          >
-            <div class="flex justify-between items-start mb-4">
-              <div class="flex items-center gap-3">
-                <div
-                  class="size-10 bg-[#003087] text-white rounded-lg flex items-center justify-center font-bold text-xl italic"
-                >
-                  P
-                </div>
-                <div>
-                  <h4 class="font-bold text-text-main">PayPal</h4>
-                  <p class="text-xs text-text-secondary">Wallet, Pay Later</p>
-                </div>
-              </div>
-              <div
-                class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in"
-              >
-                <input
-                  class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer transition-all duration-300"
-                  id="paypal-toggle"
-                  name="toggle"
-                  type="checkbox"
-                  formControlName="paypalEnabled"
-                />
-                <label
-                  class="toggle-label block overflow-hidden h-5 rounded-full bg-gray-300 cursor-pointer"
-                  for="paypal-toggle"
-                  [ngClass]="paypalEnabled ? 'bg-accent' : ''"
-                ></label>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
       <!-- Shipping Section -->
       <section *ngIf="activeTab === 'Shipping'" class="flex flex-col gap-6">
         <!-- Delivery Methods Table -->

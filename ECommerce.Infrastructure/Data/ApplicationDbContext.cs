@@ -33,6 +33,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<DailyTraffic> DailyTraffics { get; set; }
     public DbSet<BlockedIp> BlockedIps { get; set; }
     public DbSet<DeliveryMethod> DeliveryMethods { get; set; }
+    public DbSet<ShippingZone> ShippingZones { get; set; }
     public DbSet<ProductLandingPage> ProductLandingPages { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
@@ -221,7 +222,6 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         builder.Entity<SiteSetting>(entity =>
         {
             entity.Property(s => s.FreeShippingThreshold).HasColumnType("decimal(18,2)");
-            entity.Property(s => s.ShippingCharge).HasColumnType("decimal(18,2)");
         });
 
         // Customer Configuration

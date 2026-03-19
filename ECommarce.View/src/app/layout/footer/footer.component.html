@@ -22,7 +22,7 @@
         </ng-template>
       </div>
       <p class="text-gray-400 text-[11px] leading-loose tracking-wide max-w-sm">
-        {{ settings.description || "" }}
+        {{ settings.websiteName }} - Quality products delivered with care.
       </p>
 
       <!-- Socials -->
@@ -215,14 +215,7 @@
               >{{ settings.contactEmail }}</a
             >
           </li>
-          <li class="flex flex-col gap-2" *ngIf="settings.address">
-            <span class="opacity-50 text-[9px] uppercase tracking-[0.25em]"
-              >Address</span
-            >
-            <span class="leading-relaxed text-[10px]">{{
-              settings.address
-            }}</span>
-          </li>
+
         </ul>
       </div>
     </div>

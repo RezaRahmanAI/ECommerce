@@ -65,20 +65,17 @@ export class AdminSettingsComponent implements OnInit {
 
   settingsForm = this.formBuilder.group({
     websiteName: ["", Validators.required],
+    logoUrl: [""],
     contactEmail: ["", [Validators.email]],
-    address: [""],
+    contactPhone: [""],
     facebookUrl: [""],
+    instagramUrl: [""],
+    twitterUrl: [""],
+    youtubeUrl: [""],
     whatsAppNumber: [""],
-    currency: ["BDT"],
-    description: [""],
-    freeShippingThreshold: [0],
-    shippingCharge: [0],
+    freeShippingThreshold: [0, Validators.required],
     facebookPixelId: [""],
     googleTagId: [""],
-    payments: this.formBuilder.group({
-      stripeEnabled: [false],
-      paypalEnabled: [false],
-    }),
   });
 
   zoneForm = this.formBuilder.group({
@@ -131,30 +128,27 @@ export class AdminSettingsComponent implements OnInit {
 
       this.settingsForm.patchValue({
         websiteName: settings.websiteName,
+        logoUrl: settings.logoUrl,
         contactEmail: settings.contactEmail,
-        address: settings.address,
+        contactPhone: settings.contactPhone,
         facebookUrl: settings.facebookUrl,
+        instagramUrl: settings.instagramUrl,
+        twitterUrl: settings.twitterUrl,
+        youtubeUrl: settings.youtubeUrl,
         whatsAppNumber: settings.whatsAppNumber,
-        currency: settings.currency,
-        description: settings.description,
         freeShippingThreshold: settings.freeShippingThreshold,
-        shippingCharge: settings.shippingCharge,
         facebookPixelId: settings.facebookPixelId,
         googleTagId: settings.googleTagId,
-        payments: {
-          stripeEnabled: settings.stripeEnabled || false,
-          paypalEnabled: settings.paypalEnabled || false,
-        },
       });
     });
   }
 
   get stripeEnabled(): boolean {
-    return this.settingsForm.controls.payments.controls.stripeEnabled.value;
+    return !!this.lastSettings?.stripeEnabled;
   }
 
   get paypalEnabled(): boolean {
-    return this.settingsForm.controls.payments.controls.paypalEnabled.value;
+    return !!this.lastSettings?.paypalEnabled;
   }
 
   setActiveTab(tab: string): void {
@@ -173,21 +167,17 @@ export class AdminSettingsComponent implements OnInit {
     const formValue = this.settingsForm.getRawValue();
     const payload: AdminSettings = {
       websiteName: formValue.websiteName,
-      logoUrl: this.lastSettings?.logoUrl, // Preserved unless updated via upload
+      logoUrl: formValue.logoUrl,
       contactEmail: formValue.contactEmail,
-      contactPhone: this.lastSettings?.contactPhone,
-      address: formValue.address,
+      contactPhone: formValue.contactPhone,
       facebookUrl: formValue.facebookUrl,
-      instagramUrl: this.lastSettings?.instagramUrl,
-      twitterUrl: this.lastSettings?.twitterUrl,
-      youtubeUrl: this.lastSettings?.youtubeUrl,
+      instagramUrl: formValue.instagramUrl,
+      twitterUrl: formValue.twitterUrl,
+      youtubeUrl: formValue.youtubeUrl,
       whatsAppNumber: formValue.whatsAppNumber,
-      currency: formValue.currency,
-      description: formValue.description,
       freeShippingThreshold: formValue.freeShippingThreshold,
-      shippingCharge: formValue.shippingCharge,
-      stripeEnabled: formValue.payments.stripeEnabled,
-      paypalEnabled: formValue.payments.paypalEnabled,
+      stripeEnabled: this.lastSettings?.stripeEnabled,
+      paypalEnabled: this.lastSettings?.paypalEnabled,
       stripePublishableKey: this.stripePublishableKey,
       shippingZones: [...this.shippingZones],
       deliveryMethods: [...this.deliveryMethods],
@@ -218,18 +208,17 @@ export class AdminSettingsComponent implements OnInit {
 
     this.settingsForm.reset({
       websiteName: this.lastSettings.websiteName,
+      logoUrl: this.lastSettings.logoUrl,
       contactEmail: this.lastSettings.contactEmail,
-      address: this.lastSettings.address,
+      contactPhone: this.lastSettings.contactPhone,
       facebookUrl: this.lastSettings.facebookUrl,
+      instagramUrl: this.lastSettings.instagramUrl,
+      twitterUrl: this.lastSettings.twitterUrl,
+      youtubeUrl: this.lastSettings.youtubeUrl,
       whatsAppNumber: this.lastSettings.whatsAppNumber,
-      currency: this.lastSettings.currency,
-      description: this.lastSettings.description,
+      freeShippingThreshold: this.lastSettings.freeShippingThreshold,
       facebookPixelId: this.lastSettings.facebookPixelId,
       googleTagId: this.lastSettings.googleTagId,
-      payments: {
-        stripeEnabled: this.lastSettings.stripeEnabled || false,
-        paypalEnabled: this.lastSettings.paypalEnabled || false,
-      },
     });
 
     this.shippingZones = this.lastSettings.shippingZones || [];
@@ -270,8 +259,7 @@ export class AdminSettingsComponent implements OnInit {
         if (this.lastSettings) {
           this.lastSettings.logoUrl = res.url;
         }
-        // Update form or just preview? Form doesn't have logoUrl control explicitly binding to anything relevant for submit (except preservation),
-        // but we updated lastSettings.logoUrl so saveChanges() picks it up.
+        this.settingsForm.patchValue({ logoUrl: res.url });
         this.logoPreviewUrl = this.imageUrlService.getImageUrl(res.url);
       },
       error: (err) => {

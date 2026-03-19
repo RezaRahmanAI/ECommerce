@@ -15,21 +15,20 @@ public class SiteSetting : BaseEntity
     
     public string? ContactPhone { get; set; }
     
-    public string? Address { get; set; }
-    
     // Social Links
     public string? FacebookUrl { get; set; }
     public string? InstagramUrl { get; set; }
     public string? TwitterUrl { get; set; }
     public string? YoutubeUrl { get; set; }
     public string? WhatsAppNumber { get; set; }
-    public string? Description { get; set; }
     
     // Analytics & Retargeting
     public string? FacebookPixelId { get; set; }
     public string? GoogleTagId { get; set; }
 
-    public string? Currency { get; set; } = "BDT";
     public decimal FreeShippingThreshold { get; set; } = 5000;
-    public decimal ShippingCharge { get; set; } = 120;
+
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime? UpdatedAt { get; set; }
+    public bool IsDeleted { get; set; }
 }

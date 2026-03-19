@@ -118,11 +118,8 @@ export class ContactComponent {
         this.phone = settings.contactPhone || this.phone;
         this.phoneDial =
           settings.contactPhone?.replace(/[^0-9+]/g, "") || this.phoneDial;
-        this.address = settings.address || this.address;
-        this.addressLines = this.address ? this.address.split("\n") : [];
         this.mapDetails.storeName =
           settings.websiteName || this.mapDetails.storeName;
-        this.mapLocation = settings.address || this.mapLocation;
       }
     });
     this.helpCenterLink = this.router.config.some(
