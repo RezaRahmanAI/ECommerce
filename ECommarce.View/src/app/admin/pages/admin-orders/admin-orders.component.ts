@@ -147,6 +147,7 @@ export class AdminOrdersComponent implements OnInit, OnDestroy {
   statusMenuOpen = false;
   dateMenuOpen = false;
   actionMenuOpenId: number | null = null;
+  actionMenuPosition: { top: number; right: number } | null = null;
 
   selectedOrderIds = new Set<number>();
 
@@ -186,14 +187,20 @@ export class AdminOrdersComponent implements OnInit, OnDestroy {
   closeMenus(): void {
     this.statusMenuOpen = false;
     this.dateMenuOpen = false;
-    this.actionMenuOpenId = null;
+    this.closeActionMenu();
+  }
+
+  @HostListener("window:scroll")
+  @HostListener("window:resize")
+  closeActionMenuOnViewportChange(): void {
+    this.closeActionMenu();
   }
 
   @HostListener("document:keydown.escape")
   handleEscape(): void {
     this.statusMenuOpen = false;
     this.dateMenuOpen = false;
-    this.actionMenuOpenId = null;
+    this.closeActionMenu();
   }
 
   toggleStatusMenu(event: Event): void {
@@ -248,12 +255,29 @@ export class AdminOrdersComponent implements OnInit, OnDestroy {
 
   toggleRowActions(orderId: number, event: Event): void {
     event.stopPropagation();
-    this.actionMenuOpenId = this.actionMenuOpenId === orderId ? null : orderId;
+
+    if (this.actionMenuOpenId === orderId) {
+      this.closeActionMenu();
+      return;
+    }
+
+    const trigger = event.currentTarget as HTMLElement | null;
+    if (!trigger) {
+      this.closeActionMenu();
+      return;
+    }
+
+    const rect = trigger.getBoundingClientRect();
+    this.actionMenuOpenId = orderId;
+    this.actionMenuPosition = {
+      top: rect.bottom + 8,
+      right: Math.max(window.innerWidth - rect.right, 16),
+    };
   }
 
   viewDetails(event: Event): void {
     event.stopPropagation();
-    this.actionMenuOpenId = null;
+    this.closeActionMenu();
   }
 
   changeStatus(order: Order, status: OrderStatus, event: Event): void {
@@ -261,7 +285,7 @@ export class AdminOrdersComponent implements OnInit, OnDestroy {
     this.ordersService.updateStatus(order.id, status).subscribe(() => {
       this.loadOrders(false);
     });
-    this.actionMenuOpenId = null;
+    this.closeActionMenu();
   }
  
   markNextStatus(order: Order, event: Event): void {
@@ -272,7 +296,7 @@ export class AdminOrdersComponent implements OnInit, OnDestroy {
         this.loadOrders(false);
       });
     }
-    this.actionMenuOpenId = null;
+    this.closeActionMenu();
   }
 
   cancelOrder(order: Order, event: Event): void {
@@ -283,7 +307,7 @@ export class AdminOrdersComponent implements OnInit, OnDestroy {
         this.loadOrders(false);
       });
     }
-    this.actionMenuOpenId = null;
+    this.closeActionMenu();
   }
 
   exportOrders(): void {
@@ -403,6 +427,11 @@ export class AdminOrdersComponent implements OnInit, OnDestroy {
       .slice(0, 2)
       .join("")
       .toUpperCase();
+  }
+
+  private closeActionMenu(): void {
+    this.actionMenuOpenId = null;
+    this.actionMenuPosition = null;
   }
 
   private updateStats(orders: Order[]): void {
