@@ -24,6 +24,10 @@ import { ImageUrlService } from "../../../../core/services/image-url.service";
 import { NotificationService } from "../../../../core/services/notification.service";
 import { AnalyticsService } from "../../../../core/services/analytics.service";
 import { SHOW_LOADING } from "../../../../core/services/loading.service";
+import {
+  SiteSettings,
+  SiteSettingsService,
+} from "../../../../core/services/site-settings.service";
 
 import { ProductCardComponent } from "../../../../shared/components/product-card/product-card.component";
 import { SizeGuideComponent } from "../../../../shared/components/size-guide/size-guide.component";
@@ -38,6 +42,8 @@ import {
   Minus,
   Maximize2,
   Loader2,
+  MessageSquare,
+  MessageCircle,
 } from "lucide-angular";
 
 @Component({
@@ -66,6 +72,8 @@ export class ProductDetailsPageComponent {
     Minus,
     Maximize2,
     Loader2,
+    MessageSquare,
+    MessageCircle,
   };
   private readonly route = inject(ActivatedRoute);
   private readonly productService = inject(ProductService);
@@ -75,9 +83,11 @@ export class ProductDetailsPageComponent {
   private readonly router = inject(Router);
   readonly imageUrlService = inject(ImageUrlService);
   private readonly analyticsService = inject(AnalyticsService);
+  private readonly siteSettingsService = inject(SiteSettingsService);
 
   isSizeGuideOpen = false;
   currentImageIndex = 0;
+  siteSettings: SiteSettings | null = null;
 
   private readonly selectedColorSubject = new BehaviorSubject<{
     name: string;
@@ -193,6 +203,12 @@ export class ProductDetailsPageComponent {
   );
 
   selectionError = "";
+
+  constructor() {
+    this.siteSettingsService.getSettings().subscribe((settings) => {
+      this.siteSettings = settings;
+    });
+  }
 
   fullStars(rating: number): number[] {
     return Array.from({ length: Math.floor(rating) }, (_, index) => index);
