@@ -1,6 +1,14 @@
 import { Injectable, inject } from "@angular/core";
-import { Observable } from "rxjs";
+import { map, Observable } from "rxjs";
 import { ApiHttpClient } from "../../../core/http/http-client";
+
+interface PaginatedPublicReviewsResponse {
+  pageIndex: number;
+  pageSize: number;
+  totalItems: number;
+  totalPages: number;
+  reviews: PublicReview[];
+}
 
 export interface PublicReview {
   id: number;
@@ -22,7 +30,9 @@ export class PublicReviewService {
   private readonly baseUrl = "/reviews";
 
   getReviewsByProduct(productId: number): Observable<PublicReview[]> {
-    return this.api.get<PublicReview[]>(`${this.baseUrl}/products/${productId}`);
+    return this.api
+      .get<PublicReview[] | PaginatedPublicReviewsResponse>(`${this.baseUrl}/products/${productId}`)
+      .pipe(map((response) => Array.isArray(response) ? response : response.reviews ?? []));
   }
 
   getFeaturedReviews(): Observable<PublicReview[]> {
