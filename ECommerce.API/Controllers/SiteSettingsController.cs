@@ -8,7 +8,7 @@ namespace ECommerce.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [ResponseCache(Duration = 300, VaryByHeader = "Accept-Encoding")]
+    [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
     public class SiteSettingsController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
@@ -19,7 +19,6 @@ namespace ECommerce.API.Controllers
         }
 
         [HttpGet]
-        [ResponseCache(Duration = 300)]
         public async Task<ActionResult<SiteSetting>> GetSettings()
         {
             var settings = await _context.SiteSettings.FirstOrDefaultAsync();
