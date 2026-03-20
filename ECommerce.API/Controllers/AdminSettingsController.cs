@@ -148,6 +148,7 @@ public class AdminSettingsController : ControllerBase
         method.IsActive = dto.IsActive;
         method.UpdatedAt = DateTime.UtcNow;
 
+        _context.DeliveryMethods.Update(method);
         await _context.SaveChangesAsync();
         return NoContent();
     }
@@ -192,6 +193,7 @@ public class AdminSettingsController : ControllerBase
         zone.IsActive = zoneDto.IsActive;
         zone.UpdatedAt = DateTime.UtcNow;
 
+        _context.ShippingZones.Update(zone);
         await _context.SaveChangesAsync();
         return NoContent();
     }

@@ -52,6 +52,8 @@ interface OfferItem {
   price: number;
   imageUrl: string;
   quantity: number;
+  description?: string;
+  shortDescription?: string;
 }
 
 @Component({
@@ -113,6 +115,11 @@ export class LandingPageComponent implements OnInit {
   reviews: PublicReview[] = [];
   currentReviewIndex = 0;
   protected date = new Date();
+
+  // Modal State
+  isModalOpen = false;
+  selectedPopupItem: OfferItem | null = null;
+  modalQuantity = 1;
 
   offerItems: OfferItem[] = [
     { id: 'bb', name: 'Blueberry Gel -100ml', price: 160, imageUrl: 'https://lovecarebd.online/wp-content/uploads/2026/02/Blueberry-800x800-1-300x300-1-1.jpg', quantity: 0 },
@@ -247,7 +254,9 @@ export class LandingPageComponent implements OnInit {
                 name: item.name,
                 price: item.price,
                 imageUrl: this.imageUrlService.getImageUrl(item.imageUrl || ''),
-                quantity: item.id === product.id ? 1 : 0
+                quantity: item.id === product.id ? 1 : 0,
+                description: item.description,
+                shortDescription: item.shortDescription
               }));
 
               // Ensure current product is first
@@ -261,7 +270,9 @@ export class LandingPageComponent implements OnInit {
                   name: product.name,
                   price: product.price,
                   imageUrl: this.imageUrlService.getImageUrl(product.imageUrl || ''),
-                  quantity: 1
+                  quantity: 1,
+                  description: product.description,
+                  shortDescription: product.shortDescription
                 });
               }
             }
@@ -615,6 +626,32 @@ export class LandingPageComponent implements OnInit {
     if (this.product && this.product.imageUrl) {
       const target = event.target as HTMLImageElement;
       target.src = this.imageUrlService.getImageUrl(this.product.imageUrl);
+    }
+  }
+
+  // Modal Methods
+  openProductModal(item: OfferItem): void {
+    this.selectedPopupItem = item;
+    this.modalQuantity = item.quantity > 0 ? item.quantity : 1;
+    this.isModalOpen = true;
+    this.cdr.markForCheck();
+  }
+
+  closeProductModal(): void {
+    this.isModalOpen = false;
+    this.selectedPopupItem = null;
+    this.cdr.markForCheck();
+  }
+
+  updateModalQuantity(delta: number): void {
+    this.modalQuantity = Math.max(1, this.modalQuantity + delta);
+    this.cdr.markForCheck();
+  }
+
+  confirmModalAdd(): void {
+    if (this.selectedPopupItem) {
+      this.selectedPopupItem.quantity = this.modalQuantity;
+      this.closeProductModal();
     }
   }
 }

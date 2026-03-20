@@ -63,7 +63,8 @@ public class ProductLandingPageService : IProductLandingPageService
         lp.UsageContent = dto.UsageContent;
         lp.ThemeColor = dto.ThemeColor;
         lp.Subtitle = dto.Subtitle;
-
+        
+        _context.ProductLandingPages.Update(lp);
         await _context.SaveChangesAsync();
 
         return MapToDto(lp);

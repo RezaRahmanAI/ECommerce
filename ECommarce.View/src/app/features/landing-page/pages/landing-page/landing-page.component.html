@@ -30,12 +30,12 @@
         </div>
         
         <!-- CTA Button (Slightly smaller for compact top) -->
-        <div class="mt-4 animate-fade-in delay-300 flex flex-col gap-3 w-full max-w-[540px]">
-          <a *ngIf="siteSettings?.facebookUrl"
+        <div class="mt-8 animate-fade-in delay-300 flex flex-col w-full max-w-[420px] mx-auto">
+          <!-- <a *ngIf="siteSettings?.facebookUrl"
              [href]="siteSettings?.facebookUrl"
              target="_blank"
              rel="noopener noreferrer"
-             class="w-full h-12 bg-[#0084FF] hover:bg-[#0077e6] text-white text-sm font-semibold transition-colors flex items-center justify-center gap-2 shadow-xl">
+             class="bg-[#0084FF] text-white px-8 h-12 text-sm font-semibold flex items-center justify-center gap-2 hover:bg-[#0077e6] transition-all duration-300">
             <lucide-icon [img]="icons.MessageSquare" class="w-4 h-4"></lucide-icon>
             Chat with us
           </a>
@@ -43,12 +43,13 @@
              [href]="'https://wa.me/' + siteSettings?.whatsAppNumber"
              target="_blank"
              rel="noopener noreferrer"
-             class="w-full h-12 bg-[#25D366] hover:bg-[#20bd5a] text-white text-sm font-semibold transition-colors flex items-center justify-center gap-2 shadow-xl">
+             class="bg-[#25D366] text-white px-8 h-12 text-sm font-semibold flex items-center justify-center gap-2 hover:bg-[#20bd5a] transition-all duration-300">
             <lucide-icon [img]="icons.MessageSquare" class="w-4 h-4"></lucide-icon>
             WhatsApp Us
-          </a>
+          </a> -->
           <button (click)="scrollToOrderForm()" 
-                  class="bg-white hover:bg-gray-100 text-[#1a1a1a] px-8 py-3 text-xs uppercase tracking-[0.15em] font-bold transition-colors shadow-xl">
+                  class="bg-[#1a1a1a] text-white px-8 h-12 text-xs font-semibold uppercase tracking-[0.15em] flex items-center justify-center gap-2 hover:bg-[#333] transition-all duration-300 w-full">
+            <lucide-icon [img]="icons.ShoppingCart" class="w-4 h-4"></lucide-icon>
             Buy It Now
           </button>
         </div>
@@ -81,7 +82,7 @@
                [href]="siteSettings?.facebookUrl"
                target="_blank"
                rel="noopener noreferrer"
-               class="bg-[#0084FF] text-white px-8 h-12 text-sm font-semibold flex items-center justify-center gap-2 hover:bg-[#0077e6] transition-colors">
+               class="bg-[#0084FF] text-white px-8 h-12 text-sm font-semibold flex items-center justify-center gap-2 hover:bg-[#0077e6] transition-all duration-300">
               <lucide-icon [img]="icons.MessageSquare" class="w-4 h-4"></lucide-icon>
               Chat with us
             </a>
@@ -89,12 +90,12 @@
                [href]="'https://wa.me/' + siteSettings?.whatsAppNumber"
                target="_blank"
                rel="noopener noreferrer"
-               class="bg-[#25D366] text-white px-8 h-12 text-sm font-semibold flex items-center justify-center gap-2 hover:bg-[#20bd5a] transition-colors">
+               class="bg-[#25D366] text-white px-8 h-12 text-sm font-semibold flex items-center justify-center gap-2 hover:bg-[#20bd5a] transition-all duration-300">
               <lucide-icon [img]="icons.MessageSquare" class="w-4 h-4"></lucide-icon>
               WhatsApp Us
             </a>
             <button (click)="scrollToOrderForm()" 
-                    class="bg-[#1a1a1a] text-white px-8 h-12 text-xs font-semibold uppercase tracking-[0.15em] flex items-center justify-center gap-2 mx-auto lg:mx-0 hover:bg-[#333] transition-colors w-full">
+                    class="bg-[#1a1a1a] text-white px-8 h-12 text-xs font-semibold uppercase tracking-[0.15em] flex items-center justify-center gap-2 mx-auto lg:mx-0 hover:bg-[#333] transition-all duration-300 w-full">
               <lucide-icon [img]="icons.ShoppingCart" class="w-4 h-4"></lucide-icon>
               Buy It Now
             </button>
@@ -125,7 +126,7 @@
                [href]="siteSettings?.facebookUrl"
                target="_blank"
                rel="noopener noreferrer"
-               class="bg-[#0084FF] text-white px-8 h-12 text-sm font-semibold flex items-center justify-center gap-2 hover:bg-[#0077e6] transition-colors">
+               class="bg-[#0084FF] text-white px-8 h-12 text-sm font-semibold flex items-center justify-center gap-2 hover:bg-[#0077e6] transition-all duration-300">
               <lucide-icon [img]="icons.MessageSquare" class="w-4 h-4"></lucide-icon>
               Chat with us
             </a>
@@ -133,12 +134,12 @@
                [href]="'https://wa.me/' + siteSettings?.whatsAppNumber"
                target="_blank"
                rel="noopener noreferrer"
-               class="bg-[#25D366] text-white px-8 h-12 text-sm font-semibold flex items-center justify-center gap-2 hover:bg-[#20bd5a] transition-colors">
+               class="bg-[#25D366] text-white px-8 h-12 text-sm font-semibold flex items-center justify-center gap-2 hover:bg-[#20bd5a] transition-all duration-300">
               <lucide-icon [img]="icons.MessageSquare" class="w-4 h-4"></lucide-icon>
               WhatsApp Us
             </a>
             <button (click)="scrollToOrderForm()" 
-                    class="bg-[#1a1a1a] text-white px-8 h-12 text-xs font-semibold uppercase tracking-[0.15em] flex items-center justify-center gap-2 mx-auto lg:mx-0 hover:bg-[#333] transition-colors w-full">
+                    class="bg-[#1a1a1a] text-white px-8 h-12 text-xs font-semibold uppercase tracking-[0.15em] flex items-center justify-center gap-2 mx-auto lg:mx-0 hover:bg-[#333] transition-all duration-300 w-full">
               <lucide-icon [img]="icons.ShoppingCart" class="w-4 h-4"></lucide-icon>
               Buy It Now
             </button>
@@ -238,16 +239,18 @@
         <div class="text-[12px] uppercase tracking-widest font-bold text-[#1a1a1a] mb-6 pb-2 border-gray-200 border-b">Your Products</div>
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-10" id="productsGrid">
           <div *ngFor="let item of offerItems" 
-               class="bg-white border-2 rounded-none p-4 text-center transition-all cursor-pointer hover:border-[#1a1a1a] hover:shadow-lg" 
+               class="bg-white border-2 rounded-none p-4 text-center transition-all cursor-pointer hover:border-[#1a1a1a] hover:shadow-lg relative" 
                [class]="item.quantity > 0 ? 'border-[#1a1a1a] shadow-md' : 'border-[#f0f0f0]'">
-            <img [src]="item.imageUrl" [alt]="item.name" loading="lazy" class="w-24 h-24 object-contain mx-auto mb-2">
-            <div class="text-[12px] uppercase tracking-wider font-semibold text-[#1a1a1a] mb-1 leading-tight h-10 flex items-center justify-center">{{ item.name }}</div>
+            <div (click)="openProductModal(item)" class="mb-2">
+              <img [src]="item.imageUrl" [alt]="item.name" loading="lazy" class="w-24 h-24 object-contain mx-auto">
+              <div class="text-[11px] uppercase tracking-wider font-semibold text-[#1a1a1a] mt-2 leading-tight h-10 flex items-center justify-center line-clamp-2 px-1">{{ item.name }}</div>
+            </div>
             <div class="text-base font-bold text-[#c8922a] mb-3">৳ {{ item.price | number:'1.2-2' }}</div>
-            <div class="flex items-center justify-center border border-[#e0e0e0] rounded-none overflow-hidden h-10">
-              <button (click)="changeQty(item, -1)" class="bg-white hover:bg-[#fafafa] w-10 h-full font-bold transition-colors border-r border-[#e0e0e0]">−</button>
-              <input type="number" [value]="item.quantity" min="0" (input)="updateQuantity(item, $event)" 
+            <div class="flex items-center justify-center border border-[#e0e0e0] rounded-none overflow-hidden h-10 relative z-10">
+              <button (click)="$event.stopPropagation(); changeQty(item, -1)" class="bg-white hover:bg-[#fafafa] w-10 h-full font-bold transition-colors border-r border-[#e0e0e0]">−</button>
+              <input type="number" [value]="item.quantity" min="0" (input)="$event.stopPropagation(); updateQuantity(item, $event)" 
                      class="w-12 border-none text-center font-bold text-sm py-1 outline-none bg-transparent text-[#1a1a1a]">
-              <button (click)="changeQty(item, 1)" class="bg-white hover:bg-[#fafafa] w-10 h-full font-bold transition-colors border-l border-[#e0e0e0]">+</button>
+              <button (click)="$event.stopPropagation(); changeQty(item, 1)" class="bg-white hover:bg-[#fafafa] w-10 h-full font-bold transition-colors border-l border-[#e0e0e0]">+</button>
             </div>
           </div>
         </div>
@@ -393,22 +396,71 @@
       <p>© {{ date.getFullYear() }} {{ siteSettings?.websiteName || "Brand Name" }}. All Rights Reserved.</p>
     </footer>
 
-    <!-- FLOATING CONTACT BUTTONS -->
-    <div class="fixed bottom-6 right-6 flex flex-col gap-4 z-50 transition-all" *ngIf="siteSettings">
-      <a *ngIf="whatsappContact" 
-         [href]="'https://wa.me/' + whatsappContact" 
-         target="_blank" 
-         class="w-14 h-14 bg-[#25D366] text-white rounded-full flex items-center justify-center shadow-2xl transition-all hover:scale-110 active:scale-95" 
-         title="WhatsApp">
-        <lucide-icon [img]="icons.MessageSquare" class="w-7 h-7"></lucide-icon>
-      </a>
-      <a *ngIf="phoneContact" 
-         [href]="'tel:' + phoneContact" 
-         class="w-14 h-14 bg-[#1a73e8] text-white rounded-full flex items-center justify-center shadow-2xl transition-all hover:scale-110 active:scale-95" 
-         title="Call Us">
-        <lucide-icon [img]="icons.Phone" class="w-7 h-7"></lucide-icon>
-      </a>
-    </div>
 
+
+  </div>
+</div>
+
+<!-- PRODUCT DETAILS MODAL -->
+<div *ngIf="isModalOpen && selectedPopupItem" 
+     class="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-6 bg-black/60 backdrop-blur-sm animate-fade-in"
+     (click)="closeProductModal()">
+  <div class="bg-white w-full max-w-2xl max-h-[90vh] overflow-y-auto relative animate-modal-in" 
+       (click)="$event.stopPropagation()">
+    
+    <!-- Close Button -->
+    <button (click)="closeProductModal()" 
+            class="absolute top-4 right-4 p-2 text-gray-400 hover:text-black transition-colors z-10">
+      <lucide-icon [img]="icons.Loader2" class="w-6 h-6 rotate-45"></lucide-icon>
+    </button>
+
+    <div class="grid grid-cols-1 md:grid-cols-2">
+      <!-- Image Column -->
+      <div class="bg-[#fafafa] p-8 flex items-center justify-center border-b md:border-b-0 md:border-r border-gray-100">
+        <img [src]="selectedPopupItem.imageUrl" 
+             [alt]="selectedPopupItem.name" 
+             class="w-full h-auto max-h-[300px] object-contain drop-shadow-xl">
+      </div>
+
+      <!-- Content Column -->
+      <div class="p-6 md:p-8 flex flex-col gap-6">
+        <div>
+          <h3 class="text-xl font-serif italic text-primary mb-2">{{ selectedPopupItem.name }}</h3>
+          <div class="text-2xl font-bold text-[#c8922a]">৳ {{ selectedPopupItem.price | number:'1.2-2' }}</div>
+        </div>
+
+        <div class="space-y-4">
+          <div *ngIf="selectedPopupItem.shortDescription" class="text-sm text-[#555] leading-relaxed break-words line-clamp-3">
+            {{ selectedPopupItem.shortDescription }}
+          </div>
+          <div *ngIf="selectedPopupItem.description" 
+               class="text-xs text-gray-400 leading-relaxed ql-editor !p-0 !text-left line-clamp-6" 
+               [innerHTML]="selectedPopupItem.description"></div>
+        </div>
+
+        <div class="mt-auto space-y-6">
+          <div class="flex flex-col gap-2">
+            <span class="text-[10px] uppercase tracking-widest font-bold text-gray-400">Select Quantity</span>
+            <div class="flex items-center border border-[#e0e0e0] w-fit">
+              <button (click)="updateModalQuantity(-1)" 
+                      class="px-5 py-3 hover:bg-gray-50 transition-colors border-r border-[#e0e0e0]">
+                <lucide-icon [img]="icons.Minus" class="w-4 h-4"></lucide-icon>
+              </button>
+              <span class="px-8 py-3 font-bold text-lg min-w-[60px] text-center">{{ modalQuantity }}</span>
+              <button (click)="updateModalQuantity(1)" 
+                      class="px-5 py-3 hover:bg-gray-50 transition-colors border-l border-[#e0e0e0]">
+                <lucide-icon [img]="icons.Plus" class="w-4 h-4"></lucide-icon>
+              </button>
+            </div>
+          </div>
+
+          <button (click)="confirmModalAdd()" 
+                  class="w-full bg-[#1a1a1a] text-white py-4 px-6 text-sm uppercase tracking-[0.2em] font-bold transition-all hover:bg-[#333] flex items-center justify-center gap-3 active:scale-[0.98]">
+            <lucide-icon [img]="icons.ShoppingCart" class="w-5 h-5"></lucide-icon>
+            Add To Order
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
