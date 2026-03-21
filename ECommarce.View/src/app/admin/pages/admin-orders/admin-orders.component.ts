@@ -28,6 +28,7 @@ import {
   ChevronRight,
   ArrowUp,
   ArrowDown,
+  Filter,
 } from "lucide-angular";
 
 import {
@@ -77,6 +78,7 @@ export class AdminOrdersComponent implements OnInit, OnDestroy {
     ChevronRight,
     ArrowUp,
     ArrowDown,
+    Filter,
   };
   private ordersService = inject(OrdersService);
   private destroy$ = new Subject<void>();
@@ -151,7 +153,6 @@ export class AdminOrdersComponent implements OnInit, OnDestroy {
   startDate: string = "";
   endDate: string = "";
 
-  statusMenuOpen = false;
   dateMenuOpen = false;
   actionMenuOpenId: number | null = null;
   actionMenuPosition: { top: number; right: number } | null = null;
@@ -192,7 +193,6 @@ export class AdminOrdersComponent implements OnInit, OnDestroy {
 
   @HostListener("document:click")
   closeMenus(): void {
-    this.statusMenuOpen = false;
     this.dateMenuOpen = false;
     this.closeActionMenu();
   }
@@ -205,15 +205,10 @@ export class AdminOrdersComponent implements OnInit, OnDestroy {
 
   @HostListener("document:keydown.escape")
   handleEscape(): void {
-    this.statusMenuOpen = false;
     this.dateMenuOpen = false;
     this.closeActionMenu();
   }
 
-  toggleStatusMenu(event: Event): void {
-    event.stopPropagation();
-    this.statusMenuOpen = !this.statusMenuOpen;
-  }
 
   selectedStatus: OrdersQueryParams["status"] = "All";
   selectedDateRange: string = "All Time";
@@ -228,14 +223,6 @@ export class AdminOrdersComponent implements OnInit, OnDestroy {
     this.loadOrders();
   }
 
-  setStatusFilter(status: OrdersQueryParams["status"], event: Event): void {
-    event.stopPropagation();
-    this.selectedStatus = status;
-    this.selectedStatusTab = status;
-    this.statusMenuOpen = false;
-    this.page = 1;
-    this.loadOrders();
-  }
  
   toggleSort(column: string): void {
     if (this.sortColumn === column) {
