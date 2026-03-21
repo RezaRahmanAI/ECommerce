@@ -97,8 +97,6 @@ export class AdminProductFormComponent implements OnDestroy {
 
   mediaError = "";
   private mediaFileMap = new Map<string, File>();
-  reviewImagesList: string[] = [];
-
   @ViewChild("descriptionArea")
   descriptionArea!: ElementRef<HTMLTextAreaElement>;
 
@@ -108,8 +106,8 @@ export class AdminProductFormComponent implements OnDestroy {
       statusActive: [true],
       category: ["", []],
       gender: ["women"],
-      price: [0, [Validators.required, Validators.min(0)]],
-      salePrice: [null as number | null, [Validators.min(0)]],
+      price: [0, [Validators.required, Validators.min(0.01)]],
+      salePrice: [null as number | null, [Validators.min(0.01)]],
       purchaseRate: [0],
 
       isItemProduct: [true],
@@ -122,13 +120,14 @@ export class AdminProductFormComponent implements OnDestroy {
       landingPage: this.formBuilder.group({
         headline: [""],
         subtitle: [""],
-        benefitsTitle: [""],
+        videoUrl: [""],
+        themeColor: ["#1a1a1a"],
+        benefitsTitle: ["লুব্রিকেন্ট জেল ব্যবহারের সুবিধাঃ"],
         benefitsContent: [""],
-        reviewsTitle: [""],
-        reviewsImages: [""],
-        sideEffectsTitle: [""],
+        reviewsTitle: ["কাস্টমার রিভিউ"],
+        sideEffectsTitle: ["পার্শ্বপ্রতিক্রিয়াঃ"],
         sideEffectsContent: [""],
-        usageTitle: [""],
+        usageTitle: ["ব্যবহারের নিয়মঃ"],
         usageContent: [""],
       }),
     },
@@ -314,54 +313,24 @@ export class AdminProductFormComponent implements OnDestroy {
   }
 
   loadLandingPage(productId: number): void {
-    this.reviewImagesList = []; // Reset before loading
     this.landingPageService.getLandingPage(productId).subscribe({
       next: (lp) => {
         this.form.get("landingPage")?.patchValue({
           headline: lp.headline ?? "",
           subtitle: lp.subtitle ?? "",
+          videoUrl: lp.videoUrl ?? "",
+          themeColor: lp.themeColor ?? "#1a1a1a",
           benefitsTitle: lp.benefitsTitle ?? "",
           benefitsContent: lp.benefitsContent ?? "",
           reviewsTitle: lp.reviewsTitle ?? "",
-          reviewsImages: lp.reviewsImages ?? "",
           sideEffectsTitle: lp.sideEffectsTitle ?? "",
           sideEffectsContent: lp.sideEffectsContent ?? "",
           usageTitle: lp.usageTitle ?? "",
           usageContent: lp.usageContent ?? "",
         });
-
-        if (lp.reviewsImages) {
-          try {
-            if (lp.reviewsImages.startsWith("[") && lp.reviewsImages.endsWith("]")) {
-              this.reviewImagesList = JSON.parse(lp.reviewsImages);
-            } else if (lp.reviewsImages.trim()) {
-              this.reviewImagesList = [lp.reviewsImages];
-            }
-          } catch {
-            this.reviewImagesList = [];
-          }
-        }
       },
       error: () => console.log("No landing page found for this product yet."),
     });
-  }
-
-  onReviewFileSelected(event: any): void {
-    const files: FileList = event.target.files;
-    if (files && files.length > 0) {
-      this.landingPageService.uploadMedia(files).subscribe({
-        next: (urls) => {
-          this.reviewImagesList = [...this.reviewImagesList, ...urls];
-        },
-        error: () => {
-          window.alert("Failed to upload review images.");
-        }
-      });
-    }
-  }
-
-  removeReviewImage(index: number): void {
-    this.reviewImagesList.splice(index, 1);
   }
 
   addColor(): void {
@@ -462,7 +431,6 @@ export class AdminProductFormComponent implements OnDestroy {
     if (!confirmed) {
       return;
     }
-    this.reviewImagesList = [];
     this.mediaItemsArray.clear();
     this.mediaFileMap.clear();
     this.resetForm();
@@ -561,20 +529,25 @@ export class AdminProductFormComponent implements OnDestroy {
               benefitsTitle: lpData?.benefitsTitle ?? "",
               benefitsContent: lpData?.benefitsContent ?? "",
               reviewsTitle: lpData?.reviewsTitle ?? "",
-              reviewsImages: JSON.stringify(this.reviewImagesList),
               sideEffectsTitle: lpData?.sideEffectsTitle ?? "",
               sideEffectsContent: lpData?.sideEffectsContent ?? "",
               usageTitle: lpData?.usageTitle ?? "",
               usageContent: lpData?.usageContent ?? "",
-              themeColor: "#e63b3b" // Default theme color
+              videoUrl: lpData?.videoUrl || "",
+              themeColor: lpData?.themeColor || "#1a1a1a",
             }).subscribe({
               next: () => {
                 window.alert(`Product and Landing Page ${action} successfully.`);
                 void this.router.navigate(["/admin/products"]);
               },
               error: (err) => {
-                console.error("Error saving landing page:", err);
-                window.alert(`Product ${action} but Landing Page failed: ${err.message}`);
+                console.error("Error saving landing page. Payload sent:", {
+                  productId: product.id,
+                  headline: lpData?.headline,
+                  benefitsContentLen: lpData?.benefitsContent?.length
+                });
+                console.error("Server Error Response:", err);
+                window.alert(`Product ${action} but Landing Page failed: ${err.message}. Please check browser console for details.`);
                 void this.router.navigate(["/admin/products"]);
               }
             });
@@ -801,9 +774,9 @@ export class AdminProductFormComponent implements OnDestroy {
       statusActive: Boolean(raw.statusActive),
       category: categoryName, // Send Name, not ID
       gender: raw.gender ?? "women",
-      price: Number(raw.price ?? 0),
+      price: Number(raw.price || 0.01), // Fallback to 0.01 to avoid 400
       salePrice:
-        raw.salePrice !== null && raw.salePrice !== undefined
+        raw.salePrice !== null && raw.salePrice !== undefined && Number(raw.salePrice) > 0
           ? Number(raw.salePrice)
           : undefined,
 
@@ -891,7 +864,6 @@ export class AdminProductFormComponent implements OnDestroy {
         benefitsTitle: "",
         benefitsContent: "",
         reviewsTitle: "",
-        reviewsImages: "",
         sideEffectsTitle: "",
         sideEffectsContent: "",
         usageTitle: "",

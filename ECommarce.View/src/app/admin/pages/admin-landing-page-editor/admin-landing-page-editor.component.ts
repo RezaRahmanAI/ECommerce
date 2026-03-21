@@ -30,7 +30,6 @@ export class AdminLandingPageEditorComponent implements OnInit {
   isLoading = false;
   isSaving = false;
   error = "";
-  reviewImagesList: string[] = [];
 
   readonly form = this.fb.group({
     headline: ["", Validators.required],
@@ -39,7 +38,6 @@ export class AdminLandingPageEditorComponent implements OnInit {
     benefitsTitle: ["লুব্রিকেন্ট জেল ব্যবহারের সুবিধাঃ"],
     benefitsContent: [""],
     reviewsTitle: ["কাস্টমার রিভিউ"],
-    reviewsImages: [""],
     sideEffectsTitle: ["পার্শ্বপ্রতিক্রিয়াঃ"],
     sideEffectsContent: [""],
     usageTitle: ["ব্যবহারের নিয়মঃ"],
@@ -65,7 +63,6 @@ export class AdminLandingPageEditorComponent implements OnInit {
 
   private loadData(): void {
     this.isLoading = true;
-    this.reviewImagesList = []; // Clear previous data
     
     // Load Product details (optional, just for display)
     this.productsService.getProductById(this.productId).subscribe({
@@ -84,7 +81,6 @@ export class AdminLandingPageEditorComponent implements OnInit {
             benefitsTitle: lp.benefitsTitle,
             benefitsContent: lp.benefitsContent,
             reviewsTitle: lp.reviewsTitle,
-            reviewsImages: lp.reviewsImages,
             sideEffectsTitle: lp.sideEffectsTitle,
             sideEffectsContent: lp.sideEffectsContent,
             usageTitle: lp.usageTitle,
@@ -92,18 +88,6 @@ export class AdminLandingPageEditorComponent implements OnInit {
             themeColor: lp.themeColor
           });
 
-          if (lp.reviewsImages) {
-            try {
-              // Try to parse as JSON array if it looks like one, otherwise treat as single URL or text
-              if (lp.reviewsImages.startsWith("[") && lp.reviewsImages.endsWith("]")) {
-                this.reviewImagesList = JSON.parse(lp.reviewsImages);
-              } else if (lp.reviewsImages.trim()) {
-                this.reviewImagesList = [lp.reviewsImages];
-              }
-            } catch {
-              this.reviewImagesList = [];
-            }
-          }
         }
         this.isLoading = false;
       },
@@ -114,27 +98,6 @@ export class AdminLandingPageEditorComponent implements OnInit {
         this.isLoading = false;
       }
     });
-  }
-
-  onFileSelected(event: any): void {
-    const files: FileList = event.target.files;
-    if (files && files.length > 0) {
-      this.isLoading = true;
-      this.landingPageService.uploadMedia(files).subscribe({
-        next: (urls) => {
-          this.reviewImagesList = [...this.reviewImagesList, ...urls];
-          this.isLoading = false;
-        },
-        error: () => {
-          this.error = "Failed to upload images.";
-          this.isLoading = false;
-        }
-      });
-    }
-  }
-
-  removeImage(index: number): void {
-    this.reviewImagesList.splice(index, 1);
   }
 
   save(): void {
@@ -154,7 +117,6 @@ export class AdminLandingPageEditorComponent implements OnInit {
       benefitsTitle: this.form.value.benefitsTitle || null,
       benefitsContent: this.form.value.benefitsContent || null,
       reviewsTitle: this.form.value.reviewsTitle || null,
-      reviewsImages: JSON.stringify(this.reviewImagesList),
       sideEffectsTitle: this.form.value.sideEffectsTitle || null,
       sideEffectsContent: this.form.value.sideEffectsContent || null,
       usageTitle: this.form.value.usageTitle || null,

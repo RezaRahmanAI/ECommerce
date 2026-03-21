@@ -46,10 +46,18 @@ public class LandingPageController : ControllerBase
 
     [Authorize(Roles = "Admin")]
     [HttpPost("admin")]
-    public async Task<ActionResult<ProductLandingPageDto>> SaveAdmin(UpdateProductLandingPageDto dto)
+    public async Task<ActionResult<ProductLandingPageDto>> SaveAdmin([FromBody] UpdateProductLandingPageDto dto)
     {
-        var lp = await _service.SaveAsync(dto);
-        return Ok(lp);
+        try 
+        {
+            if (dto == null) return BadRequest(new { message = "Request body is empty" });
+            var lp = await _service.SaveAsync(dto);
+            return Ok(lp);
+        }
+        catch (System.Exception ex)
+        {
+            return StatusCode(500, new { message = $"Error saving landing page: {ex.Message}", innerException = ex.InnerException?.Message });
+        }
     }
 
     [Authorize(Roles = "Admin")]

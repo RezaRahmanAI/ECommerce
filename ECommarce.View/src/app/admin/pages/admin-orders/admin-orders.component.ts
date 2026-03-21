@@ -26,6 +26,8 @@ import {
   XCircle,
   ChevronLeft,
   ChevronRight,
+  ArrowUp,
+  ArrowDown,
 } from "lucide-angular";
 
 import {
@@ -73,6 +75,8 @@ export class AdminOrdersComponent implements OnInit, OnDestroy {
     XCircle,
     ChevronLeft,
     ChevronRight,
+    ArrowUp,
+    ArrowDown,
   };
   private ordersService = inject(OrdersService);
   private destroy$ = new Subject<void>();
@@ -85,8 +89,10 @@ export class AdminOrdersComponent implements OnInit, OnDestroy {
   totalResults = 0;
   page = 1;
   pageSize = 10;
+  sortColumn: string = "date";
+  sortDirection: "asc" | "desc" = "desc";
 
-  statusOptions: OrdersQueryParams["status"][] = [
+  statusTabs: OrdersQueryParams["status"][] = [
     "All",
     "Pending",
     "Confirmed",
@@ -96,6 +102,7 @@ export class AdminOrdersComponent implements OnInit, OnDestroy {
     "Delivered",
     "Cancelled",
   ];
+  selectedStatusTab: OrdersQueryParams["status"] = "All";
 
   // ... (existing code)
 
@@ -209,11 +216,34 @@ export class AdminOrdersComponent implements OnInit, OnDestroy {
   }
 
   selectedStatus: OrdersQueryParams["status"] = "All";
+  selectedDateRange: string = "All Time";
+
+  setStatusTab(tab: OrdersQueryParams["status"]): void {
+    if (this.selectedStatusTab === tab) {
+      return;
+    }
+    this.selectedStatusTab = tab;
+    this.selectedStatus = tab;
+    this.page = 1;
+    this.loadOrders();
+  }
 
   setStatusFilter(status: OrdersQueryParams["status"], event: Event): void {
     event.stopPropagation();
     this.selectedStatus = status;
+    this.selectedStatusTab = status;
     this.statusMenuOpen = false;
+    this.page = 1;
+    this.loadOrders();
+  }
+ 
+  toggleSort(column: string): void {
+    if (this.sortColumn === column) {
+      this.sortDirection = this.sortDirection === "asc" ? "desc" : "asc";
+    } else {
+      this.sortColumn = column;
+      this.sortDirection = "desc";
+    }
     this.page = 1;
     this.loadOrders();
   }
@@ -226,6 +256,7 @@ export class AdminOrdersComponent implements OnInit, OnDestroy {
   clearDates(): void {
     this.startDate = "";
     this.endDate = "";
+    this.selectedDateRange = "All Time";
     this.page = 1;
     this.loadOrders();
   }
@@ -296,7 +327,7 @@ export class AdminOrdersComponent implements OnInit, OnDestroy {
         this.loadOrders(false);
       });
     }
-    this.closeActionMenu();
+    this.closeMenus();
   }
 
   cancelOrder(order: Order, event: Event): void {
@@ -307,7 +338,11 @@ export class AdminOrdersComponent implements OnInit, OnDestroy {
         this.loadOrders(false);
       });
     }
-    this.closeActionMenu();
+    this.closeMenus();
+  }
+
+  get activeOrder(): Order | undefined {
+    return this.orders.find(o => o.id === this.actionMenuOpenId);
   }
 
   exportOrders(): void {
@@ -327,17 +362,60 @@ export class AdminOrdersComponent implements OnInit, OnDestroy {
   }
 
   goToPreviousPage(): void {
-    if (this.page > 1) {
-      this.page -= 1;
-      this.loadOrders(false);
+    if (this.page === 1) {
+      return;
     }
+    this.page -= 1;
+    this.loadOrders(false);
   }
 
   goToNextPage(): void {
-    if (this.page < this.totalPages) {
-      this.page += 1;
-      this.loadOrders(false);
+    if (this.page >= this.totalPages) {
+      return;
     }
+    this.page += 1;
+    this.loadOrders(false);
+  }
+
+  setPage(page: number | "ellipsis"): void {
+    if (
+      page === "ellipsis" ||
+      page === this.page ||
+      page < 1 ||
+      page > this.totalPages
+    ) {
+      return;
+    }
+    this.page = page;
+    this.loadOrders(false);
+  }
+
+  get paginationItems(): Array<number | "ellipsis"> {
+    if (this.totalPages <= 5) {
+      return Array.from({ length: this.totalPages }, (_, index) => index + 1);
+    }
+
+    const items: Array<number | "ellipsis"> = [];
+    const start = Math.max(2, this.page - 1);
+    const end = Math.min(this.totalPages - 1, this.page + 1);
+
+    items.push(1);
+
+    if (start > 2) {
+      items.push("ellipsis");
+    }
+
+    for (let page = start; page <= end; page += 1) {
+      items.push(page);
+    }
+
+    if (end < this.totalPages - 1) {
+      items.push("ellipsis");
+    }
+
+    items.push(this.totalPages);
+
+    return items;
   }
 
   isAllVisibleSelected(): boolean {
@@ -384,33 +462,30 @@ export class AdminOrdersComponent implements OnInit, OnDestroy {
       endDate: this.endDate,
       page: this.page,
       pageSize: this.pageSize,
+      sort: this.sortColumn,
+      sortDir: this.sortDirection,
     };
   }
 
   loadOrders(resetSelection = true): void {
-    const params = this.buildParams();
+    const params = { ...this.buildParams(), status: this.selectedStatus.trim() as any };
+    console.log("Loading orders with params:", params);
     this.isLoading = true;
     this.ordersService
       .getOrders(params)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (data) => {
+          console.log("Received orders:", data.items.map(o => `${o.orderNumber}: ${o.status}`));
           this.orders = data.items;
           this.totalResults = data.total;
+          this.updateStats(data.items);
           if (resetSelection) {
             this.selectedOrderIds.clear();
           }
           this.isLoading = false;
         },
         error: () => (this.isLoading = false),
-      });
-
-    this.ordersService
-      .getFilteredOrders(params)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((orders) => {
-        this.filteredOrders = orders;
-        this.updateStats(orders);
       });
   }
 

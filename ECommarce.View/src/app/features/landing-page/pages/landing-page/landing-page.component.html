@@ -410,8 +410,8 @@
     
     <!-- Close Button -->
     <button (click)="closeProductModal()" 
-            class="absolute top-4 right-4 p-2 text-gray-400 hover:text-black transition-colors z-10">
-      <lucide-icon [img]="icons.Loader2" class="w-6 h-6 rotate-45"></lucide-icon>
+            class="absolute top-4 right-4 p-2 text-gray-400 hover:text-black transition-colors z-10 rounded-none">
+      <lucide-icon [img]="icons.X" class="w-6 h-6"></lucide-icon>
     </button>
 
     <div class="grid grid-cols-1 md:grid-cols-2">
@@ -429,13 +429,33 @@
           <div class="text-2xl font-bold text-[#c8922a]">৳ {{ selectedPopupItem.price | number:'1.2-2' }}</div>
         </div>
 
-        <div class="space-y-4">
-          <div *ngIf="selectedPopupItem.shortDescription" class="text-sm text-[#555] leading-relaxed break-words line-clamp-3">
-            {{ selectedPopupItem.shortDescription }}
+        <div class="space-y-6 overflow-y-auto max-h-[40vh] pr-2 custom-scrollbar">
+          <!-- Benefits -->
+          <div *ngIf="landingPage?.benefitsContent" class="space-y-2">
+            <h4 class="text-xs uppercase tracking-widest font-bold text-[#c8922a]">
+              {{ landingPage?.benefitsTitle || 'ব্যবহারের সুবিধা' }}
+            </h4>
+            <div class="text-sm text-[#555] leading-relaxed ql-editor !p-0 !text-left" 
+                 [innerHTML]="landingPage?.benefitsContent"></div>
           </div>
-          <div *ngIf="selectedPopupItem.description" 
-               class="text-xs text-gray-400 leading-relaxed ql-editor !p-0 !text-left line-clamp-6" 
-               [innerHTML]="selectedPopupItem.description"></div>
+
+          <!-- How to Use -->
+          <div *ngIf="landingPage?.usageContent" class="space-y-2 pt-4 border-t border-gray-100">
+            <h4 class="text-xs uppercase tracking-widest font-bold text-[#c8922a]">
+              {{ landingPage?.usageTitle || 'ব্যবহারের নিয়ম' }}
+            </h4>
+            <div class="text-sm text-[#555] leading-relaxed ql-editor !p-0 !text-left" 
+                 [innerHTML]="landingPage?.usageContent"></div>
+          </div>
+
+          <!-- Side Effects -->
+          <div *ngIf="landingPage?.sideEffectsContent" class="space-y-2 pt-4 border-t border-gray-100">
+            <h4 class="text-xs uppercase tracking-widest font-bold text-[#c8922a]">
+              {{ landingPage?.sideEffectsTitle || 'পার্শ্বপ্রতিক্রিয়া' }}
+            </h4>
+            <div class="text-[13px] text-[#555] leading-relaxed ql-editor !p-0 !text-left" 
+                 [innerHTML]="landingPage?.sideEffectsContent"></div>
+          </div>
         </div>
 
         <div class="mt-auto space-y-6">

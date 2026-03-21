@@ -7,7 +7,6 @@ export interface ProductLandingPageDto {
   benefitsTitle?: string;
   benefitsContent?: string;
   reviewsTitle?: string;
-  reviewsImages?: string;
   sideEffectsTitle?: string;
   sideEffectsContent?: string;
   usageTitle?: string;
@@ -23,7 +22,6 @@ export interface UpdateProductLandingPageDto {
   benefitsTitle?: string;
   benefitsContent?: string;
   reviewsTitle?: string;
-  reviewsImages?: string;
   sideEffectsTitle?: string;
   sideEffectsContent?: string;
   usageTitle?: string;

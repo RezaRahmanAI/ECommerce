@@ -10,7 +10,6 @@ public class ProductLandingPageDto
     public string? BenefitsTitle { get; set; }
     public string? BenefitsContent { get; set; }
     public string? ReviewsTitle { get; set; }
-    public string? ReviewsImages { get; set; }
     public string? SideEffectsTitle { get; set; }
     public string? SideEffectsContent { get; set; }
     public string? UsageTitle { get; set; }
@@ -27,7 +26,6 @@ public class UpdateProductLandingPageDto
     public string? BenefitsTitle { get; set; }
     public string? BenefitsContent { get; set; }
     public string? ReviewsTitle { get; set; }
-    public string? ReviewsImages { get; set; }
     public string? SideEffectsTitle { get; set; }
     public string? SideEffectsContent { get; set; }
     public string? UsageTitle { get; set; }

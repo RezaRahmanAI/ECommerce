@@ -42,29 +42,35 @@ public class ProductLandingPageService : IProductLandingPageService
         var lp = await _context.ProductLandingPages
             .FirstOrDefaultAsync(lp => lp.ProductId == dto.ProductId);
 
-        if (lp == null)
+        bool isNew = lp == null;
+
+        if (isNew)
         {
-            lp = new ProductLandingPage
-            {
-                ProductId = dto.ProductId
-            };
-            _context.ProductLandingPages.Add(lp);
+            lp = new ProductLandingPage { ProductId = dto.ProductId };
         }
 
-        lp.Headline = dto.Headline;
+        // Map properties and ensure Headline is not null
+        lp.Headline = dto.Headline ?? ""; 
         lp.VideoUrl = dto.VideoUrl;
         lp.BenefitsTitle = dto.BenefitsTitle;
         lp.BenefitsContent = dto.BenefitsContent;
         lp.ReviewsTitle = dto.ReviewsTitle;
-        lp.ReviewsImages = dto.ReviewsImages;
         lp.SideEffectsTitle = dto.SideEffectsTitle;
         lp.SideEffectsContent = dto.SideEffectsContent;
         lp.UsageTitle = dto.UsageTitle;
         lp.UsageContent = dto.UsageContent;
         lp.ThemeColor = dto.ThemeColor;
         lp.Subtitle = dto.Subtitle;
+
+        if (isNew)
+        {
+            _context.ProductLandingPages.Add(lp);
+        }
+        else
+        {
+            _context.ProductLandingPages.Update(lp);
+        }
         
-        _context.ProductLandingPages.Update(lp);
         await _context.SaveChangesAsync();
 
         return MapToDto(lp);
@@ -81,7 +87,6 @@ public class ProductLandingPageService : IProductLandingPageService
             BenefitsTitle = lp.BenefitsTitle,
             BenefitsContent = lp.BenefitsContent,
             ReviewsTitle = lp.ReviewsTitle,
-            ReviewsImages = lp.ReviewsImages,
             SideEffectsTitle = lp.SideEffectsTitle,
             SideEffectsContent = lp.SideEffectsContent,
             UsageTitle = lp.UsageTitle,

@@ -243,10 +243,10 @@ public class OrderService : IOrderService
         return false;
     }
 
-    public async Task<(IReadOnlyList<OrderDto> Items, int Total)> GetOrdersForAdminAsync(string? searchTerm, string? status, string? dateRange, int page, int pageSize, DateTime? startDate = null, DateTime? endDate = null)
+    public async Task<(IReadOnlyList<OrderDto> Items, int Total)> GetOrdersForAdminAsync(string? searchTerm, string? status, string? dateRange, int page, int pageSize, DateTime? startDate = null, DateTime? endDate = null, string? sort = null, string? sortDir = "desc")
     {
         pageSize = Math.Min(pageSize, 100);
-        var spec = new OrdersWithFiltersForAdminSpecification(searchTerm, status, dateRange, startDate, endDate);
+        var spec = new OrdersWithFiltersForAdminSpecification(searchTerm, status, dateRange, startDate, endDate, sort, sortDir);
         var total = await _unitOfWork.Repository<Order>().CountAsync(spec);
         
         spec.ApplyPaging(pageSize * (page - 1), pageSize);

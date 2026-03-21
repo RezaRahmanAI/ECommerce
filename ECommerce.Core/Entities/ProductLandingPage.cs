@@ -15,7 +15,6 @@ public class ProductLandingPage : BaseEntity
     public string? BenefitsContent { get; set; } // HTML content
     
     public string? ReviewsTitle { get; set; }
-    public string? ReviewsImages { get; set; } // JSON array of image URLs
     
     public string? SideEffectsTitle { get; set; }
     public string? SideEffectsContent { get; set; } // HTML content

@@ -48,4 +48,6 @@ export interface OrdersQueryParams {
   endDate?: string;
   page: number;
   pageSize: number;
+  sort?: string;
+  sortDir?: "asc" | "desc";
 }

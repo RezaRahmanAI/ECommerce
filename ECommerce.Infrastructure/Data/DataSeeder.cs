@@ -973,7 +973,6 @@ public static class DataSeeder
                     SideEffectsTitle = "Information",
                     SideEffectsContent = "<p>For external use only. Discontinue if irritation occurs.</p>",
                     ReviewsTitle = "Real Results",
-                    ReviewsImages = "[\"https://images.unsplash.com/photo-1522337360788-8b13df772ec2?w=400\", \"https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=400\", \"https://images.unsplash.com/photo-1591130901020-ef9359a3f1f8?w=400\"]",
                     ThemeColor = "#4A90E2"
                 });
             }

@@ -30,6 +30,7 @@ import {
   MessageSquare,
   Star,
   ChevronDown,
+  X,
 } from "lucide-angular";
 import { BANGLADESH_LOCATIONS } from "../../../../core/utils/bangladesh-locations";
 import { CheckoutState } from "../../../../core/models/checkout";
@@ -85,6 +86,7 @@ export class LandingPageComponent implements OnInit {
     MessageSquare,
     Star,
     ChevronDown,
+    X,
   };
   private readonly route = inject(ActivatedRoute);
   private readonly productService = inject(ProductService);
