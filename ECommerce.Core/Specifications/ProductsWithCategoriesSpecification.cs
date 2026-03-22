@@ -78,5 +78,6 @@ public class ProductsWithCategoriesSpecification : BaseSpecification<Product>
         AddInclude(x => x.Collection!);
         AddInclude(x => x.Images);
         AddInclude(x => x.Variants);
+        ApplySplitQuery();
     }
 }

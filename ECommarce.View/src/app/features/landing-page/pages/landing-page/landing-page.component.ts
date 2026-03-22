@@ -233,7 +233,19 @@ export class LandingPageComponent implements OnInit {
         this.product = product;
         this.landingPage = landingPage;
 
-        // Load reviews in parallel with product-dependent items
+        // Set default variants immediately
+        const colors = Array.from(new Set(product.images?.map(i => i.color).filter(Boolean))) as string[];
+        const sizes = Array.from(new Set(product.variants?.map(v => v.size).filter(Boolean))) as string[];
+        this.checkoutForm.patchValue({
+          selectedColor: colors[0] ?? "",
+          selectedSize: sizes[0] ?? "",
+        });
+
+        // Unblock the main page render!
+        this.isLoading = false;
+        this.cdr.markForCheck();
+
+        // Load reviews in parallel with product-dependent items independently
         const reviews$ = this.publicReviewService.getReviewsByProduct(product.id).pipe(
           catchError(() => of([] as PublicReview[]))
         );
@@ -246,8 +258,9 @@ export class LandingPageComponent implements OnInit {
           )
           : of([]);
 
-        return combineLatest([reviews$, items$]).pipe(
-          tap(([reviews, items]) => {
+        combineLatest([reviews$, items$]).pipe(
+          takeUntilDestroyed(this.destroyRef)
+        ).subscribe(([reviews, items]) => {
             this.processReviews(product, landingPage, reviews);
 
             if (product.isItemProduct) {
@@ -278,19 +291,10 @@ export class LandingPageComponent implements OnInit {
                 });
               }
             }
-
-            // Set default variants
-            const colors = Array.from(new Set(product.images?.map(i => i.color).filter(Boolean))) as string[];
-            const sizes = Array.from(new Set(product.variants?.map(v => v.size).filter(Boolean))) as string[];
-            this.checkoutForm.patchValue({
-              selectedColor: colors[0] ?? "",
-              selectedSize: sizes[0] ?? "",
-            });
-
-            this.isLoading = false;
             this.cdr.markForCheck();
-          })
-        );
+        });
+
+        return of(null);
       }),
       takeUntilDestroyed(this.destroyRef)
     ).subscribe();

@@ -555,11 +555,12 @@
 
     <!-- ===== Related Products — only render when scrolled into view ===== -->
     @defer (on viewport) {
-      <div
-        *ngIf="vm.relatedProducts && vm.relatedProducts.length > 0"
-        class="max-w-[1200px] mx-auto px-6 py-16 border-t border-[#e0e0e0]"
-      >
-        <div class="text-center mb-12">
+      <ng-container *ngIf="relatedProducts$ | async as relatedProducts">
+        <div
+          *ngIf="relatedProducts && relatedProducts.length > 0"
+          class="max-w-[1200px] mx-auto px-6 py-16 border-t border-[#e0e0e0]"
+        >
+          <div class="text-center mb-12">
           <p
             class="text-[10px] uppercase tracking-[0.4em] text-[#c8922a] font-bold mb-2"
           >
@@ -571,11 +572,12 @@
         </div>
         <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
           <app-product-card
-            *ngFor="let related of vm.relatedProducts"
+            *ngFor="let related of relatedProducts"
             [product]="related"
           ></app-product-card>
         </div>
       </div>
+      </ng-container>
     } @placeholder {
       <div class="h-48 animate-pulse bg-gray-50"></div>
     }

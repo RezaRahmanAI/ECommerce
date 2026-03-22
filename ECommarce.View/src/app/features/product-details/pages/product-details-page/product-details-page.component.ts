@@ -160,7 +160,6 @@ export class ProductDetailsPageComponent {
     this.selectedSizeSubject,
     this.quantitySubject,
     this.selectedMediaSubject,
-    this.relatedProducts$,
   ]).pipe(
     map(
       ([
@@ -169,7 +168,6 @@ export class ProductDetailsPageComponent {
         selectedSize,
         quantity,
         selectedMedia,
-        relatedProducts,
       ]) => {
         const uniqueColors = Array.from(
           new Set(product.images?.map((i) => i.color).filter(Boolean)),
@@ -196,7 +194,6 @@ export class ProductDetailsPageComponent {
           gallery: this.buildGallery(product),
           uniqueColors,
           uniqueSizes,
-          relatedProducts,
         };
       },
     ),

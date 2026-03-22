@@ -9,6 +9,7 @@ using ECommerce.Core.Interfaces;
 using ECommerce.Core.Specifications;
 using ECommerce.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace ECommerce.Infrastructure.Services;
 
@@ -16,21 +17,34 @@ public class ProductService : IProductService
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
+    private readonly IMemoryCache _cache;
+    private static readonly TimeSpan DefaultCacheDuration = TimeSpan.FromMinutes(30);
 
-    public ProductService(IUnitOfWork unitOfWork, IMapper mapper)
+    public ProductService(IUnitOfWork unitOfWork, IMapper mapper, IMemoryCache cache)
     {
         _unitOfWork = unitOfWork;
         _mapper = mapper;
+        _cache = cache;
     }
 
     public async Task<ProductDto> GetProductBySlugAsync(string slug)
     {
+        var cacheKey = $"Product_Slug_{slug}";
+        if (_cache.TryGetValue(cacheKey, out ProductDto cachedProduct))
+        {
+            return cachedProduct;
+        }
+
         var spec = new ProductsWithCategoriesSpecification(slug);
         var product = await _unitOfWork.Repository<Product>().GetEntityWithSpec(spec);
 
         if (product == null) return null;
 
-        return _mapper.Map<Product, ProductDto>(product);
+        var dto = _mapper.Map<Product, ProductDto>(product);
+        _cache.Set(cacheKey, dto, DefaultCacheDuration);
+        _cache.Set($"Product_Id_{dto.Id}", dto, DefaultCacheDuration);
+
+        return dto;
     }
 
 
@@ -38,12 +52,22 @@ public class ProductService : IProductService
 
     public async Task<ProductDto> GetProductByIdAsync(int id)
     {
+        var cacheKey = $"Product_Id_{id}";
+        if (_cache.TryGetValue(cacheKey, out ProductDto cachedProduct))
+        {
+            return cachedProduct;
+        }
+
         var spec = new ProductsWithCategoriesSpecification(id);
         var product = await _unitOfWork.Repository<Product>().GetEntityWithSpec(spec);
 
         if (product == null) return null;
 
-        return _mapper.Map<Product, ProductDto>(product);
+        var dto = _mapper.Map<Product, ProductDto>(product);
+        _cache.Set(cacheKey, dto, DefaultCacheDuration);
+        _cache.Set($"Product_Slug_{dto.Slug}", dto, DefaultCacheDuration);
+
+        return dto;
     }
 
     public async Task<ProductDto> CreateProductAsync(ProductCreateDto dto)
@@ -265,7 +289,13 @@ public class ProductService : IProductService
         _unitOfWork.Repository<Product>().Update(product);
         await _unitOfWork.Complete();
 
-        return _mapper.Map<Product, ProductDto>(product);
+        var resultDto = _mapper.Map<Product, ProductDto>(product);
+        
+        // Invalidate cache
+        _cache.Remove($"Product_Id_{product.Id}");
+        _cache.Remove($"Product_Slug_{product.Slug}");
+
+        return resultDto;
     }
 
     private string GenerateSlug(string name)

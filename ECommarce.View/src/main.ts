@@ -1,9 +1,7 @@
-import { bootstrapApplication } from "@angular/platform-browser";
+import { bootstrapApplication, provideClientHydration, withEventReplay } from "@angular/platform-browser";
 import {
   provideRouter,
   withInMemoryScrolling,
-  withPreloading,
-  PreloadAllModules,
 } from "@angular/router";
 import { provideAnimations } from "@angular/platform-browser/animations";
 import {
@@ -31,10 +29,11 @@ bootstrapApplication(AppComponent, {
         scrollPositionRestoration: "enabled",
         anchorScrolling: "enabled",
       }),
-      withPreloading(PreloadAllModules),
     ),
     provideAnimations(),
+    provideClientHydration(withEventReplay()),
     provideHttpClient(
+      withFetch(),
       withInterceptors([
         jwtInterceptor,
         loadingInterceptor,

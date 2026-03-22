@@ -5,7 +5,6 @@ import { HttpContext } from "@angular/common/http";
 import { ProductService } from "../../../../core/services/product.service";
 import { Product } from "../../../../core/models/product";
 import { ProductCardComponent } from "../../../../shared/components/product-card/product-card.component";
-import { SHOW_LOADING } from "../../../../core/services/loading.service";
 
 @Component({
   selector: "app-new-arrivals",
@@ -21,7 +20,7 @@ export class NewArrivalsComponent implements OnInit {
 
   ngOnInit(): void {
     this.productService
-      .getNewArrivals(10, new HttpContext().set(SHOW_LOADING, true))
+      .getNewArrivals(10)
       .subscribe((response) => {
         this.products = response.data;
       });
