@@ -10,16 +10,21 @@
       @fade
       class="absolute inset-0 h-full w-full"
     >
-      <!-- Background Image with Ken Burns effect -->
+      <!-- Image with Ken Burns effect (Using img tag for LCP priority) -->
       <div
-        class="absolute inset-0 bg-cover bg-center transition-transform duration-[12000ms] ease-out scale-105"
+        class="absolute inset-0 transition-transform duration-[12000ms] ease-out scale-105"
         [ngClass]="{ 'scale-100': i === currentSlide }"
-        [style.background-image]="
-          'linear-gradient(rgba(0,0,0,0.25), rgba(0,0,0,0.45)), url(' +
-          slide.image +
-          ')'
-        "
-      ></div>
+      >
+        <img
+          [src]="slide.image"
+          [attr.fetchpriority]="i === 0 ? 'high' : 'auto'"
+          [attr.loading]="i === 0 ? 'eager' : 'lazy'"
+          alt="Campaign Image"
+          class="absolute inset-0 w-full h-full object-cover"
+        />
+        <!-- Linear Gradient Overlay to replace the CSS background blend -->
+        <div class="absolute inset-0" style="background: linear-gradient(rgba(0,0,0,0.25), rgba(0,0,0,0.45))"></div>
+      </div>
 
       <!-- Content Overlay -->
       <div class="relative h-full flex items-center justify-start">

@@ -1,4 +1,4 @@
-import { bootstrapApplication, provideClientHydration, withEventReplay } from "@angular/platform-browser";
+import { bootstrapApplication } from "@angular/platform-browser";
 import {
   provideRouter,
   withInMemoryScrolling,
@@ -7,7 +7,6 @@ import { provideAnimations } from "@angular/platform-browser/animations";
 import {
   provideHttpClient,
   withInterceptors,
-  withFetch,
 } from "@angular/common/http";
 import { provideCharts, withDefaultRegisterables } from "ng2-charts";
 
@@ -31,9 +30,7 @@ bootstrapApplication(AppComponent, {
       }),
     ),
     provideAnimations(),
-    provideClientHydration(withEventReplay()),
     provideHttpClient(
-      withFetch(),
       withInterceptors([
         jwtInterceptor,
         loadingInterceptor,

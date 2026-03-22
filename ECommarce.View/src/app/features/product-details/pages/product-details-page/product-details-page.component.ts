@@ -139,20 +139,6 @@ export class ProductDetailsPageComponent {
     ),
   );
 
-  relatedProducts$ = this.product$.pipe(
-    switchMap((product) => {
-      if (product.collectionId) {
-        return this.productService
-          .getRelatedProducts(product.collectionId, undefined, 4)
-          .pipe(map((res) => res.data));
-      } else if (product.categoryId) {
-        return this.productService
-          .getRelatedProducts(undefined, product.categoryId, 4)
-          .pipe(map((res) => res.data));
-      }
-      return of([]);
-    }),
-  );
 
   readonly vm$ = combineLatest([
     this.product$,

@@ -41,8 +41,13 @@ public class ProductService : IProductService
         if (product == null) return null;
 
         var dto = _mapper.Map<Product, ProductDto>(product);
-        _cache.Set(cacheKey, dto, DefaultCacheDuration);
-        _cache.Set($"Product_Id_{dto.Id}", dto, DefaultCacheDuration);
+
+        var cacheOptions = new MemoryCacheEntryOptions()
+            .SetAbsoluteExpiration(DefaultCacheDuration)
+            .SetSize(1);
+
+        _cache.Set(cacheKey, dto, cacheOptions);
+        _cache.Set($"Product_Id_{dto.Id}", dto, cacheOptions);
 
         return dto;
     }
@@ -64,8 +69,13 @@ public class ProductService : IProductService
         if (product == null) return null;
 
         var dto = _mapper.Map<Product, ProductDto>(product);
-        _cache.Set(cacheKey, dto, DefaultCacheDuration);
-        _cache.Set($"Product_Slug_{dto.Slug}", dto, DefaultCacheDuration);
+
+        var cacheOptions = new MemoryCacheEntryOptions()
+            .SetAbsoluteExpiration(DefaultCacheDuration)
+            .SetSize(1);
+
+        _cache.Set(cacheKey, dto, cacheOptions);
+        _cache.Set($"Product_Slug_{dto.Slug}", dto, cacheOptions);
 
         return dto;
     }
