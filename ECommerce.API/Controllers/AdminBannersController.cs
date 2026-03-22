@@ -4,6 +4,7 @@ using ECommerce.Infrastructure.Data;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace ECommerce.API.Controllers;
 
@@ -14,11 +15,13 @@ public class AdminBannersController : ControllerBase
 {
     private readonly ApplicationDbContext _context;
     private readonly IWebHostEnvironment _environment;
+    private readonly IMemoryCache _cache;
 
-    public AdminBannersController(ApplicationDbContext context, IWebHostEnvironment environment)
+    public AdminBannersController(ApplicationDbContext context, IWebHostEnvironment environment, IMemoryCache cache)
     {
         _context = context;
         _environment = environment;
+        _cache = cache;
     }
 
     [HttpGet]
@@ -78,6 +81,7 @@ public class AdminBannersController : ControllerBase
 
         _context.HeroBanners.Add(banner);
         await _context.SaveChangesAsync();
+        _cache.Remove("ActiveBanners");
 
         return CreatedAtAction(nameof(GetBannerById), new { id = banner.Id }, new HeroBannerDto
         {
@@ -109,6 +113,7 @@ public class AdminBannersController : ControllerBase
         banner.UpdatedAt = DateTime.UtcNow;
 
         await _context.SaveChangesAsync();
+        _cache.Remove("ActiveBanners");
 
         return Ok(new HeroBannerDto
         {
@@ -131,6 +136,7 @@ public class AdminBannersController : ControllerBase
 
         _context.HeroBanners.Remove(banner);
         await _context.SaveChangesAsync();
+        _cache.Remove("ActiveBanners");
 
         return NoContent();
     }

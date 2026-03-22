@@ -9,7 +9,6 @@ namespace ECommerce.API.Controllers;
 
 [ApiController]
 [Route("api/banners")]
-[ResponseCache(Duration = 300, VaryByHeader = "Accept-Encoding")]
 public class BannersController : ControllerBase
 {
     private readonly IGenericRepository<HeroBanner> _bannerRepo;
@@ -22,7 +21,6 @@ public class BannersController : ControllerBase
     }
 
     [HttpGet]
-    [ResponseCache(Duration = 300)]
     public async Task<ActionResult<List<HeroBannerDto>>> GetActiveBanners()
     {
         if (_cache.TryGetValue("ActiveBanners", out List<HeroBannerDto> cachedBanners))

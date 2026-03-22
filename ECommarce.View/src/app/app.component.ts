@@ -41,7 +41,11 @@ export class AppComponent implements OnInit {
     filter((event) => event instanceof NavigationEnd),
     startWith(null),
     map(() => {
-      const url = this.router.url;
+      let url = this.router.url;
+      // On initial load, router.url might be '/' or '', so fallback to window.location
+      if (typeof window !== 'undefined' && (url === '/' || url === '')) {
+        url = window.location.pathname;
+      }
       return !url.startsWith("/admin") && !url.startsWith("/lp/");
     }),
   );
