@@ -18,7 +18,7 @@ export class SettingsService {
   getSettings(): Observable<AdminSettings> {
     return this.api
       .get<AdminSettings>("/admin/settings")
-      .pipe(tap((settings) => this.settingsSubject.next(settings)));
+      .pipe(tap((settings: any) => this.settingsSubject.next(settings as AdminSettings)));
   }
 
   getPublicSettings(): Observable<AdminSettings> {

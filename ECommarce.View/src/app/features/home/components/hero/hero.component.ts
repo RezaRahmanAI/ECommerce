@@ -1,9 +1,9 @@
-import { Component, OnInit, OnDestroy, inject } from "@angular/core";
-import { CommonModule } from "@angular/common"; // Import CommonModule for structural directives
-import { RouterModule } from "@angular/router"; // Import RouterModule for routerLink
-import { trigger, transition, style, animate } from "@angular/animations";
-import { BannerService } from "../../../../core/services/banner.service";
+import { Component, OnInit, OnDestroy, inject, signal, PLATFORM_ID, NgZone } from "@angular/core";
+import { CommonModule, isPlatformBrowser } from "@angular/common";
+import { RouterModule } from "@angular/router";
+import { BannerService, HeroBanner } from "../../../../core/services/banner.service";
 import { ImageUrlService } from "../../../../core/services/image-url.service";
+import { LucideAngularModule, ArrowRight, ArrowLeft, Tag } from "lucide-angular";
 
 interface Slide {
   image: string;
@@ -11,9 +11,8 @@ interface Slide {
   subtitle: string;
   link: string;
   linkText: string;
+  type?: string;
 }
-
-import { LucideAngularModule, ArrowRight, ArrowLeft } from "lucide-angular";
 
 @Component({
   selector: "app-hero",
@@ -21,49 +20,134 @@ import { LucideAngularModule, ArrowRight, ArrowLeft } from "lucide-angular";
   imports: [CommonModule, RouterModule, LucideAngularModule],
   templateUrl: "./hero.component.html",
   styleUrl: "./hero.component.css",
-  animations: [
-    trigger("fade", [
-      transition(":enter", [
-        style({ opacity: 0 }),
-        animate("800ms ease-in-out", style({ opacity: 1 })),
-      ]),
-      transition(":leave", [
-        animate("800ms ease-in-out", style({ opacity: 0 })),
-      ]),
-    ]),
-  ],
 })
 export class HeroComponent implements OnInit, OnDestroy {
   readonly icons = {
     ArrowRight,
     ArrowLeft,
+    Tag,
   };
+
   private bannerService = inject(BannerService);
-  private imageUrlService = inject(ImageUrlService);
+  public imageUrlService = inject(ImageUrlService);
+  private platformId = inject(PLATFORM_ID);
+  private ngZone = inject(NgZone);
 
-  slides: Slide[] = [];
+  slides = signal<Slide[]>([]);
+  spotlightSlide = signal<Slide | null>(null);
+  mainSlides = signal<Slide[]>([]);
 
-  currentSlide = 0;
-  timer: any;
+  currentSlide = signal(0);
+  direction = signal<"next" | "prev">("next");
+  timer: any = null;
+  isLoaded = signal(false);
   currentYear = new Date().getFullYear();
+
+  defaultSlide: Slide = {
+    image: 'https://images.unsplash.com/photo-1512163143273-bde0e3cc7407?q=80&w=2070&auto=format&fit=crop',
+    title: 'Summer Collection',
+    subtitle: 'Discover the latest trends in fashion. Quality products at unbeatable prices.',
+    link: '/shop',
+    linkText: 'Shop Now'
+  };
 
   ngOnInit() {
     this.loadBanners();
   }
 
   loadBanners() {
-    this.bannerService.getActiveBanners().subscribe((banners: any[]) => {
-      this.slides = banners.map((b: any) => ({
-        image: this.imageUrlService.getImageUrl(b.imageUrl),
-        title: b.title,
-        subtitle: b.subtitle,
-        link: b.linkUrl || "/shop",
-        linkText: b.buttonText || "Shop Now",
-      }));
+    const cached = this.getFromLocalCache();
+    if (cached) {
+      this.setSlides(cached);
+      this.refreshInBackground();
+    } else {
+      this.fetchBanners();
+    }
+  }
 
-      if (this.slides.length > 0) {
-        this.startTimer();
+  private getFromLocalCache(): HeroBanner[] | null {
+    if (!isPlatformBrowser(this.platformId)) return null;
+    try {
+      const cached = localStorage.getItem('hero_banners');
+      if (cached) {
+        return JSON.parse(cached);
       }
+    } catch {}
+    return null;
+  }
+
+  private fetchBanners() {
+    this.bannerService.getActiveBanners().subscribe({
+      next: (banners: HeroBanner[]) => {
+        this.setSlides(banners);
+        if (isPlatformBrowser(this.platformId) && banners.length > 0) {
+          localStorage.setItem('hero_banners', JSON.stringify(banners));
+          localStorage.setItem('hero_banners_ts', Date.now().toString());
+        }
+      },
+      error: () => {
+        const cached = this.getFromLocalCache();
+        if (cached) {
+          this.setSlides(cached);
+        } else {
+          this.setSlides([]);
+        }
+      }
+    });
+  }
+
+  private refreshInBackground() {
+    if (!isPlatformBrowser(this.platformId)) return;
+    const lastFetch = localStorage.getItem('hero_banners_ts');
+    const shouldRefresh = !lastFetch || (Date.now() - parseInt(lastFetch)) > 3600000;
+    
+    if (shouldRefresh) {
+      this.bannerService.getActiveBanners().subscribe({
+        next: (banners) => {
+          if (banners.length > 0) {
+            localStorage.setItem('hero_banners', JSON.stringify(banners));
+            localStorage.setItem('hero_banners_ts', Date.now().toString());
+          }
+        }
+      });
+    }
+  }
+
+  private setSlides(banners: HeroBanner[]) {
+    if (banners.length === 0) {
+      this.slides.set([this.defaultSlide]);
+      this.mainSlides.set([this.defaultSlide]);
+      this.spotlightSlide.set(null);
+      this.isLoaded.set(true);
+      this.preloadImages([this.defaultSlide.image]);
+      return;
+    }
+
+    const slides = banners.map((b: HeroBanner) => ({
+      image: this.imageUrlService.getImageUrl(b.imageUrl),
+      title: b.title || 'Summer Collection',
+      subtitle: b.subtitle || 'Discover the latest trends in fashion.',
+      link: b.linkUrl || '/shop',
+      linkText: b.buttonText || 'Shop Now',
+      type: 'Hero'
+    }));
+
+    this.slides.set(slides);
+    this.mainSlides.set(slides);
+    this.spotlightSlide.set(null);
+    this.isLoaded.set(true);
+    this.preloadImages(slides.map(s => s.image));
+
+    if (this.mainSlides().length > 1) {
+      this.startTimer();
+    }
+  }
+
+  private preloadImages(urls: string[]) {
+    if (!isPlatformBrowser(this.platformId)) return;
+    urls.forEach(url => {
+      const img = new Image();
+      img.src = url;
     });
   }
 
@@ -72,6 +156,7 @@ export class HeroComponent implements OnInit, OnDestroy {
   }
 
   startTimer() {
+    this.stopTimer();
     this.timer = setInterval(() => {
       this.next();
     }, 5000);
@@ -80,20 +165,32 @@ export class HeroComponent implements OnInit, OnDestroy {
   stopTimer() {
     if (this.timer) {
       clearInterval(this.timer);
+      this.timer = null;
     }
   }
 
   next() {
-    this.currentSlide = (this.currentSlide + 1) % this.slides.length;
+    const slides = this.mainSlides();
+    if (slides.length === 0) return;
+    
+    this.direction.set("next");
+    this.currentSlide.set((this.currentSlide() + 1) % slides.length);
   }
 
   prev() {
-    this.currentSlide =
-      (this.currentSlide - 1 + this.slides.length) % this.slides.length;
+    const slides = this.mainSlides();
+    if (slides.length === 0) return;
+    
+    this.direction.set("prev");
+    this.currentSlide.set((this.currentSlide() - 1 + slides.length) % slides.length);
   }
 
   goTo(index: number) {
-    this.currentSlide = index;
+    const slides = this.mainSlides();
+    if (index < 0 || index >= slides.length) return;
+    
+    this.direction.set(index > this.currentSlide() ? "next" : "prev");
+    this.currentSlide.set(index);
     this.stopTimer();
     this.startTimer();
   }

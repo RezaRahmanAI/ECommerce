@@ -1,182 +1,150 @@
-<!-- Top Utility Bar (Clean Minimalist) -->
-<div
-  class="bg-white text-slate-500 text-[10px] uppercase tracking-[0.2em] py-2 border-b border-gray-100"
->
-  <div class="site-container flex justify-between items-center">
-    <div class="flex items-center gap-6">
-      <a
-        [href]="'mailto:' + (vm$ | async)?.settings?.contactEmail"
-        class="hover:text-primary transition-colors"
-        >{{
-          (vm$ | async)?.settings?.contactEmail || "support@sherashopbd24.com"
-        }}</a
-      >
-    </div>
-    <div class="hidden md:flex items-center gap-6">
-      <a routerLink="/contact" class="hover:text-primary transition-colors"
-        >Contact</a
-      >
-      <a routerLink="/stores" class="hover:text-primary transition-colors"
-        >Store Locations</a
-      >
-      <span class="text-gray-200">|</span>
-      <button class="hover:text-primary transition-colors uppercase">
-        English
-      </button>
-    </div>
-  </div>
-</div>
-
 <header
-  class="fixed z-50 w-full transition-all duration-300 border-b bg-white text-slate-900 border-gray-100"
-  [ngClass]="{
-    'top-0 shadow-sm py-1':
-      isScrolled || isMenuOpen || !(vm$ | async)?.isHomePage,
-    'top-[34px] py-3': !isScrolled && !isMenuOpen && (vm$ | async)?.isHomePage,
-  }"
+  class="fixed z-50 w-full bg-white text-slate-900 border-b border-gray-100 shadow-sm"
 >
   <ng-container *ngIf="vm$ | async as vm">
+    <!-- Row 1: Logo, Main Nav, Utils -->
     <div class="site-container">
-      <div class="flex items-center justify-between h-16 md:h-18">
-        <!-- Left Side: Logo -->
-        <div class="flex-shrink-0 flex items-center">
-          <a routerLink="/" class="flex items-center group">
-            <ng-container *ngIf="vm.settings?.logoUrl; else brandText">
-              <img
-                [src]="imageUrlService.getImageUrl(vm.settings.logoUrl!)"
-                [alt]="vm.settings.websiteName || 'Logo'"
-                class="h-6 md:h-8 w-auto object-contain transition-transform duration-300"
-              />
-            </ng-container>
-            <ng-template #brandText>
-              <span
-                class="font-serif text-2xl tracking-tighter uppercase font-extrabold text-primary"
-                >{{ vm.settings.websiteName || "SheraShop" }}</span
-              >
-            </ng-template>
-          </a>
-        </div>
-
-        <!-- Center: Nav Links -->
-        <nav
-          class="hidden lg:flex items-center gap-8 flex-1 justify-center px-10"
-        >
-          <ng-container *ngFor="let item of vm.menu">
-            <div class="group relative py-6">
-              <a
-                [routerLink]="['/category', item.slug]"
-                class="text-[10px] uppercase tracking-[0.25em] font-medium text-slate-700 hover:text-primary transition-colors duration-300 relative after:absolute after:bottom-[-2px] after:left-0 after:w-0 after:h-[1px] after:bg-primary after:transition-all group-hover:after:w-full"
-              >
-                {{ item.name }}
-              </a>
-
-              <!-- Mega Menu Dropdown (Minimalist) -->
-              <div
-                class="invisible group-hover:visible absolute top-full left-1/2 -translate-x-1/2 w-max min-w-[600px] bg-white border border-gray-100 shadow-2xl p-10 grid grid-cols-4 gap-10 opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 transition-all duration-300 z-50 rounded-b-xl"
-              >
-                <div
-                  *ngFor="let sub of item.subCategories"
-                  class="flex flex-col gap-4"
+      <div class="flex items-center justify-between h-20">
+          <!-- Logo -->
+          <div class="flex-shrink-0">
+            <a routerLink="/" class="flex items-center group">
+              <ng-container *ngIf="vm.settings?.logoUrl; else brandText">
+                <img
+                  [src]="imageUrlService.getImageUrl(vm.settings.logoUrl!)"
+                  [alt]="vm.settings.websiteName || 'Logo'"
+                  class="h-10 md:h-12 w-auto object-contain transition-transform duration-300 group-hover:scale-105"
+                  loading="lazy"
+                  width="120"
+                  height="48"
+                />
+              </ng-container>
+              <ng-template #brandText>
+                <span class="font-display text-2xl font-bold text-primary uppercase tracking-tighter"
+                  >{{ vm.settings.websiteName || "SheraShopBD24" }}</span
                 >
-                  <h4
-                    class="text-[9px] uppercase tracking-[0.3em] font-bold text-primary mb-2 pb-2 border-b border-gray-50"
-                  >
-                    {{ sub.name }}
-                  </h4>
-                  <ul class="flex flex-col gap-2.5">
-                    <li *ngFor="let coll of sub.collections">
-                      <a
-                        [routerLink]="['/collection', coll.slug]"
-                        class="text-[11px] text-slate-500 hover:text-primary transition-colors duration-300"
-                      >
-                        {{ coll.name }}
-                      </a>
-                    </li>
-                    <li class="mt-1">
-                      <a
-                        [routerLink]="['/subcategory', sub.slug]"
-                        class="text-[9px] uppercase tracking-wider font-bold text-accent hover:text-primary transition-colors"
-                      >
-                        Explore All
-                      </a>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-          </ng-container>
-        </nav>
-
-        <!-- Right Side: Utils & Mobile Toggle -->
-        <div class="flex items-center gap-5 md:gap-7 flex-shrink-0">
-          <!-- Search -->
-          <!-- Search -->
-          <div class="relative flex items-center">
-            <div
-              *ngIf="isSearchOpen"
-              class="absolute right-full mr-2 w-48 md:w-64"
-            >
-              <input
-                id="navbar-search-input"
-                type="text"
-                [(ngModel)]="searchQuery"
-                (keyup.enter)="onSearch()"
-                placeholder="Search products..."
-                class="w-full px-3 py-1.5 text-xs text-slate-700 border border-gray-200 rounded-md focus:outline-none focus:border-primary transition-all"
-              />
-            </div>
-            <button
-              class="hover:text-primary transition-colors p-1"
-              aria-label="Search"
-              (click)="toggleSearch()"
-            >
-              <lucide-icon
-                [img]="isSearchOpen ? icons.X : icons.Search"
-                class="w-5 h-5 md:w-6 md:h-6 stroke-[1.5]"
-              ></lucide-icon>
-            </button>
+              </ng-template>
+            </a>
           </div>
 
-          <!-- Profile -->
+        <!-- Main Nav Links (Centered) -->
+        <nav class="hidden lg:flex items-center gap-8 flex-1 justify-center px-6">
           <a
-            routerLink="/profile"
-            class="hover:text-primary transition-colors p-1"
-            aria-label="Profile"
+            *ngFor="let nav of vm.navLinks"
+            [routerLink]="['/category', nav.slug]"
+            class="text-[13px] font-bold text-primary hover:text-accent transition-colors uppercase tracking-tight"
+          >{{ nav.name }}</a
+          >
+        </nav>
+
+        <!-- Right Side: Utils -->
+        <div class="flex items-center gap-6">
+          <!-- Offer Icon -->
+          <a
+            routerLink="/offers"
+            class="flex items-center gap-2 hover:text-accent transition-colors group"
           >
             <lucide-icon
-              [img]="icons.User"
-              class="w-5 h-5 md:w-6 md:h-6 stroke-[1.5]"
+              [img]="icons.Tag"
+              class="w-5 h-5 stroke-[1.5] group-hover:rotate-12 transition-transform"
             ></lucide-icon>
+            <span class="text-[13px] font-bold uppercase hidden xl:block">Offer</span>
           </a>
 
           <!-- Cart -->
           <a
             routerLink="/cart"
-            class="hover:text-primary transition-colors p-1 relative"
+            class="relative hover:text-accent transition-colors p-1"
             aria-label="Cart"
           >
             <lucide-icon
               [img]="icons.ShoppingBag"
-              class="w-5 h-5 md:w-6 md:h-6 stroke-[1.5]"
+              class="w-6 h-6 stroke-[1.5]"
             ></lucide-icon>
             <span
               *ngIf="vm.cartCount > 0"
-              class="absolute -top-1 -right-1 h-3.5 w-3.5 rounded-full bg-primary text-[8px] font-bold text-white flex items-center justify-center"
+              class="absolute -top-1 -right-1 h-4 w-4 bg-primary text-[9px] font-bold text-white rounded-full flex items-center justify-center border border-white"
             >
               {{ vm.cartCount }}
             </span>
           </a>
 
-          <!-- Mobile Menu Toggle -->
+          <!-- Profile -->
+          <a
+            routerLink="/profile"
+            class="hover:text-accent transition-colors p-1"
+            aria-label="Profile"
+          >
+            <lucide-icon
+              [img]="icons.User"
+              class="w-6 h-6 stroke-[1.5]"
+            ></lucide-icon>
+          </a>
+
+          <!-- Mobile Toggle -->
           <button
-            class="lg:hidden hover:text-primary transition-colors p-1"
+            class="lg:hidden hover:text-accent transition-colors p-1"
             (click)="toggleMenu()"
-            [attr.aria-expanded]="isMenuOpen"
           >
             <lucide-icon
               [img]="isMenuOpen ? icons.X : icons.Menu"
               class="w-6 h-6 stroke-[1.5]"
             ></lucide-icon>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Row 2: Categories & Search -->
+    <div class="border-t border-gray-100 py-3 hidden lg:block bg-white shadow-sm z-40">
+      <div class="site-container flex items-center gap-6">
+        <!-- Categories Button -->
+        <div class="relative min-w-[240px]">
+          <button
+            (click)="toggleCategories()"
+            class="w-full flex items-center justify-between px-5 py-3 bg-white border border-gray-200 rounded-lg text-sm font-bold text-primary hover:bg-gray-50 transition-all group"
+          >
+            <div class="flex items-center gap-3">
+              <lucide-icon [img]="icons.Menu" class="w-4 h-4 group-hover:text-accent transition-colors"></lucide-icon>
+              <span class="uppercase tracking-tight">All Categories</span>
+            </div>
+            <lucide-icon
+              [img]="icons.ChevronDown"
+              class="w-4 h-4 transition-transform duration-300"
+              [ngClass]="{ 'rotate-180': isCategoriesOpen }"
+            ></lucide-icon>
+          </button>
+
+          <!-- Dropdown -->
+          <div
+            *ngIf="isCategoriesOpen"
+            class="absolute top-full left-0 w-full mt-2 bg-white border border-gray-100 shadow-2xl rounded-xl z-50 overflow-hidden animate-fade-in"
+          >
+            <div *ngFor="let item of vm.menu" class="border-b border-gray-50 last:border-0 hover:bg-gray-50 transition-colors">
+              <a
+                [routerLink]="['/category', item.slug]"
+                (click)="isCategoriesOpen = false"
+                class="flex items-center justify-between px-5 py-3.5 text-sm font-medium text-slate-700 hover:text-accent transition-all"
+              >
+                {{ item.name }}
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Search Bar -->
+        <div class="flex-1 relative">
+          <input
+            type="text"
+            [(ngModel)]="searchQuery"
+            (keyup.enter)="onSearch()"
+            placeholder="Search for products (e.g. Black Hoodie)..."
+            class="w-full px-6 py-3 bg-gray-50 border border-transparent rounded-lg text-sm focus:bg-white focus:border-accent transition-all pr-12"
+          />
+          <button
+            (click)="onSearch()"
+            class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-accent transition-colors"
+          >
+            <lucide-icon [img]="icons.Search" class="w-5 h-5 stroke-[2]"></lucide-icon>
           </button>
         </div>
       </div>

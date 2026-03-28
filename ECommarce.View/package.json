@@ -1,12 +1,12 @@
 {
-  "name": "ecommarce",
+  "name": "sherashopbd24",
   "version": "1.0.0",
   "description": "Ecommerce storefront built with Angular and Tailwind CSS.",
   "private": true,
   "main": "postcss.config.js",
   "scripts": {
     "start": "ng serve --ssl",
-    "build": "ng build",
+    "build": "ng build --configuration production",
     "test": "ng test",
     "lint": "ng lint",
     "typecheck": "tsc -p tsconfig.json --noEmit",

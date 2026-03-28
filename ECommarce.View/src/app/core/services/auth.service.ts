@@ -33,9 +33,8 @@ export class AuthService {
     const token = localStorage.getItem(this.tokenKey);
     if (token) {
       this.api.get<User>("/auth/me").subscribe({
-        next: (user) => this.setSession(user, token),
-        error: (err) => {
-          // Only clear session if we get an explicit 401 Unauthorized
+        next: (user: any) => this.setSession(user as User, token),
+        error: (err: any) => {
           if (err?.status === 401) {
             this.clearSession();
           }
@@ -96,9 +95,9 @@ export class AuthService {
 
   customerPhoneLogin(phone: string): Observable<User | null> {
     return this.api.get<User>(`/customers/lookup?phone=${phone}`).pipe(
-      tap((user) => {
+      tap((user: any) => {
         if (user) {
-          this.setSession(user, this.getAccessToken() || "");
+          this.setSession(user as User, this.getAccessToken() || "");
         }
       }),
     );

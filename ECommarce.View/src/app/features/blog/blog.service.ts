@@ -11,7 +11,7 @@ export class BlogService {
 
   getFeaturedPost() {
     return this.api.get<BlogPost>('/blog/posts/featured').pipe(
-      map((post) => (post ? this.mapPost(post) : undefined)),
+      map((post: any) => (post ? this.mapPost(post) : undefined)),
       catchError(() => of(undefined))
     );
   }
@@ -28,16 +28,16 @@ export class BlogService {
     }
 
     return this.api.get<BlogPostResult>('/blog/posts', { params }).pipe(
-      map((result) => ({
+      map((result: any) => ({
         ...result,
-        posts: result.posts.map((post) => this.mapPost(post)),
+        posts: result.posts?.map((post: any) => this.mapPost(post)) || [],
       }))
     );
   }
 
   getPostBySlug(slug: string) {
     return this.api.get<BlogPost>(`/blog/posts/${slug}`).pipe(
-      map((post) => this.mapPost(post)),
+      map((post: any) => this.mapPost(post)),
       catchError(() => of(undefined))
     );
   }
@@ -45,7 +45,7 @@ export class BlogService {
   getRelatedPosts(slug: string, limit = 3) {
     const params = new HttpParams().set('limit', String(limit));
     return this.api.get<BlogPost[]>(`/blog/posts/${slug}/related`, { params }).pipe(
-      map((posts) => posts.map((post) => this.mapPost(post))),
+      map((posts: any) => posts?.map((post: any) => this.mapPost(post)) || []),
       catchError(() => of([]))
     );
   }

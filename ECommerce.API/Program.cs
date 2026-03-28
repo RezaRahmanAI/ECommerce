@@ -1,6 +1,7 @@
 using ECommerce.Infrastructure.Data;
 using ECommerce.Core.Entities;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.ResponseCompression;
 using System.IO.Compression;
@@ -107,7 +108,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 builder.Services.AddDistributedMemoryCache();
 
 // JWT Setup
-var jwtKey = builder.Configuration["Token:Key"] ?? "development_key_arzamart_123456789";
+var jwtKey = builder.Configuration["Token:Key"] ?? "development_key_sherashopbd24_2026_987654321";
 var keyBytes = System.Text.Encoding.UTF8.GetBytes(jwtKey);
 if (keyBytes.Length < 32)
 {
@@ -126,9 +127,9 @@ builder.Services.AddAuthentication(options =>
     {
         ValidateIssuerSigningKey = true,
         IssuerSigningKey = new Microsoft.IdentityModel.Tokens.SymmetricSecurityKey(keyBytes),
-        ValidIssuer = builder.Configuration["Token:Issuer"] ?? "ArzaMart",
+        ValidIssuer = builder.Configuration["Token:Issuer"] ?? "SheraShopBD24",
         ValidateIssuer = true,
-        ValidAudience = builder.Configuration["Token:Audience"] ?? "ArzaMartUsers",
+        ValidAudience = builder.Configuration["Token:Audience"] ?? "SheraShopBD24",
         ValidateAudience = true,
         ValidateLifetime = true,
         ClockSkew = TimeSpan.Zero
@@ -136,6 +137,32 @@ builder.Services.AddAuthentication(options =>
 });
 
 builder.Services.AddAuthorization();
+
+// Rate Limiting for DDoS protection
+builder.Services.AddRateLimiter(options =>
+{
+    options.AddFixedWindowLimiter("fixed", limiterOptions =>
+    {
+        limiterOptions.PermitLimit = 100;
+        limiterOptions.Window = TimeSpan.FromMinutes(1);
+        limiterOptions.QueueProcessingOrder = System.Threading.RateLimiting.QueueProcessingOrder.OldestFirst;
+        limiterOptions.QueueLimit = 20;
+    });
+});
+
+builder.Services.AddOutputCache(options =>
+{
+    options.AddPolicy("DefaultPolicy", builder => 
+        builder.Expire(TimeSpan.FromMinutes(5)));
+    
+    options.AddPolicy("Products", builder =>
+        builder.Expire(TimeSpan.FromMinutes(10))
+               .Tag("products"));
+
+    options.AddPolicy("Categories", builder =>
+        builder.Expire(TimeSpan.FromHours(1))
+               .Tag("categories"));
+});
 
 // Health checks for monitoring
 builder.Services.AddHealthChecks();
@@ -196,16 +223,13 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// Swagger: Only in Development
-if (app.Environment.IsDevelopment())
+// Swagger: Enabled in all environments
+app.UseSwagger();
+app.UseSwaggerUI(c =>
 {
-    app.UseSwagger();
-    app.UseSwaggerUI(c =>
-    {
-        c.RoutePrefix = "swagger";
-        c.DocumentTitle = "ECommerce API";
-    });
-}
+    c.RoutePrefix = "swagger";
+    c.DocumentTitle = "ECommerce API";
+});
 
 // 1. Core security/transport
 app.UseHttpsRedirection();
@@ -256,6 +280,9 @@ app.UseMiddleware<ECommerce.API.Middleware.VisitorTrackingMiddleware>();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.UseRateLimiter();
+app.UseOutputCache();
 
 // Map health checks endpoint
 app.MapHealthChecks("/health");

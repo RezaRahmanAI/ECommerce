@@ -5,6 +5,7 @@ import { CartItem, CartSummary } from "../models/cart";
 import { Product } from "../models/product";
 import { SettingsService } from "../../admin/services/settings.service";
 import { AnalyticsService } from "./analytics.service";
+import { NotificationService } from "./notification.service";
 
 @Injectable({
   providedIn: "root",
@@ -16,6 +17,7 @@ export class CartService {
   private readonly storageKey = "cart_items";
   private readonly settingsService = inject(SettingsService);
   private readonly analyticsService = inject(AnalyticsService);
+  private readonly notificationService = inject(NotificationService);
 
   private readonly cartItemsSubject = new BehaviorSubject<CartItem[]>(
     this.loadCart(),
@@ -74,6 +76,7 @@ export class CartService {
     if (existing) {
       this.updateQty(existing.id, existing.quantity + quantity);
       this.analyticsService.trackAddToCart({ ...existing, quantity });
+      this.notificationService.success(`${product.name} quantity updated in cart`);
       return;
     }
 
@@ -86,12 +89,18 @@ export class CartService {
     const nextItems = [...items, newItem];
     this.cartItemsSubject.next(nextItems);
     this.analyticsService.trackAddToCart(newItem);
+    this.notificationService.success(`${product.name} added to cart`);
   }
 
   removeItem(cartItemId: string): void {
+    const items = this.cartItemsSubject.getValue();
+    const item = items.find(i => i.id === cartItemId);
     this.cartItemsSubject.next(
-      this.cartItemsSubject.getValue().filter((item) => item.id !== cartItemId),
+      items.filter((item) => item.id !== cartItemId),
     );
+    if (item) {
+      this.notificationService.info(`${item.name} removed from cart`);
+    }
   }
 
   updateQty(cartItemId: string, quantity: number): void {
@@ -107,6 +116,7 @@ export class CartService {
 
   clearCart(): void {
     this.cartItemsSubject.next([]);
+    this.notificationService.info('Cart has been cleared');
   }
 
   private createCartItem(

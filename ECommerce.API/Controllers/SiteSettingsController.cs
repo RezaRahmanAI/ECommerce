@@ -19,6 +19,7 @@ namespace ECommerce.API.Controllers
         }
 
         [HttpGet]
+        [ResponseCache(Duration = 300, VaryByHeader = "Accept-Encoding")]
         public async Task<ActionResult<SiteSetting>> GetSettings()
         {
             var settings = await _context.SiteSettings.FirstOrDefaultAsync();

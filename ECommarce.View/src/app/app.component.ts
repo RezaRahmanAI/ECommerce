@@ -1,5 +1,5 @@
-import { Component, inject, OnInit, Renderer2 } from "@angular/core";
-import { DOCUMENT, CommonModule } from "@angular/common";
+import { Component, inject, OnInit, Renderer2, PLATFORM_ID } from "@angular/core";
+import { DOCUMENT, CommonModule, isPlatformBrowser } from "@angular/common";
 import { Title } from "@angular/platform-browser";
 import { SiteSettingsService } from "./core/services/site-settings.service";
 import { NavigationEnd, Router, RouterOutlet } from "@angular/router";
@@ -12,6 +12,8 @@ import { ContactFabComponent } from "./shared/components/contact-fab/contact-fab
 import { LoggerService } from "./core/services/logger.service";
 import { AnalyticsService } from "./core/services/analytics.service";
 import { LoadingSpinnerComponent } from "./shared/components/loading-spinner/loading-spinner.component";
+import { BannerService } from "./core/services/banner.service";
+import { NavigationService } from "./core/services/navigation.service";
 
 @Component({
   selector: "app-root",
@@ -36,13 +38,15 @@ export class AppComponent implements OnInit {
   private logger = inject(LoggerService);
   private titleService = inject(Title);
   private analyticsService = inject(AnalyticsService);
+  private platformId = inject(PLATFORM_ID);
+  private bannerService = inject(BannerService);
+  private navigationService = inject(NavigationService);
 
   showPublicLayout$ = this.router.events.pipe(
     filter((event) => event instanceof NavigationEnd),
     startWith(null),
     map(() => {
       let url = this.router.url;
-      // On initial load, router.url might be '/' or '', so fallback to window.location
       if (typeof window !== 'undefined' && (url === '/' || url === '')) {
         url = window.location.pathname;
       }
@@ -53,12 +57,16 @@ export class AppComponent implements OnInit {
   ngOnInit() {
     this.logger.info("Application initialized with professional logging");
 
-    // Track PageViews on route changes
+    if (isPlatformBrowser(this.platformId)) {
+      this.preloadCriticalData();
+    }
+
     this.router.events
       .pipe(filter((event) => event instanceof NavigationEnd))
       .subscribe(() => {
         if (!this.router.url.startsWith("/admin")) {
           this.analyticsService.trackPageView();
+          this.loadPageSpecificData();
         }
       });
 
@@ -73,6 +81,18 @@ export class AppComponent implements OnInit {
         this.injectGoogleTag(settings.googleTagId);
       }
     });
+  }
+
+  private loadPageSpecificData() {
+    const url = this.router.url;
+    if (url === '/' || url === '') {
+      this.bannerService.getActiveBanners().subscribe();
+      this.navigationService.getMegaMenu().subscribe();
+    }
+  }
+
+  private preloadCriticalData() {
+    this.navigationService.getMegaMenu().subscribe();
   }
 
   private injectFacebookPixel(pixelId: string) {

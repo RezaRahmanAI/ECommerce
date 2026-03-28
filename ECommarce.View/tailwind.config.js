@@ -9,6 +9,8 @@ module.exports = {
         "primary-light": "#151515",
         accent: "#D4AF37", // Metallic Gold
         "accent-light": "#F0E68C",
+        "brand-purple": "#7C3AED",
+        "brand-purple-light": "#F5F3FF",
         "background-light": "#FFFFFF",
         "background-dark": "#050505",
         "text-main": "#050505",

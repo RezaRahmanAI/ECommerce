@@ -8,6 +8,8 @@
       [alt]="product.name"
       class="h-full w-full object-cover object-center transition-transform duration-[1200ms] ease-out group-hover:scale-105"
       [src]="imageUrlService.getImageUrl(mainImage)"
+      loading="lazy"
+      decoding="async"
     />
 
     <!-- Tier Badge (ilyn.global style) -->

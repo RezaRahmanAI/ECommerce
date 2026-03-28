@@ -3,14 +3,26 @@
 >
   <ng-container *ngIf="showPublicLayout$ | async; else adminLayout">
     <app-navbar></app-navbar>
-    <router-outlet></router-outlet>
-    <app-footer></app-footer>
+    <main class="pt-20 lg:pt-[104px]">
+      <router-outlet></router-outlet>
+    </main>
+    
+    @defer (on viewport) {
+      <app-footer></app-footer>
+    } @placeholder {
+      <div class="h-64 bg-gray-50"></div>
+    }
+    
+    @defer (on viewport) {
+      <app-contact-fab></app-contact-fab>
+    } @placeholder {
+      <div class="fixed bottom-6 right-6 w-14 h-14 bg-gray-200 rounded-full"></div>
+    }
   </ng-container>
   <ng-template #adminLayout>
     <router-outlet></router-outlet>
   </ng-template>
-  <!-- <app-toast></app-toast> -->
-  <app-contact-fab></app-contact-fab>
 </div>
 
+<app-toast></app-toast>
 <app-loading-spinner></app-loading-spinner>

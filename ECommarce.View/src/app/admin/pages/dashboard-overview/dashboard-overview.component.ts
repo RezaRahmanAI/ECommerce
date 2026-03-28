@@ -6,7 +6,7 @@ import {
   Observable,
   firstValueFrom,
   shareReplay,
-  switchMap,
+  exhaustMap,
   timer,
 } from "rxjs";
 
@@ -69,7 +69,7 @@ export class DashboardOverviewComponent {
 
   settings$ = this.settingsService.getSettings();
 
-  private readonly refreshIntervalMs = 15000;
+  private readonly refreshIntervalMs = 60000; // Refresh every 60 seconds instead of 15
   protected Math = Math;
   protected date = new Date();
 
@@ -280,7 +280,7 @@ export class DashboardOverviewComponent {
 
   private createLiveStream<T>(source: () => Observable<T>): Observable<T> {
     return timer(0, this.refreshIntervalMs).pipe(
-      switchMap(() => source()),
+      exhaustMap(() => source()),
       takeUntilDestroyed(this.destroyRef),
       shareReplay({ bufferSize: 1, refCount: true }),
     );

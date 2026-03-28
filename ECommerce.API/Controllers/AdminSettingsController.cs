@@ -34,7 +34,7 @@ public class AdminSettingsController : ControllerBase
             _context.SiteSettings.Add(settings);
             await _context.SaveChangesAsync();
         }
-        else if (settings.WebsiteName == "Arza" || settings.WebsiteName == "E-Commerce Store")
+        else if (settings.WebsiteName == "SheraShopBD24" || settings.WebsiteName == "E-Commerce Store")
         {
             settings.WebsiteName = "SheraShopBD24";
             await _context.SaveChangesAsync();

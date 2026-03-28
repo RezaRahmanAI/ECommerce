@@ -374,6 +374,11 @@ export class LandingPageComponent implements OnInit {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((district) => {
         this.updateAreas(district);
+        if (district) {
+          this.checkoutForm.controls.area.enable();
+        } else {
+          this.checkoutForm.controls.area.disable();
+        }
         this.checkoutForm.patchValue({ area: "" });
         this.updateDeliveryMethodByDistrict(district);
       });

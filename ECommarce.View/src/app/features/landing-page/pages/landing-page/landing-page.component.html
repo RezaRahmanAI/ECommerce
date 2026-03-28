@@ -291,8 +291,7 @@
                 <label class="block text-[10px] uppercase tracking-[0.2em] font-bold text-[#888]">এলাকা <span class="text-[#c8922a]">*</span></label>
                 <div class="relative w-full">
                   <select formControlName="area" 
-                          class="w-full px-4 py-3 border border-[#e0e0e0] rounded-none focus:border-[#1a1a1a] outline-none transition-colors bg-white text-sm appearance-none"
-                          [disabled]="!checkoutForm.get('district')?.value">
+                          class="w-full px-4 py-3 border border-[#e0e0e0] rounded-none focus:border-[#1a1a1a] outline-none transition-colors bg-white text-sm appearance-none">
                     <option value="">এলাকা নির্বাচন করুন</option>
                     <option *ngFor="let area of availableAreas" [value]="area">{{ area }}</option>
                   </select>

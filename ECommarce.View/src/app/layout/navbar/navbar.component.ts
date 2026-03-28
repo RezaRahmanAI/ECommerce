@@ -16,6 +16,7 @@ import {
   Facebook,
   Instagram,
   Twitter,
+  Tag,
 } from "lucide-angular";
 
 import { AuthService } from "../../core/services/auth.service";
@@ -49,10 +50,11 @@ export class NavbarComponent {
     Facebook,
     Instagram,
     Twitter,
+    Tag,
   };
 
   isMenuOpen = false;
-  isSearchOpen = false;
+  isCategoriesOpen = false;
   searchQuery = "";
   isScrolled = false;
 
@@ -78,32 +80,32 @@ export class NavbarComponent {
     menu: this.navigationService.getMegaMenu(),
     isHomePage: this.isHomePage$,
   }).pipe(
-    map(({ user, summary, settings, menu, isHomePage }) => ({
-      user,
-      cartCount: summary.itemsCount,
-      settings: settings || null,
-      menu,
-      isHomePage,
-    })),
+    map(({ user, summary, settings, menu, isHomePage }) => {
+      const filteredMenu = menu.filter(item => 
+        !['offer', 'offers'].includes(item.name.toLowerCase())
+      );
+      return {
+        user,
+        cartCount: summary.itemsCount,
+        settings: settings || null,
+        menu: filteredMenu,
+        navLinks: filteredMenu.slice(0, 4),
+        isHomePage,
+      };
+    }),
   );
 
   toggleMenu(): void {
     this.isMenuOpen = !this.isMenuOpen;
   }
 
-  closeMenu(): void {
-    this.isMenuOpen = false;
-    this.isSearchOpen = false;
+  toggleCategories(): void {
+    this.isCategoriesOpen = !this.isCategoriesOpen;
   }
 
-  toggleSearch(): void {
-    this.isSearchOpen = !this.isSearchOpen;
-    if (this.isSearchOpen) {
-      setTimeout(() => {
-        const input = document.getElementById("navbar-search-input");
-        if (input) input.focus();
-      }, 100);
-    }
+  closeMenu(): void {
+    this.isMenuOpen = false;
+    this.isCategoriesOpen = false;
   }
 
   onSearch(): void {
@@ -111,7 +113,6 @@ export class NavbarComponent {
       this.router.navigate(["/search"], {
         queryParams: { searchTerm: this.searchQuery.trim() },
       });
-      this.isSearchOpen = false;
       this.searchQuery = "";
     }
   }

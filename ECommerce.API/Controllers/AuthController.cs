@@ -128,7 +128,7 @@ public class AuthController : ControllerBase
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
         };
 
-        var jwtKey = _config["Token:Key"] ?? "development_key_arzamart_123456789";
+        var jwtKey = _config["Token:Key"] ?? "development_key_sherashopbd24_2026_987654321";
         var keyBytes = Encoding.UTF8.GetBytes(jwtKey);
         
         // Ensure key is at least 32 bytes for HMACSHA256
@@ -142,8 +142,8 @@ public class AuthController : ControllerBase
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
         var token = new JwtSecurityToken(
-            issuer: _config["Token:Issuer"] ?? "ArzaMart",
-            audience: _config["Token:Audience"] ?? "ArzaMartUsers",
+            issuer: _config["Token:Issuer"] ?? "SheraShopBD24",
+            audience: _config["Token:Audience"] ?? "SheraShopBD24",
             claims: claims,
             expires: DateTime.Now.AddDays(7),
             signingCredentials: creds

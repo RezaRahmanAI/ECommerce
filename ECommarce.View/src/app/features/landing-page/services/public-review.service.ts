@@ -1,5 +1,5 @@
 import { Injectable, inject } from "@angular/core";
-import { map, Observable } from "rxjs";
+import { map, Observable, shareReplay, catchError, of } from "rxjs";
 import { ApiHttpClient } from "../../../core/http/http-client";
 
 interface PaginatedPublicReviewsResponse {
@@ -28,14 +28,31 @@ export interface PublicReview {
 export class PublicReviewService {
   private readonly api = inject(ApiHttpClient);
   private readonly baseUrl = "/reviews";
+  
+  // Cache for reviews
+  private reviewsCache = new Map<number, Observable<PublicReview[]>>();
+  private featuredCache$: Observable<PublicReview[]> | null = null;
 
   getReviewsByProduct(productId: number): Observable<PublicReview[]> {
-    return this.api
-      .get<PublicReview[] | PaginatedPublicReviewsResponse>(`${this.baseUrl}/products/${productId}`)
-      .pipe(map((response) => Array.isArray(response) ? response : response.reviews ?? []));
+    if (!this.reviewsCache.has(productId)) {
+      this.reviewsCache.set(productId, this.api
+        .get<PublicReview[] | PaginatedPublicReviewsResponse>(`${this.baseUrl}/products/${productId}`)
+        .pipe(
+          map((response: any) => Array.isArray(response) ? response : response?.reviews ?? []),
+          shareReplay(1),
+          catchError(() => of([]))
+        ));
+    }
+    return this.reviewsCache.get(productId)!;
   }
 
   getFeaturedReviews(): Observable<PublicReview[]> {
-    return this.api.get<PublicReview[]>(`${this.baseUrl}/featured`);
+    if (!this.featuredCache$) {
+      this.featuredCache$ = this.api.get<PublicReview[]>(`${this.baseUrl}/featured`).pipe(
+        shareReplay(1),
+        catchError(() => of([]))
+      );
+    }
+    return this.featuredCache$;
   }
 }

@@ -142,7 +142,7 @@ export class BlogDetailsComponent implements OnInit {
       });
 
     this.settingsService.getSettings().subscribe((settings) => {
-      this.websiteName = settings.websiteName || "SheraShop";
+      this.websiteName = settings.websiteName || "SheraShopBD24";
     });
   }
 
@@ -218,7 +218,7 @@ export class BlogDetailsComponent implements OnInit {
     platform: "pinterest" | "facebook" | "twitter",
   ): string {
     const encodedUrl = encodeURIComponent(this.shareUrl);
-    const websiteName = this.websiteName || "SheraShop";
+    const websiteName = this.websiteName || "SheraShopBD24";
     const title = encodeURIComponent(this.post?.title ?? `${websiteName} Blog`);
 
     switch (platform) {

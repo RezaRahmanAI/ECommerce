@@ -24,6 +24,8 @@ export interface CustomerOrderRequest {
   name: string;
   phone: string;
   address: string;
+  city?: string;
+  area?: string;
   deliveryDetails: string;
   deliveryMethodId?: number;
   itemsCount: number;

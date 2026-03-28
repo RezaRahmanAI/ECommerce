@@ -14,13 +14,13 @@ export class BlogPostsService {
   getAll() {
     return this.api
       .get<BlogPost[]>("/admin/blog/posts")
-      .pipe(map((posts) => posts.map((post) => this.mapPost(post))));
+      .pipe(map((posts: any) => posts?.map((post: any) => this.mapPost(post))));
   }
 
   getById(id: number) {
     return this.api
       .get<BlogPost>(`/admin/blog/posts/${id}`)
-      .pipe(map((post) => this.mapPost(post)));
+      .pipe(map((post: any) => this.mapPost(post)));
   }
 
   create(payload: BlogPostPayload) {

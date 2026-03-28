@@ -1,9 +1,10 @@
-import { Injectable } from "@angular/core";
+import { Injectable, inject } from "@angular/core";
 import { BehaviorSubject, Observable, map, of, tap } from "rxjs";
 
 import { CheckoutState } from "../models/checkout";
 import { CartService } from "./cart.service";
 import { OrderService } from "./order.service";
+import { NotificationService } from "./notification.service";
 
 @Injectable({
   providedIn: "root",
@@ -11,6 +12,7 @@ import { OrderService } from "./order.service";
 export class CheckoutService {
   private readonly storageBaseKey = "checkout_state";
   private activeStorageKey = this.storageBaseKey;
+  private readonly notificationService = inject(NotificationService);
 
   private readonly stateSubject = new BehaviorSubject<CheckoutState>(
     this.buildDefaultState(),
@@ -50,11 +52,14 @@ export class CheckoutService {
         deliveryMethodId: state.deliveryMethodId,
       })
       .pipe(
-        tap(() => {
+        tap((order) => {
           this.cartService.clearCart();
           this.resetState();
+          if (order?.id) {
+            this.notificationService.success(`Order #${order.id} placed successfully!`);
+          }
         }),
-        map((order) => order.id),
+        map((order) => order?.id ?? null),
       );
   }
 

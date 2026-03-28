@@ -1,3 +1,97 @@
 :host {
   display: block;
 }
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Custom Gradient Overlay for Hero */
+.bg-gradient-to-r {
+  background: linear-gradient(90deg, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0.4) 50%, rgba(0, 0, 0, 0) 100%);
+}
+
+/* Luxury Button Transitions */
+a.inline-flex {
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+a.inline-flex:hover {
+  letter-spacing: 0.1em;
+  box-shadow: 0 20px 40px rgba(212, 175, 55, 0.2);
+}
+
+/* Image Scale Correction for Aspect Ratio */
+img {
+  will-change: transform;
+}
+
+.lg\:col-span-2 {
+  min-height: 600px;
+}
+
+/* Side Banner Decorative Elements */
+.bg-accent {
+  background-color: #D4AF37;
+}
+
+.flex-1.bg-accent::before {
+  content: "";
+  position: absolute;
+  top: -20%;
+  left: -20%;
+  width: 140%;
+  height: 140%;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+  background-size: 30px 30px;
+  transform: rotate(-12deg);
+  pointer-events: none;
+}
+
+/* Responsive Overrides */
+@media (max-width: 1024px) {
+  .lg\:col-span-2 {
+    min-height: 400px;
+  }
+  
+  h1 {
+    font-size: 3.5rem !important;
+  }
+}
+
+@media (max-width: 640px) {
+  h1 {
+    font-size: 2.5rem !important;
+  }
+  
+  .px-12 {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}
+
+/* Glassmorphism Controls */
+.backdrop-blur-md {
+  backdrop-filter: blur(12px) saturate(180%);
+}
+
+/* Pagination Dots Custom Style */
+.bg-accent.w-8 {
+  background-color: #D4AF37;
+}
+
+/* Hover Zoom for Images */
+.group:hover .group-hover\:scale-100 {
+  transform: scale(1);
+}

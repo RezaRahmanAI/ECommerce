@@ -68,7 +68,7 @@ export class CustomerProfileService {
     const params = new HttpParams().set("phone", phone);
     return this.api
       .get<any[]>(`${this.baseUrl}/orders`, { params })
-      .pipe(map((dtos) => dtos.map(this.mapOrderDtoToOrder)));
+      .pipe(map((dtos: any) => dtos?.map((dto: any) => this.mapOrderDtoToOrder(dto)) || []));
   }
 
   private mapOrderDtoToOrder(dto: any): Order {
