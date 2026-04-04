@@ -35,15 +35,15 @@ export class CategoryService {
           imageUrl: category.imageUrl ?? "",
           href: category.slug ? `/shop/${category.slug}` : "/shop",
           productCount: category.productCount,
-          subCategories:
-            category.subCategories?.map((sub: any) => ({
-              id: sub.id.toString(),
-              name: sub.name,
-              slug: sub.slug,
-              href: `/shop/${category.slug}/${sub.slug}`,
+          childCategories:
+            category.childCategories?.map((child: any) => ({
+              id: child.id.toString(),
+              name: child.name,
+              slug: child.slug,
+              href: `/shop/${category.slug}/${child.slug}`,
               imageUrl:
-                sub.imageUrl ??
-                "assets/images/placeholder-" + sub.slug + ".jpg",
+                child.imageUrl ??
+                "assets/images/placeholder-" + child.slug + ".jpg",
             })) || [],
         })),
     ),

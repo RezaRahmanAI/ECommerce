@@ -114,9 +114,7 @@ export class AdminCategoryManagementComponent implements OnInit, OnDestroy {
       .get("name")
       ?.valueChanges.pipe(takeUntil(this.destroy$))
       .subscribe((value) => {
-        if (!this.slugManuallyEdited) {
-          this.updateSlugFromName(value ?? "");
-        }
+        this.updateSlugFromName(value ?? "");
       });
 
     this.categoryForm
@@ -385,19 +383,22 @@ export class AdminCategoryManagementComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.categoriesService.delete(category.id).subscribe((success) => {
-      if (!success) {
-        return;
+    this.categoriesService.delete(category.id).subscribe({
+      next: (success) => {
+        if (!success) return;
+        
+        this.categoriesFlat = this.categoriesFlat.filter((item) => item.id !== category.id);
+        if (this.selectedId === category.id) {
+          this.selectedId = null;
+          this.mode = "create";
+        }
+        this.rebuildTree();
+        window.alert("Category deleted successfully.");
+      },
+      error: (err) => {
+        const errorMsg = err.error?.message || "Failed to delete category. Please try again.";
+        window.alert(errorMsg);
       }
-      this.categoriesFlat = this.categoriesFlat.filter(
-        (item) => item.id !== category.id,
-      );
-      if (this.selectedId === category.id) {
-        this.selectedId = null;
-        this.mode = "create";
-      }
-      this.rebuildTree();
-      window.alert("Category deleted.");
     });
   }
 

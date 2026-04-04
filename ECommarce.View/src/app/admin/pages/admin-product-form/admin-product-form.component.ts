@@ -20,7 +20,6 @@ import { ProductsService } from "../../services/products.service";
 import { CategoriesService } from "../../services/categories.service";
 import {
   Category,
-  SubCategory,
   Collection,
 } from "../../models/categories.models";
 import { PriceDisplayComponent } from "../../../shared/components/price-display/price-display.component";
@@ -95,11 +94,9 @@ export class AdminProductFormComponent implements OnDestroy {
   pageTitle = "Create Product";
 
   categories: Category[] = [];
-  subCategories: SubCategory[] = [];
   collections: Collection[] = [];
 
   // Flattened for easy access if needed, but we used filtered lists
-  filteredSubCategories: SubCategory[] = [];
   filteredCollections: Collection[] = [];
 
   // Predefined standard sizes
@@ -143,7 +140,6 @@ export class AdminProductFormComponent implements OnDestroy {
       shortDescription: [""],
       statusActive: [true],
       category: ["", [Validators.required]],
-      subCategory: [""],
       collection: [""],
       gender: ["women"],
       price: [0, [Validators.required, Validators.min(0)]],
@@ -244,10 +240,9 @@ export class AdminProductFormComponent implements OnDestroy {
   setupCascadingSelects(): void {
     this.form.get("category")?.valueChanges.subscribe((categoryId) => {
       if (!categoryId) {
-        this.filteredSubCategories = [];
         this.filteredCollections = [];
         this.form.patchValue(
-          { subCategory: "", collection: "" },
+          { collection: "" },
           { emitEvent: false },
         );
         return;
@@ -257,42 +252,18 @@ export class AdminProductFormComponent implements OnDestroy {
       const category = this.categories.find(
         (c) => String(c.id) === String(categoryId),
       );
-      this.filteredSubCategories = category?.subCategories || [];
+      this.filteredCollections = category?.collections || [];
 
-      // Clear downstream if user manually changed it (not programmatic patch)
-      // We can distinguish via options or just always clear if value doesn't match?
-      // For now, simpler: if the current subCategory value is not in the new list, clear it.
-      const currentSubId = this.form.get("subCategory")?.value;
-      const exists = this.filteredSubCategories.find(
-        (sc) => String(sc.id) === String(currentSubId),
-      );
-      if (!exists) {
-        this.form.patchValue(
-          { subCategory: "", collection: "" },
-          { emitEvent: false },
-        );
-        this.filteredCollections = [];
-      }
-    });
-
-    this.form.get("subCategory")?.valueChanges.subscribe((subCategoryId) => {
-      if (!subCategoryId) {
-        this.filteredCollections = [];
-        this.form.patchValue({ collection: "" }, { emitEvent: false });
-        return;
-      }
-
-      const subCategory = this.filteredSubCategories.find(
-        (sc) => String(sc.id) === String(subCategoryId),
-      );
-      this.filteredCollections = subCategory?.collections || [];
-
+      // If the current collection value is not in the new list, clear it.
       const currentColId = this.form.get("collection")?.value;
       const exists = this.filteredCollections.find(
         (c) => String(c.id) === String(currentColId),
       );
       if (!exists) {
-        this.form.patchValue({ collection: "" }, { emitEvent: false });
+        this.form.patchValue(
+          { collection: "" },
+          { emitEvent: false },
+        );
       }
     });
   }
@@ -355,13 +326,7 @@ export class AdminProductFormComponent implements OnDestroy {
           const category = this.categories.find(
             (c) => String(c.id) === String(product.categoryId),
           );
-          this.filteredSubCategories = category?.subCategories || [];
-        }
-        if (product.subCategoryId) {
-          const subCategory = this.filteredSubCategories.find(
-            (sc) => String(sc.id) === String(product.subCategoryId),
-          );
-          this.filteredCollections = subCategory?.collections || [];
+          this.filteredCollections = category?.collections || [];
         }
 
         this.form.patchValue({
@@ -370,9 +335,6 @@ export class AdminProductFormComponent implements OnDestroy {
           shortDescription: product.shortDescription || "",
           statusActive: product.isActive,
           category: String(product.categoryId),
-          subCategory: product.subCategoryId
-            ? String(product.subCategoryId)
-            : "",
           collection: product.collectionId ? String(product.collectionId) : "",
           gender: "women", 
           price: product.compareAtPrice ?? product.price,
@@ -1031,7 +993,6 @@ export class AdminProductFormComponent implements OnDestroy {
       tier: raw.tier ?? "",
       tags: raw.tags ?? "",
       sortOrder: Number(raw.sortOrder ?? 0),
-      subCategoryId: raw.subCategory ? Number(raw.subCategory) : null,
       collectionId: raw.collection ? Number(raw.collection) : null,
       productType: raw.productType as ProductType,
       bundleItems:
@@ -1082,7 +1043,6 @@ export class AdminProductFormComponent implements OnDestroy {
       shortDescription: "",
       statusActive: true,
       category: "",
-      subCategory: "",
       collection: "",
       gender: "women",
       price: 0,

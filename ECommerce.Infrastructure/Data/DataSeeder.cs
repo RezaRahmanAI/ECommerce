@@ -82,8 +82,8 @@ public static class DataSeeder
             var banners = await context.HeroBanners.ToListAsync();
             if (banners.Any()) context.HeroBanners.RemoveRange(banners);
 
-            // Clear Categories and SubCategories
-            var categories = await context.Categories.Include(c => c.SubCategories).ToListAsync();
+            // Clear Categories
+            var categories = await context.Categories.Include(c => c.ChildCategories).ToListAsync();
             if (categories.Any()) context.Categories.RemoveRange(categories);
 
             await context.SaveChangesAsync();
@@ -109,6 +109,21 @@ public static class DataSeeder
         {
             siteSettings.WebsiteName = "SheraShopBD";
             siteSettings.ContactEmail = "support@sherashopbd.com";
+            await context.SaveChangesAsync();
+        }
+
+        // 5. Seed Core Categories (Base Hierarchy)
+        if (!await context.Categories.AnyAsync())
+        {
+            var coreCategories = new List<Category>
+            {
+                new Category { Name = "Men", Slug = "men", Icon = "User", IsActive = true, DisplayOrder = 1, CreatedAt = DateTime.UtcNow },
+                new Category { Name = "Women", Slug = "women", Icon = "User", IsActive = true, DisplayOrder = 2, CreatedAt = DateTime.UtcNow },
+                new Category { Name = "Children", Slug = "children", Icon = "User", IsActive = true, DisplayOrder = 3, CreatedAt = DateTime.UtcNow },
+                new Category { Name = "Accessories", Slug = "accessories", Icon = "ShoppingBag", IsActive = true, DisplayOrder = 4, CreatedAt = DateTime.UtcNow }
+            };
+
+            context.Categories.AddRange(coreCategories);
             await context.SaveChangesAsync();
         }
     }

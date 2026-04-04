@@ -34,7 +34,7 @@ export class ProductGalleryComponent implements OnInit {
 
   products: Product[] = [];
   filteredProducts: Product[] = [];
-  subCategories: any[] = [];
+  childCategories: any[] = [];
   
   // New Hierarchical Sidebar State for Offers
   offerCategories: any[] = [];
@@ -68,7 +68,7 @@ export class ProductGalleryComponent implements OnInit {
 
   private loadProducts(params: any): void {
     this.loading = true;
-    const { categorySlug, subCategorySlug, collectionSlug, slug } = params;
+    const { categorySlug, collectionSlug, slug } = params;
     // Query params for tier and tags are usually in queryParams, not route params,
     // but the current implementation uses route params for slugs.
     // We should check queryParams for filters like tier and tags.
@@ -99,12 +99,6 @@ export class ProductGalleryComponent implements OnInit {
     ) {
       filterParams.categorySlug = categorySlug || slug;
       this.title = (categorySlug || slug).replace(/-/g, " ");
-    } else if (
-      subCategorySlug ||
-      (this.route.snapshot.url[0]?.path === "subcategory" && slug)
-    ) {
-      filterParams.subCategorySlug = subCategorySlug || slug;
-      this.title = (subCategorySlug || slug).replace(/-/g, " ");
     } else if (this.route.snapshot.url[0]?.path === "offers") {
       filterParams.isFeatured = true;
       this.isOffersPage = true;
@@ -141,7 +135,7 @@ export class ProductGalleryComponent implements OnInit {
       this.categoryService.getCategories().subscribe(categories => {
         const currentCat = categories.find(c => c.slug === activeSlug);
         if (currentCat) {
-          this.subCategories = currentCat.subCategories || [];
+          this.childCategories = currentCat.childCategories || [];
           this.cdr.markForCheck();
         }
       });
@@ -170,16 +164,14 @@ export class ProductGalleryComponent implements OnInit {
     this.categoryService.getCategories().subscribe(categories => {
       const hierarchy: any[] = [];
       const productCategories = new Set(this.products.map(p => String(p.categoryId)));
-      const productSubCategories = new Set(this.products.map(p => String(p.subCategoryId)));
-
       categories.forEach(cat => {
         const catId = String(cat.id);
         if (productCategories.has(catId)) {
-          const catSubCols = cat.subCategories?.filter((sub: any) => productSubCategories.has(String(sub.id))) || [];
-          if (catSubCols.length > 0 || productCategories.has(catId)) {
+          const catChildCols = cat.childCategories?.filter((child: any) => productCategories.has(String(child.id))) || [];
+          if (catChildCols.length > 0 || productCategories.has(catId)) {
              hierarchy.push({
                ...cat,
-               subCategories: catSubCols
+               childCategories: catChildCols
              });
           }
         }

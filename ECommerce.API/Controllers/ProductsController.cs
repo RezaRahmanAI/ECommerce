@@ -40,10 +40,8 @@ public class ProductsController : ControllerBase
     public async Task<ActionResult<PaginationDto<ProductDto>>> GetProducts(
         [FromQuery] string? sort, 
         [FromQuery] int? categoryId, 
-        [FromQuery] int? subCategoryId, 
         [FromQuery] int? collectionId, 
         [FromQuery] string? categorySlug, 
-        [FromQuery] string? subCategorySlug, 
         [FromQuery] string? collectionSlug, 
         [FromQuery] string? searchTerm, 
         [FromQuery] string? tier, 
@@ -54,7 +52,7 @@ public class ProductsController : ControllerBase
         [FromQuery] int pageSize = 12)
     {
         // Build a deterministic cache key from all query parameters
-        var cacheKey = $"products_{sort}_{categoryId}_{subCategoryId}_{collectionId}_{categorySlug}_{subCategorySlug}_{collectionSlug}_{searchTerm}_{tier}_{tags}_{isNew}_{isFeatured}_{pageIndex}_{pageSize}";
+        var cacheKey = $"products_{sort}_{categoryId}_{collectionId}_{categorySlug}_{collectionSlug}_{searchTerm}_{tier}_{tags}_{isNew}_{isFeatured}_{pageIndex}_{pageSize}";
 
         if (_cache.TryGetValue(cacheKey, out PaginationDto<ProductDto>? cached) && cached != null)
         {
@@ -64,8 +62,8 @@ public class ProductsController : ControllerBase
         var skip = (pageIndex - 1) * pageSize;
         var take = pageSize;
 
-        var spec = new ProductsWithCategoriesSpecification(sort, categoryId, subCategoryId, collectionId, categorySlug, subCategorySlug, collectionSlug, searchTerm, tier, tags, isNew, isFeatured, skip, take);
-        var countSpec = new ProductsWithCategoriesSpecification(sort, categoryId, subCategoryId, collectionId, categorySlug, subCategorySlug, collectionSlug, searchTerm, tier, tags, isNew, isFeatured);
+        var spec = new ProductsWithCategoriesSpecification(sort, categoryId, collectionId, categorySlug, collectionSlug, searchTerm, tier, tags, isNew, isFeatured, skip, take);
+        var countSpec = new ProductsWithCategoriesSpecification(sort, categoryId, collectionId, categorySlug, collectionSlug, searchTerm, tier, tags, isNew, isFeatured);
 
         var totalItems = await _productsRepo.CountAsync(countSpec);
         var dtos = await _productsRepo.ListAsync<ProductDto>(spec);

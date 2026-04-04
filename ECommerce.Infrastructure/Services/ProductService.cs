@@ -75,7 +75,6 @@ public class ProductService : IProductService
             Tier = dto.Tier,
             Tags = dto.Tags,
             SortOrder = dto.SortOrder,
-            SubCategoryId = dto.SubCategoryId,
             CollectionId = dto.CollectionId,
             ProductType = dto.ProductType,
             IsBundle = dto.IsBundle,
@@ -146,6 +145,8 @@ public class ProductService : IProductService
         if (category == null) throw new KeyNotFoundException($"Category {dto.Category} not found");
 
         product.Name = dto.Name;
+        // Auto-update slug on name change
+        product.Slug = GenerateSlug(dto.Name);
         product.Description = dto.Description;
         product.ShortDescription = dto.ShortDescription;
         product.IsActive = dto.StatusActive;
@@ -158,7 +159,6 @@ public class ProductService : IProductService
         product.Tier = dto.Tier;
         product.Tags = dto.Tags;
         product.SortOrder = dto.SortOrder;
-        product.SubCategoryId = dto.SubCategoryId;
         product.CollectionId = dto.CollectionId;
         product.ProductType = dto.ProductType;
         product.IsBundle = dto.IsBundle;
@@ -234,10 +234,20 @@ public class ProductService : IProductService
 
     private string GenerateSlug(string name)
     {
-        if (string.IsNullOrEmpty(name)) return Guid.NewGuid().ToString();
-        var slug = name.ToLower().Trim()
-            .Replace(" ", "-").Replace("/", "-").Replace("&", "and");
-        return slug.Length > 100 ? slug.Substring(0, 100) : slug;
+        if (string.IsNullOrWhiteSpace(name))
+            return Guid.NewGuid().ToString().Substring(0, 8);
+
+        // Convert to lowercase
+        string slug = name.ToLowerInvariant();
+
+        // Replace invalid characters with a hyphen
+        slug = System.Text.RegularExpressions.Regex.Replace(slug, @"[^a-z0-9\s-]", "");
+
+        // Convert multiple spaces/hyphens into one
+        slug = System.Text.RegularExpressions.Regex.Replace(slug, @"[\s-]+", "-").Trim('-');
+
+        // Cap length
+        return slug.Length > 100 ? slug.Substring(0, 100).Trim('-') : slug;
     }
 
     public async Task<List<string>> GetAvailableSizesAsync()

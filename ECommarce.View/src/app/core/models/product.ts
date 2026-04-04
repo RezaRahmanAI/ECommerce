@@ -48,8 +48,6 @@ export interface Product {
 
   categoryId: number;
   categoryName: string;
-  subCategoryId?: number;
-  subCategoryName?: string;
   collectionId?: number;
   collectionName?: string;
 

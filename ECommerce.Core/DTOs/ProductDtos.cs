@@ -59,7 +59,6 @@ public class ProductCreateDto
     public string? Tier { get; set; }
     public string? Tags { get; set; }
     public int SortOrder { get; set; }
-    public int? SubCategoryId { get; set; }
     public int? CollectionId { get; set; }
 
     public ProductType ProductType { get; set; } = ProductType.Simple;
@@ -124,7 +123,6 @@ public class ProductUpdateDto
     public string? Tier { get; set; }
     public string? Tags { get; set; }
     public int SortOrder { get; set; }
-    public int? SubCategoryId { get; set; }
     public int? CollectionId { get; set; }
 
     public ProductType ProductType { get; set; } = ProductType.Simple;

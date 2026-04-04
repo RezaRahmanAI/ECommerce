@@ -7,11 +7,11 @@ export interface MegaMenuItem {
   id: number;
   name: string;
   slug: string;
-  subCategories: MegaMenuSubCategory[];
+  childCategories: MegaMenuChildCategory[];
   isOpen?: boolean; // For mobile toggle
 }
 
-export interface MegaMenuSubCategory {
+export interface MegaMenuChildCategory {
   id: number;
   name: string;
   slug: string;

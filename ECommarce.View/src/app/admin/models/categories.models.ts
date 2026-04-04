@@ -7,26 +7,15 @@ export interface Category {
   isActive: boolean;
   productCount: number;
   sortOrder: number;
-  subCategories?: SubCategory[];
-}
-
-export interface SubCategory {
-  id: number;
-  name: string;
-  slug: string;
-  categoryId: number;
-  isActive: boolean;
-  imageUrl?: string;
-  description?: string;
-  displayOrder?: number;
   collections?: Collection[];
+  childCategories?: Category[];
 }
 
 export interface Collection {
   id: number;
   name: string;
   slug: string;
-  subCategoryId: number;
+  categoryId: number;
   isActive: boolean;
 }
 

@@ -8,5 +8,5 @@ export interface Category {
   displayOrder?: number;
   isActive?: boolean;
   productCount?: number;
-  subCategories?: Category[];
+  childCategories?: Category[];
 }

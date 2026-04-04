@@ -202,14 +202,6 @@ export const appRoutes: Routes = [
         data: { title: "Category Management" },
       },
       {
-        path: "products/sub-categories",
-        loadComponent: () =>
-          import("./admin/pages/admin-sub-category-management/admin-sub-category-management.component").then(
-            (m) => m.AdminSubCategoryManagementComponent,
-          ),
-        data: { title: "Sub Category Management" },
-      },
-      {
         path: "inventory",
         loadComponent: () =>
           import("./admin/pages/admin-inventory/admin-inventory.component").then(
@@ -362,13 +354,6 @@ export const appRoutes: Routes = [
       ),
   },
   {
-    path: "subcategory/:slug",
-    loadComponent: () =>
-      import("./features/products/pages/product-gallery/product-gallery.component").then(
-        (m) => m.ProductGalleryComponent,
-      ),
-  },
-  {
     path: "collection/:slug",
     loadComponent: () =>
       import("./features/products/pages/product-gallery/product-gallery.component").then(
@@ -383,7 +368,7 @@ export const appRoutes: Routes = [
       ),
   },
   {
-    path: "shop/:categorySlug/:subCategorySlug",
+    path: "shop/:parentSlug/:childSlug",
     loadComponent: () =>
       import("./features/products/pages/product-gallery/product-gallery.component").then(
         (m) => m.ProductGalleryComponent,

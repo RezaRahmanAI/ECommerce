@@ -106,7 +106,6 @@ export interface ProductCreatePayload {
   tier?: string;
   tags?: string;
   sortOrder?: number;
-  subCategoryId?: number | null;
   collectionId?: number | null;
   productType: ProductType;
   bundleItems?: ProductBundleItem[];
@@ -177,7 +176,6 @@ export interface ProductUpdatePayload {
   tier?: string;
   tags?: string;
   sortOrder?: number;
-  subCategoryId?: number | null;
   collectionId?: number | null;
   productType: ProductType;
   bundleItems?: ProductBundleItem[];

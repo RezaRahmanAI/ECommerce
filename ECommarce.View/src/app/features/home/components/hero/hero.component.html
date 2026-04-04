@@ -2,7 +2,7 @@
   <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-5 h-full min-h-[50vh] sm:min-h-[55vh] md:min-h-[65vh] lg:min-h-[70vh] xl:min-h-[75vh]">
     
     <!-- Left: Main Slider (75%) -->
-    <div class="lg:col-span-8 xl:col-span-9 relative rounded-2xl md:rounded-3xl overflow-hidden bg-supporting group shadow-lg h-full min-h-[45vh] sm:min-h-[50vh] md:min-h-[60vh] lg:min-h-[70vh] xl:min-h-[75vh]">
+    <div class="lg:col-span-12  xl:col-span-12 relative rounded-2xl md:rounded-3xl overflow-hidden bg-supporting group shadow-lg h-full min-h-[45vh] sm:min-h-[50vh] md:min-h-[60vh] lg:min-h-[70vh] xl:min-h-[75vh]">
       <ng-container *ngFor="let slide of mainSlides; let i = index">
         <div
           *ngIf="i === currentSlide"
@@ -73,13 +73,13 @@
     </div>
 
     <!-- Right: Side Promo Banner (25%) -->
-    <div class="lg:col-span-4 xl:col-span-3 h-full flex flex-col gap-4 lg:gap-5">
-      <div class="flex-1 relative rounded-2xl md:rounded-3xl overflow-hidden group shadow-lg min-h-[200px] sm:min-h-[250px] md:min-h-[300px] lg:min-h-[70vh] xl:min-h-[75vh]">
+    <!-- < class="lg:col-span-4 xl:col-span-3 h-full flex flex-col gap-4 lg:gap-5"> -->
+      <!-- <div class="flex-1 relative rounded-2xl md:rounded-3xl overflow-hidden group shadow-lg min-h-[200px] sm:min-h-[250px] md:min-h-[300px] lg:min-h-[70vh] xl:min-h-[75vh]">
          <!-- Use a high-quality relevant image or background -->
-         <div class="absolute inset-0 bg-primary">
+         <!-- <div class="absolute inset-0 bg-primary">
              <img [src]="spotlightSlide ? imageUrlService.getImageUrl(spotlightSlide.image) : 'https://images.unsplash.com/photo-1512163143273-bde0e3cc7407?q=80&w=2070&auto=format&fit=crop'" class="w-full h-full object-cover opacity-60 group-hover:scale-110 transition-transform duration-1000" alt="Promo" loading="eager" decoding="async" />
-         </div>
-         <div class="relative h-full flex flex-col justify-center p-4 sm:p-6 md:p-8 text-white">
+         </div> -->
+         <!-- <div class="relative h-full flex flex-col justify-center p-4 sm:p-6 md:p-8 text-white">
              <h3 class="font-display font-black text-xl sm:text-2xl md:text-3xl mb-1 md:mb-2 tracking-tight">{{ spotlightSlide?.title || 'Ramadan' }}</h3>
              <span class="text-accent text-[10px] sm:text-xs font-display font-black uppercase tracking-[0.15em] md:tracking-[0.2em] mb-2 md:mb-4">{{ spotlightSlide?.subtitle || 'Special Offer' }}</span>
              
@@ -92,15 +92,15 @@
                 <span>{{ spotlightSlide?.linkText || 'Shop Now' }}</span>
                 <lucide-icon [img]="icons.ArrowRight" class="w-3 md:w-4 h-3 md:h-4 group-hover/btn:translate-x-1 transition-transform"></lucide-icon>
              </a>
-          </div>
+          </div> -->
          
          <!-- Floating Badge -->
-          <div class="absolute top-3 sm:top-4 md:top-6 right-3 sm:right-4 md:right-6 p-1 bg-white/10 backdrop-blur-sm rounded-full border border-white/20">
+          <!-- <div class="absolute top-3 sm:top-4 md:top-6 right-3 sm:right-4 md:right-6 p-1 bg-white/10 backdrop-blur-sm rounded-full border border-white/20">
              <div class="bg-accent p-1.5 sm:p-2 md:p-3 rounded-full shadow-lg">
                 <lucide-icon [img]="icons.Tag" class="w-3 sm:w-4 md:w-5 h-3 sm:h-4 md:h-5 text-white"></lucide-icon>
              </div>
-          </div>
-      </div>
-    </div>
+          </div> -->
+      
+    
   </div>
 </section>

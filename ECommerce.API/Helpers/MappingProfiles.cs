@@ -17,7 +17,6 @@ public class MappingProfiles : Profile
         
         CreateMap<Product, ProductDto>()
             .ForMember(d => d.CategoryName, o => o.MapFrom(s => s.Category != null ? s.Category.Name : ""))
-            .ForMember(d => d.SubCategoryName, o => o.MapFrom(s => s.SubCategory != null ? s.SubCategory.Name : null))
             .ForMember(d => d.CollectionName, o => o.MapFrom(s => s.Collection != null ? s.Collection.Name : null))
             .ForMember(d => d.Price, o => o.MapFrom(s => 
                 s.Variants.Any(v => v.Price > 0) 
@@ -86,7 +85,6 @@ public class MappingProfiles : Profile
             })));
 
         CreateMap<Category, CategoryDto>();
-        CreateMap<SubCategory, SubCategoryDto>();
         CreateMap<Collection, CollectionDto>();
         
         CreateMap<Order, OrderDto>()

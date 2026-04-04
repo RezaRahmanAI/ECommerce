@@ -400,7 +400,7 @@ namespace ECommerce.Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int?>("CategoryId")
+                    b.Property<int>("CategoryId")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedAt")
@@ -426,9 +426,6 @@ namespace ECommerce.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<int>("SubCategoryId")
-                        .HasColumnType("int");
-
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
 
@@ -437,8 +434,6 @@ namespace ECommerce.Infrastructure.Migrations
                     b.HasIndex("CategoryId");
 
                     b.HasIndex("Slug");
-
-                    b.HasIndex("SubCategoryId");
 
                     b.ToTable("Collections");
                 });
@@ -891,9 +886,6 @@ namespace ECommerce.Infrastructure.Migrations
                     b.Property<int>("StockQuantity")
                         .HasColumnType("int");
 
-                    b.Property<int?>("SubCategoryId")
-                        .HasColumnType("int");
-
                     b.Property<string>("Tags")
                         .HasColumnType("nvarchar(max)");
 
@@ -922,8 +914,6 @@ namespace ECommerce.Infrastructure.Migrations
                         .IsUnique();
 
                     b.HasIndex("StockQuantity");
-
-                    b.HasIndex("SubCategoryId");
 
                     b.HasIndex("IsActive", "CategoryId")
                         .HasDatabaseName("IX_Products_Storefront_Active")
@@ -1152,52 +1142,6 @@ namespace ECommerce.Infrastructure.Migrations
                     b.ToTable("SiteSettings");
                 });
 
-            modelBuilder.Entity("ECommerce.Core.Entities.SubCategory", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("CategoryId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("DisplayOrder")
-                        .HasColumnType("int");
-
-                    b.Property<string>("ImageUrl")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Slug")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CategoryId");
-
-                    b.HasIndex("Slug");
-
-                    b.ToTable("SubCategories");
-                });
-
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
                 {
                     b.Property<string>("Id")
@@ -1373,17 +1317,13 @@ namespace ECommerce.Infrastructure.Migrations
 
             modelBuilder.Entity("ECommerce.Core.Entities.Collection", b =>
                 {
-                    b.HasOne("ECommerce.Core.Entities.Category", null)
+                    b.HasOne("ECommerce.Core.Entities.Category", "Category")
                         .WithMany("Collections")
-                        .HasForeignKey("CategoryId");
-
-                    b.HasOne("ECommerce.Core.Entities.SubCategory", "SubCategory")
-                        .WithMany("Collections")
-                        .HasForeignKey("SubCategoryId")
+                        .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("SubCategory");
+                    b.Navigation("Category");
                 });
 
             modelBuilder.Entity("ECommerce.Core.Entities.NavigationMenu", b =>
@@ -1443,16 +1383,9 @@ namespace ECommerce.Infrastructure.Migrations
                         .HasForeignKey("CollectionId")
                         .OnDelete(DeleteBehavior.Restrict);
 
-                    b.HasOne("ECommerce.Core.Entities.SubCategory", "SubCategory")
-                        .WithMany("Products")
-                        .HasForeignKey("SubCategoryId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
                     b.Navigation("Category");
 
                     b.Navigation("Collection");
-
-                    b.Navigation("SubCategory");
                 });
 
             modelBuilder.Entity("ECommerce.Core.Entities.ProductImage", b =>
@@ -1486,17 +1419,6 @@ namespace ECommerce.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("Product");
-                });
-
-            modelBuilder.Entity("ECommerce.Core.Entities.SubCategory", b =>
-                {
-                    b.HasOne("ECommerce.Core.Entities.Category", "Category")
-                        .WithMany("SubCategories")
-                        .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Category");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -1567,8 +1489,6 @@ namespace ECommerce.Infrastructure.Migrations
                     b.Navigation("Collections");
 
                     b.Navigation("Products");
-
-                    b.Navigation("SubCategories");
                 });
 
             modelBuilder.Entity("ECommerce.Core.Entities.Collection", b =>
@@ -1593,13 +1513,6 @@ namespace ECommerce.Infrastructure.Migrations
                     b.Navigation("Reviews");
 
                     b.Navigation("Variants");
-                });
-
-            modelBuilder.Entity("ECommerce.Core.Entities.SubCategory", b =>
-                {
-                    b.Navigation("Collections");
-
-                    b.Navigation("Products");
                 });
 #pragma warning restore 612, 618
         }

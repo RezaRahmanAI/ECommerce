@@ -8,10 +8,8 @@ import { ImageUrlService } from "../../../../core/services/image-url.service";
 import { HeroComponent } from "../../components/hero/hero.component";
 import { NewArrivalsComponent } from "../../components/new-arrivals/new-arrivals.component";
 import { FeaturedProductsComponent } from "../../components/featured-products/featured-products.component";
-import { WhyChooseUsComponent } from "../../components/why-choose-us/why-choose-us.component";
 import { TestimonialsComponent } from "../../components/testimonials/testimonials.component";
 import { NewsletterComponent } from "../../components/newsletter/newsletter.component";
-import { CampaignSpotlightComponent } from "../../components/campaign-spotlight/campaign-spotlight.component";
 
 import { CategorySectionComponent } from "../../components/category-section/category-section.component";
 import { PromoBannerComponent } from "../../components/promo-banner/promo-banner.component";
@@ -25,7 +23,6 @@ import { PromoBannerComponent } from "../../components/promo-banner/promo-banner
     HeroComponent,
     NewArrivalsComponent,
     FeaturedProductsComponent,
-    WhyChooseUsComponent,
     TestimonialsComponent,
     NewsletterComponent,
     CategorySectionComponent,
@@ -61,6 +58,6 @@ export class HomePageComponent {
 
   // Helper methods to filter categories for specific sections
   getCategory(categories: any[], slug: string) {
-    return categories.find((c) => c.slug === slug)?.subCategories || [];
+    return categories.find((c) => c.slug === slug)?.childCategories || [];
   }
 }

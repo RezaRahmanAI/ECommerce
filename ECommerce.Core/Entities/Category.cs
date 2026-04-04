@@ -17,9 +17,6 @@ public class Category : BaseEntity
     public Category? Parent { get; set; }
     public ICollection<Category> ChildCategories { get; set; } = new List<Category>();
 
-    // Keeping SubCategories for backward compatibility if needed, but primary hierarchy will be Parent/Child
-    public ICollection<SubCategory> SubCategories { get; set; } = new List<SubCategory>();
-    
     // Direct collections in category (migrating from SubCategory)
     public ICollection<Collection> Collections { get; set; } = new List<Collection>();
 

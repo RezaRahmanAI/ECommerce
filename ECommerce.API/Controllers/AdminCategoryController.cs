@@ -35,9 +35,6 @@ public class AdminCategoryController : ControllerBase
     {
         var categories = await _context.Categories
             .AsNoTracking()
-            .Include(c => c.SubCategories)
-            .ThenInclude(sc => sc.Collections)
-            .OrderBy(c => c.DisplayOrder)
             .Select(c => new CategoryDto
             {
                 Id = c.Id,
@@ -48,23 +45,7 @@ public class AdminCategoryController : ControllerBase
                 DisplayOrder = c.DisplayOrder,
                 ProductCount = c.Products.Count,
                 ParentId = c.ParentId,
-                CreatedAt = c.CreatedAt,
-                SubCategories = c.SubCategories.Select(sc => new SubCategoryDto
-                {
-                    Id = sc.Id,
-                    Name = sc.Name,
-                    Slug = sc.Slug,
-                    CategoryId = sc.CategoryId,
-                    IsActive = sc.IsActive,
-                    Collections = sc.Collections.Select(col => new CollectionDto
-                    {
-                        Id = col.Id,
-                        Name = col.Name,
-                        Slug = col.Slug,
-                        SubCategoryId = col.SubCategoryId,
-                        IsActive = col.IsActive
-                    }).ToList()
-                }).ToList()
+                CreatedAt = c.CreatedAt
             })
             .ToListAsync();
 
@@ -146,7 +127,7 @@ public class AdminCategoryController : ControllerBase
         var category = new Category
         {
             Name = dto.Name,
-            Slug = slug,
+            Slug = string.IsNullOrWhiteSpace(dto.Slug) ? GenerateSlug(dto.Name) : GenerateSlug(dto.Slug),
             ImageUrl = dto.ImageUrl,
             IsActive = dto.IsActive ?? true,
             DisplayOrder = dto.DisplayOrder ?? 0,
@@ -185,7 +166,8 @@ public class AdminCategoryController : ControllerBase
             return BadRequest("Category name is required");
 
         category.Name = dto.Name;
-        category.Slug = string.IsNullOrWhiteSpace(dto.Slug) ? GenerateSlug(dto.Name) : dto.Slug;
+        // Auto-generate slug if not provided, otherwise ensure the provided slug is properly formatted
+        category.Slug = string.IsNullOrWhiteSpace(dto.Slug) ? GenerateSlug(dto.Name) : GenerateSlug(dto.Slug);
         category.IsActive = dto.IsActive ?? category.IsActive;
         category.DisplayOrder = dto.DisplayOrder ?? category.DisplayOrder;
         
@@ -241,9 +223,40 @@ public class AdminCategoryController : ControllerBase
     [HttpPost("{id}/delete")]
     public async Task<ActionResult> DeleteCategory(int id)
     {
-        var category = await _context.Categories.FindAsync(id);
+        var category = await _context.Categories
+            .IgnoreQueryFilters()
+            .Include(c => c.ChildCategories)
+            .FirstOrDefaultAsync(c => c.Id == id);
+
         if (category == null)
             return NotFound();
+
+        // Check for products (including inactive ones)
+        var hasProducts = await _context.Products.IgnoreQueryFilters().AnyAsync(p => p.CategoryId == id);
+        if (hasProducts)
+        {
+            return BadRequest(new { message = "Cannot delete category because it contains products (active or inactive). Please move or delete the products first." });
+        }
+
+        // Check for sub-categories (including inactive ones)
+        if (category.ChildCategories.Any())
+        {
+            return BadRequest(new { message = "Cannot delete category because it has sub-categories. Please delete the sub-categories first." });
+        }
+
+        // Clear references in Navigation Menus
+        var menus = await _context.NavigationMenus.Where(m => m.CategoryId == id).ToListAsync();
+        foreach (var menu in menus)
+        {
+            menu.CategoryId = null;
+        }
+
+        // Delete associated collections
+        var collections = await _context.Collections.Where(c => c.CategoryId == id).ToListAsync();
+        if (collections.Any())
+        {
+            _context.Collections.RemoveRange(collections);
+        }
 
         // Delete image if exists
         if (!string.IsNullOrEmpty(category.ImageUrl))
@@ -335,13 +348,18 @@ public class AdminCategoryController : ControllerBase
 
     private static string GenerateSlug(string name)
     {
-        return name.ToLower()
-            .Replace(" ", "-")
-            .Replace("?", "")
-            .Replace("!", "")
-            .Replace(".", "")
-            .Replace(",", "")
-            .Replace("'", "")
-            .Replace("\"", "");
+        if (string.IsNullOrWhiteSpace(name))
+            return string.Empty;
+
+        // Convert to lowercase
+        string slug = name.ToLowerInvariant();
+
+        // Replace invalid characters with a hyphen
+        slug = System.Text.RegularExpressions.Regex.Replace(slug, @"[^a-z0-9\s-]", "");
+
+        // Convert multiple spaces/hyphens into one
+        slug = System.Text.RegularExpressions.Regex.Replace(slug, @"[\s-]+", "-").Trim('-');
+
+        return slug;
     }
 }

@@ -16,7 +16,6 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     }
 
     public DbSet<Category> Categories { get; set; }
-    public DbSet<SubCategory> SubCategories { get; set; }
     public DbSet<Collection> Collections { get; set; }
     public DbSet<Cart> Carts { get; set; }
     public DbSet<CartItem> CartItems { get; set; }
@@ -44,7 +43,6 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         // Global Query Filters for Soft Delete & Active Status
         builder.Entity<Product>().HasQueryFilter(p => p.IsActive);
         builder.Entity<Category>().HasQueryFilter(c => c.IsActive);
-        builder.Entity<SubCategory>().HasQueryFilter(sc => sc.IsActive);
         builder.Entity<Collection>().HasQueryFilter(c => c.IsActive);
         builder.Entity<NavigationMenu>().HasQueryFilter(n => n.IsActive);
         builder.Entity<HeroBanner>().HasQueryFilter(h => h.IsActive);
@@ -61,11 +59,6 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             entity.HasOne(p => p.Category)
                   .WithMany(c => c.Products)
                   .HasForeignKey(p => p.CategoryId)
-                  .OnDelete(DeleteBehavior.Restrict);
-
-            entity.HasOne(p => p.SubCategory)
-                  .WithMany(sc => sc.Products)
-                  .HasForeignKey(p => p.SubCategoryId)
                   .OnDelete(DeleteBehavior.Restrict);
 
             entity.HasOne(p => p.Collection)
@@ -120,22 +113,11 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             entity.HasIndex(c => c.Slug);
         });
 
-        // Category Hierarchy
-        builder.Entity<SubCategory>(entity =>
-        {
-            entity.HasOne(sc => sc.Category)
-                  .WithMany(c => c.SubCategories)
-                  .HasForeignKey(sc => sc.CategoryId)
-                  .OnDelete(DeleteBehavior.Cascade);
-            
-            entity.HasIndex(sc => sc.Slug);
-        });
-
         builder.Entity<Collection>(entity =>
         {
-            entity.HasOne(c => c.SubCategory)
-                  .WithMany(sc => sc.Collections)
-                  .HasForeignKey(c => c.SubCategoryId)
+            entity.HasOne(c => c.Category)
+                  .WithMany(c => c.Collections)
+                  .HasForeignKey(c => c.CategoryId)
                   .OnDelete(DeleteBehavior.Cascade);
             
             entity.HasIndex(c => c.Slug);

@@ -12,8 +12,8 @@ public class Collection : BaseEntity
     public bool IsActive { get; set; } = true;
     
     // Foreign Key
-    public int SubCategoryId { get; set; }
-    public SubCategory? SubCategory { get; set; }
+    public int CategoryId { get; set; }
+    public Category? Category { get; set; }
     
     public ICollection<Product> Products { get; set; } = new List<Product>();
 }

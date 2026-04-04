@@ -27,16 +27,11 @@ public class NavigationService : INavigationService
     {
         return await _cache.GetOrCreateAsync(MegaMenuCacheKey, async () =>
         {
-            // Fetch categories with full hierarchy: Parent -> Child -> Collections (if any connected)
-            // We are transitioning from Category -> SubCategory to Category -> ChildCategory
-            // To maintain frontend compatibility, we map ChildCategories to "SubCategories" in the DTO.
-
+            // Fetch categories with full hierarchy: Parent -> Child -> Collections
             var allCategories = await _context.Categories
                 .AsNoTracking()
-                .Include(c => c.SubCategories) // Include legacy subcategories for now
-                    .ThenInclude(sc => sc.Collections)
-                .Include(c => c.ChildCategories) // Include new recursive children
-                    .ThenInclude(cc => cc.Collections) // Fix: Include Collections for child categories
+                .Include(c => c.ChildCategories)
+                    .ThenInclude(cc => cc.Collections)
                 .Where(c => c.IsActive)
                 .OrderBy(c => c.DisplayOrder)
                 .ToListAsync();
@@ -52,7 +47,7 @@ public class NavigationService : INavigationService
                     Name = c.Name,
                     Slug = c.Slug,
                     Icon = c.Icon,
-                    // Combine legacy SubCategories and new ChildCategories into the single "SubCategories" list for frontend
+                    // Treat ChildCategories as "SubCategories" for the MegaMenu display on frontend
                     SubCategories = MapChildrenToSubCategories(c)
                 })
             };
@@ -63,58 +58,25 @@ public class NavigationService : INavigationService
 
     private IEnumerable<MegaMenuSubCategoryDto> MapChildrenToSubCategories(Category parent)
     {
-        var result = new List<MegaMenuSubCategoryDto>();
+        if (parent.ChildCategories == null) return new List<MegaMenuSubCategoryDto>();
 
-        // 1. Add legacy SubCategories
-        if (parent.SubCategories != null)
-        {
-            result.AddRange(parent.SubCategories
-                .Where(sc => sc.IsActive)
-                .OrderBy(sc => sc.DisplayOrder)
-                .Select(sc => new MegaMenuSubCategoryDto
-                {
-                    Id = sc.Id,
-                    Name = sc.Name,
-                    Slug = sc.Slug,
-                    Collections = sc.Collections
-                        .Where(col => col.IsActive)
-                        .OrderBy(col => col.DisplayOrder)
-                        .Select(col => new MegaMenuCollectionDto
-                        {
-                            Id = col.Id,
-                            Name = col.Name,
-                            Slug = col.Slug
-                        })
-                }));
-        }
-
-        // 2. Add new Recursive Child Categories
-        // Treat them as "SubCategories" for the MegaMenu display
-        if (parent.ChildCategories != null)
-        {
-            result.AddRange(parent.ChildCategories
-                .Where(sc => sc.IsActive)
-                .OrderBy(sc => sc.DisplayOrder)
-                .Select(sc => new MegaMenuSubCategoryDto
-                {
-                    Id = sc.Id,
-                    Name = sc.Name,
-                    Slug = sc.Slug,
-                    // New child categories might have their own collections directly (if we added that relation)
-                    // or currently they might just be categories. 
-                    // If we added Collections to Category, we map them here.
-                    Collections = sc.Collections
-                        .Where(col => col.IsActive)
-                        .OrderBy(col => col.DisplayOrder)
-                        .Select(col => new MegaMenuCollectionDto
-                        {
-                            Id = col.Id,
-                            Name = col.Name,
-                            Slug = col.Slug
-                        })
-                }));
-        }
-
-        return result.OrderBy(x => x.Name); // Optional: sort merged list by name or some other logic
+        return parent.ChildCategories
+            .Where(c => c.IsActive)
+            .OrderBy(c => c.DisplayOrder)
+            .Select(c => new MegaMenuSubCategoryDto
+            {
+                Id = c.Id,
+                Name = c.Name,
+                Slug = c.Slug,
+                Collections = c.Collections
+                    .Where(col => col.IsActive)
+                    .OrderBy(col => col.DisplayOrder)
+                    .Select(col => new MegaMenuCollectionDto
+                    {
+                        Id = col.Id,
+                        Name = col.Name,
+                        Slug = col.Slug
+                    })
+            });
     }
 }

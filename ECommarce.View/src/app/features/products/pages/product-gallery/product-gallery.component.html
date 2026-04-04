@@ -18,15 +18,15 @@
         <div class="bg-white border border-border-color shadow-sm rounded-xl overflow-hidden">
           <div class="p-4 border-b border-supporting flex items-center gap-3 bg-supporting/30">
             <div class="w-1.5 h-6 bg-accent rounded-full"></div>
-            <h3 class="text-[12px] font-black text-primary uppercase tracking-widest">{{ isOffersPage ? 'Offers by Category' : 'Sub Categories' }}</h3>
+            <h3 class="text-[12px] font-black text-primary uppercase tracking-widest">{{ isOffersPage ? 'Offers by Category' : 'Categories' }}</h3>
           </div>
           
           <div class="p-2">
             <!-- Normal Sidebar -->
             <nav *ngIf="!isOffersPage" class="flex flex-col gap-0.5">
               <button 
-                *ngFor="let sub of subCategories"
-                (click)="navigateToSub('/subcategory/' + sub.slug)"
+                *ngFor="let sub of childCategories"
+                (click)="navigateToSub('/category/' + sub.slug)"
                 class="w-full flex items-center justify-between p-3 text-[11px] font-bold text-text-sub hover:bg-supporting/40 hover:text-accent rounded-lg transition-all group"
               >
                 <div class="flex items-center gap-3">
@@ -46,8 +46,8 @@
                 </div>
                 <nav class="flex flex-col gap-0.5">
                   <button 
-                    *ngFor="let sub of cat.subCategories"
-                    (click)="navigateToSub('/subcategory/' + sub.slug + '?isOffer=true')"
+                    *ngFor="let sub of cat.childCategories"
+                    (click)="navigateToSub('/category/' + sub.slug + '?isOffer=true')"
                     class="w-full flex items-center justify-between p-2.5 text-[11px] font-bold text-text-sub hover:bg-supporting/40 hover:text-accent rounded-lg transition-all group"
                   >
                     <div class="flex items-center gap-3 pl-2">
@@ -60,7 +60,7 @@
               </div>
             </div>
             
-            <div *ngIf="(!isOffersPage && subCategories.length === 0) || (isOffersPage && offerCategories.length === 0)" class="py-6 text-center">
+            <div *ngIf="(!isOffersPage && childCategories.length === 0) || (isOffersPage && offerCategories.length === 0)" class="py-6 text-center">
               <p class="text-[10px] text-text-sub uppercase tracking-widest">No Categories Found</p>
             </div>
           </div>

@@ -24,8 +24,6 @@ public class ProductDto
     // Category Info
     public int CategoryId { get; set; }
     public string CategoryName { get; set; } = string.Empty;
-    public int? SubCategoryId { get; set; }
-    public string? SubCategoryName { get; set; }
     public int? CollectionId { get; set; }
     public string? CollectionName { get; set; }
     
