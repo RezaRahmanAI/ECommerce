@@ -4,39 +4,38 @@ using ECommerce.Infrastructure.Data;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace ECommerce.API.Controllers;
 
 [ApiController]
 [Route("api/admin/settings")]
-[Authorize(Roles = "Admin")]
 public class AdminSettingsController : ControllerBase
 {
     private readonly ApplicationDbContext _context;
     private readonly IWebHostEnvironment _environment;
+    private readonly IConfiguration _config;
+    private readonly IMemoryCache _cache;
 
-    public AdminSettingsController(ApplicationDbContext context, IWebHostEnvironment environment)
+    public AdminSettingsController(ApplicationDbContext context, IWebHostEnvironment environment, IConfiguration config, IMemoryCache cache)
     {
         _context = context;
         _environment = environment;
+        _config = config;
+        _cache = cache;
     }
 
     [HttpGet]
     [AllowAnonymous]
     public async Task<ActionResult<SiteSettingsDto>> GetSettings()
     {
-        var settings = await _context.SiteSettings.FirstOrDefaultAsync();
+        var settings = await _context.SiteSettings.AsNoTracking().FirstOrDefaultAsync();
         
         if (settings == null)
         {
             // Create default settings if not exists
             settings = new SiteSetting();
             _context.SiteSettings.Add(settings);
-            await _context.SaveChangesAsync();
-        }
-        else if (settings.WebsiteName == "SheraShopBD24" || settings.WebsiteName == "E-Commerce Store")
-        {
-            settings.WebsiteName = "SheraShopBD24";
             await _context.SaveChangesAsync();
         }
 
@@ -46,16 +45,19 @@ public class AdminSettingsController : ControllerBase
             LogoUrl = settings.LogoUrl,
             ContactEmail = settings.ContactEmail,
             ContactPhone = settings.ContactPhone,
+            Address = settings.Address,
             FacebookUrl = settings.FacebookUrl,
             InstagramUrl = settings.InstagramUrl,
             TwitterUrl = settings.TwitterUrl,
             YoutubeUrl = settings.YoutubeUrl,
             WhatsAppNumber = settings.WhatsAppNumber,
+            Currency = settings.Currency,
             FreeShippingThreshold = settings.FreeShippingThreshold,
+            ShippingCharge = settings.ShippingCharge,
             FacebookPixelId = settings.FacebookPixelId,
             GoogleTagId = settings.GoogleTagId,
-            DeliveryMethods = await _context.DeliveryMethods.ToListAsync(),
-            ShippingZones = await _context.ShippingZones.ToListAsync()
+            SizeGuideImageUrl = settings.SizeGuideImageUrl,
+            DeliveryMethods = await _context.DeliveryMethods.AsNoTracking().ToListAsync()
         });
     }
 
@@ -74,18 +76,24 @@ public class AdminSettingsController : ControllerBase
         settings.LogoUrl = dto.LogoUrl;
         settings.ContactEmail = dto.ContactEmail;
         settings.ContactPhone = dto.ContactPhone;
+        settings.Address = dto.Address;
         settings.FacebookUrl = dto.FacebookUrl;
         settings.InstagramUrl = dto.InstagramUrl;
         settings.TwitterUrl = dto.TwitterUrl;
         settings.YoutubeUrl = dto.YoutubeUrl;
         settings.WhatsAppNumber = dto.WhatsAppNumber;
+        settings.Currency = dto.Currency;
         settings.FreeShippingThreshold = dto.FreeShippingThreshold;
+        settings.ShippingCharge = dto.ShippingCharge;
         settings.FacebookPixelId = dto.FacebookPixelId;
         settings.GoogleTagId = dto.GoogleTagId;
+        settings.SizeGuideImageUrl = dto.SizeGuideImageUrl;
         settings.UpdatedAt = DateTime.UtcNow;
 
-        _context.SiteSettings.Update(settings);
         await _context.SaveChangesAsync();
+
+        _cache.Remove("site_settings");
+        _cache.Remove("delivery_methods_active");
 
         return Ok(dto);
     }
@@ -96,7 +104,8 @@ public class AdminSettingsController : ControllerBase
         if (file == null || file.Length == 0)
             return BadRequest("No file uploaded");
 
-        var uploadsFolder = Path.Combine(_environment.WebRootPath, "uploads", "settings");
+        var externalPath = _config["ExternalMediaPath"] ?? Path.Combine(Directory.GetParent(_environment.ContentRootPath)!.FullName, "ArzaMedia");
+        var uploadsFolder = Path.Combine(externalPath, "settings");
         Directory.CreateDirectory(uploadsFolder);
 
         var fileExtension = Path.GetExtension(file.FileName);
@@ -115,7 +124,7 @@ public class AdminSettingsController : ControllerBase
     [HttpGet("delivery-methods")]
     public async Task<ActionResult<IEnumerable<DeliveryMethod>>> GetDeliveryMethods()
     {
-        return await _context.DeliveryMethods.ToListAsync();
+        return await _context.DeliveryMethods.AsNoTracking().ToListAsync();
     }
 
     [HttpPost("delivery-methods")]
@@ -133,6 +142,8 @@ public class AdminSettingsController : ControllerBase
         _context.DeliveryMethods.Add(method);
         await _context.SaveChangesAsync();
 
+        _cache.Remove("delivery_methods_active");
+
         return CreatedAtAction(nameof(GetDeliveryMethods), new { id = method.Id }, method);
     }
 
@@ -148,8 +159,9 @@ public class AdminSettingsController : ControllerBase
         method.IsActive = dto.IsActive;
         method.UpdatedAt = DateTime.UtcNow;
 
-        _context.DeliveryMethods.Update(method);
         await _context.SaveChangesAsync();
+        
+        _cache.Remove("delivery_methods_active");
         return NoContent();
     }
 
@@ -161,51 +173,8 @@ public class AdminSettingsController : ControllerBase
 
         _context.DeliveryMethods.Remove(method);
         await _context.SaveChangesAsync();
-        return NoContent();
-    }
 
-    // Shipping Zones CRUD
-    [HttpGet("shipping-zones")]
-    public async Task<ActionResult<IEnumerable<ShippingZone>>> GetShippingZones()
-    {
-        return await _context.ShippingZones.ToListAsync();
-    }
-
-    [HttpPost("shipping-zones")]
-    public async Task<ActionResult<ShippingZone>> CreateShippingZone([FromBody] ShippingZone zone)
-    {
-        zone.CreatedAt = DateTime.UtcNow;
-        _context.ShippingZones.Add(zone);
-        await _context.SaveChangesAsync();
-
-        return CreatedAtAction(nameof(GetShippingZones), new { id = zone.Id }, zone);
-    }
-
-    [HttpPost("shipping-zones/{id}")]
-    public async Task<IActionResult> UpdateShippingZone(int id, [FromBody] ShippingZone zoneDto)
-    {
-        var zone = await _context.ShippingZones.FindAsync(id);
-        if (zone == null) return NotFound();
-
-        zone.Name = zoneDto.Name;
-        zone.Region = zoneDto.Region;
-        zone.Rates = zoneDto.Rates;
-        zone.IsActive = zoneDto.IsActive;
-        zone.UpdatedAt = DateTime.UtcNow;
-
-        _context.ShippingZones.Update(zone);
-        await _context.SaveChangesAsync();
-        return NoContent();
-    }
-
-    [HttpPost("shipping-zones/{id}/delete")]
-    public async Task<IActionResult> DeleteShippingZone(int id)
-    {
-        var zone = await _context.ShippingZones.FindAsync(id);
-        if (zone == null) return NotFound();
-
-        _context.ShippingZones.Remove(zone);
-        await _context.SaveChangesAsync();
+        _cache.Remove("delivery_methods_active");
         return NoContent();
     }
 }

@@ -3,9 +3,12 @@ import {
   ProductImage,
   ProductVariant,
   RelatedProduct,
+  ProductType,
+  ProductBundleItem,
 } from "../../core/models/product";
 
 export type ProductStatus = "Active" | "Draft" | "Archived" | "Out of Stock";
+
 
 export interface ProductVariantEdit {
   id?: number;
@@ -13,6 +16,8 @@ export interface ProductVariantEdit {
   size?: string;
   color?: string;
   price?: number;
+  salePrice?: number;
+  purchaseRate?: number;
   stockQuantity: number;
 }
 
@@ -36,6 +41,7 @@ export interface ProductVariantRow {
 export interface ProductCreatePayload {
   name: string;
   description: string;
+  shortDescription?: string;
   category: string; // Changed from categoryId
   gender: string;
   price: number;
@@ -44,7 +50,6 @@ export interface ProductCreatePayload {
 
   newArrival: boolean;
   isFeatured: boolean;
-  isItemProduct: boolean;
 
   statusActive: boolean;
 
@@ -67,12 +72,21 @@ export interface ProductCreatePayload {
 
   variants: {
     colors: { name: string; hex: string; selected: boolean }[];
-    sizes: { label: string; stock: number; selected: boolean }[];
+    sizes: {
+      label: string;
+      price: number;
+      salePrice?: number;
+      purchaseRate: number;
+      stock: number;
+      selected: boolean;
+    }[];
   };
 
   inventoryVariants: {
     label: string;
     price: number;
+    salePrice?: number;
+    purchaseRate: number;
     sku: string;
     inventory: number;
     imageUrl?: string;
@@ -94,11 +108,16 @@ export interface ProductCreatePayload {
   sortOrder?: number;
   subCategoryId?: number | null;
   collectionId?: number | null;
+  productType: ProductType;
+  bundleItems?: ProductBundleItem[];
+  isBundle: boolean;
+  bundleQuantity: number;
 }
 
 export interface ProductUpdatePayload {
   name: string;
   description: string;
+  shortDescription?: string;
   category: string;
   gender: string;
   price: number;
@@ -107,7 +126,6 @@ export interface ProductUpdatePayload {
 
   newArrival: boolean;
   isFeatured: boolean;
-  isItemProduct: boolean;
 
   statusActive: boolean;
 
@@ -130,12 +148,21 @@ export interface ProductUpdatePayload {
 
   variants: {
     colors: { name: string; hex: string; selected: boolean }[];
-    sizes: { label: string; stock: number; selected: boolean }[];
+    sizes: {
+      label: string;
+      price: number;
+      salePrice?: number;
+      purchaseRate: number;
+      stock: number;
+      selected: boolean;
+    }[];
   };
 
   inventoryVariants: {
     label: string;
     price: number;
+    salePrice?: number;
+    purchaseRate: number;
     sku: string;
     inventory: number;
     imageUrl?: string;
@@ -152,6 +179,10 @@ export interface ProductUpdatePayload {
   sortOrder?: number;
   subCategoryId?: number | null;
   collectionId?: number | null;
+  productType: ProductType;
+  bundleItems?: ProductBundleItem[];
+  isBundle: boolean;
+  bundleQuantity: number;
 }
 
 export type ProductsStatusTab = "All Items" | "Active" | "Drafts" | "Archived";

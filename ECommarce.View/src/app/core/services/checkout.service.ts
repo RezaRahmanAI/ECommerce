@@ -1,10 +1,10 @@
-import { Injectable, inject } from "@angular/core";
-import { BehaviorSubject, Observable, map, of, tap } from "rxjs";
+import { Injectable } from "@angular/core";
+import { BehaviorSubject, Observable, map, of, tap, switchMap } from "rxjs";
 
 import { CheckoutState } from "../models/checkout";
 import { CartService } from "./cart.service";
 import { OrderService } from "./order.service";
-import { NotificationService } from "./notification.service";
+import { CustomerProfileService } from "./customer-profile.service";
 
 @Injectable({
   providedIn: "root",
@@ -12,7 +12,6 @@ import { NotificationService } from "./notification.service";
 export class CheckoutService {
   private readonly storageBaseKey = "checkout_state";
   private activeStorageKey = this.storageBaseKey;
-  private readonly notificationService = inject(NotificationService);
 
   private readonly stateSubject = new BehaviorSubject<CheckoutState>(
     this.buildDefaultState(),
@@ -23,6 +22,7 @@ export class CheckoutService {
   constructor(
     private readonly cartService: CartService,
     private readonly orderService: OrderService,
+    private readonly profileService: CustomerProfileService,
   ) {
     const storedState = this.loadState();
     this.stateSubject.next(storedState ?? this.buildDefaultState());
@@ -52,14 +52,13 @@ export class CheckoutService {
         deliveryMethodId: state.deliveryMethodId,
       })
       .pipe(
-        tap((order) => {
-          this.cartService.clearCart();
+        switchMap((order) => {
+          this.profileService.storePhone(state.phone);
           this.resetState();
-          if (order?.id) {
-            this.notificationService.success(`Order #${order.id} placed successfully!`);
-          }
-        }),
-        map((order) => order?.id ?? null),
+          return this.cartService.clearCart().pipe(
+            map(() => order.id)
+          );
+        })
       );
   }
 
@@ -78,7 +77,6 @@ export class CheckoutService {
       address: "",
       city: "",
       area: "",
-      deliveryDetails: "",
       deliveryMethodId: undefined,
     };
   }

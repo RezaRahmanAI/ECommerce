@@ -23,6 +23,7 @@ public class AdminNavigationController : ControllerBase
     public async Task<ActionResult<List<NavigationMenuDto>>> GetAllMenus()
     {
         var menus = await _context.NavigationMenus
+            .AsNoTracking()
             .Include(m => m.ChildMenus)
             .Where(m => m.ParentMenuId == null)
             .OrderBy(m => m.DisplayOrder)
@@ -35,6 +36,7 @@ public class AdminNavigationController : ControllerBase
     public async Task<ActionResult<NavigationMenuDto>> GetMenuById(int id)
     {
         var menu = await _context.NavigationMenus
+            .AsNoTracking()
             .Include(m => m.ChildMenus)
             .FirstOrDefaultAsync(m => m.Id == id);
 
@@ -101,8 +103,8 @@ public class AdminNavigationController : ControllerBase
         return new NavigationMenuDto
         {
             Id = menu.Id,
-            Name = menu.Title,
-            Link = menu.Url,
+            Name = menu.Title ?? string.Empty,
+            Link = menu.Url ?? string.Empty,
             ParentMenuId = menu.ParentMenuId,
             DisplayOrder = menu.DisplayOrder,
             IsActive = menu.IsActive,

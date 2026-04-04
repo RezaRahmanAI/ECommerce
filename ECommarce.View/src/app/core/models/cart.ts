@@ -9,7 +9,7 @@ export interface CartItem {
   imageUrl: string;
   imageAlt: string;
   discountPercentage?: number;
-  compareAtPrice?: number;
+  compareAtPrice?: number | null;
 }
 
 export interface CartSummary {

@@ -1,3 +1,4 @@
+using ECommerce.Core.Interfaces;
 using ECommerce.Core.DTOs;
 using ECommerce.Core.Entities;
 using ECommerce.Infrastructure.Data;
@@ -14,17 +15,22 @@ public class AdminSubCategoryController : ControllerBase
 {
     private readonly ApplicationDbContext _context;
     private readonly IWebHostEnvironment _environment;
+    private readonly IConfiguration _config;
+    private readonly ICacheService _cache;
 
-    public AdminSubCategoryController(ApplicationDbContext context, IWebHostEnvironment environment)
+    public AdminSubCategoryController(ApplicationDbContext context, IWebHostEnvironment environment, IConfiguration config, ICacheService cache)
     {
         _context = context;
         _environment = environment;
+        _config = config;
+        _cache = cache;
     }
 
     [HttpGet]
     public async Task<ActionResult<List<SubCategoryDto>>> GetAllSubCategories()
     {
         var subCategories = await _context.SubCategories
+            .AsNoTracking()
             .OrderBy(sc => sc.CategoryId)
             .ThenBy(sc => sc.DisplayOrder)
             .Select(sc => new SubCategoryDto
@@ -46,7 +52,7 @@ public class AdminSubCategoryController : ControllerBase
     [HttpGet("{id}")]
     public async Task<ActionResult<SubCategoryDto>> GetSubCategoryById(int id)
     {
-        var sc = await _context.SubCategories.FindAsync(id);
+        var sc = await _context.SubCategories.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id);
 
         if (sc == null)
             return NotFound();
@@ -92,6 +98,8 @@ public class AdminSubCategoryController : ControllerBase
         _context.SubCategories.Add(subCategory);
         await _context.SaveChangesAsync();
 
+        await InvalidateSubCategoryCacheAsync();
+
         var result = new SubCategoryDto
         {
             Id = subCategory.Id,
@@ -132,6 +140,8 @@ public class AdminSubCategoryController : ControllerBase
 
         await _context.SaveChangesAsync();
 
+        await InvalidateSubCategoryCacheAsync();
+
         var result = new SubCategoryDto
         {
             Id = subCategory.Id,
@@ -145,32 +155,18 @@ public class AdminSubCategoryController : ControllerBase
     }
 
     [HttpPost("{id}/delete")]
-    public async Task<ActionResult<bool>> DeleteSubCategory(int id)
+    public async Task<ActionResult> DeleteSubCategory(int id)
     {
-        try
-        {
-            var subCategory = await _context.SubCategories.FindAsync(id);
-            if (subCategory == null)
-                return NotFound();
+        var subCategory = await _context.SubCategories.FindAsync(id);
+        if (subCategory == null)
+            return NotFound();
 
-            // Check if subcategory has products or collections
-            var hasDependencies = await _context.Products.AnyAsync(p => p.SubCategoryId == id) ||
-                                 await _context.Collections.AnyAsync(c => c.SubCategoryId == id);
-            
-            if (hasDependencies)
-            {
-                return BadRequest(new { message = "Cannot delete subcategory because it has associated products or collections." });
-            }
+        _context.SubCategories.Remove(subCategory);
+        await _context.SaveChangesAsync();
 
-            _context.SubCategories.Remove(subCategory);
-            await _context.SaveChangesAsync();
+        await InvalidateSubCategoryCacheAsync();
 
-            return Ok(true);
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, new { message = "An error occurred while deleting the subcategory: " + ex.Message });
-        }
+        return NoContent();
     }
 
     [HttpPost("upload-image")]
@@ -183,7 +179,8 @@ public class AdminSubCategoryController : ControllerBase
             if (file == null || file.Length == 0)
                 return BadRequest("No file uploaded");
 
-            var uploadsFolder = Path.Combine(_environment.WebRootPath, "uploads", "subcategories");
+            var externalPath = _config["ExternalMediaPath"] ?? Path.Combine(_environment.ContentRootPath, "wwwroot", "uploads");
+            var uploadsFolder = Path.Combine(externalPath, "subcategories");
             if (!Directory.Exists(uploadsFolder))
             {
                 Directory.CreateDirectory(uploadsFolder);
@@ -208,6 +205,12 @@ public class AdminSubCategoryController : ControllerBase
         {
             return StatusCode(500, new { message = "An error occurred during subcategory image upload: " + ex.Message });
         }
+    }
+
+    private async Task InvalidateSubCategoryCacheAsync()
+    {
+        await _cache.RemoveAsync("nav:mega-menu");
+        await _cache.RemoveByPrefixAsync("product:list");
     }
 
     private static string GenerateSlug(string name)

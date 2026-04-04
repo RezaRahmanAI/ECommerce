@@ -16,15 +16,14 @@ public enum OrderStatus
 
 public class Order : BaseEntity
 {
-    public string OrderNumber { get; set; } // e.g. ORD-2024-001
+    public string OrderNumber { get; set; } = string.Empty; // e.g. ORD-2024-001
     
     // Customer Info (Snapshot)
-    public string CustomerName { get; set; }
-    public string CustomerPhone { get; set; }
-    public string ShippingAddress { get; set; }
-    public string? City { get; set; }
-    public string? Area { get; set; }
-    public string? DeliveryDetails { get; set; }
+    public string CustomerName { get; set; } = string.Empty;
+    public string CustomerPhone { get; set; } = string.Empty;
+    public string ShippingAddress { get; set; } = string.Empty;
+    public string City { get; set; } = string.Empty;
+    public string Area { get; set; } = string.Empty;
     
     // Financials
     public decimal SubTotal { get; set; }
@@ -39,22 +38,22 @@ public class Order : BaseEntity
     
     public ICollection<OrderItem> Items { get; set; } = new List<OrderItem>();
     
-    // Steadfast Courier Info
     public long? SteadfastConsignmentId { get; set; }
     public string? SteadfastTrackingCode { get; set; }
     public string? SteadfastStatus { get; set; }
     public string? CreatedIp { get; set; }
 }
 
+
 public class OrderItem : BaseEntity
 {
     public int OrderId { get; set; }
-    public Order Order { get; set; }
+    public Order? Order { get; set; }
     
     public int ProductId { get; set; }
-    public Product Product { get; set; }
+    public Product? Product { get; set; }
     
-    public string ProductName { get; set; }
+    public string ProductName { get; set; } = string.Empty;
     public string? Color { get; set; }
     public string? Size { get; set; }
     public string? ImageUrl { get; set; } // Snapshot of product image

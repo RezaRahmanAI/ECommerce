@@ -14,14 +14,15 @@ public class BaseSpecification<T> : ISpecification<T>
         Criteria = criteria;
     }
 
-    public Expression<Func<T, bool>> Criteria { get; }
+    public Expression<Func<T, bool>>? Criteria { get; }
 
     public List<Expression<Func<T, object>>> Includes { get; } = 
         new List<Expression<Func<T, object>>>();
+    public List<string> IncludesStrings { get; } = new List<string>();
 
-    public Expression<Func<T, object>> OrderBy { get; private set; }
+    public Expression<Func<T, object>>? OrderBy { get; private set; }
 
-    public Expression<Func<T, object>> OrderByDescending { get; private set; }
+    public Expression<Func<T, object>>? OrderByDescending { get; private set; }
 
     public int Take { get; private set; }
 
@@ -29,21 +30,22 @@ public class BaseSpecification<T> : ISpecification<T>
 
     public bool IsPagingEnabled { get; private set; }
 
-    public bool IsSplitQuery { get; private set; }
-
-    public bool IgnoreQueryFilters { get; private set; }
-
     public void AddInclude(Expression<Func<T, object>> includeExpression)
     {
         Includes.Add(includeExpression);
     }
 
-    public void AddOrderBy(Expression<Func<T, object>> orderByExpression)
+    public void AddInclude(string includeString)
+    {
+        IncludesStrings.Add(includeString);
+    }
+
+    protected void AddOrderBy(Expression<Func<T, object>> orderByExpression)
     {
         OrderBy = orderByExpression;
     }
 
-    public void AddOrderByDescending(Expression<Func<T, object>> orderByDescExpression)
+    protected void AddOrderByDescending(Expression<Func<T, object>> orderByDescExpression)
     {
         OrderByDescending = orderByDescExpression;
     }
@@ -53,15 +55,5 @@ public class BaseSpecification<T> : ISpecification<T>
         Skip = skip;
         Take = take;
         IsPagingEnabled = true;
-    }
-
-    public void ApplySplitQuery()
-    {
-        IsSplitQuery = true;
-    }
-
-    protected void ApplyIgnoreQueryFilters()
-    {
-        IgnoreQueryFilters = true;
     }
 }

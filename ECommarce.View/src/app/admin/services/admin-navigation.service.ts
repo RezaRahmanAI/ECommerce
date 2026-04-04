@@ -39,6 +39,6 @@ export class AdminNavigationService {
   }
 
   delete(id: number): Observable<void> {
-    return this.api.post<void>(`${this.baseUrl}/${id}/delete`, {});
+    return this.api.delete<void>(`${this.baseUrl}/${id}`);
   }
 }

@@ -4,12 +4,11 @@ namespace ECommerce.Core.DTOs;
 
 public class OrderCreateDto
 {
-    public string Name { get; set; } = null!;
-    public string Phone { get; set; } = null!;
-    public string Address { get; set; } = null!;
-    public string? City { get; set; }
-    public string? Area { get; set; }
-    public string? DeliveryDetails { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public string Phone { get; set; } = string.Empty;
+    public string Address { get; set; } = string.Empty;
+    public string City { get; set; } = string.Empty;
+    public string Area { get; set; } = string.Empty;
     public int ItemsCount { get; set; }
     public decimal Total { get; set; }
     public int? DeliveryMethodId { get; set; }
@@ -31,19 +30,18 @@ public class OrderItemDto
 public class OrderDto
 {
     public int Id { get; set; }
-    public string OrderNumber { get; set; } = null!;
-    public string CustomerName { get; set; } = null!;
-    public string CustomerPhone { get; set; } = null!;
-    public string ShippingAddress { get; set; } = null!;
-    public string? City { get; set; }
-    public string? Area { get; set; }
-    public string? DeliveryDetails { get; set; }
+    public string OrderNumber { get; set; } = string.Empty;
+    public string CustomerName { get; set; } = string.Empty;
+    public string CustomerPhone { get; set; } = string.Empty;
+    public string ShippingAddress { get; set; } = string.Empty;
+    public string City { get; set; } = string.Empty;
+    public string Area { get; set; } = string.Empty;
     public decimal SubTotal { get; set; }
     public decimal Tax { get; set; }
     public decimal ShippingCost { get; set; }
     public decimal Total { get; set; }
     public int ItemsCount { get; set; }
-    public string Status { get; set; } = null!;
+    public string Status { get; set; } = string.Empty;
     public DateTime CreatedAt { get; set; }
     public List<OrderItemDto> Items { get; set; } = new();
 }

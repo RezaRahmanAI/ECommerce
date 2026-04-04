@@ -12,7 +12,6 @@ export interface Order {
   customerName: string;
   customerPhone: string;
   shippingAddress: string;
-  deliveryDetails?: string;
   subTotal: number;
   tax: number;
   shippingCost: number;

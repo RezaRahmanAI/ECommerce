@@ -1,11 +1,10 @@
-import { inject, Injectable, PLATFORM_ID } from "@angular/core";
+import { inject, Injectable } from "@angular/core";
 import {
   HttpClient,
   HttpHeaders,
   HttpParams,
   HttpContext,
 } from "@angular/common/http";
-import { isPlatformBrowser } from "@angular/common";
 
 import { API_CONFIG, ApiConfig } from "../config/api.config";
 
@@ -15,9 +14,6 @@ import { API_CONFIG, ApiConfig } from "../config/api.config";
 export class ApiHttpClient {
   private readonly http = inject(HttpClient);
   private readonly config = inject<ApiConfig>(API_CONFIG);
-  private readonly platformId = inject(PLATFORM_ID);
-
-  private pendingRequests = new Map<string, any>();
 
   get<T>(
     path: string,
@@ -25,62 +21,64 @@ export class ApiHttpClient {
       params?: any;
       headers?: HttpHeaders;
       context?: HttpContext;
+      withCredentials?: boolean;
     } = {},
   ) {
-    if (isPlatformBrowser(this.platformId)) {
-      const cacheKey = `${path}${JSON.stringify(options.params || {})}`;
-      if (this.pendingRequests.has(cacheKey)) {
-        return this.pendingRequests.get(cacheKey);
-      }
-    }
-
-    const request = this.http.get<T>(this.buildUrl(path), {
+    return this.http.get<T>(this.buildUrl(path), {
+      withCredentials: false,
       ...options,
-      withCredentials: true,
     });
-
-    if (isPlatformBrowser(this.platformId)) {
-      const cacheKey = `${path}${JSON.stringify(options.params || {})}`;
-      this.pendingRequests.set(cacheKey, request);
-      request.subscribe({
-        complete: () => this.pendingRequests.delete(cacheKey),
-        error: () => this.pendingRequests.delete(cacheKey),
-      });
-    }
-
-    return request;
   }
 
   post<T>(
     path: string,
     body: unknown,
-    options: { headers?: HttpHeaders; context?: HttpContext } = {},
+    options: {
+      params?: any;
+      headers?: HttpHeaders;
+      context?: HttpContext;
+      withCredentials?: boolean;
+    } = {},
   ) {
     return this.http.post<T>(this.buildUrl(path), body, {
+      withCredentials: false,
       ...options,
-      withCredentials: true,
     });
   }
 
   put<T>(
     path: string,
     body: unknown,
-    options: { headers?: HttpHeaders; context?: HttpContext } = {},
+    options: {
+      params?: any;
+      headers?: HttpHeaders;
+      context?: HttpContext;
+      withCredentials?: boolean;
+    } = {},
   ) {
+    // Forcing POST instead of PUT because some production environments block PUT/PATCH
+    // and cause CORS issues. The backend is already configured to accept POST for updates.
     return this.http.post<T>(this.buildUrl(path), body, {
+      withCredentials: false,
       ...options,
-      withCredentials: true,
     });
   }
 
   delete<T>(
     path: string,
-    options: { headers?: HttpHeaders; context?: HttpContext } = {},
+    options: {
+      params?: any;
+      headers?: HttpHeaders;
+      context?: HttpContext;
+      withCredentials?: boolean;
+    } = {},
   ) {
+    // Append /delete to distinguish from update (PUT) when using POST
     const deletePath = path.endsWith("/") ? `${path}delete` : `${path}/delete`;
+
     return this.http.post<T>(this.buildUrl(deletePath), null, {
+      withCredentials: false,
       ...options,
-      withCredentials: true,
     });
   }
 

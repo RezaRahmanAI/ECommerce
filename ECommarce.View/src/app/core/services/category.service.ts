@@ -23,11 +23,11 @@ export class CategoryService {
 
   // Cache categories — they rarely change during a session
   private categories$ = this.api.get<any[]>("/categories").pipe(
-    map((categories: any) =>
+    map((categories) =>
       categories
-        .filter((category: any) => category.isActive)
-        .sort((first: any, second: any) => first.displayOrder - second.displayOrder)
-        .map((category: any) => ({
+        .filter((category) => category.isActive)
+        .sort((first, second) => first.displayOrder - second.displayOrder)
+        .map((category) => ({
           id: category.id.toString(),
           name: category.name,
           slug: category.slug,

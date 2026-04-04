@@ -2,7 +2,6 @@ import { CommonModule } from "@angular/common";
 import { Component, inject } from "@angular/core";
 import { RouterModule } from "@angular/router";
 import { combineLatest, map } from "rxjs";
-import { toObservable } from "@angular/core/rxjs-interop";
 
 import { AuthService } from "../../../../core/services/auth.service";
 import { OrderService } from "../../../../core/services/order.service";
@@ -20,10 +19,10 @@ export class OrdersPageComponent {
   private readonly authService = inject(AuthService);
   private readonly orderService = inject(OrderService);
 
-  readonly orders$ = combineLatest({
-    user: this.authService.currentUser,
-    orders: this.orderService.orders$,
-  }).pipe(map(({ user, orders }) => (user ? orders : ([] as Order[]))));
+  readonly orders$ = combineLatest([
+    this.authService.currentUser,
+    this.orderService.orders$,
+  ]).pipe(map(([user, orders]) => (user ? orders : ([] as Order[]))));
 
   trackByOrder(_: number, order: Order): number {
     return order.id;

@@ -12,38 +12,10 @@ namespace ECommerce.API.Controllers;
 public class AdminReviewsController : ControllerBase
 {
     private readonly ApplicationDbContext _context;
-    private readonly IWebHostEnvironment _environment;
 
-    public AdminReviewsController(ApplicationDbContext context, IWebHostEnvironment environment)
+    public AdminReviewsController(ApplicationDbContext context)
     {
         _context = context;
-        _environment = environment;
-    }
-
-    [HttpPost("upload-media")]
-    [DisableRequestSizeLimit]
-    public async Task<ActionResult<List<string>>> UploadReviewMedia([FromForm] List<IFormFile> files)
-    {
-        if (files == null || files.Count == 0) return BadRequest("No files uploaded");
-
-        var uploadedUrls = new List<string>();
-        var uploadsFolder = Path.Combine(_environment.WebRootPath, "uploads", "reviews");
-        if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
-
-        foreach (var file in files)
-        {
-            if (file.Length > 0)
-            {
-                var fileName = $"{Guid.NewGuid()}{Path.GetExtension(file.FileName)}";
-                var filePath = Path.Combine(uploadsFolder, fileName);
-                using (var stream = new FileStream(filePath, FileMode.Create))
-                {
-                    await file.CopyToAsync(stream);
-                }
-                uploadedUrls.Add($"/uploads/reviews/{fileName}");
-            }
-        }
-        return Ok(uploadedUrls);
     }
 
     [HttpGet]
@@ -56,7 +28,6 @@ public class AdminReviewsController : ControllerBase
             {
                 Id = r.Id,
                 CustomerName = r.CustomerName,
-                ProductName = r.Product.Name,
                 CustomerAvatar = r.CustomerAvatar,
                 Rating = r.Rating,
                 Comment = r.Comment,
@@ -64,7 +35,6 @@ public class AdminReviewsController : ControllerBase
                 Date = r.Date,
                 ProductId = r.ProductId,
                 IsFeatured = r.IsFeatured,
-                ReviewImage = r.ReviewImage,
                 Likes = r.Likes
             })
             .ToListAsync();
@@ -95,7 +65,6 @@ public class AdminReviewsController : ControllerBase
 
         review.Rating = dto.Rating;
         review.Comment = dto.Comment;
-        review.ReviewImage = dto.ReviewImage;
         review.Date = DateTime.UtcNow; // Update date on edit? Or keep original? Usually keep original. Or add UpdatedAt if needed. Let's just update Date for now or leave it.
 
         await _context.SaveChangesAsync();
@@ -104,7 +73,6 @@ public class AdminReviewsController : ControllerBase
         {
             Id = review.Id,
             CustomerName = review.CustomerName,
-            ProductName = review.Product.Name,
             CustomerAvatar = review.CustomerAvatar,
             Rating = review.Rating,
             Comment = review.Comment,
@@ -112,7 +80,6 @@ public class AdminReviewsController : ControllerBase
             Date = review.Date,
             ProductId = review.ProductId,
             IsFeatured = review.IsFeatured,
-            ReviewImage = review.ReviewImage,
             Likes = review.Likes
         });
     }

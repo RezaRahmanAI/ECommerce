@@ -14,75 +14,45 @@
 }
 
 .animate-fade-in {
-  animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: fadeIn 0.3s ease-out forwards;
 }
 
-/* Luxury Nav Links Underline */
-nav a {
-  position: relative;
-  transition: color 0.3s ease;
+/* Custom transitions for mega menu */
+.group:hover .group-hover\:visible {
+  visibility: visible;
 }
 
+/* Smooth underline effect for nav links */
 nav a::after {
   content: "";
   position: absolute;
   width: 0;
-  height: 2px;
+  height: 1px;
   bottom: -4px;
   left: 0;
-  background-color: #D4AF37; /* Metallic Gold */
-  transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  background-color: currentColor;
+  transition: width 0.3s ease;
 }
 
 nav a:hover::after {
   width: 100%;
 }
 
-/* Search Input Custom Focus */
-input:focus {
-  box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.1);
+/* Ensure mega menu dropdown doesn't flicker when moving mouse from link to menu */
+.group {
+  position: relative;
 }
 
-/* All Categories Button Hover */
-.group:hover .group-hover\:text-accent {
-  color: #D4AF37;
+/* Scrollbar styling for mobile menu */
+nav::-webkit-scrollbar {
+  width: 2px;
 }
 
-/* Navbar Sticky Polish */
-header {
-  transition: all 0.3s ease;
+nav::-webkit-scrollbar-track {
+  background: transparent;
 }
 
-header.scrolled {
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
-}
-
-/* Category Dropdown Animation */
-.animate-fade-in {
-  animation: fadeIn 0.3s ease-out forwards;
-}
-
-/* Utility Icons Hover */
-.flex.items-center.gap-6 a {
-  transition: transform 0.2s ease;
-}
-
-.flex.items-center.gap-6 a:hover {
-  transform: translateY(-2px);
-}
-
-/* Custom Scrollbar for Dropdowns */
-.overflow-hidden::-webkit-scrollbar {
-  width: 4px;
-}
-
-.overflow-hidden::-webkit-scrollbar-track {
-  background: #f8fafc;
-}
-
-.overflow-hidden::-webkit-scrollbar-thumb {
+nav::-webkit-scrollbar-thumb {
   background: #e2e8f0;
-  border-radius: 10px;
+  border-radius: 1px;
 }

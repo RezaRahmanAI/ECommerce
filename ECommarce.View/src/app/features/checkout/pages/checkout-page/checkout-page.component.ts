@@ -88,8 +88,8 @@ export class CheckoutPageComponent {
     address: ["", [Validators.required, Validators.minLength(5)]],
     city: ["", Validators.required],
     area: ["", Validators.required],
-    deliveryDetails: [""],
     deliveryMethodId: [0, Validators.required],
+    paymentMethod: ["cod", Validators.required],
   });
 
   cities = Object.keys(BANGLADESH_LOCATIONS).sort();
@@ -190,9 +190,6 @@ export class CheckoutPageComponent {
           fullName: state.fullName,
           phone: state.phone,
           address: state.address,
-          city: state.city || "",
-          area: state.area || "",
-          deliveryDetails: state.deliveryDetails || "",
         });
       });
 
@@ -232,9 +229,6 @@ export class CheckoutPageComponent {
             {
               fullName: customer.name,
               address: customer.address,
-              city: customer.city || "",
-              area: customer.area || "",
-              deliveryDetails: customer.deliveryDetails || "",
             },
             { emitEvent: false },
           );
@@ -351,7 +345,6 @@ export class CheckoutPageComponent {
       address: this.checkoutForm.controls.address.value ?? "",
       city: this.checkoutForm.controls.city.value ?? "",
       area: this.checkoutForm.controls.area.value ?? "",
-      deliveryDetails: this.checkoutForm.controls.deliveryDetails.value ?? "",
       deliveryMethodId:
         this.checkoutForm.controls.deliveryMethodId.value ?? undefined,
     });

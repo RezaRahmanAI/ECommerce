@@ -12,6 +12,7 @@ export interface Banner {
   buttonText: string;
   displayOrder: number;
   isActive: boolean;
+  type: "Hero" | "Promo" | "Spotlight";
 }
 
 @Injectable({
@@ -38,7 +39,7 @@ export class AdminBannersService {
   }
 
   delete(id: number): Observable<void> {
-    return this.api.post<void>(`${this.baseUrl}/${id}/delete`, {});
+    return this.api.delete<void>(`${this.baseUrl}/${id}`);
   }
 
   uploadImage(file: File): Observable<{ url: string }> {

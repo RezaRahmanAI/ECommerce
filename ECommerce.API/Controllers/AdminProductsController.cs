@@ -6,6 +6,9 @@ using ECommerce.Infrastructure.Data;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
+
+using Microsoft.AspNetCore.OutputCaching;
 
 namespace ECommerce.API.Controllers;
 
@@ -18,13 +21,19 @@ public class AdminProductsController : ControllerBase
     private readonly IWebHostEnvironment _environment;
     private readonly IProductService _productService;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IConfiguration _config;
+    private readonly ICacheService _cache;
+    private readonly IOutputCacheStore _cacheStore;
 
-    public AdminProductsController(ApplicationDbContext context, IWebHostEnvironment environment, IProductService productService, IUnitOfWork unitOfWork)
+    public AdminProductsController(ApplicationDbContext context, IWebHostEnvironment environment, IProductService productService, IUnitOfWork unitOfWork, IConfiguration config, ICacheService cache, IOutputCacheStore cacheStore)
     {
         _context = context;
         _environment = environment;
         _productService = productService;
         _unitOfWork = unitOfWork;
+        _config = config;
+        _cache = cache;
+        _cacheStore = cacheStore;
     }
 
     [HttpPost("upload-media")]
@@ -38,7 +47,8 @@ public class AdminProductsController : ControllerBase
                 return BadRequest("No files uploaded");
 
             var uploadedUrls = new List<string>();
-            var uploadsFolder = Path.Combine(_environment.WebRootPath, "uploads", "products");
+            var externalPath = _config["ExternalMediaPath"] ?? Path.Combine(_environment.ContentRootPath, "wwwroot", "uploads");
+            var uploadsFolder = Path.Combine(externalPath, "products");
             if (!Directory.Exists(uploadsFolder))
             {
                 Directory.CreateDirectory(uploadsFolder);
@@ -48,12 +58,14 @@ public class AdminProductsController : ControllerBase
             {
                 if (file.Length > 0)
                 {
-                    var fileExtension = Path.GetExtension(file.FileName).ToLowerInvariant();
+                    var fileExtension = Path.GetExtension(file.FileName);
                     var fileName = $"{Guid.NewGuid()}{fileExtension}";
                     var filePath = Path.Combine(uploadsFolder, fileName);
 
-                    await using var stream = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.None, 81920, true);
-                    await file.CopyToAsync(stream);
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await file.CopyToAsync(stream);
+                    }
 
                     uploadedUrls.Add($"/uploads/products/{fileName}");
                 }
@@ -71,6 +83,13 @@ public class AdminProductsController : ControllerBase
         }
     }
 
+    [HttpGet("available-sizes")]
+    public async Task<ActionResult<List<string>>> GetAvailableSizes()
+    {
+        var sizes = await _productService.GetAvailableSizesAsync();
+        return Ok(sizes);
+    }
+
     [HttpGet]
     public async Task<ActionResult<object>> GetProducts(
         [FromQuery] string? searchTerm,
@@ -80,8 +99,7 @@ public class AdminProductsController : ControllerBase
         [FromQuery] int pageSize = 10)
     {
         var query = _context.Products
-            .Include(p => p.Category)
-            .Include(p => p.Images)
+            .AsNoTracking()
             .AsQueryable();
 
         // Apply filters
@@ -92,7 +110,7 @@ public class AdminProductsController : ControllerBase
 
         if (!string.IsNullOrEmpty(category) && category != "all")
         {
-            query = query.Where(p => p.Category.Name == category);
+            query = query.Where(p => p.Category != null && p.Category.Name == category);
         }
 
         if (!string.IsNullOrEmpty(statusTab) && statusTab != "all")
@@ -103,6 +121,10 @@ public class AdminProductsController : ControllerBase
 
         var total = await query.CountAsync();
         var products = await query
+            .Include(p => p.Category)
+            .Include(p => p.Images)
+            .Include(p => p.Variants)
+            .AsSplitQuery()
             .OrderByDescending(p => p.CreatedAt)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
@@ -111,17 +133,17 @@ public class AdminProductsController : ControllerBase
                 p.Id,
                 p.Name,
                 p.Description,
+                p.ShortDescription,
                 p.Sku,
-                p.Price,
-                SalePrice = p.CompareAtPrice,
-                p.PurchaseRate,
+                Price = p.Variants.FirstOrDefault() != null ? p.Variants.FirstOrDefault()!.Price ?? 0 : 0,
+                SalePrice = p.Variants.FirstOrDefault() != null ? p.Variants.FirstOrDefault()!.CompareAtPrice ?? null : null,
+                PurchaseRate = p.Variants.FirstOrDefault() != null ? p.Variants.FirstOrDefault()!.PurchaseRate ?? null : null,
                 p.StockQuantity,
                 p.IsNew,
                 p.IsFeatured,
-                p.IsItemProduct,
                 Status = p.IsActive ? "Active" : "Draft",
                 p.ImageUrl,
-                Category = p.Category.Name,
+                Category = p.Category != null ? p.Category.Name : "",
                 CategoryId = p.CategoryId,
                 MediaUrls = p.Images.Select(i => i.Url).ToList(),
                 p.CreatedAt,
@@ -182,6 +204,10 @@ public class AdminProductsController : ControllerBase
             var result = await _productService.CreateProductAsync(dto);
             if (result == null) return BadRequest(new { message = "Error creating product" });
 
+            await _cache.RemoveAsync("home_new_arrivals");
+            await _cache.RemoveAsync("home_featured_products");
+            await _cacheStore.EvictByTagAsync("products", default);
+
             return CreatedAtAction(nameof(GetProductById), new { id = result.Id }, result);
         }
         catch (KeyNotFoundException ex)
@@ -190,6 +216,12 @@ public class AdminProductsController : ControllerBase
         }
         catch (Exception ex)
         {
+            Console.WriteLine($"[ADMIN_ERROR] Error creating product: {ex.Message}");
+            Console.WriteLine($"[ADMIN_ERROR] StackTrace: {ex.StackTrace}");
+            if (ex.InnerException != null)
+            {
+                Console.WriteLine($"[ADMIN_ERROR] InnerException: {ex.InnerException.Message}");
+            }
             return StatusCode(500, new { message = $"Error creating product: {ex.Message}" });
         }
     }
@@ -199,8 +231,19 @@ public class AdminProductsController : ControllerBase
     {
         try
         {
+            Console.WriteLine($"[ADMIN_DEBUG] Updating Product {id}: {dto.Name}, Type: {dto.ProductType}, BundleItems: {dto.BundleItems?.Count ?? -1}");
+            if (dto.BundleItems != null)
+            {
+                foreach(var bi in dto.BundleItems) {
+                    Console.WriteLine($"  [ADMIN_DEBUG] Component: {bi.ComponentProductId}, Variant: {bi.ComponentVariantId}, Qty: {bi.Quantity}");
+                }
+            }
             var result = await _productService.UpdateProductAsync(id, dto);
             if (result == null) return BadRequest(new { message = "Error updating product" });
+
+            await _cache.RemoveAsync("home_new_arrivals");
+            await _cache.RemoveAsync("home_featured_products");
+            await _cacheStore.EvictByTagAsync("products", default);
 
             return Ok(result);
         }
@@ -214,47 +257,38 @@ public class AdminProductsController : ControllerBase
         }
     }
 
-    [HttpPost("{id}/delete")]
+    [HttpPost("{id:int}/delete")]
     public async Task<ActionResult<bool>> DeleteProduct(int id)
     {
-        try
+        var product = await _context.Products
+            .Include(p => p.Images)
+            .Include(p => p.Variants)
+            .FirstOrDefaultAsync(p => p.Id == id);
+
+        if (product == null)
+            return NotFound();
+
+        // Delete associated images from filesystem
+        if (!string.IsNullOrEmpty(product.ImageUrl))
         {
-            var product = await _context.Products
-                .Include(p => p.Images)
-                .Include(p => p.Variants)
-                .FirstOrDefaultAsync(p => p.Id == id);
-
-            if (product == null)
-                return NotFound();
-
-            // Check if product is referenced in any order items
-            var isOrdered = await _context.OrderItems.AnyAsync(oi => oi.ProductId == id);
-            if (isOrdered)
-            {
-                return BadRequest(new { message = "Cannot delete product because it has been ordered in previous transactions." });
-            }
-
-            // Delete associated images from filesystem
-            if (!string.IsNullOrEmpty(product.ImageUrl))
-            {
-                DeleteImageFile(product.ImageUrl);
-            }
-
-            foreach (var image in product.Images)
-            {
-                DeleteImageFile(image.Url);
-            }
-
-            _context.Products.Remove(product);
-            await _context.SaveChangesAsync();
-
-            return Ok(true);
+            DeleteImageFile(product.ImageUrl);
         }
-        catch (Exception ex)
+
+        foreach (var image in product.Images)
         {
-            return StatusCode(500, new { message = "An error occurred while deleting the product: " + ex.Message });
+            DeleteImageFile(image.Url);
         }
+
+        _context.Products.Remove(product);
+        await _context.SaveChangesAsync();
+
+        await _cache.RemoveAsync("home_new_arrivals");
+        await _cache.RemoveAsync("home_featured_products");
+        await _cacheStore.EvictByTagAsync("products", default);
+
+        return Ok(true);
     }
+
 
     private List<object> DeserializeVariants(string? json)
     {
@@ -276,7 +310,8 @@ public class AdminProductsController : ControllerBase
         try
         {
             var fileName = Path.GetFileName(imageUrl);
-            var filePath = Path.Combine(_environment.WebRootPath, "uploads", "products", fileName);
+            var externalPath = _config["ExternalMediaPath"] ?? Path.Combine(_environment.ContentRootPath, "wwwroot", "uploads");
+            var filePath = Path.Combine(externalPath, "products", fileName);
             if (System.IO.File.Exists(filePath))
             {
                 System.IO.File.Delete(filePath);
@@ -313,14 +348,14 @@ public class AdminProductsController : ControllerBase
         {
             ProductId = p.Id,
             ProductName = p.Name,
-            ProductSku = p.Sku,
-            ImageUrl = p.ImageUrl,
+            ProductSku = p.Sku ?? string.Empty,
+            ImageUrl = p.ImageUrl ?? string.Empty,
             TotalStock = p.StockQuantity,
             Variants = p.Variants.Select(v => new VariantInventoryDto
             {
                 VariantId = v.Id,
-                Sku = v.Sku,
-                Size = v.Size,
+                Sku = v.Sku ?? string.Empty,
+                Size = v.Size ?? string.Empty,
                 StockQuantity = v.StockQuantity
             }).ToList()
         }).ToList();
@@ -353,6 +388,17 @@ public class AdminProductsController : ControllerBase
 
         if (await _unitOfWork.Complete() > 0)
         {
+             // Invalidate cache
+             await _cache.RemoveAsync("home_new_arrivals");
+             await _cache.RemoveAsync("home_featured_products");
+             await _cacheStore.EvictByTagAsync("products", default);
+             
+             var cacheKeys = new[] { $"product_id:{product.Id}", $"product_slug:{product.Slug}" };
+             foreach (var key in cacheKeys)
+             {
+                 await _cache.RemoveAsync(key);
+             }
+
              return Ok(new { message = "Stock updated successfully", newTotal = product.StockQuantity });
         }
 

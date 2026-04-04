@@ -9,7 +9,6 @@ export interface CustomerProfile {
   phone: string;
   name: string;
   address: string;
-  deliveryDetails?: string;
   createdAt: string;
 }
 
@@ -17,7 +16,6 @@ export interface CustomerProfileRequest {
   phone: string;
   name: string;
   address: string;
-  deliveryDetails?: string;
 }
 
 @Injectable({
@@ -68,7 +66,7 @@ export class CustomerProfileService {
     const params = new HttpParams().set("phone", phone);
     return this.api
       .get<any[]>(`${this.baseUrl}/orders`, { params })
-      .pipe(map((dtos: any) => dtos?.map((dto: any) => this.mapOrderDtoToOrder(dto)) || []));
+      .pipe(map((dtos) => dtos.map(this.mapOrderDtoToOrder)));
   }
 
   private mapOrderDtoToOrder(dto: any): Order {
@@ -78,7 +76,6 @@ export class CustomerProfileService {
       customerName: dto.customerName || dto.name,
       customerPhone: dto.customerPhone || dto.phone,
       shippingAddress: dto.shippingAddress || dto.address,
-      deliveryDetails: dto.deliveryDetails,
       subTotal: dto.subTotal || dto.total || 0,
       tax: dto.tax || 0,
       shippingCost: dto.shippingCost || 0,

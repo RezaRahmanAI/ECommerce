@@ -30,7 +30,7 @@ public class CustomersController : ControllerBase
 
         if (customer == null)
         {
-            return NotFound(new { error = "Customer not found" });
+            return Ok(null); // Return success with null object to avoid 404 errors in frontend
         }
 
         return Ok(new CustomerDto
@@ -39,9 +39,6 @@ public class CustomersController : ControllerBase
             Phone = customer.Phone,
             Name = customer.Name,
             Address = customer.Address,
-            City = customer.City,
-            Area = customer.Area,
-            DeliveryDetails = customer.DeliveryDetails,
             CreatedAt = customer.CreatedAt
         });
     }
@@ -57,10 +54,7 @@ public class CustomersController : ControllerBase
         var customer = await _customerService.CreateOrUpdateCustomerAsync(
             request.Phone, 
             request.Name, 
-            request.Address, 
-            request.City,
-            request.Area,
-            request.DeliveryDetails
+            request.Address
         );
 
         return Ok(new CustomerDto
@@ -69,9 +63,6 @@ public class CustomersController : ControllerBase
             Phone = customer.Phone,
             Name = customer.Name,
             Address = customer.Address,
-            City = customer.City,
-            Area = customer.Area,
-            DeliveryDetails = customer.DeliveryDetails,
             CreatedAt = customer.CreatedAt
         });
     }
@@ -84,7 +75,10 @@ public class CustomersController : ControllerBase
             return BadRequest(new { error = "Phone number is required" });
         }
 
-        var customerOrders = await _orderService.GetOrdersByPhoneAsync(phone);
+        // Ideally we should have a specific method in OrderService for this
+        // For MVP, we filter the results here
+        var allOrders = await _orderService.GetOrdersAsync();
+        var customerOrders = allOrders.Where(o => o.CustomerPhone == phone).ToList();
         
         return Ok(customerOrders);
     }

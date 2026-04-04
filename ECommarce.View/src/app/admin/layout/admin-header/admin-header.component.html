@@ -1,41 +1,117 @@
 <header
-  class="h-20 bg-surface border-b border-[#e7f0f3] px-8 flex items-center justify-between flex-shrink-0 z-10"
+  class="h-16 md:h-20 bg-surface-light dark:bg-surface-dark border-b border-border-color px-4 md:px-8 flex items-center justify-between flex-shrink-0 z-10"
 >
   <div class="flex items-center gap-4">
     <!-- Mobile Menu Toggle -->
     <button
       (click)="sidebarService.toggle()"
-      class="p-2 -ml-2 text-gray-500 hover:bg-background-light rounded-lg transition-colors lg:hidden"
+      class="p-2 -ml-2 text-text-sub hover:bg-supporting rounded-xl transition-colors lg:hidden"
       type="button"
     >
       <lucide-icon [img]="icons.Menu" class="w-6 h-6"></lucide-icon>
     </button>
-    <h2 class="text-primary text-xl font-bold tracking-tight">
+    <h2 class="text-primary dark:text-white text-xl font-bold tracking-tight uppercase">
       {{ pageTitle$ | async }}
     </h2>
   </div>
-  <div class="flex items-center gap-6">
-    <div class="relative w-80 hidden md:block">
+  <div class="flex items-center gap-3 md:gap-6">
+    <div class="relative w-64 lg:w-80 hidden md:block">
       <span
-        class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400"
+        class="absolute inset-y-0 left-0 flex items-center pl-3 text-text-sub/50"
       >
         <lucide-icon [img]="icons.Search" class="w-4 h-4"></lucide-icon>
       </span>
       <input
-        class="w-full h-10 pl-10 pr-4 rounded-lg bg-background-light border-none text-sm text-[#0e181b] placeholder:text-gray-400 focus:ring-2 focus:ring-primary/20"
+        class="w-full h-10 pl-10 pr-4 rounded-xl bg-supporting/50 border border-border-color text-sm text-primary placeholder:text-text-sub/40 focus:ring-2 focus:ring-primary/20 transition-all"
         placeholder="Search orders, products, or customers..."
         type="text"
         [formControl]="searchControl"
       />
     </div>
-    <button
-      class="relative p-2 text-gray-500 hover:bg-background-light rounded-lg transition-colors"
-      type="button"
-    >
-      <lucide-icon [img]="icons.Bell" class="w-5 h-5"></lucide-icon>
-      <span
-        class="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full ring-2 ring-white"
-      ></span>
-    </button>
+    <div class="flex items-center gap-3 pl-6 border-l border-border-color/50">
+      <button
+        class="relative p-2 text-text-sub/50 hover:text-primary hover:bg-supporting rounded-xl transition-all duration-300"
+        type="button"
+      >
+        <lucide-icon [img]="icons.Bell" class="w-5 h-5"></lucide-icon>
+        <span
+          class="absolute top-2.5 right-2.5 w-2 h-2 bg-accent rounded-full ring-2 ring-white"
+        ></span>
+      </button>
+
+      <!-- Profile Dropdown -->
+      <div class="relative ml-2" *ngIf="currentUser$ | async as user">
+        <button
+          (click)="toggleProfileDropdown()"
+          class="flex items-center gap-3 p-1.5 pr-3 rounded-2xl hover:bg-supporting border border-transparent hover:border-border-color transition-all duration-300 group"
+          type="button"
+        >
+          <div class="relative flex-shrink-0">
+            <div
+              class="size-9 rounded-xl bg-primary/5 border border-primary/10 flex items-center justify-center overflow-hidden transition-transform duration-500 group-hover:scale-105"
+            >
+              <img
+                *ngIf="user.avatarUrl"
+                [src]="imageUrlService.getImageUrl(user.avatarUrl)"
+                class="w-full h-full object-cover"
+                [alt]="user.name"
+              />
+              <lucide-icon
+                *ngIf="!user.avatarUrl"
+                [img]="icons.User"
+                class="w-5 h-5 text-primary/40"
+              ></lucide-icon>
+            </div>
+            <div class="absolute -bottom-0.5 -right-0.5 size-3 bg-emerald-500 border-2 border-white rounded-full"></div>
+          </div>
+          <div class="hidden sm:flex flex-col items-start gap-0.5">
+            <span class="text-xs font-display font-black text-primary leading-none group-hover:text-accent transition-colors">{{ user.name }}</span>
+            <span class="text-[10px] font-display font-black text-gray-400 uppercase tracking-wider leading-none">{{ user.role }}</span>
+          </div>
+          <lucide-icon [img]="icons.ChevronDown" class="w-4 h-4 text-gray-300 group-hover:text-primary transition-all duration-300" [class.rotate-180]="isProfileDropdownOpen"></lucide-icon>
+        </button>
+
+        <!-- Dropdown Menu -->
+        <div
+          *ngIf="isProfileDropdownOpen"
+          class="absolute right-0 mt-3 w-64 bg-white/80 backdrop-blur-xl border border-gray-100 rounded-2xl shadow-2xl p-2 z-50 animate-fade-in-up origin-top-right scale-100"
+        >
+          <div class="px-4 py-3 mb-2 border-b border-gray-50">
+            <p class="text-[10px] font-display font-black text-gray-400 uppercase tracking-widest mb-1">Authenticated as</p>
+            <p class="text-xs font-display font-black text-primary truncate">{{ user.email }}</p>
+          </div>
+
+          <div class="space-y-1">
+            <a
+              href="/"
+              target="_blank"
+              class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-display font-black text-gray-600 hover:text-accent hover:bg-accent/5 transition-all duration-300 group"
+            >
+              <lucide-icon [img]="icons.Eye" class="w-4 h-4 text-gray-400 group-hover:text-accent"></lucide-icon>
+              <span>View Live Marketplace</span>
+            </a>
+            
+            <a
+              routerLink="/admin/settings"
+              (click)="isProfileDropdownOpen = false"
+              class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-display font-black text-gray-600 hover:text-accent hover:bg-accent/5 transition-all duration-300 group"
+            >
+              <lucide-icon [img]="icons.Settings" class="w-4 h-4 text-gray-400 group-hover:text-accent"></lucide-icon>
+              <span>System Preferences</span>
+            </a>
+          </div>
+
+          <div class="mt-2 pt-2 border-t border-gray-50">
+            <button
+              (click)="logout()"
+              class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-display font-black text-red-500 hover:bg-red-50 transition-all duration-300 group"
+            >
+              <lucide-icon [img]="icons.LogOut" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></lucide-icon>
+              <span>Secure Logout</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </header>

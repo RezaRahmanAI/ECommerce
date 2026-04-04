@@ -1,7 +1,8 @@
 import { HttpInterceptorFn, HttpErrorResponse } from "@angular/common/http";
 import { inject } from "@angular/core";
-import { throwError } from "rxjs";
+import { throwError, EMPTY } from "rxjs";
 import { catchError } from "rxjs/operators";
+import { BYPASS_LOGGING } from "./tokens";
 import { Router } from "@angular/router";
 
 import { NotificationService } from "../services/notification.service";
@@ -39,8 +40,15 @@ export const globalErrorInterceptor: HttpInterceptorFn = (request, next) => {
             break;
 
           case 401:
-            notificationService.error("Session expired. Please login again.");
-            void router.navigate(["/login"]);
+            // Don't notify or redirect for silent refresh failures or auth checks on startup
+            if (
+              !request.url.includes("auth/refresh") &&
+              !request.url.includes("auth/login") &&
+              !request.url.includes("auth/me") &&
+              !request.url.includes("auth/logout")
+            ) {
+              notificationService.error("Session expired. Please login again.");
+            }
             break;
 
           case 403: {
@@ -61,11 +69,14 @@ export const globalErrorInterceptor: HttpInterceptorFn = (request, next) => {
             notificationService.error("Resource not found");
             break;
 
-          case 500:
-            notificationService.error(
-              "A server error occurred. Our engineers have been notified.",
-            );
+          case 500: {
+            const message = 
+              error.error?.message || 
+              (typeof error.error === 'string' ? error.error : null) ||
+              "A server error occurred. Our engineers have been notified.";
+            notificationService.error(message);
             break;
+          }
 
           default:
             notificationService.error("An unexpected error occurred");
@@ -73,6 +84,13 @@ export const globalErrorInterceptor: HttpInterceptorFn = (request, next) => {
             break;
         }
       }
+
+      // If the request explicitly requested to bypass error logging (e.g. silent startup refresh),
+      // swallow the error by returning EMPTY instead of propagating it to the console.
+      if (request.context.get(BYPASS_LOGGING)) {
+        return EMPTY;
+      }
+
       return throwError(() => error);
     }),
   );

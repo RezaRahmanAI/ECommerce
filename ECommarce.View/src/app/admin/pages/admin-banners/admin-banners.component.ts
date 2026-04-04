@@ -62,6 +62,7 @@ export class AdminBannersComponent implements OnInit, OnDestroy {
     buttonText: [""],
     displayOrder: [0, [Validators.required]],
     isActive: [true],
+    type: ["Hero", [Validators.required]],
   });
 
   ngOnInit(): void {
@@ -94,6 +95,7 @@ export class AdminBannersComponent implements OnInit, OnDestroy {
       buttonText: "",
       displayOrder: this.banners.length + 1,
       isActive: true,
+      type: "Hero",
     });
     this.isModalOpen = true;
   }
@@ -110,6 +112,7 @@ export class AdminBannersComponent implements OnInit, OnDestroy {
       buttonText: banner.buttonText,
       displayOrder: banner.displayOrder,
       isActive: banner.isActive,
+      type: banner.type || "Hero",
     });
     this.isModalOpen = true;
   }
@@ -134,6 +137,13 @@ export class AdminBannersComponent implements OnInit, OnDestroy {
   onSubmit(): void {
     if (this.bannerForm.invalid) {
       this.bannerForm.markAllAsTouched();
+      const invalidFields: string[] = [];
+      Object.keys(this.bannerForm.controls).forEach((key) => {
+        if (this.bannerForm.get(key)?.invalid) invalidFields.push(key);
+      });
+      window.alert(
+        `Please fill in all required fields: ${invalidFields.join(", ")}`,
+      );
       return;
     }
 

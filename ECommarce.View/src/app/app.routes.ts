@@ -38,6 +38,14 @@ export const appRoutes: Routes = [
         (m) => m.AccessoriesPageComponent,
       ),
   },
+  {
+    path: "offers",
+    loadComponent: () =>
+      import(
+        "./features/products/pages/product-gallery/product-gallery.component"
+      ).then((m) => m.ProductGalleryComponent),
+    title: "Sale & Offers",
+  },
   { path: "products", redirectTo: "women", pathMatch: "full" },
   {
     path: "search",
@@ -62,17 +70,24 @@ export const appRoutes: Routes = [
     title: "Contact",
   },
   {
+    path: "lp/:slug",
+    loadComponent: () =>
+      import(
+        "./features/landing-page/pages/landing-page/landing-page.component"
+      ).then((m) => m.LandingPageComponent),
+  },
+  {
+    path: "adult-lp/:slug",
+    loadComponent: () =>
+      import(
+        "./features/adult-landing/pages/adult-landing-page/adult-landing-page.component"
+      ).then((m) => m.AdultLandingPageComponent),
+  },
+  {
     path: "product/:slug",
     loadComponent: () =>
       import("./features/product-details/pages/product-details-page/product-details-page.component").then(
         (m) => m.ProductDetailsPageComponent,
-      ),
-  },
-  {
-    path: "lp/:slug",
-    loadComponent: () =>
-      import("./features/landing-page/pages/landing-page/landing-page.component").then(
-        (m) => m.LandingPageComponent,
       ),
   },
   {
@@ -133,20 +148,6 @@ export const appRoutes: Routes = [
     },
   },
   {
-    path: "blog",
-    loadComponent: () =>
-      import("./features/blog/pages/blog-list/blog-list.component").then(
-        (m) => m.BlogListComponent,
-      ),
-  },
-  {
-    path: "blog/:slug",
-    loadComponent: () =>
-      import("./features/blog/pages/blog-details/blog-details.component").then(
-        (m) => m.BlogDetailsComponent,
-      ),
-  },
-  {
     path: "profile",
     loadComponent: () =>
       import("./features/customer-profile/pages/profile-page/profile-page.component").then(
@@ -159,7 +160,6 @@ export const appRoutes: Routes = [
       import("./features/account/pages/account-page/account-page.component").then(
         (m) => m.AccountPageComponent,
       ),
-    canActivate: [authGuard],
   },
   {
     path: "orders",
@@ -167,7 +167,6 @@ export const appRoutes: Routes = [
       import("./features/orders/pages/orders-page/orders-page.component").then(
         (m) => m.OrdersPageComponent,
       ),
-    canActivate: [authGuard],
   },
   {
     path: "admin",
@@ -234,14 +233,7 @@ export const appRoutes: Routes = [
           ),
         data: { title: "Edit Product" },
       },
-      {
-        path: "products/:id/landing-page",
-        loadComponent: () =>
-          import("./admin/pages/admin-landing-page-editor/admin-landing-page-editor.component").then(
-            (m) => m.AdminLandingPageEditorComponent,
-          ),
-        data: { title: "Edit Landing Page" },
-      },
+
       {
         path: "orders",
         loadComponent: () =>
@@ -249,14 +241,6 @@ export const appRoutes: Routes = [
             (m) => m.AdminOrdersComponent,
           ),
         data: { title: "Order Management" },
-      },
-      {
-        path: "blog",
-        loadComponent: () =>
-          import("./admin/pages/admin-blog-posts/admin-blog-posts.component").then(
-            (m) => m.AdminBlogPostsComponent,
-          ),
-        data: { title: "Blog Posts" },
       },
       {
         path: "orders/:id",
@@ -327,6 +311,30 @@ export const appRoutes: Routes = [
             (m) => m.AdminReviewsComponent,
           ),
         data: { title: "Reviews Management" },
+      },
+      {
+        path: "adult-products",
+        loadComponent: () =>
+          import("./admin/pages/admin-adult-products/admin-adult-products.component").then(
+            (m) => m.AdminAdultProductsComponent,
+          ),
+        data: { title: "Adult Products" },
+      },
+      {
+        path: "adult-products/new",
+        loadComponent: () =>
+          import("./admin/pages/admin-adult-product-form/admin-adult-product-form.component").then(
+            (m) => m.AdminAdultProductFormComponent,
+          ),
+        data: { title: "Add Adult Product" },
+      },
+      {
+        path: "adult-products/edit/:id",
+        loadComponent: () =>
+          import("./admin/pages/admin-adult-product-form/admin-adult-product-form.component").then(
+            (m) => m.AdminAdultProductFormComponent,
+          ),
+        data: { title: "Edit Adult Product" },
       },
       {
         path: "security",

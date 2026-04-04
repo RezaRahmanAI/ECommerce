@@ -1,10 +1,11 @@
-import { Component, OnInit } from "@angular/core";
+import { Component, Input, ChangeDetectionStrategy } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { HttpContext } from "@angular/common/http";
 
 import { ProductService } from "../../../../core/services/product.service";
 import { Product } from "../../../../core/models/product";
 import { ProductCardComponent } from "../../../../shared/components/product-card/product-card.component";
+import { SHOW_LOADING } from "../../../../core/services/loading.service";
 
 @Component({
   selector: "app-new-arrivals",
@@ -12,17 +13,12 @@ import { ProductCardComponent } from "../../../../shared/components/product-card
   imports: [CommonModule, ProductCardComponent],
   templateUrl: "./new-arrivals.component.html",
   styleUrl: "./new-arrivals.component.css",
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class NewArrivalsComponent implements OnInit {
-  products: Product[] = [];
+export class NewArrivalsComponent {
+  @Input() products: Product[] = [];
 
-  constructor(private readonly productService: ProductService) {}
-
-  ngOnInit(): void {
-    this.productService
-      .getNewArrivals(10)
-      .subscribe((response) => {
-        this.products = response.data;
-      });
+  trackByProduct(index: number, product: Product): number {
+    return product.id;
   }
 }

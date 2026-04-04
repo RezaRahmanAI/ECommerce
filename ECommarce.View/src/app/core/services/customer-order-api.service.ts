@@ -10,7 +10,6 @@ export interface CustomerLookupResponse {
   address: string;
   city?: string;
   area?: string;
-  deliveryDetails?: string;
 }
 
 export interface OrderItemRequest {
@@ -24,9 +23,8 @@ export interface CustomerOrderRequest {
   name: string;
   phone: string;
   address: string;
-  city?: string;
-  area?: string;
-  deliveryDetails: string;
+  city: string;
+  area: string;
   deliveryMethodId?: number;
   itemsCount: number;
   total: number;
@@ -34,13 +32,18 @@ export interface CustomerOrderRequest {
 }
 
 export interface CustomerOrderResponse {
-  orderId: number;
+  id: number;
+  orderNumber: string;
   name: string;
   phone: string;
   address: string;
-  deliveryDetails: string;
-  itemsCount: number;
+  city: string;
+  area: string;
+  subTotal: number;
+  shippingCost: number;
+  tax: number;
   total: number;
+  itemsCount: number;
   createdAt: string;
 }
 

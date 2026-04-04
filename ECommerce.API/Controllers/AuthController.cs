@@ -1,155 +1,133 @@
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Security.Cryptography;
+using System.Text;
 using ECommerce.API.Contracts.Auth;
 using ECommerce.Core.Entities;
 using ECommerce.Infrastructure.Data;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
 
 namespace ECommerce.API.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/auth")]
 public class AuthController : ControllerBase
 {
-    private readonly ApplicationDbContext _context;
-    private readonly IConfiguration _config;
+    private readonly IConfiguration _configuration;
+    private readonly UserManager<ApplicationUser> _userManager;
 
-    public AuthController(ApplicationDbContext context, IConfiguration config)
+    public AuthController(IConfiguration configuration, UserManager<ApplicationUser> userManager)
     {
-        _context = context;
-        _config = config;
+        _configuration = configuration;
+        _userManager = userManager;
     }
 
     [HttpPost("login")]
-    public async Task<ActionResult<AuthResponse>> Login(LoginRequest request)
+    public async Task<ActionResult<AuthResponse>> Login(LoginRequest request, CancellationToken cancellationToken)
     {
-        var identifier = request.Identifier?.Trim().ToLower();
-        
-        if (string.IsNullOrEmpty(identifier))
+        if (string.IsNullOrWhiteSpace(request.Identifier) || string.IsNullOrWhiteSpace(request.Password))
         {
-            return Unauthorized(new { message = "Identifier is required" });
+            return BadRequest("Identifier and password are required.");
         }
 
-        var user = await _context.Users
-            .FirstOrDefaultAsync(u => u.Email.ToLower() == identifier || u.UserName.ToLower() == identifier || u.PhoneNumber == request.Identifier.Trim());
+        var normalized = request.Identifier.Trim();
+        var user = await _userManager.Users
+            .FirstOrDefaultAsync(u => u.Email == normalized || u.UserName == normalized, cancellationToken);
 
-        if (user == null)
+        if (user is null)
         {
-            Console.WriteLine($"[AUTH_DEBUG] User not found for identifier: {identifier}");
-            return Unauthorized(new { message = "Invalid email/username or password" });
+            return Unauthorized("Invalid credentials.");
         }
 
-        if (string.IsNullOrEmpty(user.PasswordHash) || !BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
+        var result = await _userManager.CheckPasswordAsync(user, request.Password);
+        if (!result)
         {
-            Console.WriteLine($"[AUTH_DEBUG] Password verification failed for user: {user.Email}");
-            return Unauthorized(new { message = "Invalid email/username or password" });
+            return Unauthorized("Invalid credentials.");
         }
 
-        var token = GenerateJwtToken(user);
+        // Fetch the highest priority role
+        var roles = await _userManager.GetRolesAsync(user);
+        var role = roles.FirstOrDefault() ?? user.Role ?? "Customer";
 
-        return new AuthResponse(token, new UserSummary(
-            user.Id,
-            user.FullName ?? user.UserName ?? "User",
-            user.Email ?? "",
-            user.Role,
-            user.PhoneNumber
-        ));
+        var token = GenerateToken(user, role);
+        return Ok(new AuthResponse(token, ToSummary(user, role)));
     }
 
-    [HttpPost("register")]
-    public async Task<ActionResult<AuthResponse>> Register(SignupRequest request)
-    {
-        if (await _context.Users.AnyAsync(u => u.Email == request.Email))
-        {
-            return BadRequest(new { message = "Email already exists" });
-        }
-
-        var user = new ApplicationUser
-        {
-            FullName = request.FullName,
-            Email = request.Email,
-            UserName = request.Email,
-            PhoneNumber = request.PhoneNumber,
-            PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password),
-            Role = "Customer",
-            EmailConfirmed = true
-        };
-
-        _context.Users.Add(user);
-        await _context.SaveChangesAsync();
-
-        var token = GenerateJwtToken(user);
-
-        return new AuthResponse(token, new UserSummary(
-            user.Id,
-            user.FullName ?? "",
-            user.Email ?? "",
-            user.Role,
-            user.PhoneNumber
-        ));
-    }
-
+    [Authorize]
     [HttpGet("me")]
-    [Microsoft.AspNetCore.Authorization.Authorize]
-    public async Task<ActionResult<UserSummary>> GetMe()
+    public async Task<ActionResult<UserSummary>> Me(CancellationToken cancellationToken)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (string.IsNullOrEmpty(userId)) return Unauthorized();
+        if (userId == null)
+        {
+            return Unauthorized();
+        }
 
-        var user = await _context.Users.FindAsync(userId);
-        if (user == null) return NotFound();
+        var user = await _userManager.FindByIdAsync(userId);
+        if (user is null)
+        {
+            return Unauthorized();
+        }
 
-        return new UserSummary(
-            user.Id,
-            user.FullName ?? user.UserName ?? "User",
-            user.Email ?? "",
-            user.Role,
-            user.PhoneNumber
-        );
+        var roles = await _userManager.GetRolesAsync(user);
+        var role = roles.FirstOrDefault() ?? user.Role ?? "Customer";
+
+        return Ok(ToSummary(user, role));
     }
 
     [HttpPost("logout")]
     public IActionResult Logout()
     {
-        return Ok(new { message = "Logged out" });
+        return Ok();
     }
 
-    private string GenerateJwtToken(ApplicationUser user)
+    private string GenerateToken(ApplicationUser user, string role)
     {
-        var claims = new List<Claim>
-        {
-            new Claim(ClaimTypes.NameIdentifier, user.Id),
-            new Claim(ClaimTypes.Email, user.Email ?? ""),
-            new Claim(ClaimTypes.Name, user.FullName ?? user.UserName ?? ""),
-            new Claim(ClaimTypes.Role, user.Role),
-            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
-        };
-
-        var jwtKey = _config["Token:Key"] ?? "development_key_sherashopbd24_2026_987654321";
-        var keyBytes = Encoding.UTF8.GetBytes(jwtKey);
-        
-        // Ensure key is at least 32 bytes for HMACSHA256
+        var key = _configuration["Token:Key"] ?? "development_key_sherashopbd_123456789";
+        var issuer = _configuration["Token:Issuer"] ?? "SheraShopBD";
+        var audience = _configuration["Token:Audience"] ?? "SheraShopBDUsers";
+        var keyBytes = Encoding.UTF8.GetBytes(key);
         if (keyBytes.Length < 32)
         {
-            using var sha256 = System.Security.Cryptography.SHA256.Create();
+            using var sha256 = SHA256.Create();
             keyBytes = sha256.ComputeHash(keyBytes);
         }
+        var securityKey = new SymmetricSecurityKey(keyBytes);
+        var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
-        var key = new SymmetricSecurityKey(keyBytes);
-        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+        var email = user.Email ?? string.Empty;
+        var displayName = user.FullName ?? user.UserName ?? email;
+
+        var claims = new List<Claim>
+        {
+            new(ClaimTypes.NameIdentifier, user.Id),
+            new(ClaimTypes.Email, email),
+            new(ClaimTypes.Name, displayName),
+            new(ClaimTypes.Role, role)
+        };
 
         var token = new JwtSecurityToken(
-            issuer: _config["Token:Issuer"] ?? "SheraShopBD24",
-            audience: _config["Token:Audience"] ?? "SheraShopBD24",
+            issuer: issuer,
+            audience: audience,
             claims: claims,
-            expires: DateTime.Now.AddDays(7),
-            signingCredentials: creds
-        );
+            expires: DateTime.UtcNow.AddDays(7),
+            signingCredentials: credentials);
 
         return new JwtSecurityTokenHandler().WriteToken(token);
+    }
+
+    private static UserSummary ToSummary(ApplicationUser user, string role)
+    {
+        return new UserSummary(
+            user.Id,
+            user.FullName ?? user.UserName ?? "User",
+            user.Email ?? string.Empty,
+            role,
+            user.Phone);
     }
 }
 

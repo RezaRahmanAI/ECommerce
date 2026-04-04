@@ -6,7 +6,7 @@ public class SiteSetting : BaseEntity
 {    
     [Required]
     [MaxLength(100)]
-    public string WebsiteName { get; set; } = "SheraShopBD24";
+    public string WebsiteName { get; set; } = "SheraShopBD";
     
     public string? LogoUrl { get; set; }
     
@@ -14,6 +14,8 @@ public class SiteSetting : BaseEntity
     public string? ContactEmail { get; set; }
     
     public string? ContactPhone { get; set; }
+    
+    public string? Address { get; set; }
     
     // Social Links
     public string? FacebookUrl { get; set; }
@@ -26,9 +28,8 @@ public class SiteSetting : BaseEntity
     public string? FacebookPixelId { get; set; }
     public string? GoogleTagId { get; set; }
 
+    public string? Currency { get; set; } = "BDT";
     public decimal FreeShippingThreshold { get; set; } = 5000;
-
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-    public DateTime? UpdatedAt { get; set; }
-    public bool IsDeleted { get; set; }
+    public decimal ShippingCharge { get; set; } = 120;
+    public string? SizeGuideImageUrl { get; set; }
 }

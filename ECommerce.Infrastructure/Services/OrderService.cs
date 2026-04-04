@@ -18,6 +18,7 @@ public class OrderService : IOrderService
     private readonly IMapper _mapper;
     private readonly CustomerService _customerService;
     private readonly ISteadfastService _steadfastService;
+
     public OrderService(IUnitOfWork unitOfWork, IMapper mapper, CustomerService customerService, ISteadfastService steadfastService)
     {
         _unitOfWork = unitOfWork;
@@ -26,88 +27,134 @@ public class OrderService : IOrderService
         _steadfastService = steadfastService;
     }
 
-    public async Task<OrderDto> CreateOrderAsync(OrderCreateDto orderDto, string? ipAddress = null)
+    public async Task<OrderDto> CreateOrderAsync(OrderCreateDto orderDto)
     {
-        var customerRecord = await _customerService.GetCustomerByPhoneAsync(orderDto.Phone);
-        if (customerRecord != null && customerRecord.IsBlocked)
-        {
-            throw new InvalidOperationException("This phone number is blocked and cannot place orders.");
-        }
- 
         var items = new List<OrderItem>();
         
+        // 1. Bulk Fetch Products to fix N+1 query issue
         var productIds = orderDto.Items.Select(i => i.ProductId).Distinct().ToList();
+        var productSpec = new ProductsWithCategoriesSpecification(productIds);
         
-        var products = await _unitOfWork.Repository<Product>().ListAsync(new BaseSpecification<Product>(p => productIds.Contains(p.Id)));
-        var productsDict = products.ToDictionary(p => p.Id);
-
-        var hasVariants = orderDto.Items.Any(i => !string.IsNullOrEmpty(i.Size));
-        var variantsList = hasVariants 
-            ? (await _unitOfWork.Repository<ProductVariant>().ListAsync(new BaseSpecification<ProductVariant>(v => productIds.Contains(v.ProductId)))).ToList()
-            : new List<ProductVariant>();
-
-        var siteSettings = await _unitOfWork.Repository<SiteSetting>().ListAllAsync();
+        // Pass track: true so EF Core tracks changes for stock deductions
+        var products = await _unitOfWork.Repository<Product>().ListAsync(productSpec, track: true);
+        var productDict = products.ToDictionary(p => p.Id);
 
         foreach (var itemDto in orderDto.Items)
         {
-            if (!productsDict.TryGetValue(itemDto.ProductId, out var product))
+            if (!productDict.TryGetValue(itemDto.ProductId, out var product))
+            {
                 throw new KeyNotFoundException($"Product {itemDto.ProductId} not found");
+            }
 
-            if (product.StockQuantity < itemDto.Quantity) throw new InvalidOperationException($"Insufficient stock for {product.Name}");
-            product.StockQuantity -= itemDto.Quantity;
+            // Calculate total units to deduct (Quantity * BundleMultiplier)
+            int multiplier = product.IsBundle ? product.BundleQuantity : 1;
+            int totalDeduction = itemDto.Quantity * multiplier;
 
+            // 1. Deduct from specific variant if size/variant is selected
             if (!string.IsNullOrEmpty(itemDto.Size))
             {
-                var variant = variantsList.FirstOrDefault(v => v.ProductId == product.Id && v.Size == itemDto.Size);
+                var normalizedSize = itemDto.Size.Trim().ToLower();
+                var variant = product.Variants.FirstOrDefault(v => 
+                    v.Size != null && v.Size.Trim().ToLower() == normalizedSize);
                 
                 if (variant != null)
                 {
-                     if (variant.StockQuantity < itemDto.Quantity) throw new InvalidOperationException($"Insufficient stock for {product.Name} ({itemDto.Size})");
-                     variant.StockQuantity -= itemDto.Quantity;
-                     _unitOfWork.Repository<ProductVariant>().Update(variant);
+                    if (variant.StockQuantity < totalDeduction)
+                        throw new InvalidOperationException($"Insufficient stock for {product.Name} ({itemDto.Size}). Needed: {totalDeduction}, Available: {variant.StockQuantity}");
+                    
+                    variant.StockQuantity -= totalDeduction;
+                    // Repository update isn't strictly necessary when tracking is enabled, 
+                    // but keeping it for explicitness or in case GenericRepository requires it for its internal state.
+                    _unitOfWork.Repository<ProductVariant>().Update(variant);
+                }
+            }
+
+            // 2. Deduct from main product stock (as an aggregate or for simple products)
+            if (product.StockQuantity < totalDeduction)
+                throw new InvalidOperationException($"Insufficient stock for {product.Name}. Needed: {totalDeduction}, Available: {product.StockQuantity}");
+
+            product.StockQuantity -= totalDeduction;
+            _unitOfWork.Repository<Product>().Update(product);
+
+            // Price Fallback logic (Keep as is)
+            decimal unitPrice = 0;
+            // Lookup variant for price even for combo if combo has its own variants
+            ProductVariant? priceVariant = null;
+            if (!string.IsNullOrEmpty(itemDto.Size))
+            {
+                 var normalizedSize = itemDto.Size.Trim().ToLower();
+                 priceVariant = product.Variants.FirstOrDefault(v => 
+                    v.Size != null && v.Size.Trim().ToLower() == normalizedSize);
+            }
+
+            if (priceVariant != null && (priceVariant.Price ?? 0) > 0)
+            {
+                unitPrice = priceVariant.Price ?? 0;
+            }
+            else
+            {
+                // Fallback: Get the minimum positive active price from any variant
+                var validVariants = product.Variants.Where(v => (v.Price ?? 0) > 0).ToList();
+                if (validVariants.Any())
+                {
+                    unitPrice = validVariants.Min(v => {
+                        var p = v.Price ?? 0;
+                        var cp = v.CompareAtPrice ?? 0;
+                        return (cp > 0 && cp < p) ? cp : p;
+                    });
                 }
             }
             
+            // Image fallback: Try to get color-specific image if available
+            var itemImageUrl = product.ImageUrl;
+            if (!string.IsNullOrEmpty(itemDto.Color) && product.Images != null)
+            {
+                var colorImg = product.Images.FirstOrDefault(i => i.Color == itemDto.Color);
+                if (colorImg != null) itemImageUrl = colorImg.Url;
+            }
+
             var orderItem = new OrderItem
             {
                 ProductId = product.Id,
                 ProductName = product.Name,
-                UnitPrice = product.Price,
+                UnitPrice = unitPrice,
                 Quantity = itemDto.Quantity,
                 Color = itemDto.Color,
                 Size = itemDto.Size,
-                ImageUrl = product.ImageUrl
+                ImageUrl = itemImageUrl
             };
             
             items.Add(orderItem);
-            _unitOfWork.Repository<Product>().Update(product);
         }
 
         var subtotal = items.Sum(i => i.TotalPrice);
         decimal shippingCost = 0;
         
+        // Fetch Site Settings for Free Shipping Threshold
+        var siteSettings = await _unitOfWork.Repository<SiteSetting>().ListAllAsync();
         var settings = siteSettings.FirstOrDefault();
         var freeShippingThreshold = settings?.FreeShippingThreshold ?? 0;
 
-        DeliveryMethod? method = null;
+        // Lookup delivery method if provided
         if (orderDto.DeliveryMethodId.HasValue)
         {
-            method = await _unitOfWork.Repository<DeliveryMethod>().GetByIdAsync(orderDto.DeliveryMethodId.Value);
-        }
-        
-        if (method != null)
-        {
-            if (freeShippingThreshold > 0 && subtotal >= freeShippingThreshold)
+            var method = await _unitOfWork.Repository<DeliveryMethod>().GetByIdAsync(orderDto.DeliveryMethodId.Value);
+            if (method != null)
             {
-                shippingCost = 0;
-            }
-            else
-            {
-                shippingCost = method.Cost;
+                if (freeShippingThreshold > 0 && subtotal >= freeShippingThreshold)
+                {
+                    shippingCost = 0;
+                }
+                else
+                {
+                    shippingCost = method.Cost;
+                }
             }
         }
         else
         {
+             // If no delivery method is selected, we should strictly require it or default to 0/handling
+             // ideally the frontend forces a selection.
              shippingCost = 0; 
         }
 
@@ -119,7 +166,6 @@ public class OrderService : IOrderService
             ShippingAddress = orderDto.Address,
             City = orderDto.City,
             Area = orderDto.Area,
-            DeliveryDetails = orderDto.DeliveryDetails,
             Items = items,
             SubTotal = subtotal,
             Tax = 0,
@@ -130,41 +176,31 @@ public class OrderService : IOrderService
         };
         
         order.Total = order.SubTotal + order.Tax + order.ShippingCost;
-        order.CreatedIp = ipAddress;
- 
+
         _unitOfWork.Repository<Order>().Add(order);
-  
+        
         await _unitOfWork.Complete();
- 
+
         await _customerService.CreateOrUpdateCustomerAsync(
             orderDto.Phone,
             orderDto.Name,
-            orderDto.Address,
-            orderDto.City,
-            orderDto.Area,
-            orderDto.DeliveryDetails,
-            ipAddress
+            orderDto.Address
         );
-        
-        return _mapper.Map<Order, OrderDto>(order);
+        Console.WriteLine("--- ABOUT TO MAP ORDER TO ORDERDTO ---");
+        try {
+            var result = _mapper.Map<Order, OrderDto>(order);
+            Console.WriteLine("--- MAPPING SUCCESSFUL ---");
+            return result;
+        } catch (Exception ex) {
+            Console.WriteLine($"--- MAPPING FAILED: {ex.Message} ---");
+            throw;
+        }
     }
 
     public async Task<IReadOnlyList<OrderDto>> GetOrdersAsync()
     {
         var spec = new BaseSpecification<Order>();
         spec.AddInclude(x => x.Items);
-        spec.ApplySplitQuery();
-        var orders = await _unitOfWork.Repository<Order>().ListAsync(spec);
-            
-        return _mapper.Map<IReadOnlyList<Order>, IReadOnlyList<OrderDto>>(orders);
-    }
-
-    public async Task<IReadOnlyList<OrderDto>> GetOrdersByPhoneAsync(string phone)
-    {
-        var spec = new BaseSpecification<Order>(x => x.CustomerPhone == phone);
-        spec.AddInclude(x => x.Items);
-        spec.ApplySplitQuery();
-        spec.AddOrderByDescending(x => x.CreatedAt);
         var orders = await _unitOfWork.Repository<Order>().ListAsync(spec);
             
         return _mapper.Map<IReadOnlyList<Order>, IReadOnlyList<OrderDto>>(orders);
@@ -174,10 +210,9 @@ public class OrderService : IOrderService
     {
         var spec = new BaseSpecification<Order>(x => x.Id == id);
         spec.AddInclude(x => x.Items);
-        spec.ApplySplitQuery();
         var order = await _unitOfWork.Repository<Order>().GetEntityWithSpec(spec);
 
-        return _mapper.Map<Order, OrderDto>(order);
+        return _mapper.Map<Order, OrderDto>(order!);
     }
 
     public async Task<bool> UpdateOrderStatusAsync(int id, string status)
@@ -193,49 +228,55 @@ public class OrderService : IOrderService
             if (newStatus == OrderStatus.Cancelled && order.Status != OrderStatus.Cancelled)
             {
                 var productIds = order.Items.Select(i => i.ProductId).Distinct().ToList();
-                var products = await _unitOfWork.Repository<Product>().ListAsync(new BaseSpecification<Product>(p => productIds.Contains(p.Id)));
-                var productsDict = products.ToDictionary(p => p.Id);
+                var products = await _unitOfWork.Repository<Product>().ListAsync(
+                    new ProductsWithCategoriesSpecification(productIds), track: true);
+                var productDict = products.ToDictionary(p => p.Id);
 
-                var allVariantsForProducts = await _unitOfWork.Repository<ProductVariant>().ListAsync(new BaseSpecification<ProductVariant>(v => productIds.Contains(v.ProductId)));
-                
                 foreach (var item in order.Items)
                 {
-                    if (productsDict.TryGetValue(item.ProductId, out var product))
+                    if (productDict.TryGetValue(item.ProductId, out var product))
                     {
-                        product.StockQuantity += item.Quantity;
-                        _unitOfWork.Repository<Product>().Update(product);
+                        int multiplier = product.IsBundle ? product.BundleQuantity : 1;
+                        product.StockQuantity += item.Quantity * multiplier;
 
                         if (!string.IsNullOrEmpty(item.Size))
                         {
-                            var variant = allVariantsForProducts.FirstOrDefault(v => v.ProductId == item.ProductId && v.Size == item.Size);
+                            var normalizedSize = item.Size.Trim().ToLower();
+                            var variant = product.Variants.FirstOrDefault(v => 
+                                v.Size != null && v.Size.Trim().ToLower() == normalizedSize);
+                            
                             if (variant != null)
                             {
-                                variant.StockQuantity += item.Quantity;
-                                _unitOfWork.Repository<ProductVariant>().Update(variant);
+                                variant.StockQuantity += item.Quantity * multiplier;
                             }
                         }
                     }
                 }
             }
 
-            if (newStatus == OrderStatus.Confirmed && order.Status != OrderStatus.Confirmed)
+            order.Status = newStatus;
+            
+            if (newStatus == OrderStatus.Confirmed && order.SteadfastConsignmentId == null)
             {
-                if (order.SteadfastConsignmentId == null)
+                try
                 {
                     var (consignmentId, trackingCode) = await _steadfastService.CreateOrderAsync(order);
-                    if (consignmentId != null)
+                    if (!string.IsNullOrEmpty(consignmentId))
                     {
                         if (long.TryParse(consignmentId, out var cid))
                         {
-                             order.SteadfastConsignmentId = cid;
+                            order.SteadfastConsignmentId = cid;
                         }
                         order.SteadfastTrackingCode = trackingCode;
-                        order.SteadfastStatus = "Sent";
+                        order.SteadfastStatus = "in_review";
                     }
                 }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error sending order {order.Id} to Steadfast: {ex.Message}");
+                }
             }
-
-            order.Status = newStatus;
+            
             _unitOfWork.Repository<Order>().Update(order);
             return await _unitOfWork.Complete() > 0;
         }
@@ -243,10 +284,9 @@ public class OrderService : IOrderService
         return false;
     }
 
-    public async Task<(IReadOnlyList<OrderDto> Items, int Total)> GetOrdersForAdminAsync(string? searchTerm, string? status, string? dateRange, int page, int pageSize, DateTime? startDate = null, DateTime? endDate = null, string? sort = null, string? sortDir = "desc")
+    public async Task<(IReadOnlyList<OrderDto> Items, int Total)> GetOrdersForAdminAsync(string? searchTerm, string? status, string? dateRange, int page, int pageSize)
     {
-        pageSize = Math.Min(pageSize, 100);
-        var spec = new OrdersWithFiltersForAdminSpecification(searchTerm, status, dateRange, startDate, endDate, sort, sortDir);
+        var spec = new OrdersWithFiltersForAdminSpecification(searchTerm, status, dateRange);
         var total = await _unitOfWork.Repository<Order>().CountAsync(spec);
         
         spec.ApplyPaging(pageSize * (page - 1), pageSize);

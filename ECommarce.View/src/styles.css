@@ -1,10 +1,27 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
-@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap");
-@import 'quill/dist/quill.snow.css';
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root {
+  /* RGB values for Tailwind opacity support (space-separated) */
+  --color-primary-rgb: 26 35 50;
+  --color-accent-rgb: 232 115 95;
+  --color-supporting-rgb: 244 241 234;
+  --color-surface-rgb: 255 255 255;
+
+  /* Semantic variables */
+  --color-primary: rgb(var(--color-primary-rgb));
+  --color-primary-light: #2d3b4e;
+  --color-accent: rgb(var(--color-accent-rgb));
+  --color-accent-light: #f09485;
+  --color-secondary: #ffffff;
+  --color-supporting: rgb(var(--color-supporting-rgb));
+  --color-background-light: #ffffff;
+  --color-background-dark: #1a2332;
+  --color-text-main: #1a2332;
+  --color-text-sub: #64748b;
+  --color-border: #d8d2c2;
+}
 
 /* Luxury Minimalist Enhancements */
 @layer base {
@@ -13,19 +30,8 @@
   }
 
   body {
-    @apply font-sans antialiased text-text-main bg-white m-0 p-0;
+    @apply font-sans antialiased text-text-main bg-white;
     animation: fadeIn 1.2s ease-out;
-  }
-  
-  * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-  }
-  
-  html, body {
-    height: 100%;
-    overflow-x: hidden;
   }
 
   h1,
@@ -34,7 +40,7 @@
   h4,
   h5,
   h6 {
-    @apply font-serif tracking-tight leading-tight;
+    @apply font-display font-black uppercase tracking-tighter leading-none;
   }
 
   /* Custom Scrollbar */
@@ -43,7 +49,7 @@
   }
 
   ::-webkit-scrollbar-track {
-    @apply bg-gray-100;
+    @apply bg-supporting;
   }
 
   ::-webkit-scrollbar-thumb {
@@ -165,48 +171,81 @@
   }
 
   .site-container {
-    @apply max-w-[1920px] mx-auto px-6 md:px-12 lg:px-20;
+    @apply w-full max-w-[1600px] mx-auto px-3 sm:px-4 md:px-6 lg:px-8 xl:px-10;
   }
 }
 
-/* QUILL EDITOR GLOBAL STYLES */
-.ql-editor {
-  padding: 0 !important;
-  text-align: left;
-  font-size: inherit;
+/* Quill Editor Customizations for Arza Admin */
+.arza-quill-wrapper {
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  display: flex;
+  flex-direction: column;
+}
+
+.dark .arza-quill-wrapper {
+  background: #0f172a;
+  border-color: #334155;
+}
+
+.arza-quill-wrapper:focus-within {
+  border-color: #2a3342;
+  box-shadow: 0 0 0 2px rgba(42, 51, 66, 0.1);
+}
+
+.arza-quill-wrapper .ql-toolbar.ql-snow {
+  border: none;
+  border-bottom: 1px solid #e2e8f0;
+  background: #f8fafc;
+  padding: 8px 12px;
+}
+
+.dark .arza-quill-wrapper .ql-toolbar.ql-snow {
+  border-color: #334155;
+  background: #1e293b;
+}
+
+.dark .arza-quill-wrapper .ql-toolbar .ql-stroke {
+  stroke: #94a3b8;
+}
+
+.dark .arza-quill-wrapper .ql-toolbar .ql-fill {
+  fill: #94a3b8;
+}
+
+.dark .arza-quill-wrapper .ql-toolbar .ql-picker {
+  color: #94a3b8;
+}
+
+.arza-quill-wrapper .ql-container.ql-snow {
+  border: none;
+  min-height: 180px;
+  max-height: 500px;
+  overflow-y: auto;
   font-family: inherit;
-  color: inherit;
-  line-height: inherit;
+  font-size: 0.95rem;
 }
 
-.ql-editor ol {
-  list-style: decimal !important;
-  padding-left: 1.5em !important;
-  margin: 1em 0 !important;
+.arza-quill-wrapper .ql-editor {
+  padding: 16px;
+  line-height: 1.6;
 }
 
-.ql-editor ul {
-  list-style: disc !important;
-  padding-left: 1.5em !important;
-  margin: 1em 0 !important;
+.dark .arza-quill-wrapper .ql-editor {
+  color: #f1f5f9;
 }
 
-.ql-editor li {
-  margin-bottom: 0.5em !important;
-  list-style: inherit !important;
+.arza-quill-wrapper .ql-editor.ql-blank::before {
+  color: #94a3b8;
+  font-style: normal;
+  left: 16px;
 }
 
-.ql-editor p {
-  margin-bottom: 0.8em !important;
-}
-
-.ql-editor h1, .ql-editor h2, .ql-editor h3, .ql-editor h4 {
-  margin-top: 1.2em !important;
-  margin-bottom: 0.5em !important;
-  font-weight: bold !important;
-}
-
-.ql-editor a {
-  color: #1a73e8 !important;
-  text-decoration: underline !important;
+/* Ensure the editor itself is visible */
+quill-editor {
+  display: block;
+  width: 100%;
 }

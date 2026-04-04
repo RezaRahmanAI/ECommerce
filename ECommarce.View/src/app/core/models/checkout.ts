@@ -4,7 +4,6 @@ export interface CheckoutState {
   address: string;
   city?: string;
   area?: string;
-  deliveryDetails: string;
   deliveryMethodId?: number;
 }
 

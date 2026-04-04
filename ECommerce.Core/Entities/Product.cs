@@ -1,25 +1,22 @@
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
+using ECommerce.Core.Enums;
 
 namespace ECommerce.Core.Entities;
 
 public class Product : BaseEntity
 {
-    public string Name { get; set; }
-    public string Slug { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public string Slug { get; set; } = string.Empty;
     public string? Description { get; set; }
     public string? ShortDescription { get; set; }
-    public string Sku { get; set; }
+    public string Sku { get; set; } = string.Empty;
     public string? ImageUrl { get; set; } // Main image URL for quick access
-    public decimal Price { get; set; }
-    public decimal? CompareAtPrice { get; set; } // Renamed from SalePrice to match usage
-    public decimal? PurchaseRate { get; set; }
     public int StockQuantity { get; set; } // Renamed from Stock
     public bool IsActive { get; set; } = true;
+    public ProductType ProductType { get; set; } = ProductType.Simple;
 
     public bool IsNew { get; set; } = false;
     public bool IsFeatured { get; set; } = false;
-    public bool IsItemProduct { get; set; } = true;
     
     // Meta Info
     public string? MetaTitle { get; set; }
@@ -35,7 +32,7 @@ public class Product : BaseEntity
 
     // Foreign Keys
     public int CategoryId { get; set; }
-    public Category Category { get; set; }
+    public Category? Category { get; set; }
 
     public int? SubCategoryId { get; set; }
     public SubCategory? SubCategory { get; set; }
@@ -46,4 +43,8 @@ public class Product : BaseEntity
     public ICollection<ProductImage> Images { get; set; } = new List<ProductImage>();
     public ICollection<ProductVariant> Variants { get; set; } = new List<ProductVariant>();
     public ICollection<Review> Reviews { get; set; } = new List<Review>();
+
+    // Simplified Bundle System
+    public bool IsBundle { get; set; } = false;
+    public int BundleQuantity { get; set; } = 1;
 }

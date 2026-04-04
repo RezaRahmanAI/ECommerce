@@ -21,9 +21,16 @@ public class BannersController : ControllerBase
     }
 
     [HttpGet]
-    [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
+    [ResponseCache(Duration = 300)]
     public async Task<ActionResult<List<HeroBannerDto>>> GetActiveBanners()
     {
+        const string cacheKey = "banners_active";
+
+        if (_cache.TryGetValue(cacheKey, out List<HeroBannerDto>? cached) && cached != null)
+        {
+            return Ok(cached);
+        }
+
         var spec = new HeroBannerSpecification(isActive: true);
         var banners = await _bannerRepo.ListAsync(spec);
 
@@ -36,9 +43,11 @@ public class BannersController : ControllerBase
             MobileImageUrl = b.MobileImageUrl ?? "",
             LinkUrl = b.LinkUrl ?? "",
             ButtonText = b.ButtonText ?? "",
-            DisplayOrder = b.DisplayOrder
+            DisplayOrder = b.DisplayOrder,
+            Type = b.Type
         }).ToList();
 
+        _cache.Set(cacheKey, bannerDtos, new MemoryCacheEntryOptions { Size = 1, AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10) });
         return Ok(bannerDtos);
     }
 }

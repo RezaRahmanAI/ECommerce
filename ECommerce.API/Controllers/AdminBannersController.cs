@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.AspNetCore.OutputCaching;
 
 namespace ECommerce.API.Controllers;
 
@@ -15,19 +16,24 @@ public class AdminBannersController : ControllerBase
 {
     private readonly ApplicationDbContext _context;
     private readonly IWebHostEnvironment _environment;
+    private readonly IConfiguration _config;
     private readonly IMemoryCache _cache;
+    private readonly IOutputCacheStore _cacheStore;
 
-    public AdminBannersController(ApplicationDbContext context, IWebHostEnvironment environment, IMemoryCache cache)
+    public AdminBannersController(ApplicationDbContext context, IWebHostEnvironment environment, IConfiguration config, IMemoryCache cache, IOutputCacheStore cacheStore)
     {
         _context = context;
         _environment = environment;
+        _config = config;
         _cache = cache;
+        _cacheStore = cacheStore;
     }
 
     [HttpGet]
     public async Task<ActionResult<List<HeroBannerDto>>> GetAllBanners()
     {
         var banners = await _context.HeroBanners
+            .AsNoTracking()
             .OrderBy(b => b.DisplayOrder)
             .Select(b => new HeroBannerDto
             {
@@ -38,7 +44,8 @@ public class AdminBannersController : ControllerBase
                 MobileImageUrl = b.MobileImageUrl ?? "",
                 LinkUrl = b.LinkUrl ?? "",
                 ButtonText = b.ButtonText ?? "",
-                DisplayOrder = b.DisplayOrder
+                DisplayOrder = b.DisplayOrder,
+                Type = b.Type
             })
             .ToListAsync();
 
@@ -48,7 +55,7 @@ public class AdminBannersController : ControllerBase
     [HttpGet("{id}")]
     public async Task<ActionResult<HeroBannerDto>> GetBannerById(int id)
     {
-        var banner = await _context.HeroBanners.FindAsync(id);
+        var banner = await _context.HeroBanners.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id);
         if (banner == null) return NotFound();
 
         return Ok(new HeroBannerDto
@@ -60,7 +67,8 @@ public class AdminBannersController : ControllerBase
             MobileImageUrl = banner.MobileImageUrl ?? "",
             LinkUrl = banner.LinkUrl ?? "",
             ButtonText = banner.ButtonText ?? "",
-            DisplayOrder = banner.DisplayOrder
+            DisplayOrder = banner.DisplayOrder,
+            Type = banner.Type
         });
     }
 
@@ -76,12 +84,14 @@ public class AdminBannersController : ControllerBase
             LinkUrl = dto.LinkUrl,
             ButtonText = dto.ButtonText,
             DisplayOrder = dto.DisplayOrder,
-            IsActive = dto.IsActive
+            IsActive = dto.IsActive,
+            Type = dto.Type
         };
 
         _context.HeroBanners.Add(banner);
         await _context.SaveChangesAsync();
-        _cache.Remove("ActiveBanners");
+
+        _cache.Remove("home_banners");
 
         return CreatedAtAction(nameof(GetBannerById), new { id = banner.Id }, new HeroBannerDto
         {
@@ -92,7 +102,8 @@ public class AdminBannersController : ControllerBase
             MobileImageUrl = banner.MobileImageUrl ?? "",
             LinkUrl = banner.LinkUrl ?? "",
             ButtonText = banner.ButtonText ?? "",
-            DisplayOrder = banner.DisplayOrder
+            DisplayOrder = banner.DisplayOrder,
+            Type = banner.Type
         });
     }
 
@@ -110,10 +121,11 @@ public class AdminBannersController : ControllerBase
         banner.ButtonText = dto.ButtonText;
         banner.DisplayOrder = dto.DisplayOrder;
         banner.IsActive = dto.IsActive;
+        banner.Type = dto.Type;
         banner.UpdatedAt = DateTime.UtcNow;
 
         await _context.SaveChangesAsync();
-        _cache.Remove("ActiveBanners");
+        _cache.Remove("home_banners");
 
         return Ok(new HeroBannerDto
         {
@@ -124,7 +136,8 @@ public class AdminBannersController : ControllerBase
             MobileImageUrl = banner.MobileImageUrl ?? "",
             LinkUrl = banner.LinkUrl ?? "",
             ButtonText = banner.ButtonText ?? "",
-            DisplayOrder = banner.DisplayOrder
+            DisplayOrder = banner.DisplayOrder,
+            Type = banner.Type
         });
     }
 
@@ -136,7 +149,8 @@ public class AdminBannersController : ControllerBase
 
         _context.HeroBanners.Remove(banner);
         await _context.SaveChangesAsync();
-        _cache.Remove("ActiveBanners");
+
+        _cache.Remove("home_banners");
 
         return NoContent();
     }
@@ -147,7 +161,8 @@ public class AdminBannersController : ControllerBase
         if (file == null || file.Length == 0)
             return BadRequest("No file uploaded");
 
-        var uploadsFolder = Path.Combine(_environment.WebRootPath, "uploads", "banners");
+        var externalPath = _config["ExternalMediaPath"] ?? Path.Combine(_environment.ContentRootPath, "wwwroot", "uploads");
+        var uploadsFolder = Path.Combine(externalPath, "banners");
         Directory.CreateDirectory(uploadsFolder);
 
         var fileExtension = Path.GetExtension(file.FileName);

@@ -76,7 +76,7 @@ export class ProductsService {
   }
 
   deleteProduct(productId: number): Observable<boolean> {
-    return this.api.post<boolean>(`/admin/products/${productId}/delete`, {}).pipe(
+    return this.api.delete<boolean>(`/admin/products/${productId}`).pipe(
       map((success) => {
         if (success) {
           this.updateCatalogSnapshot((products) =>
@@ -130,6 +130,10 @@ export class ProductsService {
     const formData = new FormData();
     files.forEach((file) => formData.append("files", file));
     return this.api.post<string[]>("/admin/products/upload-media", formData);
+  }
+
+  getAvailableSizes(): Observable<string[]> {
+    return this.api.get<string[]>("/admin/products/available-sizes");
   }
 
   removeProductMedia(productId: number, mediaUrl: string): Observable<boolean> {

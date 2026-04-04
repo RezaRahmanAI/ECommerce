@@ -1,9 +1,12 @@
+using ECommerce.Core.Interfaces;
 using ECommerce.Core.DTOs;
 using ECommerce.Core.Entities;
 using ECommerce.Infrastructure.Data;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.AspNetCore.OutputCaching;
 
 namespace ECommerce.API.Controllers;
 
@@ -14,17 +17,24 @@ public class AdminCategoryController : ControllerBase
 {
     private readonly ApplicationDbContext _context;
     private readonly IWebHostEnvironment _environment;
+    private readonly IConfiguration _config;
+    private readonly ICacheService _cache;
+    private readonly IOutputCacheStore _cacheStore;
 
-    public AdminCategoryController(ApplicationDbContext context, IWebHostEnvironment environment)
+    public AdminCategoryController(ApplicationDbContext context, IWebHostEnvironment environment, IConfiguration config, ICacheService cache, IOutputCacheStore cacheStore)
     {
         _context = context;
         _environment = environment;
+        _config = config;
+        _cache = cache;
+        _cacheStore = cacheStore;
     }
 
     [HttpGet]
     public async Task<ActionResult<List<CategoryDto>>> GetAllCategories()
     {
         var categories = await _context.Categories
+            .AsNoTracking()
             .Include(c => c.SubCategories)
             .ThenInclude(sc => sc.Collections)
             .OrderBy(c => c.DisplayOrder)
@@ -65,6 +75,7 @@ public class AdminCategoryController : ControllerBase
     public async Task<ActionResult<CategoryDto>> GetCategoryById(int id)
     {
         var category = await _context.Categories
+            .AsNoTracking()
             .Include(c => c.Products)
             .FirstOrDefaultAsync(c => c.Id == id);
 
@@ -95,7 +106,8 @@ public class AdminCategoryController : ControllerBase
             if (file == null || file.Length == 0)
                 return BadRequest("No file uploaded");
 
-            var uploadsFolder = Path.Combine(_environment.WebRootPath, "uploads", "categories");
+            var externalPath = _config["ExternalMediaPath"] ?? Path.Combine(_environment.ContentRootPath, "wwwroot", "uploads");
+            var uploadsFolder = Path.Combine(externalPath, "categories");
             if (!Directory.Exists(uploadsFolder))
             {
                 Directory.CreateDirectory(uploadsFolder);
@@ -143,6 +155,9 @@ public class AdminCategoryController : ControllerBase
 
         _context.Categories.Add(category);
         await _context.SaveChangesAsync();
+
+        await InvalidateCategoryCacheAsync();
+        await _cacheStore.EvictByTagAsync("categories", default);
 
         var result = new CategoryDto
         {
@@ -204,6 +219,9 @@ public class AdminCategoryController : ControllerBase
         }
 
         await _context.SaveChangesAsync();
+        
+        await InvalidateCategoryCacheAsync();
+        await _cacheStore.EvictByTagAsync("categories", default);
 
         var result = new CategoryDto
         {
@@ -221,38 +239,25 @@ public class AdminCategoryController : ControllerBase
     }
 
     [HttpPost("{id}/delete")]
-    public async Task<ActionResult<bool>> DeleteCategory(int id)
+    public async Task<ActionResult> DeleteCategory(int id)
     {
-        try
+        var category = await _context.Categories.FindAsync(id);
+        if (category == null)
+            return NotFound();
+
+        // Delete image if exists
+        if (!string.IsNullOrEmpty(category.ImageUrl))
         {
-            var category = await _context.Categories.FindAsync(id);
-            if (category == null)
-                return NotFound();
-
-            // Check if category has subcategories or products
-            var hasDependencies = await _context.Products.AnyAsync(p => p.CategoryId == id) ||
-                                 await _context.SubCategories.AnyAsync(sc => sc.CategoryId == id);
-            
-            if (hasDependencies)
-            {
-                return BadRequest(new { message = "Cannot delete category because it has associated products or subcategories." });
-            }
-
-            // Delete image if exists
-            if (!string.IsNullOrEmpty(category.ImageUrl))
-            {
-                DeleteImage(category.ImageUrl);
-            }
-
-            _context.Categories.Remove(category);
-            await _context.SaveChangesAsync();
-
-            return Ok(true);
+            DeleteImage(category.ImageUrl);
         }
-        catch (Exception ex)
-        {
-            return StatusCode(500, new { message = "An error occurred while deleting the category: " + ex.Message });
-        }
+
+        _context.Categories.Remove(category);
+        await _context.SaveChangesAsync();
+
+        await InvalidateCategoryCacheAsync();
+        await _cacheStore.EvictByTagAsync("categories", default);
+
+        return NoContent();
     }
 
     [HttpPost("reorder")]
@@ -274,13 +279,18 @@ public class AdminCategoryController : ControllerBase
         }
 
         await _context.SaveChangesAsync();
+        
+        await InvalidateCategoryCacheAsync();
+        await _cacheStore.EvictByTagAsync("categories", default);
+
         return Ok(true);
     }
 
     private async Task<string> SaveImageAsync(IFormFile image)
     {
         // Create uploads directory if it doesn't exist
-        var uploadsFolder = Path.Combine(_environment.WebRootPath, "uploads", "categories");
+        var externalPath = _config["ExternalMediaPath"] ?? Path.Combine(_environment.ContentRootPath, "wwwroot", "uploads");
+        var uploadsFolder = Path.Combine(externalPath, "categories");
         Directory.CreateDirectory(uploadsFolder);
 
         // Generate unique filename
@@ -303,7 +313,8 @@ public class AdminCategoryController : ControllerBase
         try
         {
             var fileName = Path.GetFileName(imageUrl);
-            var filePath = Path.Combine(_environment.WebRootPath, "uploads", "categories", fileName);
+            var externalPath = _config["ExternalMediaPath"] ?? Path.Combine(_environment.ContentRootPath, "wwwroot", "uploads");
+            var filePath = Path.Combine(externalPath, "categories", fileName);
             if (System.IO.File.Exists(filePath))
             {
                 System.IO.File.Delete(filePath);
@@ -313,6 +324,13 @@ public class AdminCategoryController : ControllerBase
         {
             // Log error but don't fail the request
         }
+    }
+
+    private async Task InvalidateCategoryCacheAsync()
+    {
+        await _cache.RemoveAsync("home_categories");
+        await _cache.RemoveAsync("nav:mega-menu");
+        await _cache.RemoveByPrefixAsync("product:list");
     }
 
     private static string GenerateSlug(string name)

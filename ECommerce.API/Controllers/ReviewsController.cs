@@ -19,16 +19,13 @@ public class ReviewsController : BaseApiController
     }
 
     [HttpGet("products/{productId}")]
-    [ResponseCache(Duration = 60, VaryByQueryKeys = new[] { "productId" })]
-    public async Task<ActionResult<PaginatedReviewsDto>> GetReviews(int productId, [FromQuery] int pageIndex = 1, [FromQuery] int pageSize = 10)
+    public async Task<ActionResult<IEnumerable<ReviewDto>>> GetReviews(int productId)
     {
-        pageSize = Math.Min(pageSize, 50);
-        var reviews = await _reviewService.GetReviewsByProductIdAsync(productId, pageIndex, pageSize);
-        return Ok(reviews);
+        var reviews = await _reviewService.GetReviewsByProductIdAsync(productId);
+        return Ok(_mapper.Map<IEnumerable<ReviewDto>>(reviews));
     }
 
     [HttpGet("featured")]
-    [ResponseCache(Duration = 300, VaryByHeader = "Accept-Encoding")]
     public async Task<ActionResult<IEnumerable<ReviewDto>>> GetFeaturedReviews()
     {
         try 

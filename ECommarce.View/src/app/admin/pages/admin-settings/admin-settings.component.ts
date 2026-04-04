@@ -65,17 +65,23 @@ export class AdminSettingsComponent implements OnInit {
 
   settingsForm = this.formBuilder.group({
     websiteName: ["", Validators.required],
-    logoUrl: [""],
-    contactEmail: ["", [Validators.email]],
+    contactEmail: ["", [Validators.required, Validators.email]],
     contactPhone: [""],
+    address: [""],
     facebookUrl: [""],
     instagramUrl: [""],
     twitterUrl: [""],
     youtubeUrl: [""],
     whatsAppNumber: [""],
-    freeShippingThreshold: [0, Validators.required],
+    currency: ["BDT"],
+    description: [""],
+    freeShippingThreshold: [0],
     facebookPixelId: [""],
     googleTagId: [""],
+    payments: this.formBuilder.group({
+      stripeEnabled: [false],
+      paypalEnabled: [false],
+    }),
   });
 
   zoneForm = this.formBuilder.group({
@@ -90,8 +96,11 @@ export class AdminSettingsComponent implements OnInit {
   stripePublishableKey = "";
   logoPreviewUrl: string | null = null;
   logoError = "";
+  sizeGuidePreviewUrl: string | null = null;
+  sizeGuideError = "";
   saveMessage = "";
-  isSaveError = false;
+  saveError = "";
+  isSaving = false;
 
   showZoneForm = false;
   editingZoneId: number | null = null;
@@ -126,29 +135,41 @@ export class AdminSettingsComponent implements OnInit {
         );
       }
 
+      if (settings.sizeGuideImageUrl) {
+        this.sizeGuidePreviewUrl = this.imageUrlService.getImageUrl(
+          settings.sizeGuideImageUrl,
+        );
+      }
+
       this.settingsForm.patchValue({
         websiteName: settings.websiteName,
-        logoUrl: settings.logoUrl,
         contactEmail: settings.contactEmail,
         contactPhone: settings.contactPhone,
+        address: settings.address,
         facebookUrl: settings.facebookUrl,
         instagramUrl: settings.instagramUrl,
         twitterUrl: settings.twitterUrl,
         youtubeUrl: settings.youtubeUrl,
         whatsAppNumber: settings.whatsAppNumber,
+        currency: settings.currency,
+        description: settings.description,
         freeShippingThreshold: settings.freeShippingThreshold,
         facebookPixelId: settings.facebookPixelId,
         googleTagId: settings.googleTagId,
+        payments: {
+          stripeEnabled: settings.stripeEnabled || false,
+          paypalEnabled: settings.paypalEnabled || false,
+        },
       });
     });
   }
 
   get stripeEnabled(): boolean {
-    return !!this.lastSettings?.stripeEnabled;
+    return this.settingsForm.controls.payments.controls.stripeEnabled.value;
   }
 
   get paypalEnabled(): boolean {
-    return !!this.lastSettings?.paypalEnabled;
+    return this.settingsForm.controls.payments.controls.paypalEnabled.value;
   }
 
   setActiveTab(tab: string): void {
@@ -157,27 +178,37 @@ export class AdminSettingsComponent implements OnInit {
 
   saveChanges(): void {
     this.saveMessage = "";
-    this.isSaveError = false;
 
     if (this.settingsForm.invalid) {
       this.settingsForm.markAllAsTouched();
+      const invalidFields: string[] = [];
+      Object.keys(this.settingsForm.controls).forEach((key) => {
+        if (this.settingsForm.get(key)?.invalid) invalidFields.push(key);
+      });
+      window.alert(
+        `Please fill in all required fields: ${invalidFields.join(", ")}`,
+      );
       return;
     }
 
     const formValue = this.settingsForm.getRawValue();
     const payload: AdminSettings = {
       websiteName: formValue.websiteName,
-      logoUrl: formValue.logoUrl,
+      logoUrl: this.lastSettings?.logoUrl, // Preserved unless updated via upload
+      sizeGuideImageUrl: this.lastSettings?.sizeGuideImageUrl,
       contactEmail: formValue.contactEmail,
       contactPhone: formValue.contactPhone,
+      address: formValue.address,
       facebookUrl: formValue.facebookUrl,
       instagramUrl: formValue.instagramUrl,
       twitterUrl: formValue.twitterUrl,
       youtubeUrl: formValue.youtubeUrl,
       whatsAppNumber: formValue.whatsAppNumber,
+      currency: formValue.currency,
+      description: formValue.description,
       freeShippingThreshold: formValue.freeShippingThreshold,
-      stripeEnabled: this.lastSettings?.stripeEnabled,
-      paypalEnabled: this.lastSettings?.paypalEnabled,
+      stripeEnabled: formValue.payments.stripeEnabled,
+      paypalEnabled: formValue.payments.paypalEnabled,
       stripePublishableKey: this.stripePublishableKey,
       shippingZones: [...this.shippingZones],
       deliveryMethods: [...this.deliveryMethods],
@@ -185,18 +216,24 @@ export class AdminSettingsComponent implements OnInit {
       googleTagId: formValue.googleTagId,
     };
 
+    this.isSaving = true;
+    this.saveMessage = "";
+    this.saveError = "";
+
     this.settingsService.saveSettings(payload).subscribe({
       next: (settings) => {
-        this.saveMessage = "Settings saved successfully.";
-        this.isSaveError = false;
+        this.isSaving = false;
+        this.saveMessage = "Settings saved successfully!";
         this.lastSettings = settings;
         this.shippingZones = settings.shippingZones || [];
         this.deliveryMethods = settings.deliveryMethods || [];
+        setTimeout(() => (this.saveMessage = ""), 3000);
       },
       error: (err) => {
-        console.error("Failed to save settings", err);
-        this.saveMessage = "Failed to save settings. Please try again.";
-        this.isSaveError = true;
+        this.isSaving = false;
+        this.saveError = "Failed to save settings. Please try again.";
+        console.error("Save settings failed", err);
+        setTimeout(() => (this.saveError = ""), 5000);
       },
     });
   }
@@ -208,17 +245,22 @@ export class AdminSettingsComponent implements OnInit {
 
     this.settingsForm.reset({
       websiteName: this.lastSettings.websiteName,
-      logoUrl: this.lastSettings.logoUrl,
       contactEmail: this.lastSettings.contactEmail,
       contactPhone: this.lastSettings.contactPhone,
+      address: this.lastSettings.address,
       facebookUrl: this.lastSettings.facebookUrl,
       instagramUrl: this.lastSettings.instagramUrl,
       twitterUrl: this.lastSettings.twitterUrl,
       youtubeUrl: this.lastSettings.youtubeUrl,
       whatsAppNumber: this.lastSettings.whatsAppNumber,
-      freeShippingThreshold: this.lastSettings.freeShippingThreshold,
+      currency: this.lastSettings.currency,
+      description: this.lastSettings.description,
       facebookPixelId: this.lastSettings.facebookPixelId,
       googleTagId: this.lastSettings.googleTagId,
+      payments: {
+        stripeEnabled: this.lastSettings.stripeEnabled || false,
+        paypalEnabled: this.lastSettings.paypalEnabled || false,
+      },
     });
 
     this.shippingZones = this.lastSettings.shippingZones || [];
@@ -259,12 +301,49 @@ export class AdminSettingsComponent implements OnInit {
         if (this.lastSettings) {
           this.lastSettings.logoUrl = res.url;
         }
-        this.settingsForm.patchValue({ logoUrl: res.url });
+        // Update form or just preview? Form doesn't have logoUrl control explicitly binding to anything relevant for submit (except preservation),
+        // but we updated lastSettings.logoUrl so saveChanges() picks it up.
         this.logoPreviewUrl = this.imageUrlService.getImageUrl(res.url);
       },
       error: (err) => {
         console.error("Logo upload failed", err);
         this.logoError = "Failed to upload logo.";
+      },
+    });
+  }
+
+  onSizeGuideSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+
+    if (!file) {
+      return;
+    }
+
+    const isValidType = ["image/png", "image/jpeg", "image/gif"].includes(
+      file.type,
+    );
+    const isValidSize = file.size <= 5 * 1024 * 1024; // Allow up to 5MB for size guide
+
+    if (!isValidType || !isValidSize) {
+      this.sizeGuideError = "Please upload a PNG, JPG, or GIF file up to 5MB.";
+      this.sizeGuidePreviewUrl = null;
+      input.value = "";
+      return;
+    }
+
+    this.sizeGuideError = "";
+
+    this.settingsService.uploadLogo(file).subscribe({
+      next: (res) => {
+        if (this.lastSettings) {
+          this.lastSettings.sizeGuideImageUrl = res.url;
+        }
+        this.sizeGuidePreviewUrl = this.imageUrlService.getImageUrl(res.url);
+      },
+      error: (err) => {
+        console.error("Size Guide upload failed", err);
+        this.sizeGuideError = "Failed to upload Size Guide.";
       },
     });
   }
@@ -302,6 +381,13 @@ export class AdminSettingsComponent implements OnInit {
   saveZone(): void {
     if (this.zoneForm.invalid) {
       this.zoneForm.markAllAsTouched();
+      const invalidFields: string[] = [];
+      Object.keys(this.zoneForm.controls).forEach((key) => {
+        if (this.zoneForm.get(key)?.invalid) invalidFields.push(key);
+      });
+      window.alert(
+        `Please fill in all required fields: ${invalidFields.join(", ")}`,
+      );
       return;
     }
 
@@ -387,6 +473,13 @@ export class AdminSettingsComponent implements OnInit {
   saveDelivery(): void {
     if (this.deliveryForm.invalid) {
       this.deliveryForm.markAllAsTouched();
+      const invalidFields: string[] = [];
+      Object.keys(this.deliveryForm.controls).forEach((key) => {
+        if (this.deliveryForm.get(key)?.invalid) invalidFields.push(key);
+      });
+      window.alert(
+        `Please fill in all required fields: ${invalidFields.join(", ")}`,
+      );
       return;
     }
 

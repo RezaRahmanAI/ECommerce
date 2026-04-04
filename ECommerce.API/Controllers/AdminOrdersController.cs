@@ -25,30 +25,22 @@ public class AdminOrdersController : ControllerBase
         [FromQuery] string? searchTerm,
         [FromQuery] string? status,
         [FromQuery] string? dateRange,
-        [FromQuery] DateTime? startDate,
-        [FromQuery] DateTime? endDate,
         [FromQuery] int page = 1,
-        [FromQuery] int pageSize = 10,
-        [FromQuery] string? sort = "date",
-        [FromQuery] string? sortDir = "desc")
+        [FromQuery] int pageSize = 10)
     {
-        var (items, total) = await _orderService.GetOrdersForAdminAsync(searchTerm, status, dateRange, page, pageSize, startDate, endDate, sort, sortDir);
+        var (items, total) = await _orderService.GetOrdersForAdminAsync(searchTerm, status, dateRange, page, pageSize);
         // Ensure properties are lowercase to match frontend expectations if JSON serialization doesn't do it automatically
         return Ok(new { items, total });
     }
- 
+
     [HttpGet("filtered")]
     public async Task<ActionResult<IEnumerable<OrderDto>>> GetFilteredOrders(
         [FromQuery] string? searchTerm,
         [FromQuery] string? status,
-        [FromQuery] string? dateRange,
-        [FromQuery] DateTime? startDate,
-        [FromQuery] DateTime? endDate,
-        [FromQuery] string? sort = "date",
-        [FromQuery] string? sortDir = "desc")
+        [FromQuery] string? dateRange)
     {
         // Fetch all matching orders for stats calculation (page 1, max size)
-        var (items, _) = await _orderService.GetOrdersForAdminAsync(searchTerm, status, dateRange, 1, 100000, startDate, endDate, sort, sortDir);
+        var (items, _) = await _orderService.GetOrdersForAdminAsync(searchTerm, status, dateRange, 1, 100000);
         return Ok(items);
     }
 

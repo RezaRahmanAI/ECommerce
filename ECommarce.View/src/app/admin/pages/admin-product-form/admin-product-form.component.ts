@@ -1,6 +1,5 @@
 import { CommonModule } from "@angular/common";
-import { QuillModule } from 'ngx-quill';
-import { Component, OnDestroy, inject, ElementRef, ViewChild } from "@angular/core";
+import { Component, OnDestroy, inject } from "@angular/core";
 import {
   AbstractControl,
   FormArray,
@@ -16,15 +15,15 @@ import {
   ProductCreatePayload,
   AdminProduct,
 } from "../../models/products.models";
-import { ProductImage } from "../../../core/models/product";
+import { ProductImage, ProductType } from "../../../core/models/product";
 import { ProductsService } from "../../services/products.service";
-import { AdminLandingPageService } from "../../services/admin-landing-page.service";
 import { CategoriesService } from "../../services/categories.service";
 import {
   Category,
   SubCategory,
   Collection,
 } from "../../models/categories.models";
+import { PriceDisplayComponent } from "../../../shared/components/price-display/price-display.component";
 import { ImageUrlService } from "../../../core/services/image-url.service";
 import {
   LucideAngularModule,
@@ -39,8 +38,7 @@ import {
   PlayCircle,
   PlusCircle,
   Eye,
-  ImagePlus,
-  Trash2
+  ChevronDown
 } from "lucide-angular";
 
 interface MediaFormValue {
@@ -61,9 +59,12 @@ interface MediaFormValue {
     CommonModule,
     ReactiveFormsModule,
     RouterModule,
+    PriceDisplayComponent,
     LucideAngularModule,
-    QuillModule,
   ],
+  host: {
+    '(document:click)': 'onDocumentClick($event)'
+  },
   templateUrl: "./admin-product-form.component.html",
 })
 export class AdminProductFormComponent implements OnDestroy {
@@ -79,8 +80,7 @@ export class AdminProductFormComponent implements OnDestroy {
     PlayCircle,
     PlusCircle,
     Eye,
-    ImagePlus,
-    Trash2
+    ChevronDown
   };
   private formBuilder = inject(FormBuilder);
   private productsService = inject(ProductsService);
@@ -88,63 +88,94 @@ export class AdminProductFormComponent implements OnDestroy {
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   public imageUrlService = inject(ImageUrlService);
-  private landingPageService = inject(AdminLandingPageService);
 
   // Mode detection
   isEditMode = false;
   productId: number | null = null;
   pageTitle = "Create Product";
 
+  categories: Category[] = [];
+  subCategories: SubCategory[] = [];
+  collections: Collection[] = [];
+
+  // Flattened for easy access if needed, but we used filtered lists
+  filteredSubCategories: SubCategory[] = [];
+  filteredCollections: Collection[] = [];
+
+  // Predefined standard sizes
+  readonly standardSizes = [
+    "XS",
+    "S",
+    "M",
+    "L",
+    "XL",
+    "XXL",
+    "2XL",
+    "3XL",
+    "4XL",
+    "5XL",
+    "28",
+    "30",
+    "32",
+    "34",
+    "36",
+    "38",
+    "40",
+    "42",
+    "44",
+    "46",
+    "Free Size",
+  ];
+  dynamicSizes: string[] = [];
+  allAvailableSizes: string[] = [...this.standardSizes];
+
+  // No longer using complex ratings/meta objects in the new DTO
+
   mediaError = "";
   private mediaFileMap = new Map<string, File>();
-  @ViewChild("descriptionArea")
-  descriptionArea!: ElementRef<HTMLTextAreaElement>;
+
+  openSizeDropdownIndex: number | null = null;
 
   form = this.formBuilder.group(
     {
       name: ["", [Validators.required, Validators.minLength(3)]],
+      description: ["", [Validators.required]],
+      shortDescription: [""],
       statusActive: [true],
-      category: ["", []],
+      category: ["", [Validators.required]],
+      subCategory: [""],
+      collection: [""],
       gender: ["women"],
-      price: [0, [Validators.required, Validators.min(0.01)]],
-      salePrice: [null as number | null, [Validators.min(0.01)]],
+      price: [0, [Validators.required, Validators.min(0)]],
+      salePrice: [null as number | null, [Validators.min(0)]],
       purchaseRate: [0],
 
-      isItemProduct: [true],
+      newArrival: [false],
+      isFeatured: [false],
+
+      tier: [""],
+      tags: [""],
+      sortOrder: [0, [Validators.min(0)]],
       mediaFiles: [[] as File[]],
       mediaItems: this.formBuilder.array([]),
       variants: this.formBuilder.group({
         colors: this.formBuilder.array([this.createColorGroup(true)]),
         sizes: this.formBuilder.array([this.createSizeGroup(true)]),
       }),
-      landingPage: this.formBuilder.group({
-        headline: [""],
-        subtitle: [""],
-        videoUrl: [""],
-        themeColor: ["#1a1a1a"],
-        benefitsTitle: ["লুব্রিকেন্ট জেল ব্যবহারের সুবিধাঃ"],
-        benefitsContent: [""],
-        reviewsTitle: ["কাস্টমার রিভিউ"],
-        sideEffectsTitle: ["পার্শ্বপ্রতিক্রিয়াঃ"],
-        sideEffectsContent: [""],
-        usageTitle: ["ব্যবহারের নিয়মঃ"],
-        usageContent: [""],
+      meta: this.formBuilder.group({
+        fabricAndCare: [""],
+        shippingAndReturns: [""],
       }),
+      productType: [ProductType.Simple],
+      bundleItems: this.formBuilder.array([]),
+      isBundle: [false],
+      bundleQuantity: [1, [Validators.min(1)]],
     },
     { validators: [this.salePriceValidator] },
   );
 
-  quillModules = {
-    toolbar: [
-      ['bold', 'italic', 'underline'],
-      [{ 'list': 'ordered' }, { 'list': 'bullet' }],
-      ['clean']
-    ]
-  };
-
-  categories: Category[] = [];
-  filteredSubCategories: SubCategory[] = [];
-  filteredCollections: Collection[] = [];
+  allProducts: AdminProduct[] = []; // To select components for combo
+  ProductType = ProductType; // For template access
 
   constructor() {
     this.loadCategories(); // Load categories first
@@ -158,19 +189,113 @@ export class AdminProductFormComponent implements OnDestroy {
           this.isEditMode = true;
           this.productId = parsedId;
           this.pageTitle = "Edit Product";
-          this.loadProduct(this.productId);
-          this.loadLandingPage(this.productId);
+          // We call loadProduct inside loadCategories subscription or after
+          // But since loadCategories is async, we might race.
+          // However, patchValue works even if options aren't rendered yet (model value is set).
+          // But filtering needs data.
         }
       }
     });
+
+    // Setup cascading listeners
+    this.setupCascadingSelects();
   }
 
   loadCategories(): void {
     this.categoriesService.getAll().subscribe((categories) => {
       this.categories = categories;
+
+      // If edit mode, we might need to trigger filtering after data load if product loaded first
+      if (this.isEditMode && this.productId) {
+        this.loadProduct(this.productId);
+      }
+      // Also load all products for combo selection
+      this.loadAllProducts();
+      // Load available sizes for datalist
+      this.loadAvailableSizes();
     });
   }
 
+  loadAvailableSizes(): void {
+    this.productsService.getAvailableSizes().subscribe({
+      next: (sizes) => {
+        this.dynamicSizes = sizes;
+        const combined = new Set([...this.standardSizes, ...this.dynamicSizes]);
+        this.allAvailableSizes = Array.from(combined).sort();
+      },
+      error: (err) => console.error("Error loading available sizes:", err),
+    });
+  }
+
+  loadAllProducts(): void {
+    this.productsService
+      .getProducts({
+        pageSize: 1000,
+        page: 1,
+        searchTerm: "",
+        category: "",
+        statusTab: "all",
+      })
+      .subscribe((res) => {
+        this.allProducts = res.items;
+      });
+  }
+
+  setupCascadingSelects(): void {
+    this.form.get("category")?.valueChanges.subscribe((categoryId) => {
+      if (!categoryId) {
+        this.filteredSubCategories = [];
+        this.filteredCollections = [];
+        this.form.patchValue(
+          { subCategory: "", collection: "" },
+          { emitEvent: false },
+        );
+        return;
+      }
+
+      // Find selected category
+      const category = this.categories.find(
+        (c) => String(c.id) === String(categoryId),
+      );
+      this.filteredSubCategories = category?.subCategories || [];
+
+      // Clear downstream if user manually changed it (not programmatic patch)
+      // We can distinguish via options or just always clear if value doesn't match?
+      // For now, simpler: if the current subCategory value is not in the new list, clear it.
+      const currentSubId = this.form.get("subCategory")?.value;
+      const exists = this.filteredSubCategories.find(
+        (sc) => String(sc.id) === String(currentSubId),
+      );
+      if (!exists) {
+        this.form.patchValue(
+          { subCategory: "", collection: "" },
+          { emitEvent: false },
+        );
+        this.filteredCollections = [];
+      }
+    });
+
+    this.form.get("subCategory")?.valueChanges.subscribe((subCategoryId) => {
+      if (!subCategoryId) {
+        this.filteredCollections = [];
+        this.form.patchValue({ collection: "" }, { emitEvent: false });
+        return;
+      }
+
+      const subCategory = this.filteredSubCategories.find(
+        (sc) => String(sc.id) === String(subCategoryId),
+      );
+      this.filteredCollections = subCategory?.collections || [];
+
+      const currentColId = this.form.get("collection")?.value;
+      const exists = this.filteredCollections.find(
+        (c) => String(c.id) === String(currentColId),
+      );
+      if (!exists) {
+        this.form.patchValue({ collection: "" }, { emitEvent: false });
+      }
+    });
+  }
 
   ngOnDestroy(): void {
     this.mediaItemsArray.controls.forEach((control) => {
@@ -192,6 +317,30 @@ export class AdminProductFormComponent implements OnDestroy {
 
   get sizesArray(): FormArray {
     return this.form.get("variants.sizes") as FormArray;
+  }
+
+  get bundleItemsArray(): FormArray {
+    return this.form.get("bundleItems") as FormArray;
+  }
+
+  addBundleItem(): void {
+    const group = this.formBuilder.group({
+      componentProductId: ["", Validators.required],
+      componentVariantId: [null],
+      quantity: [1, [Validators.required, Validators.min(1)]],
+    });
+    this.bundleItemsArray.push(group);
+  }
+
+  removeBundleItem(index: number): void {
+    this.bundleItemsArray.removeAt(index);
+  }
+
+  getComponentVariants(productId: any): any[] {
+    const product = this.allProducts.find(
+      (p) => String(p.id) === String(productId),
+    );
+    return product?.variants || [];
   }
 
   loadProduct(productId: number): void {
@@ -217,14 +366,49 @@ export class AdminProductFormComponent implements OnDestroy {
 
         this.form.patchValue({
           name: product.name,
+          description: product.description,
+          shortDescription: product.shortDescription || "",
           statusActive: product.isActive,
-          category: product.categoryId ? String(product.categoryId) : "",
-          gender: "women",
-          price: product.price,
-          salePrice: product.compareAtPrice || null,
-          purchaseRate: product.price,
-          isItemProduct: product.isItemProduct || true,
+          category: String(product.categoryId),
+          subCategory: product.subCategoryId
+            ? String(product.subCategoryId)
+            : "",
+          collection: product.collectionId ? String(product.collectionId) : "",
+          gender: "women", 
+          price: product.compareAtPrice ?? product.price,
+          salePrice: product.compareAtPrice ? product.price : null,
+          purchaseRate: product.purchaseRate || product.price,
+
+          newArrival: product.isNew || false,
+          isFeatured: product.isFeatured || false,
+
+          tier: (product as any).tier || "",
+          tags: (product as any).tags || "",
+          sortOrder: product.sortOrder,
+          productType: product.productType,
+          isBundle: product.isBundle,
+          bundleQuantity: product.bundleQuantity || 1,
         });
+
+        // Load bundle items if any
+        this.bundleItemsArray.clear();
+        if (product.bundleItems && product.bundleItems.length > 0) {
+          product.bundleItems.forEach((item) => {
+            this.bundleItemsArray.push(
+              this.formBuilder.group({
+                componentProductId: [
+                  item.componentProductId,
+                  Validators.required,
+                ],
+                componentVariantId: [item.componentVariantId],
+                quantity: [
+                  item.quantity,
+                  [Validators.required, Validators.min(1)],
+                ],
+              }),
+            );
+          });
+        }
 
         // Load existing media
         // 1. Parse Variants First (Colors needed for Media Dropdowns)
@@ -259,9 +443,21 @@ export class AdminProductFormComponent implements OnDestroy {
           variants.forEach((v: any) => {
             this.sizesArray.push(
               this.formBuilder.group({
-                label: [v.size || v.Size || ""],
+                label: [v.size ?? v.Size ?? ""],
+                price: [
+                  v.compareAtPrice ?? v.price ?? v.Price ?? product.compareAtPrice ?? product.price ?? 0,
+                  [Validators.required, Validators.min(0)],
+                ],
+                salePrice: [
+                  v.compareAtPrice ? (v.price ?? v.Price ?? product.price ?? 0) : null,
+                  [Validators.min(0)],
+                ],
+                purchaseRate: [
+                  v.purchaseRate ?? v.PurchaseRate ?? product.purchaseRate ?? product.price ?? 0,
+                  [Validators.required, Validators.min(0)],
+                ],
                 stock: [
-                  v.stockQuantity || v.StockQuantity || 0,
+                  v.stockQuantity ?? v.StockQuantity ?? 0,
                   [Validators.min(0)],
                 ],
                 selected: [true],
@@ -309,28 +505,29 @@ export class AdminProductFormComponent implements OnDestroy {
             isMain: true,
           });
         }
-      });
-  }
 
-  loadLandingPage(productId: number): void {
-    this.landingPageService.getLandingPage(productId).subscribe({
-      next: (lp) => {
-        this.form.get("landingPage")?.patchValue({
-          headline: lp.headline ?? "",
-          subtitle: lp.subtitle ?? "",
-          videoUrl: lp.videoUrl ?? "",
-          themeColor: lp.themeColor ?? "#1a1a1a",
-          benefitsTitle: lp.benefitsTitle ?? "",
-          benefitsContent: lp.benefitsContent ?? "",
-          reviewsTitle: lp.reviewsTitle ?? "",
-          sideEffectsTitle: lp.sideEffectsTitle ?? "",
-          sideEffectsContent: lp.sideEffectsContent ?? "",
-          usageTitle: lp.usageTitle ?? "",
-          usageContent: lp.usageContent ?? "",
+        // Load colors (from Images or previously saved structure if we supported it)
+        // In new backend: Colors come from Images metadata or we can infer them?
+        // Actually, the new backend 'GetProductById' returns 'Variants.Colors' as a list of names!
+        // We should use that.
+
+        // We removed the legacy 'else if' block because 'backendVariants' in GetProductById
+        // is now ALWAYS an object (ProductVariantsDto), never an array of entities.
+
+        // Load meta
+        this.form.patchValue({
+          meta: {
+            fabricAndCare:
+              product.fabricAndCare ||
+              (product as any).meta?.fabricAndCare ||
+              "",
+            shippingAndReturns:
+              product.shippingAndReturns ||
+              (product as any).meta?.shippingAndReturns ||
+              "",
+          },
         });
-      },
-      error: () => console.log("No landing page found for this product yet."),
-    });
+      });
   }
 
   addColor(): void {
@@ -431,10 +628,83 @@ export class AdminProductFormComponent implements OnDestroy {
     if (!confirmed) {
       return;
     }
-    this.mediaItemsArray.clear();
-    this.mediaFileMap.clear();
     this.resetForm();
     void this.router.navigate(["/admin/products"]);
+  }
+
+  applyFormatting(type: string, textarea: HTMLTextAreaElement): void {
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const selectedText = textarea.value.substring(start, end);
+    const fullText = textarea.value;
+
+    let replacement = "";
+    switch (type) {
+      case "bold":
+        replacement = `<b>${selectedText}</b>`;
+        break;
+      case "italic":
+        replacement = `<i>${selectedText}</i>`;
+        break;
+      case "underline":
+        replacement = `<u>${selectedText}</u>`;
+        break;
+      case "list":
+        replacement = `\n<ul>\n  <li>${selectedText || "Item"}</li>\n</ul>`;
+        break;
+      case "link":
+        const url = window.prompt("Enter URL", "https://");
+        if (url) {
+          replacement = `<a href="${url}" class="text-primary hover:underline" target="_blank">${selectedText || "Link Text"}</a>`;
+        } else {
+          return;
+        }
+        break;
+    }
+
+    const newValue =
+      fullText.substring(0, start) + replacement + fullText.substring(end);
+    this.form.patchValue({ description: newValue });
+
+    // Restore focus and selection
+    setTimeout(() => {
+      textarea.focus();
+      textarea.setSelectionRange(
+        start + replacement.length,
+        start + replacement.length,
+      );
+    }, 0);
+  }
+
+  onSizeSelectChange(event: Event, index: number): void {
+    const select = event.target as HTMLSelectElement;
+    const value = select.value;
+    const sizeForm = this.sizesArray.at(index);
+
+    if (value === "custom") {
+      sizeForm.patchValue({ label: "custom" });
+    } else {
+      sizeForm.patchValue({ label: value });
+    }
+  }
+
+  toggleSizeDropdown(index: number, event: Event): void {
+    event.stopPropagation();
+    this.openSizeDropdownIndex = this.openSizeDropdownIndex === index ? null : index;
+  }
+
+  selectSize(index: number, sizeValue: string, event?: Event): void {
+    if (event) {
+      event.stopPropagation();
+    }
+    const sizeForm = this.sizesArray.at(index);
+    sizeForm.patchValue({ label: sizeValue });
+    this.openSizeDropdownIndex = null;
+  }
+
+  onDocumentClick(event: MouseEvent): void {
+    // If click happens outside the dropdown (or we just close it on any document click since toggle stops propagation)
+    this.openSizeDropdownIndex = null;
   }
 
   saveProduct(): void {
@@ -450,43 +720,22 @@ export class AdminProductFormComponent implements OnDestroy {
       this.form.markAllAsTouched();
 
       // Log detailed validation errors
-      const invalidFields: string[] = [];
-      const formErrors = this.form.errors;
-      
+      const errorMessages: string[] = [];
       Object.keys(this.form.controls).forEach((key) => {
         const control = this.form.get(key);
         if (control?.invalid) {
-          invalidFields.push(key);
-          console.error(`Field "${key}" is invalid:`, control.errors);
+          if (control.errors?.['required']) errorMessages.push(`${key} is required`);
+          else if (control.errors?.['min']) errorMessages.push(`${key} must be positive`);
+          else errorMessages.push(`${key} is invalid`);
         }
       });
-
-      console.error("Form validation failed", {
-        formValid: this.form.valid,
-        formErrors: formErrors,
-        mediaCount: this.mediaItemsArray.length,
-        invalidFields: invalidFields,
-        formValue: this.form.value,
-      });
-
-      let alertMessage = "";
-      if (invalidFields.length > 0) {
-        alertMessage += `Please fill in all required fields: ${invalidFields.join(", ")}\n`;
-      }
-      if (formErrors) {
-        if (formErrors['salePriceExceedsBase']) {
-          alertMessage += `Validation Error: Discounted price cannot be higher than the main price.\n`;
-        } else if (formErrors['salePriceTooLow']) {
-           alertMessage += `Validation Error: Main price must be lower than the Compare at Price (to show a discount).\n`;
-        } else {
-          alertMessage += `Form Error: ${JSON.stringify(formErrors)}\n`;
-        }
-      }
-      if (this.mediaItemsArray.length === 0) {
-        alertMessage += `Media Error: Add at least one image or video for the product.\n`;
+      if (this.form.errors?.['salePriceExceedsBase']) {
+        errorMessages.push("Sale Price must be lower than Price");
       }
 
-      window.alert(alertMessage || "Please check the form for errors.");
+      window.alert(
+        `Form has errors:\n${errorMessages.join("\n")}`
+      );
       return;
     }
 
@@ -517,44 +766,8 @@ export class AdminProductFormComponent implements OnDestroy {
         next: (product) => {
           const action = this.isEditMode ? "updated" : "created";
           console.log(`Product ${action} successfully:`, product);
-          
-          // If it's an Item Product, save landing page data
-          if (this.form.get('isItemProduct')?.value) {
-            const lpGroup = this.form.get('landingPage');
-            const lpData = lpGroup?.value;
-            this.landingPageService.saveLandingPage({
-              productId: product.id,
-              headline: lpData?.headline || "",
-              subtitle: lpData?.subtitle ?? "",
-              benefitsTitle: lpData?.benefitsTitle ?? "",
-              benefitsContent: lpData?.benefitsContent ?? "",
-              reviewsTitle: lpData?.reviewsTitle ?? "",
-              sideEffectsTitle: lpData?.sideEffectsTitle ?? "",
-              sideEffectsContent: lpData?.sideEffectsContent ?? "",
-              usageTitle: lpData?.usageTitle ?? "",
-              usageContent: lpData?.usageContent ?? "",
-              videoUrl: lpData?.videoUrl || "",
-              themeColor: lpData?.themeColor || "#1a1a1a",
-            }).subscribe({
-              next: () => {
-                window.alert(`Product and Landing Page ${action} successfully.`);
-                void this.router.navigate(["/admin/products"]);
-              },
-              error: (err) => {
-                console.error("Error saving landing page. Payload sent:", {
-                  productId: product.id,
-                  headline: lpData?.headline,
-                  benefitsContentLen: lpData?.benefitsContent?.length
-                });
-                console.error("Server Error Response:", err);
-                window.alert(`Product ${action} but Landing Page failed: ${err.message}. Please check browser console for details.`);
-                void this.router.navigate(["/admin/products"]);
-              }
-            });
-          } else {
-            window.alert(`Product ${action} successfully.`);
-            void this.router.navigate(["/admin/products"]);
-          }
+          window.alert(`Product ${action} successfully.`);
+          void this.router.navigate(["/admin/products"]);
         },
         error: (error) => {
           const action = this.isEditMode ? "update" : "create";
@@ -575,15 +788,18 @@ export class AdminProductFormComponent implements OnDestroy {
   private createColorGroup(selected: boolean): AbstractControl {
     return this.formBuilder.group({
       name: [""],
-      selected: [true],
+      selected: [selected],
     });
   }
 
   private createSizeGroup(selected: boolean): AbstractControl {
     return this.formBuilder.group({
       label: [""],
+      price: [0, [Validators.required, Validators.min(0)]],
+      salePrice: [null as number | null, [Validators.min(0)]],
+      purchaseRate: [0, [Validators.required, Validators.min(0)]],
       stock: [0, [Validators.min(0)]],
-      selected: [true],
+      selected: [selected],
     });
   }
 
@@ -606,20 +822,14 @@ export class AdminProductFormComponent implements OnDestroy {
     const basePrice = Number(control.get("price")?.value ?? 0);
     const salePriceControl = control.get("salePrice");
     const salePrice = salePriceControl?.value;
-    
-    // If no sale price (compare at price), it's valid
-    if (salePrice === null || salePrice === undefined || salePrice === "" || salePrice === 0) {
+    if (salePrice === null || salePrice === undefined) {
       return null;
     }
-    
     const saleValue = Number(salePrice);
     if (Number.isNaN(saleValue)) {
       return null;
     }
-
-    // "Compare at Price" (saleValue) should be HIGHER than the current "Price" (basePrice)
-    // If user sets SalePrice < Price, it's technically invalid for a discount display
-    return saleValue < basePrice ? { salePriceTooLow: true } : null;
+    return saleValue > basePrice ? { salePriceExceedsBase: true } : null;
   }
 
   private addFiles(files: File[]): void {
@@ -728,6 +938,12 @@ export class AdminProductFormComponent implements OnDestroy {
 
     const sizes = rawSizes.map((s: any) => ({
       label: s.label,
+      price: Number(s.price),
+      salePrice:
+        s.salePrice !== null && s.salePrice !== undefined
+          ? Number(s.salePrice)
+          : undefined,
+      purchaseRate: Number(s.purchaseRate),
       stock: Number(s.stock),
       selected: true,
     }));
@@ -745,7 +961,12 @@ export class AdminProductFormComponent implements OnDestroy {
 
       inventoryVariants.push({
         label: sizeLabel,
-        price: Number(raw.price),
+        price: Number(s.price || raw.price),
+        salePrice:
+          s.salePrice !== null && s.salePrice !== undefined
+            ? Number(s.salePrice)
+            : undefined,
+        purchaseRate: Number(s.purchaseRate || raw.purchaseRate),
         sku: `${raw.name?.slice(0, 3)}-${sizeLabel}`
           .toUpperCase()
           .replace(/\s+/g, ""),
@@ -755,36 +976,34 @@ export class AdminProductFormComponent implements OnDestroy {
     });
 
     // 4. Resolve Category Name
-    let categoryName = "";
-    const selectedCategoryId = raw.category;
-    
-    if (selectedCategoryId) {
-      const categoryObj = this.categories.find(
-        (c) => String(c.id) === String(selectedCategoryId),
-      );
-      categoryName = categoryObj?.name || "";
-    } else if (raw.isItemProduct && this.categories.length > 0) {
-      // Fallback for Item Product if hidden category is not selected
-      categoryName = this.categories[0].name;
-    }
+    const categoryObj = this.categories.find(
+      (c) => String(c.id) === String(raw.category),
+    );
+
+    // 5. Derive product-level price from first (default) size variant
+    const firstSize = rawSizes[0];
+    const productPrice = firstSize ? Number(firstSize.price || 0) : 0;
+    const productSalePrice =
+      firstSize?.salePrice !== null && firstSize?.salePrice !== undefined
+        ? Number(firstSize.salePrice)
+        : undefined;
+    const productPurchaseRate = firstSize
+      ? Number(firstSize.purchaseRate || 0)
+      : 0;
 
     return {
       name: raw.name ?? "",
-      description: "",
+      description: raw.description ?? "",
+      shortDescription: raw.shortDescription ?? "",
       statusActive: Boolean(raw.statusActive),
-      category: categoryName, // Send Name, not ID
+      category: categoryObj?.name || "", // Send Name, not ID
       gender: raw.gender ?? "women",
-      price: Number(raw.price || 0.01), // Fallback to 0.01 to avoid 400
-      salePrice:
-        raw.salePrice !== null && raw.salePrice !== undefined && Number(raw.salePrice) > 0
-          ? Number(raw.salePrice)
-          : undefined,
+      price: productPrice,
+      salePrice: productSalePrice,
+      purchaseRate: productPurchaseRate,
 
-      purchaseRate: Number(raw.purchaseRate ?? 0),
-
-      newArrival: false,
-      isFeatured: false,
-      isItemProduct: Boolean(raw.isItemProduct),
+      newArrival: Boolean(raw.newArrival),
+      isFeatured: Boolean(raw.isFeatured),
 
       media: {
         mainImage,
@@ -799,8 +1018,8 @@ export class AdminProductFormComponent implements OnDestroy {
       inventoryVariants,
 
       meta: {
-        fabricAndCare: "",
-        shippingAndReturns: "",
+        fabricAndCare: raw.meta?.fabricAndCare ?? "",
+        shippingAndReturns: raw.meta?.shippingAndReturns ?? "",
       },
 
       ratings: {
@@ -808,11 +1027,25 @@ export class AdminProductFormComponent implements OnDestroy {
         count: 0,
       },
 
-      tier: "",
-      tags: "",
-      sortOrder: 0,
-      subCategoryId: null,
-      collectionId: null,
+      // Legacy/Extra fields for updated backend
+      tier: raw.tier ?? "",
+      tags: raw.tags ?? "",
+      sortOrder: Number(raw.sortOrder ?? 0),
+      subCategoryId: raw.subCategory ? Number(raw.subCategory) : null,
+      collectionId: raw.collection ? Number(raw.collection) : null,
+      productType: raw.productType as ProductType,
+      bundleItems:
+        raw.productType === ProductType.Combo
+          ? (raw.bundleItems as any[]).map((bi) => ({
+              componentProductId: Number(bi.componentProductId),
+              componentVariantId: bi.componentVariantId
+                ? Number(bi.componentVariantId)
+                : undefined,
+              quantity: Number(bi.quantity),
+            }))
+          : [],
+      isBundle: Boolean(raw.isBundle),
+      bundleQuantity: Number(raw.bundleQuantity || 1),
     };
     // but we want to match backend DTO structure primarily.
     // Actually the interface is updated, so it should be fine.
@@ -845,30 +1078,36 @@ export class AdminProductFormComponent implements OnDestroy {
   private resetForm(): void {
     this.form.reset({
       name: "",
+      description: "",
+      shortDescription: "",
       statusActive: true,
       category: "",
+      subCategory: "",
+      collection: "",
       gender: "women",
       price: 0,
       salePrice: null,
       purchaseRate: 0,
-      isItemProduct: true,
+
+      newArrival: false,
+      isFeatured: false,
+
+      tier: "",
+      tags: "",
+      sortOrder: 0,
       mediaFiles: [],
       mediaItems: [],
       variants: {
         colors: [this.createColorGroup(true).value],
         sizes: [this.createSizeGroup(true).value],
       },
-      landingPage: {
-        headline: "",
-        subtitle: "",
-        benefitsTitle: "",
-        benefitsContent: "",
-        reviewsTitle: "",
-        sideEffectsTitle: "",
-        sideEffectsContent: "",
-        usageTitle: "",
-        usageContent: "",
+      meta: {
+        fabricAndCare: "",
+        shippingAndReturns: "",
       },
+      productType: ProductType.Simple,
+      isBundle: false,
+      bundleQuantity: 1,
     });
     this.mediaError = "";
 
@@ -906,5 +1145,4 @@ export class AdminProductFormComponent implements OnDestroy {
   private generateId(prefix: string): string {
     return `${prefix}-${Math.random().toString(36).slice(2, 10)}`;
   }
-
 }

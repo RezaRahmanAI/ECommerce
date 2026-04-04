@@ -1,20 +1,20 @@
-import { Component, inject, ChangeDetectionStrategy, OnInit } from "@angular/core";
+import { Component, inject, ChangeDetectionStrategy } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { RouterModule } from "@angular/router";
-import { CategoryService } from "../../../../core/services/category.service";
+import { ProductService } from "../../../../core/services/product.service";
 import { map } from "rxjs";
-import { Category } from "../../../../core/models/category";
+import { ImageUrlService } from "../../../../core/services/image-url.service";
 
 import { HeroComponent } from "../../components/hero/hero.component";
-import { CategoryGridComponent } from "../../components/category-grid/category-grid.component";
 import { NewArrivalsComponent } from "../../components/new-arrivals/new-arrivals.component";
-import { PromoBannerComponent } from "../../components/promo-banner/promo-banner.component";
 import { FeaturedProductsComponent } from "../../components/featured-products/featured-products.component";
 import { WhyChooseUsComponent } from "../../components/why-choose-us/why-choose-us.component";
 import { TestimonialsComponent } from "../../components/testimonials/testimonials.component";
 import { NewsletterComponent } from "../../components/newsletter/newsletter.component";
 import { CampaignSpotlightComponent } from "../../components/campaign-spotlight/campaign-spotlight.component";
+
 import { CategorySectionComponent } from "../../components/category-section/category-section.component";
+import { PromoBannerComponent } from "../../components/promo-banner/promo-banner.component";
 
 @Component({
   selector: "app-home-page",
@@ -23,30 +23,44 @@ import { CategorySectionComponent } from "../../components/category-section/cate
     CommonModule,
     RouterModule,
     HeroComponent,
-    CategoryGridComponent,
     NewArrivalsComponent,
-    PromoBannerComponent,
     FeaturedProductsComponent,
     WhyChooseUsComponent,
     TestimonialsComponent,
     NewsletterComponent,
-    CampaignSpotlightComponent,
     CategorySectionComponent,
-  ],
+    PromoBannerComponent
+],
   templateUrl: "./home-page.component.html",
   styleUrl: "./home-page.component.css",
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class HomePageComponent implements OnInit {
-  private readonly categoryService = inject(CategoryService);
+export class HomePageComponent {
+  private readonly productService = inject(ProductService);
+  private readonly imageUrlService = inject(ImageUrlService);
 
-  categories$ = this.categoryService.getCategories();
-  
-  // Pre-processed categories for specific sections to avoid template function calls
-  menCategories$ = this.categories$.pipe(map((cats: Category[]) => cats.find(c => c.slug === 'men')?.subCategories || []));
-  womenCategories$ = this.categories$.pipe(map((cats: Category[]) => cats.find(c => c.slug === 'women')?.subCategories || []));
-  kidsCategories$ = this.categories$.pipe(map((cats: Category[]) => cats.find(c => c.slug === 'kids')?.subCategories || []));
-  accessoriesCategories$ = this.categories$.pipe(map((cats: Category[]) => cats.find(c => c.slug === 'accessories')?.subCategories || []));
+  homeData$ = this.productService.getHomeData();
 
-  ngOnInit() {}
+  heroSlides$ = this.homeData$.pipe(
+    map((data) =>
+      data.banners
+        .map((b) => ({
+          image: b.imageUrl, // Pass raw path, HeroComponent uses imageUrlService
+          title: b.title,
+          subtitle: b.subtitle,
+          link: b.linkUrl || "/shop",
+          linkText: b.buttonText || "Shop Now",
+          type: b.type
+        })),
+    ),
+  );
+
+  newArrivals$ = this.homeData$.pipe(map((data) => data.newArrivals));
+  featuredProducts$ = this.homeData$.pipe(map((data) => data.featuredProducts));
+  categories$ = this.homeData$.pipe(map((data) => data.categories));
+
+  // Helper methods to filter categories for specific sections
+  getCategory(categories: any[], slug: string) {
+    return categories.find((c) => c.slug === slug)?.subCategories || [];
+  }
 }

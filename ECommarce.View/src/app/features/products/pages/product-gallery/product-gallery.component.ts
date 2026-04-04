@@ -1,36 +1,69 @@
 import { Component, OnInit, inject } from "@angular/core";
 import { CommonModule } from "@angular/common";
+import { ScrollingModule } from "@angular/cdk/scrolling";
 import { ActivatedRoute } from "@angular/router";
 import { combineLatest } from "rxjs";
 import { ProductService } from "../../../../core/services/product.service";
 import { Product } from "../../../../core/models/product";
 import { ProductCardComponent } from "../../../../shared/components/product-card/product-card.component";
+import { ChangeDetectionStrategy, ChangeDetectorRef } from "@angular/core";
+import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 
-import { LucideAngularModule, Package } from "lucide-angular";
+import { LucideAngularModule, Package, ChevronRight } from "lucide-angular";
+import { CategoryService } from "../../../../core/services/category.service";
+import { Category } from "../../../../core/models/category";
+import { Router } from "@angular/router";
 
 @Component({
   selector: "app-product-gallery",
   standalone: true,
-  imports: [CommonModule, ProductCardComponent, LucideAngularModule],
+  imports: [CommonModule, ProductCardComponent, LucideAngularModule, ScrollingModule],
   templateUrl: "./product-gallery.component.html",
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ProductGalleryComponent implements OnInit {
   readonly icons = {
     Package,
+    ChevronRight,
   };
   private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
   private readonly productService = inject(ProductService);
+  private readonly categoryService = inject(CategoryService);
+  private readonly cdr = inject(ChangeDetectorRef);
 
   products: Product[] = [];
+  filteredProducts: Product[] = [];
+  subCategories: any[] = [];
+  
+  // New Hierarchical Sidebar State for Offers
+  offerCategories: any[] = [];
+  isOffersPage = false;
+
+  selectedSize: string = 'All Sizes';
+  allSizes = ['All Sizes', 'S', 'M', 'L', 'XL', 'XXL'];
+
+  constructor() {
+    combineLatest([this.route.params, this.route.queryParams])
+      .pipe(takeUntilDestroyed())
+      .subscribe(([params, queryParams]) => {
+        this.loadProducts({ ...params, ...queryParams });
+      });
+  }
+
   loading = true;
   title = "Products";
+  skeletonItems = Array(8).fill(0);
+  
+  // For virtual scrolling rows in a grid (e.g. 4 columns)
+  productRows: Product[][] = [];
+  readonly itemsPerRow = 5;
 
   ngOnInit(): void {
-    combineLatest([this.route.params, this.route.queryParams]).subscribe(
-      ([params, queryParams]) => {
-        this.loadProducts({ ...params, ...queryParams });
-      },
-    );
+  }
+
+  trackByProductId(index: number, product: Product): number {
+    return product.id;
   }
 
   private loadProducts(params: any): void {
@@ -72,6 +105,10 @@ export class ProductGalleryComponent implements OnInit {
     ) {
       filterParams.subCategorySlug = subCategorySlug || slug;
       this.title = (subCategorySlug || slug).replace(/-/g, " ");
+    } else if (this.route.snapshot.url[0]?.path === "offers") {
+      filterParams.isFeatured = true;
+      this.isOffersPage = true;
+      this.title = "Offer Products";
     } else if (
       collectionSlug ||
       (this.route.snapshot.url[0]?.path === "collection" && slug)
@@ -83,11 +120,80 @@ export class ProductGalleryComponent implements OnInit {
     this.productService.getProducts(filterParams).subscribe({
       next: (response) => {
         this.products = response.data;
+        this.filteredProducts = response.data;
         this.loading = false;
+        
+        if (this.isOffersPage) {
+          this.buildOfferHierarchy();
+        }
+        
+        this.cdr.markForCheck();
       },
       error: () => {
         this.loading = false;
+        this.cdr.markForCheck();
       },
     });
+
+    // Load Category and Subcategories for Sidebar
+    if (categorySlug || (this.route.snapshot.url[0]?.path === "category" && slug)) {
+      const activeSlug = categorySlug || slug;
+      this.categoryService.getCategories().subscribe(categories => {
+        const currentCat = categories.find(c => c.slug === activeSlug);
+        if (currentCat) {
+          this.subCategories = currentCat.subCategories || [];
+          this.cdr.markForCheck();
+        }
+      });
+    }
+  }
+
+  selectSizeFilter(size: string): void {
+    this.selectedSize = size;
+    if (size === 'All Sizes') {
+      this.filteredProducts = [...this.products];
+    } else {
+      this.filteredProducts = this.products.filter(product => {
+        return product.variants?.some(v => v.size?.toUpperCase() === size);
+      });
+    }
+    this.cdr.markForCheck();
+  }
+
+  navigateToSub(href: string): void {
+    this.router.navigateByUrl(href);
+  }
+
+  private buildOfferHierarchy(): void {
+    if (this.products.length === 0) return;
+
+    this.categoryService.getCategories().subscribe(categories => {
+      const hierarchy: any[] = [];
+      const productCategories = new Set(this.products.map(p => String(p.categoryId)));
+      const productSubCategories = new Set(this.products.map(p => String(p.subCategoryId)));
+
+      categories.forEach(cat => {
+        const catId = String(cat.id);
+        if (productCategories.has(catId)) {
+          const catSubCols = cat.subCategories?.filter((sub: any) => productSubCategories.has(String(sub.id))) || [];
+          if (catSubCols.length > 0 || productCategories.has(catId)) {
+             hierarchy.push({
+               ...cat,
+               subCategories: catSubCols
+             });
+          }
+        }
+      });
+      this.offerCategories = hierarchy;
+      this.cdr.markForCheck();
+    });
+  }
+
+  private chunkProductsIntoRows(): void {
+    const rows: Product[][] = [];
+    for (let i = 0; i < this.products.length; i += this.itemsPerRow) {
+      rows.push(this.products.slice(i, i + this.itemsPerRow));
+    }
+    this.productRows = rows;
   }
 }

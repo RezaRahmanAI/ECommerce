@@ -14,7 +14,6 @@ export interface Order {
   customerName: string;
   customerPhone: string;
   shippingAddress: string;
-  deliveryDetails?: string;
   subTotal: number;
   tax: number;
   shippingCost: number;
@@ -24,6 +23,8 @@ export interface Order {
   createdAt: string;
   updatedAt?: string;
   paymentStatus?: string;
+  city?: string;
+  area?: string;
 }
 
 export interface OrderItem {
@@ -34,6 +35,8 @@ export interface OrderItem {
   quantity: number;
   unitPrice: number;
   totalPrice: number;
+  size?: string;
+  color?: string;
 }
 
 export interface OrderDetail extends Order {
@@ -43,11 +46,7 @@ export interface OrderDetail extends Order {
 export interface OrdersQueryParams {
   searchTerm: string;
   status: "All" | OrderStatus;
-  dateRange: "Last 7 Days" | "Last 30 Days" | "This Year" | "All Time" | "Custom";
-  startDate?: string;
-  endDate?: string;
+  dateRange: "Last 7 Days" | "Last 30 Days" | "This Year" | "All Time";
   page: number;
   pageSize: number;
-  sort?: string;
-  sortDir?: "asc" | "desc";
 }

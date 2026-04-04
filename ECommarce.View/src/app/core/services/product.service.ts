@@ -1,7 +1,8 @@
 import { Injectable, inject } from "@angular/core";
 import { HttpContext } from "@angular/common/http";
-import { Observable, of } from "rxjs";
-import { catchError, shareReplay } from "rxjs/operators";
+import { Observable, of, shareReplay, BehaviorSubject, switchMap } from "rxjs";
+import { catchError, map } from "rxjs/operators";
+import { HomeData } from "../models/home-data";
 
 import { ApiHttpClient } from "../http/http-client";
 import { Product } from "../models/product";
@@ -17,15 +18,39 @@ export class ProductService {
   private readonly baseUrl = "/products";
   private readonly adminBaseUrl = "/admin/products";
 
-  private featuredCache$?: Observable<Pagination<Product>>;
-  private newArrivalsCache$?: Observable<Pagination<Product>>;
+  private readonly refreshSubject = new BehaviorSubject<void>(void 0);
 
-  private readonly fallbackPagination: Pagination<Product> = {
-    data: [],
-    count: 0,
-    pageIndex: 1,
-    pageSize: 10
+  // Reactive Data Streams
+  readonly homeData$ = this.refreshSubject.pipe(
+    switchMap(() => this.api.get<HomeData>("/home").pipe(
+      catchError(() => of(this.fallbackHomeData))
+    )),
+    shareReplay(1)
+  );
+
+  readonly featuredProducts$ = this.refreshSubject.pipe(
+    switchMap(() => this.api.get<Pagination<Product>>(this.baseUrl, {
+      params: { isFeatured: true, pageSize: 12 }
+    }).pipe(
+      catchError(() => of({ data: [], count: 0 } as any))
+    )),
+    shareReplay(1)
+  );
+
+  private readonly fallbackHomeData: HomeData = {
+    banners: [],
+    categories: [],
+    newArrivals: [],
+    featuredProducts: []
   };
+
+  refreshData(): void {
+    this.refreshSubject.next();
+  }
+
+  getHomeData(context?: HttpContext): Observable<HomeData> {
+    return this.homeData$;
+  }
 
   getProducts(
     params?: any,
@@ -34,46 +59,24 @@ export class ProductService {
     return this.api.get<Pagination<Product>>(this.baseUrl, { params, context });
   }
 
-  getItemProducts(
-    limit = 50,
-    context?: HttpContext,
-  ): Observable<Pagination<Product>> {
-    return this.api.get<Pagination<Product>>(this.baseUrl, {
-      params: { isItemProduct: true, pageSize: limit },
-      context,
-    });
-  }
-
   getFeaturedProducts(
     limit = 10,
     context?: HttpContext,
   ): Observable<Pagination<Product>> {
-    if (!this.featuredCache$) {
-      this.featuredCache$ = this.api.get<Pagination<Product>>(this.baseUrl, {
-        params: { isFeatured: true, pageSize: limit },
-        context,
-      }).pipe(
-        catchError(() => of(this.fallbackPagination)),
-        shareReplay(1)
-      );
-    }
-    return this.featuredCache$;
+    return this.featuredProducts$;
   }
 
   getNewArrivals(
     limit = 10,
     context?: HttpContext,
   ): Observable<Pagination<Product>> {
-    if (!this.newArrivalsCache$) {
-      this.newArrivalsCache$ = this.api.get<Pagination<Product>>(this.baseUrl, {
-        params: { orderBy: "id", order: "desc", pageSize: limit },
-        context,
-      }).pipe(
-        catchError(() => of(this.fallbackPagination)),
-        shareReplay(1)
-      );
-    }
-    return this.newArrivalsCache$;
+    return this.api.get<Pagination<Product>>(this.baseUrl, {
+      params: { orderBy: "id", order: "desc", pageSize: limit },
+      context,
+    }).pipe(
+      catchError(() => of({ data: [], count: 0 } as any)),
+      shareReplay(1)
+    );
   }
 
   getRelatedProducts(
@@ -105,5 +108,9 @@ export class ProductService {
 
   getAdminProducts(): Observable<Product[]> {
     return this.api.get<Product[]>(this.adminBaseUrl);
+  }
+
+  getItemProducts(): Observable<Pagination<Product>> {
+    return this.api.get<Pagination<Product>>(`${this.baseUrl}/items`);
   }
 }

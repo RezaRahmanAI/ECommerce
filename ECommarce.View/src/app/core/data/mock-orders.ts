@@ -8,7 +8,6 @@ export const MOCK_ORDERS: Order[] = [
     customerName: "Sarah Ahmed",
     customerPhone: "+1 (555) 201-8890",
     shippingAddress: "123 Olive Grove Avenue, Apt 4B, New York, NY 10012",
-    deliveryDetails: "Leave at the front desk, call on arrival.",
     subTotal: 170,
     shippingCost: 0,
     tax: 14.45,

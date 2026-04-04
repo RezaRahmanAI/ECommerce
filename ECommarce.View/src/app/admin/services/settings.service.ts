@@ -18,11 +18,7 @@ export class SettingsService {
   getSettings(): Observable<AdminSettings> {
     return this.api
       .get<AdminSettings>("/admin/settings")
-      .pipe(tap((settings: any) => this.settingsSubject.next(settings as AdminSettings)));
-  }
-
-  getPublicSettings(): Observable<AdminSettings> {
-    return this.api.get<AdminSettings>("/sitesettings");
+      .pipe(tap((settings) => this.settingsSubject.next(settings)));
   }
 
   saveSettings(payload: AdminSettings): Observable<AdminSettings> {
@@ -49,10 +45,7 @@ export class SettingsService {
   }
 
   deleteShippingZone(zoneId: number): Observable<boolean> {
-    return this.api.post<boolean>(
-      `/admin/settings/shipping-zones/${zoneId}/delete`,
-      {},
-    );
+    return this.api.delete<boolean>(`/admin/settings/shipping-zones/${zoneId}`);
   }
 
   // Delivery Methods API
@@ -84,7 +77,7 @@ export class SettingsService {
   }
 
   deleteDeliveryMethod(id: number): Observable<void> {
-    return this.api.post<void>(`/admin/settings/delivery-methods/${id}/delete`, {});
+    return this.api.delete<void>(`/admin/settings/delivery-methods/${id}`);
   }
 
   uploadLogo(file: File): Observable<{ url: string }> {

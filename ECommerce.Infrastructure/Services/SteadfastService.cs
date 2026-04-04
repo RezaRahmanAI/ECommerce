@@ -1,7 +1,6 @@
 using System;
 using System.Net.Http;
 using System.Net.Http.Json;
-using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using ECommerce.Core.Entities;
@@ -47,11 +46,10 @@ public class SteadfastService : ISteadfastService
                 recipient_phone = order.CustomerPhone,
                 recipient_address = order.ShippingAddress,
                 cod_amount = order.Total,
-                note = "Order from SheraShop", // Can be dynamic
+                note = "Order from Arza",
                 item_description = $"Order {order.OrderNumber}"
             };
             
-            // Serialize manually to debug if needed, but PostAsJsonAsync is fine
             var response = await _httpClient.PostAsJsonAsync("create_order", payload);
             var content = await response.Content.ReadAsStringAsync();
             

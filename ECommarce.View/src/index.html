@@ -2,42 +2,46 @@
 <html lang="en" class="light">
   <head>
     <meta charset="utf-8" />
-    <title>SheraShopBD24</title>
+    <title>SheraShopBD</title>
+    <meta
+      name="description"
+      content="SheraShopBD — Premium fashion and lifestyle e-commerce. Shop the latest trends in clothing, accessories, and more."
+    />
     <base href="/" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content="SheraShopBD24 - Your premium destination for lifestyle and health products in Bangladesh. Quality you can trust." />
-    <meta name="keywords" content="SheraShopBD24, Ecommerce, Bangladesh, Health Products, Lifestyle" />
-    
-    <!-- Open Graph / Social Media -->
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://sherashopbd24.com/" />
-    <meta property="og:title" content="SheraShopBD24 - Premium Shopping Experience" />
-    <meta property="og:description" content="Qualitative products and reliable delivery for your daily needs." />
-    <meta property="og:image" content="https://sherashopbd24.com/assets/images/logo-og.png" />
-
     <link rel="icon" type="image/x-icon" href="favicon.ico" />
-    
+
     <!-- Preconnect for faster font & API loading -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="preconnect" href="https://api.sherashopbd.com" crossorigin />
     <link rel="dns-prefetch" href="https://api.sherashopbd.com" />
 
-    <!-- Preload critical fonts -->
-    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" as="style" />
-    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
+    <!-- Google Fonts -->
+    <link
+      rel="preload"
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Hind+Siliguri:wght@400;500;600;700&display=swap"
+      as="style"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Hind+Siliguri:wght@400;500;600;700&display=swap"
+      media="print"
+      onload="this.media = 'all'"
+    />
 
-    <!-- Critical CSS -->
-    <style>body { visibility: hidden; } body.loaded { visibility: visible; }</style>
-    <script>document.addEventListener('DOMContentLoaded', function() { document.body.classList.add('loaded'); });</script>
+    <!-- Critical CSS inline hint -->
+    <style>
+      body { visibility: hidden; }
+      body.loaded { visibility: visible; }
+    </style>
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        document.body.classList.add('loaded');
+      });
+    </script>
   </head>
   <body>
-    <app-root>
-      <!-- Pre-bootstrap loader before Angular fully executes -->
-      <div style="display:flex; height:100vh; align-items:center; justify-content:center; background-color:#FAFAFA; margin:0; padding:0;">
-        <div style="width:40px; height:40px; border:3px solid #e0e0e0; border-top:3px solid #c8922a; border-radius:50%; animation:css-spin 1s linear infinite;"></div>
-        <style>@keyframes css-spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } } body { margin: 0; }</style>
-      </div>
-    </app-root>
+    <app-root></app-root>
   </body>
 </html>

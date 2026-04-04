@@ -19,50 +19,40 @@ public class CustomerService
 
     public async Task<Customer?> GetCustomerByPhoneAsync(string phone)
     {
+        // Normalize phone number if needed
         return await _context.Customers
-            .AsNoTracking()
             .FirstOrDefaultAsync(c => c.Phone == phone);
     }
 
-    public async Task<Customer> CreateOrUpdateCustomerAsync(string phone, string name, string address, string? city, string? area, string? deliveryDetails, string? ip = null)
+    public async Task<Customer> CreateOrUpdateCustomerAsync(string phone, string name, string address)
     {
-        var customer = await _context.Customers.FirstOrDefaultAsync(c => c.Phone == phone);
- 
+        var customer = await GetCustomerByPhoneAsync(phone);
+
         if (customer == null)
         {
             customer = new Customer
             {
                 Phone = phone,
                 Name = name,
-                Address = address,
-                City = city,
-                Area = area,
-                DeliveryDetails = deliveryDetails,
-                LastKnownIp = ip,
-                CreatedAt = DateTime.UtcNow
+                Address = address
             };
             _context.Customers.Add(customer);
         }
         else
         {
+            // Update existing customer info
             customer.Name = name;
             customer.Address = address;
-            customer.City = city;
-            customer.Area = area;
-            customer.DeliveryDetails = deliveryDetails;
-            customer.LastKnownIp = ip;
             customer.UpdatedAt = DateTime.UtcNow;
             _context.Customers.Update(customer);
         }
- 
+
         await _context.SaveChangesAsync();
         return customer;
     }
-
     public async Task<(List<Customer> Items, int Total)> GetCustomersAsync(string? searchTerm, int page, int pageSize)
     {
-        pageSize = Math.Min(pageSize, 100);
-        var query = _context.Customers.AsNoTracking();
+        var query = _context.Customers.AsQueryable();
 
         if (!string.IsNullOrWhiteSpace(searchTerm))
         {
@@ -78,12 +68,9 @@ public class CustomerService
 
         return (items, total);
     }
-
     public async Task<Customer?> GetCustomerByIdAsync(int id)
     {
-        return await _context.Customers
-            .AsNoTracking()
-            .FirstOrDefaultAsync(c => c.Id == id);
+        return await _context.Customers.FindAsync(id);
     }
 
     public async Task UpdateCustomerAsync(Customer customer)

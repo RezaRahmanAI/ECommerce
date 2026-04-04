@@ -12,8 +12,23 @@ export interface ProductVariant {
   size?: string;
   price?: number;
   compareAtPrice?: number;
+  purchaseRate?: number;
   stockQuantity: number;
   isDefault?: boolean;
+}
+
+export enum ProductType {
+  Simple = 0,
+  Combo = 1,
+}
+
+export interface ProductBundleItem {
+  componentProductId: number;
+  componentVariantId?: number;
+  quantity: number;
+  // Optional: component product details for display
+  componentProductName?: string;
+  componentVariantName?: string;
 }
 
 export interface Product {
@@ -28,10 +43,8 @@ export interface Product {
   purchaseRate?: number;
   stockQuantity: number;
   isActive: boolean;
-
   isNew: boolean;
   isFeatured: boolean;
-  isItemProduct: boolean;
 
   categoryId: number;
   categoryName: string;
@@ -53,13 +66,23 @@ export interface Product {
   tier?: string;
   tags?: string;
   sortOrder?: number;
+
+  productType: ProductType;
+  bundleItems?: ProductBundleItem[];
+
+  // Simplified Bundle System
+  isBundle: boolean;
+  bundleQuantity: number;
 }
 
 export interface RelatedProduct {
   id: number;
   name: string;
+  sku?: string;
   price: number;
+  compareAtPrice?: number;
   imageUrl: string;
   slug: string;
   tier?: string;
+  variants?: ProductVariant[];
 }

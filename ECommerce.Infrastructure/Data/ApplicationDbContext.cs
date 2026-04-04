@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using ECommerce.Core.Entities;
+using ECommerce.Core.Enums;
 
 namespace ECommerce.Infrastructure.Data;
 
@@ -12,12 +13,13 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 {
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
     {
-        ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
     }
 
     public DbSet<Category> Categories { get; set; }
     public DbSet<SubCategory> SubCategories { get; set; }
     public DbSet<Collection> Collections { get; set; }
+    public DbSet<Cart> Carts { get; set; }
+    public DbSet<CartItem> CartItems { get; set; }
     public DbSet<Product> Products { get; set; }
     public DbSet<ProductVariant> ProductVariants { get; set; }
     public DbSet<ProductImage> ProductImages { get; set; }
@@ -27,44 +29,35 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<Review> Reviews { get; set; }
     public DbSet<Order> Orders { get; set; }
     public DbSet<OrderItem> OrderItems { get; set; }
-    public DbSet<BlogPost> BlogPosts { get; set; }
     public DbSet<Customer> Customers { get; set; }
     public DbSet<SiteSetting> SiteSettings { get; set; }
     public DbSet<DailyTraffic> DailyTraffics { get; set; }
     public DbSet<BlockedIp> BlockedIps { get; set; }
     public DbSet<DeliveryMethod> DeliveryMethods { get; set; }
-    public DbSet<ShippingZone> ShippingZones { get; set; }
-    public DbSet<ProductLandingPage> ProductLandingPages { get; set; }
+    public DbSet<AppRefreshToken> RefreshTokens { get; set; }
+    public DbSet<AdultProduct> AdultProducts { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
-
-        // Global query filter for soft deletes (performance optimization)
-        builder.Entity<Category>().HasQueryFilter(c => !c.IsDeleted);
-        builder.Entity<SubCategory>().HasQueryFilter(sc => !sc.IsDeleted);
-        builder.Entity<Product>().HasQueryFilter(p => !p.IsDeleted);
-        builder.Entity<ProductVariant>().HasQueryFilter(pv => !pv.IsDeleted);
-        builder.Entity<Collection>().HasQueryFilter(c => !c.IsDeleted);
-        builder.Entity<BlogPost>().HasQueryFilter(b => !b.IsDeleted);
-        builder.Entity<HeroBanner>().HasQueryFilter(h => !h.IsDeleted);
-        builder.Entity<Page>().HasQueryFilter(p => !p.IsDeleted);
-        builder.Entity<NavigationMenu>().HasQueryFilter(n => !n.IsDeleted);
+        
+        // Global Query Filters for Soft Delete & Active Status
+        builder.Entity<Product>().HasQueryFilter(p => p.IsActive);
+        builder.Entity<Category>().HasQueryFilter(c => c.IsActive);
+        builder.Entity<SubCategory>().HasQueryFilter(sc => sc.IsActive);
+        builder.Entity<Collection>().HasQueryFilter(c => c.IsActive);
+        builder.Entity<NavigationMenu>().HasQueryFilter(n => n.IsActive);
+        builder.Entity<HeroBanner>().HasQueryFilter(h => h.IsActive);
 
         // Delivery Method Configuration
         builder.Entity<DeliveryMethod>(entity =>
         {
             entity.Property(d => d.Cost).HasColumnType("decimal(18,2)");
-            entity.HasIndex(d => d.IsActive);
         });
 
         // Product Configuration
         builder.Entity<Product>(entity =>
         {
-            entity.Property(p => p.Price).HasColumnType("decimal(18,2)");
-            entity.Property(p => p.CompareAtPrice).HasColumnType("decimal(18,2)");
-            entity.Property(p => p.PurchaseRate).HasColumnType("decimal(18,2)");
-            
             entity.HasOne(p => p.Category)
                   .WithMany(c => c.Products)
                   .HasForeignKey(p => p.CategoryId)
@@ -80,58 +73,40 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
                   .HasForeignKey(p => p.CollectionId)
                   .OnDelete(DeleteBehavior.Restrict);
 
-            // Performance indexes
+            // Indexes for Performance
             entity.HasIndex(p => p.Slug).IsUnique();
             entity.HasIndex(p => p.Sku).IsUnique();
             entity.HasIndex(p => p.CategoryId);
-            entity.HasIndex(p => p.SubCategoryId);
-            entity.HasIndex(p => p.CollectionId);
-            entity.HasIndex(p => p.IsActive);
-            entity.HasIndex(p => p.IsFeatured);
             entity.HasIndex(p => p.IsNew);
-            entity.HasIndex(p => p.IsItemProduct);
-            entity.HasIndex(p => p.StockQuantity);
-            entity.HasIndex(p => p.Price);
-            entity.HasIndex(p => p.Tier);
-            entity.HasIndex(p => p.CreatedAt);
+            entity.HasIndex(p => p.IsFeatured);
             
-            // Composite indexes for common queries
-            entity.HasIndex(p => new { p.CategoryId, p.IsActive });
-            entity.HasIndex(p => new { p.IsFeatured, p.IsActive });
-            entity.HasIndex(p => new { p.IsNew, p.IsActive });
-            entity.HasIndex(p => new { p.IsActive, p.Price });
-        });
+            // Filtered index for active storefront products
+            entity.HasIndex(p => new { p.IsActive, p.CategoryId })
+                  .HasFilter("[IsActive] = 1")
+                  .HasDatabaseName("IX_Products_Storefront_Active");
 
-        // Product Landing Page Configuration
-        builder.Entity<ProductLandingPage>(entity =>
-        {
-            entity.HasOne(lp => lp.Product)
-                  .WithMany()
-                  .HasForeignKey(lp => lp.ProductId)
-                  .OnDelete(DeleteBehavior.Cascade);
-            
-            entity.HasIndex(lp => lp.ProductId).IsUnique();
+            // Additional indexes for common queries
+            entity.HasIndex(p => p.StockQuantity);
+            entity.HasIndex(p => p.CreatedAt);
+
+            // Constraint
+            entity.ToTable(t => t.HasCheckConstraint("CK_Product_Name", "LEN(Name) > 0")); 
         });
         
         // Product Variant Configuration
         builder.Entity<ProductVariant>(entity =>
         {
             entity.Property(v => v.Price).HasColumnType("decimal(18,2)");
+            entity.Property(v => v.CompareAtPrice).HasColumnType("decimal(18,2)");
+            entity.Property(v => v.PurchaseRate).HasColumnType("decimal(18,2)");
             
             entity.HasOne(v => v.Product)
                   .WithMany(p => p.Variants)
                   .HasForeignKey(v => v.ProductId)
                   .OnDelete(DeleteBehavior.Cascade);
-            
-            entity.HasIndex(v => v.ProductId);
-            entity.HasIndex(v => v.Sku).IsUnique();
-        });
 
-        // Product Image Configuration
-        builder.Entity<ProductImage>(entity =>
-        {
-            entity.HasIndex(p => p.ProductId);
-            entity.HasIndex(p => p.IsMain);
+            entity.HasIndex(v => v.ProductId);
+            entity.HasIndex(v => v.Price);
         });
 
         // Category Self-Referencing Hierarchy
@@ -143,9 +118,6 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
                   .OnDelete(DeleteBehavior.Restrict);
             
             entity.HasIndex(c => c.Slug);
-            entity.HasIndex(c => c.ParentId);
-            entity.HasIndex(c => c.IsActive);
-            entity.HasIndex(c => c.DisplayOrder);
         });
 
         // Category Hierarchy
@@ -157,8 +129,6 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
                   .OnDelete(DeleteBehavior.Cascade);
             
             entity.HasIndex(sc => sc.Slug);
-            entity.HasIndex(sc => sc.CategoryId);
-            entity.HasIndex(sc => sc.IsActive);
         });
 
         builder.Entity<Collection>(entity =>
@@ -169,18 +139,15 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
                   .OnDelete(DeleteBehavior.Cascade);
             
             entity.HasIndex(c => c.Slug);
-            entity.HasIndex(c => c.SubCategoryId);
-            entity.HasIndex(c => c.IsActive);
         });
 
-        // Navigation Menu Self-Referencing
         builder.Entity<NavigationMenu>(entity =>
         {
             entity.HasOne(m => m.ParentMenu)
                   .WithMany(m => m.ChildMenus)
                   .HasForeignKey(m => m.ParentMenuId)
                   .OnDelete(DeleteBehavior.Restrict);
-                  
+            
             entity.HasIndex(m => m.IsActive);
             entity.HasIndex(m => m.DisplayOrder);
         });
@@ -198,11 +165,9 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
                   .HasForeignKey(i => i.OrderId)
                   .OnDelete(DeleteBehavior.Cascade);
 
-            // Performance indexes
             entity.HasIndex(o => o.Status);
             entity.HasIndex(o => o.CreatedAt);
             entity.HasIndex(o => o.OrderNumber);
-            entity.HasIndex(o => new { o.Status, o.CreatedAt });
         });
 
         builder.Entity<OrderItem>(entity =>
@@ -213,53 +178,81 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
                   .WithMany()
                   .HasForeignKey(i => i.ProductId)
                   .OnDelete(DeleteBehavior.Restrict);
-                  
-            entity.HasIndex(i => i.OrderId);
+
             entity.HasIndex(i => i.ProductId);
+            entity.HasIndex(i => i.OrderId);
         });
 
         // Site Settings
         builder.Entity<SiteSetting>(entity =>
         {
             entity.Property(s => s.FreeShippingThreshold).HasColumnType("decimal(18,2)");
+            entity.Property(s => s.ShippingCharge).HasColumnType("decimal(18,2)");
         });
 
         // Customer Configuration
         builder.Entity<Customer>(entity =>
         {
             entity.HasIndex(c => c.Phone).IsUnique();
+            entity.HasIndex(c => c.CreatedAt);
         });
 
-        // Reviews Configuration
-        builder.Entity<Review>(entity =>
+        // Cart Configuration
+        builder.Entity<Cart>(entity =>
         {
-            entity.HasIndex(r => r.ProductId);
-            entity.HasIndex(r => r.IsApproved);
-            entity.HasIndex(r => r.CreatedAt);
-            entity.HasIndex(r => new { r.ProductId, r.IsApproved });
+            entity.HasMany(c => c.Items)
+                  .WithOne(i => i.Cart)
+                  .HasForeignKey(i => i.CartId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(c => c.SessionId);
+            entity.Property(c => c.SessionId).HasMaxLength(100);
         });
 
-        // Blog Posts Configuration
-        builder.Entity<BlogPost>(entity =>
+        // CartItem Configuration
+        builder.Entity<CartItem>(entity =>
         {
-            entity.HasIndex(b => b.Slug);
-            entity.HasIndex(b => b.Status);
-            entity.HasIndex(b => b.CreatedAt);
+            entity.HasOne(i => i.Product)
+                  .WithMany()
+                  .HasForeignKey(i => i.ProductId)
+                  .OnDelete(DeleteBehavior.Restrict);
         });
 
-        // Hero Banners Configuration
-        builder.Entity<HeroBanner>(entity =>
+        // UserToken Configuration
+        builder.Entity<AppRefreshToken>(entity =>
         {
-            entity.HasIndex(h => h.IsActive);
-            entity.HasIndex(h => h.DisplayOrder);
-            entity.HasIndex(h => h.StartDate);
-            entity.HasIndex(h => h.EndDate);
+            entity.HasOne(ut => ut.User)
+                  .WithMany("RefreshTokens")
+                  .HasForeignKey(ut => ut.UserId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(ut => ut.RefreshToken);
+            entity.HasIndex(ut => ut.UserId);
         });
 
-        // Daily Traffic Configuration
-        builder.Entity<DailyTraffic>(entity =>
+        // ApplicationUser Configuration
+        builder.Entity<ApplicationUser>(entity =>
         {
-            entity.HasIndex(d => d.Date).IsUnique();
+            entity.HasIndex(u => u.Phone).IsUnique().HasFilter("[Phone] IS NOT NULL");
+            entity.Property(u => u.Phone).HasMaxLength(20);
+            entity.Property(u => u.Role).HasMaxLength(20).IsRequired();
+            
+            entity.Property(u => u.Email).IsRequired(false);
+            entity.Property(u => u.UserName).IsRequired(false);
+            entity.Property(u => u.PasswordHash).IsRequired(false);
+
+            entity.Property(u => u.IsSuspicious).HasDefaultValue(false);
+            entity.Property(u => u.IsActive).HasDefaultValue(true);
+            entity.Property(u => u.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
+        });
+
+        // Adult Product Configuration
+        builder.Entity<AdultProduct>(entity =>
+        {
+            entity.Property(p => p.Price).HasColumnType("decimal(18,2)");
+            entity.Property(p => p.CompareAtPrice).HasColumnType("decimal(18,2)");
+            entity.HasQueryFilter(p => p.IsActive);
+            entity.HasIndex(p => p.Slug).IsUnique();
         });
     }
 }

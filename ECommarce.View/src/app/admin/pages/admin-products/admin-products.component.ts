@@ -1,7 +1,7 @@
 import { CommonModule } from "@angular/common";
 import { Component, OnDestroy, OnInit, inject } from "@angular/core";
 import { FormControl, ReactiveFormsModule } from "@angular/forms";
-import { RouterModule } from "@angular/router";
+import { ActivatedRoute, RouterModule } from "@angular/router";
 import { debounceTime, distinctUntilChanged, Subject, takeUntil } from "rxjs";
 
 import {
@@ -26,7 +26,7 @@ import {
   ChevronDown,
   AlertTriangle,
   Rocket,
-  FileEdit,
+  Package,
 } from "lucide-angular";
 
 @Component({
@@ -55,11 +55,14 @@ export class AdminProductsComponent implements OnInit, OnDestroy {
     ChevronDown,
     AlertTriangle,
     Rocket,
-    FileEdit,
+    Package,
   };
   private productsService = inject(ProductsService);
+  private route = inject(ActivatedRoute);
   readonly imageUrlService = inject(ImageUrlService);
   private destroy$ = new Subject<void>();
+
+  pageTitle = "Products";
 
   isLoading = false;
   searchControl = new FormControl("", { nonNullable: true });
@@ -83,6 +86,8 @@ export class AdminProductsComponent implements OnInit, OnDestroy {
   selectedProductIds = new Set<number>();
 
   ngOnInit(): void {
+    this.pageTitle = "Products";
+    
     this.loadProducts();
 
     this.searchControl.valueChanges
@@ -146,6 +151,12 @@ export class AdminProductsComponent implements OnInit, OnDestroy {
         return;
       }
       this.selectedProductIds.delete(product.id);
+      
+      // Optimistic UI update: Remove from local array immediately
+      this.products = this.products.filter(p => p.id !== product.id);
+      this.totalResults--;
+      
+      // Still reload to ensure pagination and total results are perfectly in sync
       this.loadProducts();
     });
   }
@@ -256,7 +267,7 @@ export class AdminProductsComponent implements OnInit, OnDestroy {
   }
 
   isOutOfStock(product: AdminProduct): boolean {
-    return product.stockQuantity === 0 || product.status === "Out of Stock";
+    return (product.stockQuantity ?? 0) === 0 || product.status === "Out of Stock";
   }
 
   isLowStock(product: AdminProduct): boolean {

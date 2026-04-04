@@ -10,8 +10,13 @@ import { provideAnimations } from "@angular/platform-browser/animations";
 import {
   provideHttpClient,
   withInterceptors,
+  withFetch,
+  HttpContext,
+// BYPASS_LOGGING imported above
 } from "@angular/common/http";
+import { provideZoneChangeDetection } from "@angular/core";
 import { provideCharts, withDefaultRegisterables } from "ng2-charts";
+import { AuthService } from "./app/core/services/auth.service";
 
 import { AppComponent } from "./app/app.component";
 import { appRoutes } from "./app/app.routes";
@@ -22,9 +27,13 @@ import { environment } from "./environments/environment";
 
 import { jwtInterceptor } from "./app/core/interceptors/jwt.interceptor";
 import { loadingInterceptor } from "./app/core/interceptors/loading.interceptor";
+import { httpCacheInterceptor } from "./app/interceptors/cache.interceptor";
+
+import { BYPASS_LOGGING } from "./app/core/http/tokens";
 
 bootstrapApplication(AppComponent, {
   providers: [
+    provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(
       appRoutes,
       withInMemoryScrolling({
@@ -36,7 +45,9 @@ bootstrapApplication(AppComponent, {
     ),
     provideAnimations(),
     provideHttpClient(
+      withFetch(),
       withInterceptors([
+        httpCacheInterceptor,
         jwtInterceptor,
         loadingInterceptor,
         globalErrorInterceptor,
@@ -50,4 +61,4 @@ bootstrapApplication(AppComponent, {
     },
     provideCharts(withDefaultRegisterables()),
   ],
-}).catch((err) => console.error(err));
+})

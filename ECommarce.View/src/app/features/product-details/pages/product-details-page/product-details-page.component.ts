@@ -12,6 +12,7 @@ import {
   switchMap,
   tap,
   shareReplay,
+  startWith,
 } from "rxjs";
 
 import { ProductService } from "../../../../core/services/product.service";
@@ -23,14 +24,12 @@ import { PriceDisplayComponent } from "../../../../shared/components/price-displ
 import { ImageUrlService } from "../../../../core/services/image-url.service";
 import { NotificationService } from "../../../../core/services/notification.service";
 import { AnalyticsService } from "../../../../core/services/analytics.service";
+import { SiteSettingsService } from "../../../../core/services/site-settings.service";
 import { SHOW_LOADING } from "../../../../core/services/loading.service";
-import {
-  SiteSettings,
-  SiteSettingsService,
-} from "../../../../core/services/site-settings.service";
 
 import { ProductCardComponent } from "../../../../shared/components/product-card/product-card.component";
 import { SizeGuideComponent } from "../../../../shared/components/size-guide/size-guide.component";
+import { SafeHtmlPipe } from "../../../../shared/pipes/safe-html.pipe";
 import {
   LucideAngularModule,
   ChevronLeft,
@@ -42,8 +41,9 @@ import {
   Minus,
   Maximize2,
   Loader2,
-  MessageSquare,
   MessageCircle,
+  Truck,
+  ShieldCheck,
 } from "lucide-angular";
 
 @Component({
@@ -57,6 +57,7 @@ import {
     ProductCardComponent,
     SizeGuideComponent,
     LucideAngularModule,
+    SafeHtmlPipe,
   ],
   templateUrl: "./product-details-page.component.html",
   styleUrl: "./product-details-page.component.css",
@@ -72,8 +73,9 @@ export class ProductDetailsPageComponent {
     Minus,
     Maximize2,
     Loader2,
-    MessageSquare,
     MessageCircle,
+    Truck,
+    ShieldCheck,
   };
   private readonly route = inject(ActivatedRoute);
   private readonly productService = inject(ProductService);
@@ -84,10 +86,10 @@ export class ProductDetailsPageComponent {
   readonly imageUrlService = inject(ImageUrlService);
   private readonly analyticsService = inject(AnalyticsService);
   private readonly siteSettingsService = inject(SiteSettingsService);
+  readonly settings$ = this.siteSettingsService.getSettings();
 
   isSizeGuideOpen = false;
   currentImageIndex = 0;
-  siteSettings: SiteSettings | null = null;
 
   private readonly selectedColorSubject = new BehaviorSubject<{
     name: string;
@@ -123,7 +125,28 @@ export class ProductDetailsPageComponent {
       const sizes = Array.from(
         new Set(product.variants?.map((v) => v.size).filter(Boolean)),
       );
-      this.selectedSizeSubject.next(sizes[0] ?? null);
+      // Sort sizes to select smallest first
+      const sizeOrder = [
+        "xs",
+        "s",
+        "m",
+        "l",
+        "xl",
+        "xxl",
+        "2xl",
+        "3xl",
+        "4xl",
+        "5xl",
+      ];
+      const sortedSizes = [...sizes].sort((a, b) => {
+        const aIdx = sizeOrder.indexOf((a || "").toLowerCase());
+        const bIdx = sizeOrder.indexOf((b || "").toLowerCase());
+        if (aIdx !== -1 && bIdx !== -1) return aIdx - bIdx;
+        if (aIdx !== -1) return -1;
+        if (bIdx !== -1) return 1;
+        return (a || "").localeCompare(b || "");
+      });
+      this.selectedSizeSubject.next(sortedSizes[0] ?? null);
 
       this.quantitySubject.next(1);
       this.selectedMediaSubject.next(null); // Reset or set to first image
@@ -139,6 +162,21 @@ export class ProductDetailsPageComponent {
     ),
   );
 
+  relatedProducts$ = this.product$.pipe(
+    switchMap((product) => {
+      if (product.collectionId) {
+        return this.productService
+          .getRelatedProducts(product.collectionId, undefined, 4)
+          .pipe(map((res) => res.data));
+      } else if (product.categoryId) {
+        return this.productService
+          .getRelatedProducts(undefined, product.categoryId, 4)
+          .pipe(map((res) => res.data));
+      }
+      return of([]);
+    }),
+    startWith([] as Product[]),
+  );
 
   readonly vm$ = combineLatest([
     this.product$,
@@ -146,6 +184,7 @@ export class ProductDetailsPageComponent {
     this.selectedSizeSubject,
     this.quantitySubject,
     this.selectedMediaSubject,
+    this.relatedProducts$,
   ]).pipe(
     map(
       ([
@@ -154,6 +193,7 @@ export class ProductDetailsPageComponent {
         selectedSize,
         quantity,
         selectedMedia,
+        relatedProducts,
       ]) => {
         const uniqueColors = Array.from(
           new Set(product.images?.map((i) => i.color).filter(Boolean)),
@@ -162,13 +202,46 @@ export class ProductDetailsPageComponent {
         const uniqueSizes = Array.from(
           new Set(product.variants?.map((v) => v.size).filter(Boolean)),
         );
+        // Sort sizes consistently
+        const sizeOrder = [
+          "xs",
+          "s",
+          "m",
+          "l",
+          "xl",
+          "xxl",
+          "2xl",
+          "3xl",
+          "4xl",
+          "5xl",
+        ];
+        const sortedUniqueSizes = [...uniqueSizes].sort((a, b) => {
+          const aIdx = sizeOrder.indexOf((a || "").toLowerCase());
+          const bIdx = sizeOrder.indexOf((b || "").toLowerCase());
+          if (aIdx !== -1 && bIdx !== -1) return aIdx - bIdx;
+          if (aIdx !== -1) return -1;
+          if (bIdx !== -1) return 1;
+          return (a || "").localeCompare(b || "");
+        });
 
         const selectedVariant = product.variants?.find(
-          (v) => v.size === selectedSize,
+          (v) =>
+            (v.size || "").trim().toLowerCase() ===
+            (selectedSize || "").trim().toLowerCase(),
         );
         const currentStock = selectedVariant
           ? selectedVariant.stockQuantity
           : product.stockQuantity;
+
+        // Use variant price if available and > 0, fallback to product price
+        const currentPrice =
+          (selectedVariant?.price ?? 0) > 0
+            ? selectedVariant!.price!
+            : product.price;
+        const currentCompareAtPrice =
+          (selectedVariant?.compareAtPrice ?? 0) > 0
+            ? selectedVariant!.compareAtPrice!
+            : product.compareAtPrice;
 
         return {
           product,
@@ -176,22 +249,19 @@ export class ProductDetailsPageComponent {
           selectedSize,
           quantity,
           currentStock,
+          currentPrice,
+          currentCompareAtPrice,
           selectedMedia: this.ensureSelectedMedia(product, selectedMedia),
           gallery: this.buildGallery(product),
           uniqueColors,
-          uniqueSizes,
+          uniqueSizes: sortedUniqueSizes,
+          relatedProducts,
         };
       },
     ),
   );
 
   selectionError = "";
-
-  constructor() {
-    this.siteSettingsService.getSettings().subscribe((settings) => {
-      this.siteSettings = settings;
-    });
-  }
 
   fullStars(rating: number): number[] {
     return Array.from({ length: Math.floor(rating) }, (_, index) => index);
@@ -218,10 +288,14 @@ export class ProductDetailsPageComponent {
     );
   }
 
-  getDiscountPercentage(product: Product): number {
-    if (!this.hasDiscount(product)) return 0;
-    const discount = (product.compareAtPrice ?? 0) - product.price;
-    return Math.round((discount / (product.compareAtPrice ?? 1)) * 100);
+  getDiscountPercentage(product: {
+    price: number;
+    compareAtPrice?: number;
+  }): number {
+    if (!product.compareAtPrice || product.compareAtPrice <= product.price)
+      return 0;
+    const discount = product.compareAtPrice - product.price;
+    return Math.round((discount / product.compareAtPrice) * 100);
   }
 
   selectedColorName(
@@ -298,27 +372,24 @@ export class ProductDetailsPageComponent {
     const isColorRequired = uniqueColorsCount > 0;
     const isSizeRequired = uniqueSizesCount > 0;
 
-    if (
-      (isColorRequired && !selectedColor) ||
-      (isSizeRequired && !selectedSize)
-    ) {
-      if (isColorRequired && isSizeRequired) {
-        this.selectionError =
-          "Please select a color and size before adding to cart.";
-      } else if (isColorRequired) {
-        this.selectionError = "Please select a color before adding to cart.";
-      } else {
-        this.selectionError = "Please select a size before adding to cart.";
-      }
+    // Auto-resolve color if missing but provided in product images
+    const finalColorName = selectedColor?.name ?? (isColorRequired ? Array.from(new Set(product.images?.map(i => i.color).filter(Boolean)))[0] : undefined);
+    
+    // Size remains strictly mandatory
+    if (isSizeRequired && !selectedSize) {
+      this.selectionError = "Please select a size before adding to cart.";
       return;
     }
+
     const quantity = this.quantitySubject.getValue();
-    this.cartService.addItem(
-      product,
-      quantity,
-      selectedColor?.name ?? undefined,
-      selectedSize ?? undefined,
-    );
+    this.cartService
+      .addItem(
+        product,
+        quantity,
+        finalColorName,
+        selectedSize ?? undefined,
+      )
+      .subscribe();
 
     // Show success notification
     this.notificationService.success(
@@ -333,6 +404,14 @@ export class ProductDetailsPageComponent {
     if (!this.selectionError) {
       void this.router.navigateByUrl("/checkout");
     }
+  }
+
+  getWhatsAppUrl(product: Product, whatsAppNumber: string | undefined): string {
+    const phone = (whatsAppNumber || "").replace(/[^0-9]/g, "");
+    const message = encodeURIComponent(
+      `Hi, I'm interested in "${product.name}" (${product.sku || ""}).\nPrice: ৳${product.price}\nPlease share more details.`,
+    );
+    return `https://wa.me/${phone}?text=${message}`;
   }
 
   trackReview(_: number, review: Review): number {

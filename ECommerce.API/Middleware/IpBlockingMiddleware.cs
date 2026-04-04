@@ -19,26 +19,36 @@ public class IpBlockingMiddleware
 
     public async Task InvokeAsync(HttpContext context)
     {
+        // 1. Skip for Preflights & System Checks
+        if (context.Request.Method == "OPTIONS")
+        {
+            await _next(context);
+            return;
+        }
+
         var ipAddress = context.Connection.RemoteIpAddress?.ToString();
 
         if (!string.IsNullOrEmpty(ipAddress))
         {
-            using (var scope = _scopeFactory.CreateScope())
+            try
             {
+                using var scope = _scopeFactory.CreateScope();
                 var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
                 
-                // Check if IP is blocked
-                // Note: In a high-traffic production scenario, you'd want to cache this check (e.g., MemoryCache or Redis) 
-                // to avoid a DB hit on every request. For this scale, DB check is acceptable.
+                // Check if IP is blocked - wrap in try to catch missing table errors
                 var isBlocked = await dbContext.BlockedIps.AnyAsync(b => b.IpAddress == ipAddress);
-
                 if (isBlocked)
                 {
                     _logger.LogWarning($"Blocked request from IP: {ipAddress}");
                     context.Response.StatusCode = (int)HttpStatusCode.Forbidden;
-                    await context.Response.WriteAsync("Access Denied: Your IP address has been blocked.");
+                    await context.Response.WriteAsync("Access Denied.");
                     return;
                 }
+            }
+            catch (Exception ex)
+            {
+                // Silence DB-related errors (missing tables/connectivity) to keep site alive
+                _logger.LogError(ex, "IP Blocking check failed. Continuing request.");
             }
         }
 

@@ -37,16 +37,6 @@ export class ImageUrlService {
 
     const finalUrl = `${baseUrl}${cleanPath}`;
 
-    // Add cache-busting query parameter
-    const cacheBuster = Date.now();
-    const urlWithCache = finalUrl.includes('?') 
-      ? `${finalUrl}&_=${cacheBuster}` 
-      : `${finalUrl}?_=${cacheBuster}`;
-
-    if (!environment.production) {
-      console.log(`[ImageUrlService] Normalizing: ${imageUrl} -> ${urlWithCache}`);
-    }
-
-    return urlWithCache;
+    return finalUrl;
   }
 }

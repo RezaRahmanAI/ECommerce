@@ -19,7 +19,12 @@ export const loadingInterceptor: HttpInterceptorFn = (req, next) => {
   // 1. Always show for mutations (POST, PUT, DELETE) unless skipped
   // 2. For GET requests, only show if SHOW_LOADING is explicitly set
   const isMutation = ["POST", "PUT", "DELETE"].includes(req.method);
-  const shouldShow = isMutation || req.context.get(SHOW_LOADING);
+
+  // Skip loading for cart mutations as they have their own quick toast UI
+  const isCartMutation = isMutation && req.url.toLowerCase().includes("/cart");
+
+  const shouldShow =
+    (isMutation && !isCartMutation) || req.context.get(SHOW_LOADING);
 
   if (shouldShow) {
     loadingService.show();

@@ -21,7 +21,7 @@ public class SteadfastWorker : BackgroundService
     {
         _serviceProvider = serviceProvider;
         _logger = logger;
-        _timer = new PeriodicTimer(TimeSpan.FromMinutes(1)); // Run every minute
+        _timer = new PeriodicTimer(TimeSpan.FromMinutes(1));
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -36,8 +36,6 @@ public class SteadfastWorker : BackgroundService
                 var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
                 var steadfastService = scope.ServiceProvider.GetRequiredService<ISteadfastService>();
 
-                // Get Orders that are Confirmed but not sent to Steadfast
-                // Ideally use a specification
                 var spec = new BaseSpecification<Order>(o => 
                     o.Status == OrderStatus.Confirmed && 
                     o.SteadfastConsignmentId == null);
@@ -60,7 +58,7 @@ public class SteadfastWorker : BackgroundService
                                     order.SteadfastConsignmentId = cid;
                                 }
                                 order.SteadfastTrackingCode = trackingCode;
-                                order.SteadfastStatus = "in_review"; // Default status from API response
+                                order.SteadfastStatus = "in_review";
                                 
                                 unitOfWork.Repository<Order>().Update(order);
                             }

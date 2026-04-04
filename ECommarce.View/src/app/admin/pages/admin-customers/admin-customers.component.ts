@@ -109,11 +109,9 @@ export class AdminCustomersComponent implements OnInit {
     }
   }
 
-  getInitials(name: string | null | undefined): string {
-    if (!name) return "";
-    const parts = name.split(" ").filter((part) => part.length > 0);
-    if (parts.length === 0) return "";
-    return parts
+  getInitials(name: string): string {
+    return name
+      .split(" ")
       .map((n) => n[0])
       .slice(0, 2)
       .join("")
@@ -131,30 +129,6 @@ export class AdminCustomersComponent implements OnInit {
       },
       error: (err) => {
         console.error("Failed to toggle suspicious status", err);
-      },
-    });
-  }
-
-  toggleBlock(customer: Customer): void {
-    const action = customer.isBlocked
-      ? this.customersService.unblockCustomer(customer.id)
-      : this.customersService.blockCustomer(customer.id);
-
-    if (
-      !customer.isBlocked &&
-      !window.confirm(
-        `Are you sure you want to block ${customer.name}? This will also block their IP: ${customer.lastKnownIp || "Unknown"}`,
-      )
-    ) {
-      return;
-    }
-
-    action.subscribe({
-      next: () => {
-        customer.isBlocked = !customer.isBlocked;
-      },
-      error: (err) => {
-        console.error("Failed to toggle block status", err);
       },
     });
   }

@@ -49,12 +49,12 @@ export class LoginPageComponent implements OnInit {
   errorMessage = "";
 
   ngOnInit(): void {
-    if (this.authService.isAuthenticated()) {
+    if (this.authService.isLoggedIn()) {
       void this.router.navigateByUrl("/admin/dashboard");
       return;
     }
 
-    const savedEmail = localStorage.getItem("ecommarce-saved-email");
+    const savedEmail = this.authService.getSavedEmail();
     if (savedEmail) {
       this.loginForm.patchValue({
         email: savedEmail,
@@ -87,7 +87,7 @@ export class LoginPageComponent implements OnInit {
     const { email, password, rememberMe } = this.loginForm.getRawValue();
 
     this.authService
-      .login(email, password, rememberMe)
+      .adminLogin(email, password) // Removed rememberMe from login call
       .pipe(
         take(1),
         finalize(() => {
@@ -95,20 +95,16 @@ export class LoginPageComponent implements OnInit {
         }),
       )
       .subscribe({
-        next: (user) => {
+        next: () => {
           if (rememberMe) {
-            localStorage.setItem("ecommarce-saved-email", email);
+            this.authService.saveEmail(email);
           } else {
-            localStorage.removeItem("ecommarce-saved-email");
+            this.authService.clearSavedEmail();
           }
           void this.router.navigateByUrl("/admin/dashboard");
         },
-        error: (err) => {
-          if (err?.status === 401) {
-            this.errorMessage = "Email/Username or Password was incorrect.";
-          } else {
-            this.errorMessage = `Connection error (${err?.status || 'Unknown'}). Please reload and try again.`;
-          }
+        error: (error: Error) => {
+          this.errorMessage = error.message || "Invalid credentials";
         },
       });
   }

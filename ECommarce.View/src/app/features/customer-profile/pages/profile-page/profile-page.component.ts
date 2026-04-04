@@ -72,7 +72,6 @@ export class ProfilePageComponent implements OnInit {
       name: ["", Validators.required],
       phone: [{ value: "", disabled: true }], // Phone is read-only in profile
       address: ["", Validators.required],
-      deliveryDetails: [""],
     });
   }
 
@@ -118,7 +117,6 @@ export class ProfilePageComponent implements OnInit {
               name: profile.name,
               phone: profile.phone,
               address: profile.address,
-              deliveryDetails: profile.deliveryDetails,
             });
           }
         }),

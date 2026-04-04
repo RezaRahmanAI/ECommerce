@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
+using ECommerce.Core.Enums;
 
 namespace ECommerce.Core.DTOs;
 
@@ -13,13 +14,19 @@ public class ProductCreateDto
     [MaxLength(2000, ErrorMessage = "Description cannot exceed 2000 characters")]
     public string? Description { get; set; }
     
+    [MaxLength(500, ErrorMessage = "Short description cannot exceed 500 characters")]
+    public string? ShortDescription { get; set; }
+    
     public bool StatusActive { get; set; } = true;
+    public bool IsItemProduct { get; set; } = false;
     
+    [Required(ErrorMessage = "Category is required")]
     [MaxLength(100)]
-    public string? Category { get; set; } = string.Empty;
+    public string Category { get; set; } = string.Empty;
     
+    [Required(ErrorMessage = "Gender is required")]
     [MaxLength(50)]
-    public string? Gender { get; set; } = "women";
+    public string Gender { get; set; } = "women";
     
     [Required]
     [Range(0.01, 1000000, ErrorMessage = "Price must be between 0.01 and 1,000,000")]
@@ -29,12 +36,11 @@ public class ProductCreateDto
     public decimal? SalePrice { get; set; }
     
     [Range(0, 1000000, ErrorMessage = "Purchase rate must be between 0 and 1,000,000")]
-    public decimal PurchaseRate { get; set; } = 0;
+    public decimal PurchaseRate { get; set; }
     
 
     public bool NewArrival { get; set; }
     public bool IsFeatured { get; set; }
-    public bool IsItemProduct { get; set; } = true;
     public bool IsPopupOffer { get; set; }
     
     [Required]
@@ -55,6 +61,13 @@ public class ProductCreateDto
     public int SortOrder { get; set; }
     public int? SubCategoryId { get; set; }
     public int? CollectionId { get; set; }
+
+    public ProductType ProductType { get; set; } = ProductType.Simple;
+    public List<ProductBundleItemCreateDto> BundleItems { get; set; } = new();
+
+    // Simplified Bundle System
+    public bool IsBundle { get; set; }
+    public int BundleQuantity { get; set; } = 1;
 }
 
 // Product update DTO
@@ -67,13 +80,19 @@ public class ProductUpdateDto
     [MaxLength(2000, ErrorMessage = "Description cannot exceed 2000 characters")]
     public string? Description { get; set; }
     
+    [MaxLength(500, ErrorMessage = "Short description cannot exceed 500 characters")]
+    public string? ShortDescription { get; set; }
+    
     public bool StatusActive { get; set; } = true;
+    public bool IsItemProduct { get; set; } = false;
     
+    [Required(ErrorMessage = "Category is required")]
     [MaxLength(100)]
-    public string? Category { get; set; } = string.Empty;
+    public string Category { get; set; } = string.Empty;
     
+    [Required(ErrorMessage = "Gender is required")]
     [MaxLength(50)]
-    public string? Gender { get; set; } = "women";
+    public string Gender { get; set; } = "women";
     
     [Required]
     [Range(0.01, 1000000, ErrorMessage = "Price must be between 0.01 and 1,000,000")]
@@ -88,7 +107,6 @@ public class ProductUpdateDto
 
     public bool NewArrival { get; set; }
     public bool IsFeatured { get; set; }
-    public bool IsItemProduct { get; set; } = true;
     public bool IsPopupOffer { get; set; }
     
     [Required]
@@ -108,16 +126,32 @@ public class ProductUpdateDto
     public int SortOrder { get; set; }
     public int? SubCategoryId { get; set; }
     public int? CollectionId { get; set; }
+
+    public ProductType ProductType { get; set; } = ProductType.Simple;
+    public List<ProductBundleItemCreateDto> BundleItems { get; set; } = new();
+
+    // Simplified Bundle System
+    public bool IsBundle { get; set; }
+    public int BundleQuantity { get; set; } = 1;
 }
 
 public class ProductVariantEditDto
 {
-    public string Label { get; set; } = null!;
+    public string Label { get; set; } = string.Empty;
     public decimal Price { get; set; }
-    public string Sku { get; set; } = null!;
+    public decimal? SalePrice { get; set; }
+    public decimal PurchaseRate { get; set; }
+    public string Sku { get; set; } = string.Empty;
     public int Inventory { get; set; }
     [JsonPropertyName("imageUrl")]
     public string? ImageUrl { get; set; }
+}
+
+public class ProductBundleItemCreateDto
+{
+    public int ComponentProductId { get; set; }
+    public int? ComponentVariantId { get; set; }
+    public int Quantity { get; set; } = 1;
 }
 
 // Supporting DTOs
