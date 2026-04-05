@@ -14,7 +14,6 @@ export interface ProductVariantEdit {
   id?: number;
   sku?: string;
   size?: string;
-  color?: string;
   price?: number;
   salePrice?: number;
   purchaseRate?: number;
@@ -27,7 +26,7 @@ export interface AdminProduct extends CoreProduct {
 }
 
 export interface ProductVariantOption {
-  optionName: "Size" | "Color" | "Material" | string;
+  optionName: "Size" | "Material" | string;
   values: string;
 }
 
@@ -41,7 +40,6 @@ export interface ProductVariantRow {
 export interface ProductCreatePayload {
   name: string;
   description: string;
-  shortDescription?: string;
   category: string; // Changed from categoryId
   gender: string;
   price: number;
@@ -59,19 +57,16 @@ export interface ProductCreatePayload {
       label: string;
       imageUrl: string;
       alt: string;
-      color?: string;
     };
     thumbnails: {
       type: string;
       label: string;
       imageUrl: string;
       alt: string;
-      color?: string;
     }[];
   };
 
   variants: {
-    colors: { name: string; hex: string; selected: boolean }[];
     sizes: {
       label: string;
       price: number;
@@ -92,16 +87,6 @@ export interface ProductCreatePayload {
     imageUrl?: string;
   }[];
 
-  meta: {
-    fabricAndCare: string;
-    shippingAndReturns: string;
-  };
-
-  ratings: {
-    average: number;
-    count: number;
-  };
-
   // New Fields
   tier?: string;
   tags?: string;
@@ -109,14 +94,13 @@ export interface ProductCreatePayload {
   collectionId?: number | null;
   productType: ProductType;
   bundleItems?: ProductBundleItem[];
-  isBundle: boolean;
-  bundleQuantity: number;
+  isBundle?: boolean;
+  bundleQuantity?: number;
 }
 
 export interface ProductUpdatePayload {
   name: string;
   description: string;
-  shortDescription?: string;
   category: string;
   gender: string;
   price: number;
@@ -134,19 +118,16 @@ export interface ProductUpdatePayload {
       label: string;
       imageUrl: string;
       alt: string;
-      color?: string;
     };
     thumbnails: {
       type: string;
       label: string;
       imageUrl: string;
       alt: string;
-      color?: string;
     }[];
   };
 
   variants: {
-    colors: { name: string; hex: string; selected: boolean }[];
     sizes: {
       label: string;
       price: number;
@@ -167,10 +148,7 @@ export interface ProductUpdatePayload {
     imageUrl?: string;
   }[];
 
-  meta: {
-    fabricAndCare: string;
-    shippingAndReturns: string;
-  };
+
 
   // New Fields
   tier?: string;
@@ -179,8 +157,8 @@ export interface ProductUpdatePayload {
   collectionId?: number | null;
   productType: ProductType;
   bundleItems?: ProductBundleItem[];
-  isBundle: boolean;
-  bundleQuantity: number;
+  isBundle?: boolean;
+  bundleQuantity?: number;
 }
 
 export type ProductsStatusTab = "All Items" | "Active" | "Drafts" | "Archived";

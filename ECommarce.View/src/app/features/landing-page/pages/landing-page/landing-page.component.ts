@@ -117,7 +117,6 @@ export class LandingPageComponent implements OnInit {
     city: ["Dhaka", Validators.required],
     area: ["", Validators.required],
     deliveryMethodId: [0, Validators.required],
-    selectedColor: [""],
     selectedSize: [""],
     quantity: [1, [Validators.required, Validators.min(1)]],
   });
@@ -156,16 +155,10 @@ export class LandingPageComponent implements OnInit {
           this.isLoading = false;
 
           if (product) {
-            // Set defaults
-            const colors = Array.from(
-              new Set(product.images?.map((i) => i.color).filter(Boolean)),
-            );
             const sizes = Array.from(
               new Set(product.variants?.map((v) => v.size).filter(Boolean)),
             );
-
             this.checkoutForm.patchValue({
-              selectedColor: colors[0] ?? "",
               selectedSize:
                 product.variants?.find((v) => v.isDefault)?.size ??
                 sizes[0] ??
@@ -310,9 +303,7 @@ export class LandingPageComponent implements OnInit {
     this.isSizeGuideOpen = false;
   }
 
-  selectedColorName(colorName: string | null): string {
-    return colorName || "None selected";
-  }
+
 
   selectedSizeLabel(size: string | null): string {
     return size || "Select size";
@@ -366,12 +357,7 @@ export class LandingPageComponent implements OnInit {
     return gallery;
   }
 
-  get uniqueColors(): { name: string; hex: string }[] {
-    if (!this.product) return [];
-    return Array.from(
-      new Set(this.product.images?.map((i) => i.color).filter(Boolean)),
-    ).map((color) => ({ name: color!, hex: "" }));
-  }
+
 
   prevImage(): void {
     const len = this.gallery.length;
@@ -406,24 +392,9 @@ export class LandingPageComponent implements OnInit {
     return Math.round((discount / (product.compareAtPrice ?? 1)) * 100);
   }
 
-  getColorImage(color: string): string | null {
-    if (!this.product?.images) return null;
-    const img = this.product.images.find((i) => i.color === color);
-    return img ? this.imageUrlService.getImageUrl(img.imageUrl) : null;
-  }
 
-  selectColor(colorName: string): void {
-    this.checkoutForm.patchValue({ selectedColor: colorName });
 
-    // Switch image
-    const colorImage = this.product?.images.find((i) => i.color === colorName);
-    if (colorImage) {
-      const index = this.gallery.findIndex(
-        (url) => url === colorImage.imageUrl,
-      );
-      if (index !== -1) this.currentImageIndex = index;
-    }
-  }
+
 
   increaseQuantity(): void {
     const current = this.checkoutForm.controls.quantity.value;
@@ -446,27 +417,18 @@ export class LandingPageComponent implements OnInit {
     if (this.isOrdering || !this.product) return;
     this.errorMessage = "";
 
-    // Manual validation check for required variants
-    const colors = Array.from(
-      new Set(this.product.images?.map((i) => i.color).filter(Boolean)),
-    );
     const sizes = Array.from(
       new Set(this.product.variants?.map((v) => v.size).filter(Boolean)),
     );
-
-    const isColorRequired = colors.length > 0;
     const isSizeRequired = sizes.length > 0;
 
     const formRaw = this.checkoutForm.getRawValue();
 
     if (
       this.checkoutForm.invalid ||
-      (isColorRequired && !formRaw.selectedColor) ||
       (isSizeRequired && !formRaw.selectedSize)
     ) {
-      if (isColorRequired && !formRaw.selectedColor) {
-        this.errorMessage = "Please select a color.";
-      } else if (isSizeRequired && !formRaw.selectedSize) {
+      if (isSizeRequired && !formRaw.selectedSize) {
         this.errorMessage = "Please select a size.";
       }
       this.checkoutForm.markAllAsTouched();
@@ -485,9 +447,8 @@ export class LandingPageComponent implements OnInit {
       name: this.product.name,
       price: this.currentPrice,
       quantity: form.quantity,
-      color: form.selectedColor,
       size: form.selectedSize,
-      imageUrl: this.product.images?.find(i => i.color === form.selectedColor)?.imageUrl || this.product.imageUrl || "",
+      imageUrl: this.product.imageUrl || "",
       imageAlt: this.product.name,
       discountPercentage: this.getDiscountPercentage({ price: this.currentPrice, compareAtPrice: this.currentCompareAtPrice }),
       compareAtPrice: this.currentCompareAtPrice
@@ -543,25 +504,17 @@ export class LandingPageComponent implements OnInit {
     if (this.isOrdering || !this.product) return;
     this.errorMessage = "";
 
-    const colors = Array.from(
-      new Set(this.product.images?.map((i) => i.color).filter(Boolean)),
-    );
     const sizes = Array.from(
       new Set(this.product.variants?.map((v) => v.size).filter(Boolean)),
     );
-
-    const isColorRequired = colors.length > 0;
     const isSizeRequired = sizes.length > 0;
 
     const formRaw = this.checkoutForm.getRawValue();
 
     if (
-      (isColorRequired && !formRaw.selectedColor) ||
       (isSizeRequired && !formRaw.selectedSize)
     ) {
-      if (isColorRequired && !formRaw.selectedColor) {
-        this.errorMessage = "Please select a color.";
-      } else if (isSizeRequired && !formRaw.selectedSize) {
+      if (isSizeRequired && !formRaw.selectedSize) {
         this.errorMessage = "Please select a size.";
       }
       this.checkoutForm.markAllAsTouched();
@@ -573,7 +526,6 @@ export class LandingPageComponent implements OnInit {
       .addItem(
         this.product,
         form.quantity,
-        form.selectedColor,
         form.selectedSize,
       )
       .subscribe();

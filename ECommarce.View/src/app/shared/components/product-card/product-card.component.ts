@@ -64,13 +64,7 @@ export class ProductCardComponent {
     return "imageUrl" in this.product ? this.product.imageUrl || "" : "";
   }
 
-  get selectedColorName(): string {
-    if ("images" in this.product && this.product.images?.length > 0) {
-      const firstColor = this.product.images.find((i) => i.color)?.color;
-      if (firstColor) return firstColor;
-    }
-    return "";
-  }
+
 
   private get variants(): ProductVariant[] | undefined {
     return "variants" in this.product ? this.product.variants : undefined;
@@ -223,11 +217,9 @@ export class ProductCardComponent {
 
   get description(): string {
     const desc =
-      "shortDescription" in this.product && this.product.shortDescription
-        ? this.product.shortDescription
-        : "description" in this.product && this.product.description
-          ? this.product.description
-          : "";
+      "description" in this.product && this.product.description
+        ? this.product.description
+        : "";
 
     // Strip HTML tags for preview
     return desc.replace(/<[^>]*>/g, "");
@@ -247,18 +239,17 @@ export class ProductCardComponent {
       return;
     }
 
-    // Instead of adding directly, show the Quick Add modal for color selection
+    // Instead of adding directly, show the Quick Add modal
     this.showQuickAdd = true;
   }
 
-  onQuickAddConfirm(selection: { color: string; size?: string }): void {
+  onQuickAddConfirm(selection: { size?: string }): void {
     if ("id" in this.product) {
       this.showQuickAdd = false;
       this.cartService
         .addItem(
           this.product as Product,
           1,
-          selection.color,
           selection.size ?? this.selectedSize ?? undefined,
         )
         .subscribe(() => {

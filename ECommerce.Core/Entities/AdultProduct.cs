@@ -15,6 +15,12 @@ public class AdultProduct : BaseEntity
     public decimal Price { get; set; }
     public decimal? CompareAtPrice { get; set; }
     public bool IsActive { get; set; } = true;
+    public bool IsNew { get; set; } = false;
+
+    // Foreign Keys
+    public int? CategoryId { get; set; }
+    public Category? Category { get; set; }
+
     public string? UsageTitle { get; set; }
     public string? UsageContent { get; set; }
 }

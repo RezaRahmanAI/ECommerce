@@ -53,6 +53,8 @@ public class AdultProductService : IAdultProductService
             Price = dto.Price,
             CompareAtPrice = dto.CompareAtPrice,
             IsActive = dto.IsActive,
+            IsNew = dto.IsNew,
+            CategoryId = dto.CategoryId,
             UsageTitle = dto.UsageTitle,
             UsageContent = dto.UsageContent,
             CreatedAt = DateTime.UtcNow
@@ -80,6 +82,8 @@ public class AdultProductService : IAdultProductService
         product.Price = dto.Price;
         product.CompareAtPrice = dto.CompareAtPrice;
         product.IsActive = dto.IsActive;
+        product.IsNew = dto.IsNew;
+        product.CategoryId = dto.CategoryId;
         product.UsageTitle = dto.UsageTitle;
         product.UsageContent = dto.UsageContent;
         product.UpdatedAt = DateTime.UtcNow;
@@ -115,6 +119,8 @@ public class AdultProductService : IAdultProductService
             Price = p.Price,
             CompareAtPrice = p.CompareAtPrice,
             IsActive = p.IsActive,
+            IsNew = p.IsNew,
+            CategoryId = p.CategoryId,
             UsageTitle = p.UsageTitle,
             UsageContent = p.UsageContent,
             CreatedAt = p.CreatedAt,

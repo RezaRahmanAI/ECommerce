@@ -130,7 +130,6 @@
           <div class="flex items-center gap-4 text-[10px] uppercase tracking-[0.2em] font-bold text-[#bbb]">
             <span>Item Ref:</span>
             <span class="text-[#1a1a1a]">{{ product.sku }}</span>
-            <span *ngIf="product.shortDescription" class="text-[#c8922a]">• {{ product.shortDescription }}</span>
           </div>
         </div>
 
@@ -159,36 +158,6 @@
 
         <!-- Selection System -->
         <div class="space-y-8">
-          <!-- Colors -->
-          <div *ngIf="uniqueColors.length > 0" class="space-y-5">
-            <p class="text-[10px] uppercase tracking-[0.2em] font-bold text-[#1a1a1a]">
-              Available Color
-              <span class="text-[#999] ml-2 font-normal">{{ checkoutForm.controls.selectedColor.value || 'None selected' }}</span>
-            </p>
-            <div class="flex flex-wrap gap-3">
-              <button
-                *ngFor="let colorInfo of uniqueColors"
-                (click)="selectColor(colorInfo.name)"
-                type="button"
-                class="w-16 h-20 border transition-all duration-300 relative overflow-hidden group"
-                [class.border-[#1a1a1a]]="colorInfo.name === checkoutForm.controls.selectedColor.value"
-                [class.border-[#eee]]="colorInfo.name !== checkoutForm.controls.selectedColor.value"
-              >
-                <img
-                  *ngIf="getColorImage(colorInfo.name) as imgUrl"
-                  [src]="imgUrl"
-                  class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                />
-                <div
-                  *ngIf="!getColorImage(colorInfo.name)"
-                  class="w-full h-full bg-[#f9f9f9] flex items-center justify-center text-[8px] uppercase tracking-tighter text-[#aaa] font-bold text-center p-2"
-                >
-                  {{ colorInfo.name }}
-                </div>
-              </button>
-            </div>
-          </div>
-
           <!-- Sizes -->
           <div *ngIf="product.variants && product.variants.length > 0" class="space-y-5">
             <div class="flex items-center justify-between">
@@ -243,48 +212,7 @@
       </div>
     </div>
 
-        <!-- Tabs/Accordions -->
-        <div class="pt-2">
-          <div class="divide-y divide-[#eee] border-t border-[#eee]">
-            <details class="group" *ngIf="product.fabricAndCare">
-              <summary
-                class="flex items-center justify-between py-5 cursor-pointer list-none"
-              >
-                <span
-                  class="text-[10px] font-black uppercase tracking-widest text-[#1a1a1a]"
-                  >Fabric & Care</span
-                >
-                <lucide-icon
-                  [img]="icons.Plus"
-                  class="w-4 h-4 text-[#888] transition-transform duration-300 group-open:rotate-45"
-                ></lucide-icon>
-              </summary>
-              <div class="pb-6 text-xs text-[#666] leading-relaxed font-medium">
-                {{ product.fabricAndCare }}
-              </div>
-            </details>
-            <details class="group">
-              <summary
-                class="flex items-center justify-between py-5 cursor-pointer list-none"
-              >
-                <span
-                  class="text-[10px] font-black uppercase tracking-widest text-[#1a1a1a]"
-                  >Delivery & Returns</span
-                >
-                <lucide-icon
-                  [img]="icons.Plus"
-                  class="w-4 h-4 text-[#888] transition-transform duration-300 group-open:rotate-45"
-                ></lucide-icon>
-              </summary>
-              <div class="pb-6 text-xs text-[#666] leading-relaxed font-medium">
-                {{
-                  product.shippingAndReturns ||
-                    "Express delivery in 24-48 hours. Stress-free returns."
-                }}
-              </div>
-            </details>
-          </div>
-      </div>
+
 
     <!-- ROW 2: Order Form Section -->
     <div class="mt-20 xl:mt-24 pt-20 border-t-2 border-dashed border-[#ddd]">

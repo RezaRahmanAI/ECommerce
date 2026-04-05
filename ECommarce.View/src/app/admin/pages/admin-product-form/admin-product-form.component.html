@@ -57,39 +57,7 @@
           General Information
         </h2>
         <div class="flex flex-col gap-5">
-          <div class="flex flex-col gap-4">
-            <label class="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                formControlName="isBundle"
-                class="text-primary focus:ring-primary w-4 h-4 rounded"
-              />
-              <span
-                class="text-sm font-medium text-text-main-light dark:text-text-main-dark"
-              >
-                Create this as a Bundle Product
-              </span>
-            </label>
 
-            <div
-              *ngIf="form.get('isBundle')?.value"
-              class="flex flex-col gap-1.5 pl-6 border-l-2 border-primary/20"
-            >
-              <span class="text-xs font-semibold text-primary uppercase"
-                >Bundle Quantity Per Order</span
-              >
-              <input
-                type="number"
-                formControlName="bundleQuantity"
-                min="1"
-                class="w-32 rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark px-3 py-2 text-sm text-text-main-light dark:text-text-main-dark focus:border-primary focus:ring-1 focus:ring-primary"
-              />
-              <p class="text-[10px] text-text-secondary-light">
-                Example: If set to 2, ordering 1 bundle will deduct 2 units from
-                inventory.
-              </p>
-            </div>
-          </div>
           <label class="flex flex-col gap-1.5">
             <span
               class="text-sm font-medium text-text-main-light dark:text-text-main-dark"
@@ -177,22 +145,7 @@
               instructions.</span
             >
           </label>
-          <label class="flex flex-col gap-1.5">
-            <span
-              class="text-sm font-medium text-text-main-light dark:text-text-main-dark"
-              >Landing Page Custom Text (Optional)</span
-            >
-            <textarea
-              class="w-full rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark px-4 py-2.5 text-text-main-light dark:text-text-main-dark placeholder:text-text-secondary-light focus:border-primary focus:ring-1 focus:ring-primary"
-              placeholder="Add custom text for the landing page here..."
-              rows="3"
-              formControlName="shortDescription"
-            ></textarea>
-            <span class="text-xs text-text-secondary-light"
-              >This text will appear on the landing page instead of the product
-              code if provided.</span
-            >
-          </label>
+
         </div>
       </div>
       <!-- Product Options (Colors & Sizes) -->
@@ -206,63 +159,7 @@
           Product Options
         </h2>
         <div class="space-y-6">
-          <!-- Colors Section -->
-          <div class="space-y-4" formArrayName="colors">
-            <div class="flex items-center justify-between">
-              <div>
-                <h3
-                  class="text-sm font-semibold text-text-main-light dark:text-text-main-dark"
-                >
-                  Available Colors
-                </h3>
-                <p class="text-xs text-text-secondary-light">
-                  Add colors here to tag your images. Does not affect stock.
-                </p>
-              </div>
-              <button
-                class="flex items-center gap-2 text-sm font-semibold text-primary hover:text-[#083a4a]"
-                type="button"
-                (click)="addColor()"
-              >
-                <lucide-icon
-                  [img]="icons.PlusCircle"
-                  class="w-5 h-5"
-                ></lucide-icon>
-                Add color
-              </button>
-            </div>
 
-            <!-- existing color loop... -->
-
-            <div
-              class="flex flex-col gap-3 rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark p-4"
-              *ngFor="let color of colorsArray.controls; let colorIndex = index"
-              [formGroupName]="colorIndex"
-            >
-              <div class="grid gap-3 sm:grid-cols-[1fr_1fr_0.5fr]">
-                <label
-                  class="flex flex-col gap-1 text-xs font-medium text-text-secondary-light uppercase"
-                >
-                  Name
-                  <input
-                    class="rounded-lg border border-border-light dark:border-border-dark bg-white dark:bg-black/20 px-3 py-2 text-sm text-text-main-light dark:text-text-main-dark"
-                    type="text"
-                    placeholder="e.g. Navy Blue"
-                    formControlName="name"
-                  />
-                </label>
-                <div class="flex items-end pb-1">
-                  <button
-                    class="text-xs font-semibold text-red-500 hover:underline"
-                    type="button"
-                    (click)="removeColor(colorIndex)"
-                  >
-                    Remove
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
 
           <!-- Sizes Section -->
           <div class="space-y-4" formArrayName="sizes">
@@ -419,117 +316,7 @@
         </div>
       </div>
 
-      <!-- Bundle Items Card (Only for Combo Products) -->
-      <div
-        class="rounded-xl border border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark p-6 shadow-sm"
-        *ngIf="form.get('productType')?.value === ProductType.Combo"
-      >
-        <div class="mb-4 flex items-center justify-between">
-          <div>
-            <h2
-              class="text-lg font-bold text-text-main-light dark:text-text-main-dark"
-            >
-              Bundle Components
-            </h2>
-            <p class="text-xs text-text-secondary-light">
-              Selection of products included in this combo.
-            </p>
-          </div>
-          <button
-            class="flex items-center gap-2 text-sm font-semibold text-primary hover:text-[#083a4a]"
-            type="button"
-            (click)="addBundleItem()"
-          >
-            <lucide-icon [img]="icons.PlusCircle" class="w-5 h-5"></lucide-icon>
-            Add Component
-          </button>
-        </div>
 
-        <div class="space-y-4" formArrayName="bundleItems">
-          <div
-            class="flex flex-col gap-4 rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark p-4"
-            *ngFor="let item of bundleItemsArray.controls; let i = index"
-            [formGroupName]="i"
-          >
-            <div
-              class="grid grid-cols-1 md:grid-cols-[2fr_1.5fr_0.8fr_auto] gap-4 items-end"
-            >
-              <label class="flex flex-col gap-1.5">
-                <span
-                  class="text-xs font-medium text-text-secondary-light uppercase"
-                  >Product</span
-                >
-                <select
-                  class="w-full rounded-lg border border-border-light dark:border-border-dark bg-white dark:bg-black/20 px-3 py-2 text-sm text-text-main-light dark:text-text-main-dark"
-                  formControlName="componentProductId"
-                >
-                  <option value="" disabled>Select Product</option>
-                  <option *ngFor="let p of allProducts" [value]="p.id">
-                    {{ p.name }} ({{ p.sku }})
-                  </option>
-                </select>
-              </label>
-
-              <label class="flex flex-col gap-1.5">
-                <span
-                  class="text-xs font-medium text-text-secondary-light uppercase"
-                  >Variant (Optional)</span
-                >
-                <select
-                  class="w-full rounded-lg border border-border-light dark:border-border-dark bg-white dark:bg-black/20 px-3 py-2 text-sm text-text-main-light dark:text-text-main-dark"
-                  formControlName="componentVariantId"
-                >
-                  <option [ngValue]="null">All Variants / Base</option>
-                  <option
-                    *ngFor="
-                      let v of getComponentVariants(
-                        item.get('componentProductId')?.value
-                      )
-                    "
-                    [value]="v.id"
-                  >
-                    {{ v.size || "Default" }} - {{ v.sku }}
-                  </option>
-                </select>
-              </label>
-
-              <label class="flex flex-col gap-1.5">
-                <span
-                  class="text-xs font-medium text-text-secondary-light uppercase"
-                  >Quantity</span
-                >
-                <input
-                  type="number"
-                  class="w-full rounded-lg border border-border-light dark:border-border-dark bg-white dark:bg-black/20 px-3 py-2 text-sm text-text-main-light dark:text-text-main-dark"
-                  formControlName="quantity"
-                  min="1"
-                />
-              </label>
-
-              <button
-                class="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
-                type="button"
-                (click)="removeBundleItem(i)"
-              >
-                <lucide-icon
-                  [img]="icons.PlusCircle"
-                  class="w-5 h-5 rotate-45"
-                ></lucide-icon>
-              </button>
-            </div>
-          </div>
-
-          <div
-            *ngIf="bundleItemsArray.length === 0"
-            class="text-center py-8 border-2 border-dashed border-border-light dark:border-border-dark rounded-xl"
-          >
-            <p class="text-sm text-text-secondary-light">
-              No components added. Click "Add Component" to start building your
-              combo.
-            </p>
-          </div>
-        </div>
-      </div>
       <!-- Media Card -->
       <div
         class="rounded-xl border border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark p-6 shadow-sm"
@@ -648,23 +435,7 @@
                     <option value="video">Video</option>
                   </select>
                 </label>
-                <label
-                  class="flex flex-col gap-1 text-xs font-medium text-text-secondary-light uppercase"
-                >
-                  Color Variant
-                  <select
-                    class="rounded-lg border border-border-light dark:border-border-dark bg-white dark:bg-black/20 px-3 py-2 text-sm text-text-main-light dark:text-text-main-dark"
-                    formControlName="color"
-                  >
-                    <option [ngValue]="null">None</option>
-                    <option
-                      *ngFor="let colorGroup of colorsArray.controls"
-                      [value]="colorGroup.get('name')?.value"
-                    >
-                      {{ colorGroup.get("name")?.value }}
-                    </option>
-                  </select>
-                </label>
+
                 <div class="flex flex-col justify-between gap-3">
                   <label
                     class="flex items-center gap-2 text-xs font-medium text-text-secondary-light uppercase"
@@ -698,43 +469,7 @@
           </p>
         </div>
       </div>
-      <!-- Product Details Card -->
-      <div
-        class="rounded-xl border border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark p-6 shadow-sm"
-        formGroupName="meta"
-      >
-        <h2
-          class="mb-4 text-lg font-bold text-text-main-light dark:text-text-main-dark"
-        >
-          Product Details
-        </h2>
-        <div class="grid gap-4">
-          <label class="flex flex-col gap-1.5">
-            <span
-              class="text-sm font-medium text-text-main-light dark:text-text-main-dark"
-              >Fabric &amp; Care</span
-            >
-            <textarea
-              class="w-full rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark px-4 py-3 text-text-main-light dark:text-text-main-dark"
-              rows="4"
-              placeholder="Share fabric details and care instructions."
-              formControlName="fabricAndCare"
-            ></textarea>
-          </label>
-          <label class="flex flex-col gap-1.5">
-            <span
-              class="text-sm font-medium text-text-main-light dark:text-text-main-dark"
-              >Shipping &amp; Returns</span
-            >
-            <textarea
-              class="w-full rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark px-4 py-3 text-text-main-light dark:text-text-main-dark"
-              rows="4"
-              placeholder="Outline delivery timelines and return policy."
-              formControlName="shippingAndReturns"
-            ></textarea>
-          </label>
-        </div>
-      </div>
+
     </div>
     <!-- Right Column (Organization & Settings) -->
     <div class="flex flex-col gap-8 lg:col-span-1">

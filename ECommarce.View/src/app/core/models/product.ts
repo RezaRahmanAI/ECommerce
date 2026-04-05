@@ -3,7 +3,6 @@ export interface ProductImage {
   imageUrl: string;
   altText?: string;
   isPrimary: boolean;
-  color?: string;
 }
 
 export interface ProductVariant {
@@ -36,7 +35,6 @@ export interface Product {
   name: string;
   slug: string;
   description?: string;
-  shortDescription?: string;
   sku: string;
   price: number;
   compareAtPrice?: number;
@@ -57,8 +55,6 @@ export interface Product {
 
   metaTitle?: string;
   metaDescription?: string;
-  fabricAndCare?: string;
-  shippingAndReturns?: string;
 
   // ilyn.global Design Fields
   tier?: string;

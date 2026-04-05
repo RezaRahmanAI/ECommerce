@@ -364,7 +364,6 @@ export class AdultLandingPageComponent implements OnInit {
       discountPercentage: this.getDiscountPercentage(item),
       compareAtPrice: item.compareAtPrice,
       isAdult: true,
-      color: "N/A",
       size: "N/A"
     }));
 

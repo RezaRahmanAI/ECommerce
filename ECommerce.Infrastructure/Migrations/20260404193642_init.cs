@@ -12,33 +12,6 @@ namespace ECommerce.Infrastructure.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "AdultProducts",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Headline = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Slug = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    Subtitle = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    ImgUrl = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    BenefitsTitle = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    BenefitsContent = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    SideEffectsTitle = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    SideEffectsContent = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Price = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    CompareAtPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
-                    IsActive = table.Column<bool>(type: "bit", nullable: false),
-                    UsageTitle = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    UsageContent = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_AdultProducts", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "AspNetRoles",
                 columns: table => new
                 {
@@ -411,6 +384,40 @@ namespace ECommerce.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "AdultProducts",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Headline = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Slug = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Subtitle = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ImgUrl = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    BenefitsTitle = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    BenefitsContent = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    SideEffectsTitle = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    SideEffectsContent = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Price = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    CompareAtPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false),
+                    IsNew = table.Column<bool>(type: "bit", nullable: false),
+                    CategoryId = table.Column<int>(type: "int", nullable: true),
+                    UsageTitle = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    UsageContent = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AdultProducts", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_AdultProducts_Categories_CategoryId",
+                        column: x => x.CategoryId,
+                        principalTable: "Categories",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Collections",
                 columns: table => new
                 {
@@ -704,6 +711,11 @@ namespace ECommerce.Infrastructure.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AdultProducts_CategoryId",
+                table: "AdultProducts",
+                column: "CategoryId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_AdultProducts_Slug",

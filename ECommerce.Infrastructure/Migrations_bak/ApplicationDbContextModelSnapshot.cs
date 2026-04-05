@@ -36,6 +36,9 @@ namespace ECommerce.Infrastructure.Migrations
                     b.Property<string>("BenefitsTitle")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int?>("CategoryId")
+                        .HasColumnType("int");
+
                     b.Property<decimal?>("CompareAtPrice")
                         .HasColumnType("decimal(18,2)");
 
@@ -51,6 +54,9 @@ namespace ECommerce.Infrastructure.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsNew")
                         .HasColumnType("bit");
 
                     b.Property<decimal>("Price")
@@ -79,6 +85,8 @@ namespace ECommerce.Infrastructure.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CategoryId");
 
                     b.HasIndex("Slug")
                         .IsUnique();
@@ -1273,6 +1281,15 @@ namespace ECommerce.Infrastructure.Migrations
                     b.HasKey("UserId", "LoginProvider", "Name");
 
                     b.ToTable("AspNetUserTokens", (string)null);
+                });
+
+            modelBuilder.Entity("ECommerce.Core.Entities.AdultProduct", b =>
+                {
+                    b.HasOne("ECommerce.Core.Entities.Category", "Category")
+                        .WithMany()
+                        .HasForeignKey("CategoryId");
+
+                    b.Navigation("Category");
                 });
 
             modelBuilder.Entity("ECommerce.Core.Entities.AppRefreshToken", b =>

@@ -13,6 +13,8 @@ export interface AdultProduct {
     price: number;
     compareAtPrice?: number;
     isActive: boolean;
+    isNew: boolean;
+    categoryId?: number;
     createdAt: Date;
     updatedAt?: Date;
 }
@@ -31,4 +33,6 @@ export interface AdultProductCreateUpdatePayload {
     price: number;
     compareAtPrice?: number;
     isActive: boolean;
+    isNew: boolean;
+    categoryId?: number;
 }

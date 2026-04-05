@@ -15,7 +15,6 @@ export interface CustomerLookupResponse {
 export interface OrderItemRequest {
   productId: number;
   quantity: number;
-  color?: string;
   size?: string;
 }
 

@@ -9,6 +9,8 @@ import { Router, RouterModule, ActivatedRoute } from "@angular/router";
 import { AdultProductService } from "../../../features/adult-landing/services/adult-product.service";
 import { AdultProduct, AdultProductCreateUpdatePayload } from '../../models/adult-product.models';
 import { ProductsService } from "../../services/products.service";
+import { CategoriesService } from "../../services/categories.service";
+import { Category } from "../../models/categories.models";
 import { ImageUrlService } from "../../../core/services/image-url.service";
 import {
   LucideAngularModule,
@@ -62,6 +64,7 @@ export class AdminAdultProductFormComponent implements OnInit {
   private fb = inject(FormBuilder);
   private adultProductService = inject(AdultProductService);
   private productsService = inject(ProductsService);
+  private categoriesService = inject(CategoriesService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   readonly imageUrlService = inject(ImageUrlService);
@@ -72,6 +75,7 @@ export class AdminAdultProductFormComponent implements OnInit {
   isSaving = false;
   imagePreview: string | null = null;
   selectedFile: File | null = null;
+  categories: Category[] = [];
 
   form = this.fb.group({
     headline: ["", [Validators.required, Validators.minLength(3)]],
@@ -87,15 +91,29 @@ export class AdminAdultProductFormComponent implements OnInit {
     price: [0, [Validators.required, Validators.min(0)]],
     compareAtPrice: [null as number | null, [Validators.min(0)]],
     isActive: [true],
+    isNew: [false],
+    categoryId: [null as number | null],
   });
 
   ngOnInit(): void {
+    this.loadCategories();
     const id = this.route.snapshot.paramMap.get("id");
     if (id) {
       this.isEditMode = true;
       this.productId = Number(id);
       this.loadProduct(this.productId);
     }
+  }
+
+  loadCategories(): void {
+    this.categoriesService.getAll().subscribe({
+      next: (categories) => {
+        this.categories = categories;
+      },
+      error: (err) => {
+        console.error("Failed to load categories:", err);
+      }
+    });
   }
 
   loadProduct(id: number): void {
@@ -226,7 +244,9 @@ export class AdminAdultProductFormComponent implements OnInit {
       usageContent: rawValue.usageContent ?? '',
       price: Number(rawValue.price),
       compareAtPrice: rawValue.compareAtPrice ? Number(rawValue.compareAtPrice) : undefined,
-      isActive: Boolean(rawValue.isActive)
+      isActive: Boolean(rawValue.isActive),
+      isNew: Boolean(rawValue.isNew),
+      categoryId: rawValue.categoryId ? Number(rawValue.categoryId) : undefined
     };
     
     if (this.isEditMode && this.productId) {

@@ -36,7 +36,6 @@ export interface OrderItem {
   unitPrice: number;
   totalPrice: number;
   size?: string;
-  color?: string;
 }
 
 export interface OrderDetail extends Order {

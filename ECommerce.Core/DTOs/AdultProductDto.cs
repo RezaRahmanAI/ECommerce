@@ -26,6 +26,8 @@ public class AdultProductDto
     public decimal Price { get; set; }
     public decimal? CompareAtPrice { get; set; }
     public bool IsActive { get; set; }
+    public bool IsNew { get; set; }
+    public int? CategoryId { get; set; }
     public string? UsageTitle { get; set; }
     public string? UsageContent { get; set; }
     
@@ -54,6 +56,8 @@ public class AdultProductCreateUpdateDto
     public decimal Price { get; set; }
     public decimal? CompareAtPrice { get; set; }
     public bool IsActive { get; set; } = true;
+    public bool IsNew { get; set; } = false;
+    public int? CategoryId { get; set; }
     public string? UsageTitle { get; set; }
     public string? UsageContent { get; set; }
 }

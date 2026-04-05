@@ -1,11 +1,6 @@
 import { Product } from "../models/product";
 
-const defaultMeta: any = {
-  fabricAndCare:
-    "100% premium fabric. Machine wash cold, tumble dry low. Cool iron if needed.",
-  shippingAndReturns:
-    "Free shipping on orders over $150. Returns accepted within 30 days of delivery.",
-};
+
 
 const defaultRatings: any = {
   avgRating: 4.6,
@@ -19,14 +14,7 @@ const defaultRatings: any = {
   ],
 };
 
-const buildColors = (
-  colors: Array<{ name: string; hex: string }>,
-  selectedName?: string,
-): any[] =>
-  colors.map((color) => ({
-    ...color,
-    selected: color.name === (selectedName ?? colors[0]?.name),
-  }));
+
 
 const buildSizes = (labels: string[], selectedLabel?: string): any[] =>
   labels.map((label, index) => ({
@@ -125,22 +113,7 @@ export const MOCK_PRODUCTS: any[] = [
       ],
     },
     variants: {
-      colors: buildColors(
-        [
-          { name: "Midnight Blue", hex: "#1e2a3b" },
-          { name: "Walnut Brown", hex: "#5d4037" },
-          { name: "Sandstone", hex: "#8d6e63" },
-          { name: "Moonlight", hex: "#d7ccc8" },
-        ],
-        "Midnight Blue",
-      ),
       sizes: buildSizes(["XS", "S", "M", "L", "XL"], "M"),
-    },
-    meta: {
-      fabricAndCare:
-        "100% Medina Silk. Machine wash cold on delicate cycle. Hang to dry. Do not bleach. Cool iron if needed.",
-      shippingAndReturns:
-        "Free shipping on orders over $150. Returns accepted within 30 days of delivery. Items must be unworn and with original tags.",
     },
     relatedProducts: [
       {
@@ -212,16 +185,8 @@ export const MOCK_PRODUCTS: any[] = [
       "Urban cotton thobe in crisp white",
     ),
     variants: {
-      colors: buildColors(
-        [
-          { name: "White", hex: "#f8fafc" },
-          { name: "Stone", hex: "#e2e8f0" },
-        ],
-        "White",
-      ),
       sizes: buildSizes(["S", "M", "L", "XL"], "M"),
     },
-    meta: defaultMeta,
     relatedProducts: [],
     newArrival: true,
   },
@@ -242,16 +207,8 @@ export const MOCK_PRODUCTS: any[] = [
       "Girl in floral dress",
     ),
     variants: {
-      colors: buildColors(
-        [
-          { name: "Petal Beige", hex: "#E5D0C6" },
-          { name: "Powder Blue", hex: "#ADC4CE" },
-        ],
-        "Petal Beige",
-      ),
       sizes: buildSizes(["2-3Y", "4-5Y", "6-7Y", "8-9Y", "10-12Y"], "4-5Y"),
     },
-    meta: defaultMeta,
     relatedProducts: [],
   },
   {
@@ -271,10 +228,8 @@ export const MOCK_PRODUCTS: any[] = [
       "Dark blue silk chiffon scarf with subtle sheen",
     ),
     variants: {
-      colors: buildColors([{ name: "Midnight", hex: "#0f172a" }], "Midnight"),
       sizes: buildSizes(["One Size"], "One Size"),
     },
-    meta: defaultMeta,
     relatedProducts: [],
   },
   {
@@ -294,16 +249,8 @@ export const MOCK_PRODUCTS: any[] = [
       "Classic linen thobe in beige",
     ),
     variants: {
-      colors: buildColors(
-        [
-          { name: "Beige", hex: "#e7e5e4" },
-          { name: "Sand", hex: "#d6d3d1" },
-        ],
-        "Beige",
-      ),
       sizes: buildSizes(["S", "M", "L", "XL"], "M"),
     },
-    meta: defaultMeta,
     relatedProducts: [],
     featured: true,
   },
@@ -323,16 +270,8 @@ export const MOCK_PRODUCTS: any[] = [
       "Pastel pink chiffon hijab",
     ),
     variants: {
-      colors: buildColors(
-        [
-          { name: "Pastel Pink", hex: "#fbcfe8" },
-          { name: "Sand", hex: "#f5f5dc" },
-        ],
-        "Pastel Pink",
-      ),
       sizes: buildSizes(["One Size"], "One Size"),
     },
-    meta: defaultMeta,
     relatedProducts: [],
     featured: true,
   },
@@ -353,13 +292,8 @@ export const MOCK_PRODUCTS: any[] = [
       "Emerald green evening maxi dress",
     ),
     variants: {
-      colors: buildColors(
-        [{ name: "Emerald Green", hex: "#047857" }],
-        "Emerald Green",
-      ),
       sizes: buildSizes(["XS", "S", "M", "L"], "M"),
     },
-    meta: defaultMeta,
     relatedProducts: [],
     featured: true,
   },
@@ -379,13 +313,8 @@ export const MOCK_PRODUCTS: any[] = [
       "Black abaya with gold detailing",
     ),
     variants: {
-      colors: buildColors(
-        [{ name: "Black with Gold", hex: "#111827" }],
-        "Black with Gold",
-      ),
       sizes: buildSizes(["S", "M", "L"], "M"),
     },
-    meta: defaultMeta,
     relatedProducts: [],
     featured: true,
   },
@@ -405,10 +334,8 @@ export const MOCK_PRODUCTS: any[] = [
       "Navy blue linen thobe",
     ),
     variants: {
-      colors: buildColors([{ name: "Navy Blue", hex: "#1e3a8a" }], "Navy Blue"),
       sizes: buildSizes(["S", "M", "L", "XL"], "M"),
     },
-    meta: defaultMeta,
     relatedProducts: [],
   },
   {
@@ -428,13 +355,8 @@ export const MOCK_PRODUCTS: any[] = [
       "Classic white cotton kurta",
     ),
     variants: {
-      colors: buildColors(
-        [{ name: "Crisp White", hex: "#ffffff" }],
-        "Crisp White",
-      ),
       sizes: buildSizes(["S", "M", "L", "XL"], "M"),
     },
-    meta: defaultMeta,
     relatedProducts: [],
   },
   {
@@ -454,10 +376,8 @@ export const MOCK_PRODUCTS: any[] = [
       "Beige relaxed fit trousers",
     ),
     variants: {
-      colors: buildColors([{ name: "Beige", hex: "#e5e7eb" }], "Beige"),
       sizes: buildSizes(["S", "M", "L", "XL"], "M"),
     },
-    meta: defaultMeta,
     relatedProducts: [],
   },
   {
@@ -477,13 +397,8 @@ export const MOCK_PRODUCTS: any[] = [
       "Charcoal grey bomber jacket",
     ),
     variants: {
-      colors: buildColors(
-        [{ name: "Charcoal Grey", hex: "#4b5563" }],
-        "Charcoal Grey",
-      ),
       sizes: buildSizes(["S", "M", "L", "XL"], "M"),
     },
-    meta: defaultMeta,
     relatedProducts: [],
   },
   {
@@ -502,13 +417,8 @@ export const MOCK_PRODUCTS: any[] = [
       "Light grey linen thobe",
     ),
     variants: {
-      colors: buildColors(
-        [{ name: "Light Grey", hex: "#d1d5db" }],
-        "Light Grey",
-      ),
       sizes: buildSizes(["S", "M", "L", "XL"], "M"),
     },
-    meta: defaultMeta,
     relatedProducts: [],
   },
   {
@@ -528,13 +438,8 @@ export const MOCK_PRODUCTS: any[] = [
       "Black print casual shirt",
     ),
     variants: {
-      colors: buildColors(
-        [{ name: "Black Print", hex: "#111827" }],
-        "Black Print",
-      ),
       sizes: buildSizes(["S", "M", "L", "XL"], "M"),
     },
-    meta: defaultMeta,
     relatedProducts: [],
   },
   {
@@ -553,10 +458,8 @@ export const MOCK_PRODUCTS: any[] = [
       "Soft teal pastel abaya",
     ),
     variants: {
-      colors: buildColors([{ name: "Soft Teal", hex: "#5eead4" }], "Soft Teal"),
       sizes: buildSizes(["XS", "S", "M", "L"], "M"),
     },
-    meta: defaultMeta,
     relatedProducts: [],
   },
   {
@@ -576,10 +479,8 @@ export const MOCK_PRODUCTS: any[] = [
       "Midnight maxi dress",
     ),
     variants: {
-      colors: buildColors([{ name: "Midnight", hex: "#0f172a" }], "Midnight"),
       sizes: buildSizes(["S", "M", "L"], "M"),
     },
-    meta: defaultMeta,
     relatedProducts: [],
   },
   {
@@ -598,10 +499,8 @@ export const MOCK_PRODUCTS: any[] = [
       "Sand premium hijab",
     ),
     variants: {
-      colors: buildColors([{ name: "Sand", hex: "#f5f5dc" }], "Sand"),
       sizes: buildSizes(["One Size"], "One Size"),
     },
-    meta: defaultMeta,
     relatedProducts: [],
   },
   {
@@ -621,10 +520,8 @@ export const MOCK_PRODUCTS: any[] = [
       "Garden floral day dress",
     ),
     variants: {
-      colors: buildColors([{ name: "Floral", hex: "#fda4af" }], "Floral"),
       sizes: buildSizes(["XS", "S", "M", "L"], "M"),
     },
-    meta: defaultMeta,
     relatedProducts: [],
   },
   {
@@ -645,10 +542,8 @@ export const MOCK_PRODUCTS: any[] = [
       "White linen two-piece set",
     ),
     variants: {
-      colors: buildColors([{ name: "White", hex: "#ffffff" }], "White"),
       sizes: buildSizes(["XS", "S", "M", "L"], "M"),
     },
-    meta: defaultMeta,
     relatedProducts: [],
   },
   {
@@ -668,10 +563,8 @@ export const MOCK_PRODUCTS: any[] = [
       "Denim longline jacket",
     ),
     variants: {
-      colors: buildColors([{ name: "Denim", hex: "#3b82f6" }], "Denim"),
       sizes: buildSizes(["S", "M", "L"], "M"),
     },
-    meta: defaultMeta,
     relatedProducts: [],
   },
   {
@@ -690,17 +583,8 @@ export const MOCK_PRODUCTS: any[] = [
       "Boy in classic linen thobe",
     ),
     variants: {
-      colors: buildColors(
-        [
-          { name: "Ivory", hex: "#ffffff" },
-          { name: "Charcoal", hex: "#2C3333" },
-          { name: "Sage", hex: "#9DA298" },
-        ],
-        "Ivory",
-      ),
       sizes: buildSizes(["2-3Y", "4-5Y", "6-7Y", "8-9Y", "10-12Y"], "4-5Y"),
     },
-    meta: defaultMeta,
     relatedProducts: [],
   },
   {
@@ -721,16 +605,8 @@ export const MOCK_PRODUCTS: any[] = [
       "Kids prayer set",
     ),
     variants: {
-      colors: buildColors(
-        [
-          { name: "Warm Taupe", hex: "#756A63" },
-          { name: "Sandy Beige", hex: "#B69F8E" },
-        ],
-        "Warm Taupe",
-      ),
       sizes: buildSizes(["4-5Y", "6-7Y", "8-9Y"], "4-5Y"),
     },
-    meta: defaultMeta,
     relatedProducts: [],
   },
   {
@@ -749,16 +625,8 @@ export const MOCK_PRODUCTS: any[] = [
       "Cotton summer set",
     ),
     variants: {
-      colors: buildColors(
-        [
-          { name: "Seafoam", hex: "#A3C4BC" },
-          { name: "Peach", hex: "#F3D1C9" },
-        ],
-        "Seafoam",
-      ),
       sizes: buildSizes(["2-3Y", "4-5Y", "6-7Y"], "4-5Y"),
     },
-    meta: defaultMeta,
     relatedProducts: [],
   },
   {
@@ -777,16 +645,8 @@ export const MOCK_PRODUCTS: any[] = [
       "Elegant velvet abaya",
     ),
     variants: {
-      colors: buildColors(
-        [
-          { name: "Burgundy", hex: "#4A0404" },
-          { name: "Midnight", hex: "#0F172A" },
-        ],
-        "Burgundy",
-      ),
       sizes: buildSizes(["8-9Y", "10-12Y", "Teen"], "10-12Y"),
     },
-    meta: defaultMeta,
     relatedProducts: [],
   },
   {
@@ -805,16 +665,8 @@ export const MOCK_PRODUCTS: any[] = [
       "Everyday play set",
     ),
     variants: {
-      colors: buildColors(
-        [
-          { name: "Slate", hex: "#64748B" },
-          { name: "Mint", hex: "#CAE6D3" },
-        ],
-        "Slate",
-      ),
       sizes: buildSizes(["2-3Y", "4-5Y", "6-7Y"], "4-5Y"),
     },
-    meta: defaultMeta,
     relatedProducts: [],
   },
   {
@@ -833,10 +685,8 @@ export const MOCK_PRODUCTS: any[] = [
       "Gold minimalist cuff bracelet",
     ),
     variants: {
-      colors: buildColors([{ name: "Gold", hex: "#fbbf24" }], "Gold"),
       sizes: buildSizes(["One Size"], "One Size"),
     },
-    meta: defaultMeta,
     relatedProducts: [],
   },
   {
@@ -856,10 +706,8 @@ export const MOCK_PRODUCTS: any[] = [
       "Textured brown leather tote bag",
     ),
     variants: {
-      colors: buildColors([{ name: "Chestnut", hex: "#8b5e3c" }], "Chestnut"),
       sizes: buildSizes(["One Size"], "One Size"),
     },
-    meta: defaultMeta,
     relatedProducts: [],
   },
   {
@@ -878,10 +726,8 @@ export const MOCK_PRODUCTS: any[] = [
       "Purple velvet headband",
     ),
     variants: {
-      colors: buildColors([{ name: "Plum", hex: "#7c3aed" }], "Plum"),
       sizes: buildSizes(["One Size"], "One Size"),
     },
-    meta: defaultMeta,
     relatedProducts: [],
   },
   {
@@ -900,10 +746,8 @@ export const MOCK_PRODUCTS: any[] = [
       "Set of three pearl brooches arranged on a cloth",
     ),
     variants: {
-      colors: buildColors([{ name: "Pearl", hex: "#f8fafc" }], "Pearl"),
       sizes: buildSizes(["One Size"], "One Size"),
     },
-    meta: defaultMeta,
     relatedProducts: [],
   },
   {
@@ -922,13 +766,8 @@ export const MOCK_PRODUCTS: any[] = [
       "Woven brown leather belt coiled up",
     ),
     variants: {
-      colors: buildColors(
-        [{ name: "Chestnut Brown", hex: "#8b5e3c" }],
-        "Chestnut Brown",
-      ),
       sizes: buildSizes(["One Size"], "One Size"),
     },
-    meta: defaultMeta,
     relatedProducts: [],
   },
 ];
