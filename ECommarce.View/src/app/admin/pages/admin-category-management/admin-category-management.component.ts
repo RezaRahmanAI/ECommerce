@@ -305,11 +305,18 @@ export class AdminCategoryManagementComponent implements OnInit, OnDestroy {
 
   private performSave(): void {
     const formValue = this.categoryForm.getRawValue();
+    const parentId = formValue.parentId ?? null;
+    const nextSortOrder =
+      this.categoriesFlat.filter((item) => (item.parentId ?? null) === parentId)
+        .length + 1;
+
     const payload: any = {
       name: formValue.name ?? "",
       slug: formValue.slug ?? "",
+      parentId,
       imageUrl: formValue.imageUrl ?? "",
       isActive: formValue.isActive ?? true,
+      sortOrder: nextSortOrder,
     };
 
     console.log("[DEBUG] Saving category with payload:", JSON.stringify(payload, null, 2));

@@ -106,6 +106,13 @@ public class AdminCategoriesController : ControllerBase
         var slug = string.IsNullOrWhiteSpace(request.slug) 
             ? GenerateSlug(request.name) 
             : GenerateSlug(request.slug);
+        var parentId = request.parentId;
+        var nextSortOrder = request.sortOrder > 0
+            ? request.sortOrder
+            : await _context.Categories
+                .Where(c => c.ParentId == parentId)
+                .Select(c => (int?)c.DisplayOrder)
+                .MaxAsync() + 1 ?? 1;
 
         var category = new Category
         {
@@ -113,8 +120,8 @@ public class AdminCategoriesController : ControllerBase
             Slug = slug,
             ImageUrl = request.imageUrl,
             IsActive = request.isActive,
-            DisplayOrder = request.sortOrder,
-            ParentId = null
+            DisplayOrder = nextSortOrder,
+            ParentId = parentId
         };
 
         _context.Categories.Add(category);
@@ -150,9 +157,8 @@ public class AdminCategoriesController : ControllerBase
             : GenerateSlug(request.slug);
         category.ImageUrl = request.imageUrl;
         category.IsActive = request.isActive;
-        category.DisplayOrder = request.sortOrder;
-
-        category.ParentId = null;
+        category.DisplayOrder = request.sortOrder > 0 ? request.sortOrder : category.DisplayOrder;
+        category.ParentId = request.parentId;
 
         await _context.SaveChangesAsync();
 
@@ -232,6 +238,7 @@ public class CategoryCreateRequest
     public string? imageUrl { get; set; }
     public bool isActive { get; set; } = true;
     public int sortOrder { get; set; }
+    public int? parentId { get; set; }
 }
 
 public class CategoryListResponse
