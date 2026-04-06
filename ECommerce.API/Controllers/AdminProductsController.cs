@@ -140,7 +140,7 @@ public class AdminProductsController : ControllerBase
                 p.StockQuantity,
                 p.IsNew,
                 Status = p.IsActive ? "Active" : "Draft",
-                ImageUrl = p.Images.FirstOrDefault(i => i.IsMain) != null ? p.Images.FirstOrDefault(i => i.IsMain)!.Url : "",
+                imgUrl = p.Images.FirstOrDefault(i => i.IsMain) != null ? p.Images.FirstOrDefault(i => i.IsMain)!.Url : "",
                 Category = p.Category != null ? p.Category.Name : "",
                 CategoryId = p.CategoryId,
                 MediaUrls = p.Images.Select(i => i.Url).ToList(),
