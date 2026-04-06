@@ -142,7 +142,7 @@ export class AdminProductsComponent implements OnInit, OnDestroy {
   }
 
   deleteProduct(product: AdminProduct): void {
-    const confirmed = window.confirm(`Delete ${product.name}?`);
+    const confirmed = window.confirm(`Delete ${product.headline}?`);
     if (!confirmed) {
       return;
     }
@@ -266,12 +266,12 @@ export class AdminProductsComponent implements OnInit, OnDestroy {
     return this.selectedProductIds.has(productId);
   }
 
-  isOutOfStock(product: AdminProduct): boolean {
-    return (product.stockQuantity ?? 0) === 0 || product.status === "Out of Stock";
+  isOutOfStock(product: AdminProduct): void {
+    // Logic removed as stock is not in the current simplified model
   }
 
-  isLowStock(product: AdminProduct): boolean {
-    return product.stockQuantity > 0 && product.stockQuantity <= 5;
+  isLowStock(product: AdminProduct): void {
+    // Logic removed as stock is not in the current simplified model
   }
 
   statusClasses(product: AdminProduct): string {

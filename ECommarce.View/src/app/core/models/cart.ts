@@ -1,11 +1,11 @@
 export interface CartItem {
   id: string;
   productId: number;
-  name: string;
+  headline: string;
   price: number;
   quantity: number;
-  size: string;
-  imageUrl: string;
+  size?: string;
+  imgUrl: string;
   imageAlt: string;
   discountPercentage?: number;
   compareAtPrice?: number | null;

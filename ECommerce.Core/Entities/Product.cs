@@ -5,43 +5,33 @@ namespace ECommerce.Core.Entities;
 
 public class Product : BaseEntity
 {
-    public string Name { get; set; } = string.Empty;
+    public string Headline { get; set; } = string.Empty;
     public string Slug { get; set; } = string.Empty;
-    public string? Description { get; set; }
-    public string? ShortDescription { get; set; }
-    public string Sku { get; set; } = string.Empty;
-    public string? ImageUrl { get; set; } // Main image URL for quick access
-    public int StockQuantity { get; set; } // Renamed from Stock
+    public string? Subtitle { get; set; }
+    public string Sku { get; set; } = string.Empty; // Kept internally behind the scenes
+
+    // Visibility
     public bool IsActive { get; set; } = true;
-    public ProductType ProductType { get; set; } = ProductType.Simple;
-
     public bool IsNew { get; set; } = false;
-    public bool IsFeatured { get; set; } = false;
-    
-    // Meta Info
-    public string? MetaTitle { get; set; }
-    public string? MetaDescription { get; set; }
-    public string? FabricAndCare { get; set; }
-    public string? ShippingAndReturns { get; set; }
-    
-    // ilyn.global Design Fields
-    public string? Tier { get; set; } // Premium, Luxury, Platinum, Sahara
-    public string? Tags { get; set; } // Comma-separated tags for categorization
-    public int SortOrder { get; set; } = 0; // Manual sorting order
 
+    // Pricing & Inventory natively replacing variants
+    public decimal PurchaseRate { get; set; }
+    public decimal Price { get; set; }
+    public decimal? CompareAtPrice { get; set; }
+    public int StockQuantity { get; set; }
 
-    // Foreign Keys
+    // Content fields matching frontend text areas
+    public string? BenefitsTitle { get; set; }
+    public string? BenefitsContent { get; set; }
+    public string? UsageTitle { get; set; }
+    public string? UsageContent { get; set; }
+    public string? SideEffectsTitle { get; set; }
+    public string? SideEffectsContent { get; set; }
+
+    // Relationships
     public int CategoryId { get; set; }
     public Category? Category { get; set; }
 
-    public int? CollectionId { get; set; }
-    public Collection? Collection { get; set; }
-    
     public ICollection<ProductImage> Images { get; set; } = new List<ProductImage>();
-    public ICollection<ProductVariant> Variants { get; set; } = new List<ProductVariant>();
     public ICollection<Review> Reviews { get; set; } = new List<Review>();
-
-    // Simplified Bundle System
-    public bool IsBundle { get; set; } = false;
-    public int BundleQuantity { get; set; } = 1;
 }

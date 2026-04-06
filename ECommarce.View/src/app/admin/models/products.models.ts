@@ -1,164 +1,57 @@
 import {
   Product as CoreProduct,
   ProductImage,
-  ProductVariant,
   RelatedProduct,
-  ProductType,
-  ProductBundleItem,
 } from "../../core/models/product";
 
 export type ProductStatus = "Active" | "Draft" | "Archived" | "Out of Stock";
 
-
-export interface ProductVariantEdit {
-  id?: number;
-  sku?: string;
-  size?: string;
-  price?: number;
-  salePrice?: number;
-  purchaseRate?: number;
-  stockQuantity: number;
-}
-
 export interface AdminProduct extends CoreProduct {
   status?: ProductStatus;
+  purchaseRate: number;
   statusActive?: boolean; // Legacy support if needed, but should use isActive
-}
-
-export interface ProductVariantOption {
-  optionName: "Size" | "Material" | string;
-  values: string;
-}
-
-export interface ProductVariantRow {
-  label: string;
-  price: number;
-  sku: string;
-  quantity: number;
 }
 
 export interface ProductCreatePayload {
   name: string;
-  description: string;
-  category: string; // Changed from categoryId
-  gender: string;
-  price: number;
-  salePrice?: number;
+  headline: string;
+  slug: string;
+  subtitle: string;
+  category: string;
   purchaseRate: number;
-
+  price: number;
+  compareAtPrice?: number;
   newArrival: boolean;
-  isFeatured: boolean;
-
-  statusActive: boolean;
-
-  media: {
-    mainImage: {
-      type: string;
-      label: string;
-      imageUrl: string;
-      alt: string;
-    };
-    thumbnails: {
-      type: string;
-      label: string;
-      imageUrl: string;
-      alt: string;
-    }[];
-  };
-
-  variants: {
-    sizes: {
-      label: string;
-      price: number;
-      salePrice?: number;
-      purchaseRate: number;
-      stock: number;
-      selected: boolean;
-    }[];
-  };
-
-  inventoryVariants: {
-    label: string;
-    price: number;
-    salePrice?: number;
-    purchaseRate: number;
-    sku: string;
-    inventory: number;
-    imageUrl?: string;
-  }[];
-
-  // New Fields
-  tier?: string;
-  tags?: string;
-  sortOrder?: number;
-  collectionId?: number | null;
-  productType: ProductType;
-  bundleItems?: ProductBundleItem[];
-  isBundle?: boolean;
-  bundleQuantity?: number;
+  isActive: boolean;
+  imgUrl: string;
+  images: ProductImage[];
+  benefitsTitle?: string;
+  benefitsContent?: string;
+  sideEffectsTitle?: string;
+  sideEffectsContent?: string;
+  usageTitle?: string;
+  usageContent?: string;
 }
 
 export interface ProductUpdatePayload {
   name: string;
-  description: string;
+  headline: string;
+  slug: string;
+  subtitle: string;
   category: string;
-  gender: string;
-  price: number;
-  salePrice?: number;
   purchaseRate: number;
-
+  price: number;
+  compareAtPrice?: number;
   newArrival: boolean;
-  isFeatured: boolean;
-
-  statusActive: boolean;
-
-  media: {
-    mainImage: {
-      type: string;
-      label: string;
-      imageUrl: string;
-      alt: string;
-    };
-    thumbnails: {
-      type: string;
-      label: string;
-      imageUrl: string;
-      alt: string;
-    }[];
-  };
-
-  variants: {
-    sizes: {
-      label: string;
-      price: number;
-      salePrice?: number;
-      purchaseRate: number;
-      stock: number;
-      selected: boolean;
-    }[];
-  };
-
-  inventoryVariants: {
-    label: string;
-    price: number;
-    salePrice?: number;
-    purchaseRate: number;
-    sku: string;
-    inventory: number;
-    imageUrl?: string;
-  }[];
-
-
-
-  // New Fields
-  tier?: string;
-  tags?: string;
-  sortOrder?: number;
-  collectionId?: number | null;
-  productType: ProductType;
-  bundleItems?: ProductBundleItem[];
-  isBundle?: boolean;
-  bundleQuantity?: number;
+  isActive: boolean;
+  imgUrl: string;
+  images: ProductImage[];
+  benefitsTitle?: string;
+  benefitsContent?: string;
+  sideEffectsTitle?: string;
+  sideEffectsContent?: string;
+  usageTitle?: string;
+  usageContent?: string;
 }
 
 export type ProductsStatusTab = "All Items" | "Active" | "Drafts" | "Archived";

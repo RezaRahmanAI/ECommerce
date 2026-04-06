@@ -518,35 +518,31 @@ namespace ECommerce.Infrastructure.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Headline = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Slug = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    ShortDescription = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Subtitle = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Sku = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    ImageUrl = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    StockQuantity = table.Column<int>(type: "int", nullable: false),
                     IsActive = table.Column<bool>(type: "bit", nullable: false),
-                    ProductType = table.Column<int>(type: "int", nullable: false),
                     IsNew = table.Column<bool>(type: "bit", nullable: false),
-                    IsFeatured = table.Column<bool>(type: "bit", nullable: false),
-                    MetaTitle = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    MetaDescription = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    FabricAndCare = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    ShippingAndReturns = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Tier = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Tags = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    SortOrder = table.Column<int>(type: "int", nullable: false),
+                    PurchaseRate = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    Price = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    CompareAtPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    StockQuantity = table.Column<int>(type: "int", nullable: false),
+                    BenefitsTitle = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    BenefitsContent = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    UsageTitle = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    UsageContent = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    SideEffectsTitle = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    SideEffectsContent = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     CategoryId = table.Column<int>(type: "int", nullable: false),
                     CollectionId = table.Column<int>(type: "int", nullable: true),
-                    IsBundle = table.Column<bool>(type: "bit", nullable: false),
-                    BundleQuantity = table.Column<int>(type: "int", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Products", x => x.Id);
-                    table.CheckConstraint("CK_Product_Name", "LEN(Name) > 0");
+                    table.CheckConstraint("CK_Product_Name", "LEN(Headline) > 0");
                     table.ForeignKey(
                         name: "FK_Products_Categories_CategoryId",
                         column: x => x.CategoryId,
@@ -557,8 +553,7 @@ namespace ECommerce.Infrastructure.Migrations
                         name: "FK_Products_Collections_CollectionId",
                         column: x => x.CollectionId,
                         principalTable: "Collections",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -648,34 +643,6 @@ namespace ECommerce.Infrastructure.Migrations
                     table.PrimaryKey("PK_ProductImages", x => x.Id);
                     table.ForeignKey(
                         name: "FK_ProductImages_Products_ProductId",
-                        column: x => x.ProductId,
-                        principalTable: "Products",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "ProductVariants",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Sku = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Size = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Price = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
-                    CompareAtPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
-                    PurchaseRate = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
-                    StockQuantity = table.Column<int>(type: "int", nullable: false),
-                    IsActive = table.Column<bool>(type: "bit", nullable: false),
-                    ProductId = table.Column<int>(type: "int", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_ProductVariants", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_ProductVariants_Products_ProductId",
                         column: x => x.ProductId,
                         principalTable: "Products",
                         principalColumn: "Id",
@@ -886,14 +853,14 @@ namespace ECommerce.Infrastructure.Migrations
                 column: "CreatedAt");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Products_IsFeatured",
-                table: "Products",
-                column: "IsFeatured");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Products_IsNew",
                 table: "Products",
                 column: "IsNew");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Products_Price",
+                table: "Products",
+                column: "Price");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Products_Sku",
@@ -917,16 +884,6 @@ namespace ECommerce.Infrastructure.Migrations
                 table: "Products",
                 columns: new[] { "IsActive", "CategoryId" },
                 filter: "[IsActive] = 1");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_ProductVariants_Price",
-                table: "ProductVariants",
-                column: "Price");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_ProductVariants_ProductId",
-                table: "ProductVariants",
-                column: "ProductId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_RefreshTokens_RefreshToken",
@@ -991,9 +948,6 @@ namespace ECommerce.Infrastructure.Migrations
 
             migrationBuilder.DropTable(
                 name: "ProductImages");
-
-            migrationBuilder.DropTable(
-                name: "ProductVariants");
 
             migrationBuilder.DropTable(
                 name: "RefreshTokens");

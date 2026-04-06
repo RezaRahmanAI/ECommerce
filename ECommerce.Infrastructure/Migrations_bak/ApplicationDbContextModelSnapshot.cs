@@ -828,8 +828,11 @@ namespace ECommerce.Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("BundleQuantity")
-                        .HasColumnType("int");
+                    b.Property<string>("BenefitsContent")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("BenefitsTitle")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("CategoryId")
                         .HasColumnType("int");
@@ -837,47 +840,32 @@ namespace ECommerce.Infrastructure.Migrations
                     b.Property<int?>("CollectionId")
                         .HasColumnType("int");
 
+                    b.Property<decimal?>("CompareAtPrice")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("Description")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("FabricAndCare")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ImageUrl")
+                    b.Property<string>("Headline")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
-                    b.Property<bool>("IsBundle")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsFeatured")
-                        .HasColumnType("bit");
-
                     b.Property<bool>("IsNew")
                         .HasColumnType("bit");
 
-                    b.Property<string>("MetaDescription")
+                    b.Property<decimal>("Price")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("PurchaseRate")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("SideEffectsContent")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("MetaTitle")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("ProductType")
-                        .HasColumnType("int");
-
-                    b.Property<string>("ShippingAndReturns")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ShortDescription")
+                    b.Property<string>("SideEffectsTitle")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Sku")
@@ -888,20 +876,20 @@ namespace ECommerce.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<int>("SortOrder")
-                        .HasColumnType("int");
-
                     b.Property<int>("StockQuantity")
                         .HasColumnType("int");
 
-                    b.Property<string>("Tags")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Tier")
+                    b.Property<string>("Subtitle")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("UsageContent")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UsageTitle")
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
@@ -911,9 +899,9 @@ namespace ECommerce.Infrastructure.Migrations
 
                     b.HasIndex("CreatedAt");
 
-                    b.HasIndex("IsFeatured");
-
                     b.HasIndex("IsNew");
+
+                    b.HasIndex("Price");
 
                     b.HasIndex("Sku")
                         .IsUnique();
@@ -929,7 +917,7 @@ namespace ECommerce.Infrastructure.Migrations
 
                     b.ToTable("Products", t =>
                         {
-                            t.HasCheckConstraint("CK_Product_Name", "LEN(Name) > 0");
+                            t.HasCheckConstraint("CK_Product_Name", "LEN(Headline) > 0");
                         });
                 });
 
@@ -978,53 +966,6 @@ namespace ECommerce.Infrastructure.Migrations
                     b.HasIndex("ProductId");
 
                     b.ToTable("ProductImages");
-                });
-
-            modelBuilder.Entity("ECommerce.Core.Entities.ProductVariant", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<decimal?>("CompareAtPrice")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
-                    b.Property<decimal?>("Price")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<int>("ProductId")
-                        .HasColumnType("int");
-
-                    b.Property<decimal?>("PurchaseRate")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<string>("Size")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Sku")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("StockQuantity")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Price");
-
-                    b.HasIndex("ProductId");
-
-                    b.ToTable("ProductVariants");
                 });
 
             modelBuilder.Entity("ECommerce.Core.Entities.Review", b =>
@@ -1395,31 +1336,17 @@ namespace ECommerce.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("ECommerce.Core.Entities.Collection", "Collection")
+                    b.HasOne("ECommerce.Core.Entities.Collection", null)
                         .WithMany("Products")
-                        .HasForeignKey("CollectionId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .HasForeignKey("CollectionId");
 
                     b.Navigation("Category");
-
-                    b.Navigation("Collection");
                 });
 
             modelBuilder.Entity("ECommerce.Core.Entities.ProductImage", b =>
                 {
                     b.HasOne("ECommerce.Core.Entities.Product", "Product")
                         .WithMany("Images")
-                        .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Product");
-                });
-
-            modelBuilder.Entity("ECommerce.Core.Entities.ProductVariant", b =>
-                {
-                    b.HasOne("ECommerce.Core.Entities.Product", "Product")
-                        .WithMany("Variants")
                         .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -1528,8 +1455,6 @@ namespace ECommerce.Infrastructure.Migrations
                     b.Navigation("Images");
 
                     b.Navigation("Reviews");
-
-                    b.Navigation("Variants");
                 });
 #pragma warning restore 612, 618
         }

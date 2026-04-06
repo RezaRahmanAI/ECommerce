@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, Output, inject } from "@angular/core";
 import { CommonModule } from "@angular/common";
-import { Product, ProductImage, ProductVariant } from "../../../core/models/product";
+import { Product, ProductImage } from "../../../core/models/product";
 import { ImageUrlService } from "../../../core/services/image-url.service";
 import { LucideAngularModule, X, ShoppingBag } from "lucide-angular";
 import { PriceDisplayComponent } from "../price-display/price-display.component";
@@ -37,8 +37,8 @@ import { PriceDisplayComponent } from "../price-display/price-display.component"
           <!-- Product Image Preview -->
           <div class="w-full sm:w-1/2 aspect-[3/4] bg-gray-50">
             <img
-              [src]="imageUrlService.getImageUrl(selectedImage || product.imageUrl || '')"
-              [alt]="product.name"
+              [src]="imageUrlService.getImageUrl(product.imgUrl || '')"
+              [alt]="product.headline"
               class="w-full h-full object-cover"
             />
           </div>
@@ -48,51 +48,25 @@ import { PriceDisplayComponent } from "../price-display/price-display.component"
             <h2 class="text-sm uppercase tracking-[0.2em] font-bold text-gray-400 mb-1">
               Quick Add
             </h2>
-            <h3 class="text-xl font-bold text-black mb-2">{{ product.name }}</h3>
+            <h3 class="text-xl font-bold text-black mb-2">{{ product.headline }}</h3>
             
             <div class="flex items-center gap-2 mb-6">
               <app-price-display
-                [amount]="currentPrice"
+                [amount]="product.price"
                 class="text-lg font-bold block"
               ></app-price-display>
               <app-price-display
-                *ngIf="originalPrice > 0"
-                [amount]="originalPrice"
+                *ngIf="(product.compareAtPrice || 0) > 0"
+                [amount]="product.compareAtPrice || 0"
                 size="sm"
                 class="line-through opacity-50"
               ></app-price-display>
             </div>
 
-
-
-            <!-- Size Selection -->
-            <div class="mb-8" *ngIf="availableSizes.length > 0">
-              <label class="text-[10px] uppercase tracking-widest font-bold text-gray-500 block mb-3">
-                Select Size: <span class="text-black">{{ selectedSize || 'required' }}</span>
-              </label>
-              <div class="flex flex-wrap gap-2">
-                <button
-                  *ngFor="let size of availableSizes"
-                  (click)="selectSize(size)"
-                  class="min-w-10 h-10 px-2 flex items-center justify-center border text-[11px] font-bold transition-all duration-300"
-                  [class.bg-black]="selectedSize === size"
-                  [class.text-white]="selectedSize === size"
-                  [class.border-black]="selectedSize === size"
-                  [class.bg-white]="selectedSize !== size"
-                  [class.text-black]="selectedSize !== size"
-                  [class.border-gray-200]="selectedSize !== size"
-                  [class.hover:border-black]="selectedSize !== size"
-                >
-                  {{ size }}
-                </button>
-              </div>
-            </div>
-
             <!-- Confirm Button -->
             <button
               (click)="confirm()"
-              [disabled]="(availableSizes.length > 0 && !selectedSize)"
-              class="w-full py-4 bg-black text-white text-[11px] uppercase tracking-[0.3em] font-bold transition-all duration-300 hover:bg-black/90 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              class="w-full py-4 bg-black text-white text-[11px] uppercase tracking-[0.3em] font-bold transition-all duration-300 hover:bg-black/90 flex items-center justify-center gap-2"
             >
               <lucide-icon [img]="icons.ShoppingBag" class="w-4 h-4"></lucide-icon>
               Confirm Selection
@@ -105,95 +79,13 @@ import { PriceDisplayComponent } from "../price-display/price-display.component"
 })
 export class QuickAddModalComponent {
   @Input({ required: true }) product!: Product;
-  @Input() set initialSize(val: string | null) {
-    if (val) this.selectedSize = val;
-  }
   @Output() close = new EventEmitter<void>();
-  @Output() added = new EventEmitter<{ size?: string }>();
+  @Output() added = new EventEmitter<void>();
 
   readonly icons = { X, ShoppingBag };
   readonly imageUrlService = inject(ImageUrlService);
 
-  selectedSize: string | null = null;
-  selectedImage: string | null = null;
-
-
-
-  get availableSizes(): string[] {
-    const variants = this.product.variants;
-    if (!variants || !variants.length) return [];
-
-    const sizeOrder = [
-      "xs",
-      "s",
-      "m",
-      "l",
-      "xl",
-      "xxl",
-      "2xl",
-      "3xl",
-      "4xl",
-      "5xl",
-    ];
-
-    return variants
-      .filter((v: ProductVariant) => v.size && v.size.trim() !== "")
-      .map((v: ProductVariant) => v.size as string)
-      .filter(
-        (value: string, index: number, self: string[]) =>
-          self.indexOf(value) === index,
-      ) // Unique sizes
-      .sort((a: string, b: string) => {
-        const aIdx = sizeOrder.indexOf(a.toLowerCase());
-        const bIdx = sizeOrder.indexOf(b.toLowerCase());
-        if (aIdx !== -1 && bIdx !== -1) return aIdx - bIdx;
-        if (aIdx !== -1) return -1;
-        if (bIdx !== -1) return 1;
-        return a.localeCompare(b);
-      });
-  }
-
-  get selectedVariant(): ProductVariant | null {
-    if (!this.selectedSize || !this.product.variants) return null;
-    return (
-      this.product.variants.find(
-        (v) =>
-          (v.size || "").trim().toLowerCase() ===
-          this.selectedSize?.trim().toLowerCase(),
-      ) || null
-    );
-  }
-
-  get currentPrice(): number {
-    const variant = this.selectedVariant;
-    if (variant?.price && variant.price > 0) return variant.price;
-    return this.product.price;
-  }
-
-  get originalPrice(): number {
-    const variant = this.selectedVariant;
-    if (variant?.compareAtPrice && variant.compareAtPrice > 0)
-      return variant.compareAtPrice;
-
-    if (this.product.compareAtPrice && this.product.compareAtPrice > 0)
-      return this.product.compareAtPrice;
-
-    return 0;
-  }
-
-
-
-  selectSize(size: string): void {
-    this.selectedSize = size;
-  }
-
   confirm(): void {
-    const sizeValid = this.availableSizes.length === 0 || !!this.selectedSize;
-
-    if (sizeValid) {
-      this.added.emit({
-        size: this.selectedSize || undefined,
-      });
-    }
+    this.added.emit();
   }
 }

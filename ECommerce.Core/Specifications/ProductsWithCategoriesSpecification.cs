@@ -4,48 +4,34 @@ namespace ECommerce.Core.Specifications;
 
 public class ProductsWithCategoriesSpecification : BaseSpecification<Product>
 {
-    public ProductsWithCategoriesSpecification(string? sort, int? categoryId, int? collectionId, string? categorySlug, string? collectionSlug, string? search, string? tier, string? tags, bool? isNew = null, bool? isFeatured = null, int? skip = null, int? take = null)
+    public ProductsWithCategoriesSpecification(string? sort, int? categoryId, string? categorySlug, string? search, bool? isNew = null, int? skip = null, int? take = null)
         : base(x => 
-            (string.IsNullOrEmpty(search) || x.Name.ToLower().Contains(search.ToLower()) || (x.Description != null && x.Description.ToLower().Contains(search.ToLower()))) &&
+            (string.IsNullOrEmpty(search) || x.Headline.ToLower().Contains(search.ToLower()) || (x.Subtitle != null && x.Subtitle.ToLower().Contains(search.ToLower()))) &&
             (!categoryId.HasValue || x.CategoryId == categoryId) &&
-            (!collectionId.HasValue || x.CollectionId == collectionId) &&
             (string.IsNullOrEmpty(categorySlug) || (x.Category != null && x.Category.Slug == categorySlug)) &&
-            (string.IsNullOrEmpty(collectionSlug) || (x.Collection != null && x.Collection.Slug == collectionSlug)) &&
-            (string.IsNullOrEmpty(tier) || x.Tier == tier) &&
-            (string.IsNullOrEmpty(tags) || (x.Tags != null && x.Tags.ToLower().Contains(tags.ToLower()))) &&
-            (!isNew.HasValue || x.IsNew == isNew.Value) &&
-            (!isFeatured.HasValue || x.IsFeatured == isFeatured.Value)
+            (!isNew.HasValue || x.IsNew == isNew.Value)
         )
-
     {
         AddInclude(x => x.Category!);
-        AddInclude(x => x.Collection!);
         AddInclude(x => x.Images);
-        AddInclude(x => x.Variants);
 
-        AddOrderBy(x => x.Name);
+        AddOrderBy(x => x.Headline);
 
         if (!string.IsNullOrEmpty(sort))
         {
             switch (sort)
             {
                 case "priceAsc":
-                    AddOrderBy(p => p.Name);
+                    AddOrderBy(p => p.Price);
                     break;
                 case "priceDesc":
-                    AddOrderByDescending(p => p.Name);
+                    AddOrderByDescending(p => p.Price);
                     break;
                 case "id_desc":
                     AddOrderByDescending(p => p.Id);
                     break;
-                case "sortOrder":
-                    AddOrderBy(p => p.SortOrder);
-                    break;
-                case "sortOrderDesc":
-                    AddOrderByDescending(p => p.SortOrder);
-                    break;
                 default:
-                    AddOrderBy(n => n.Name);
+                    AddOrderBy(n => n.Headline);
                     break;
             }
         }
@@ -80,13 +66,9 @@ public class ProductsWithCategoriesSpecification : BaseSpecification<Product>
         AddIncludes();
     }
 
-
-
     private void AddIncludes()
     {
         AddInclude(x => x.Category!);
-        AddInclude(x => x.Collection!);
         AddInclude(x => x.Images);
-        AddInclude(x => x.Variants);
     }
 }

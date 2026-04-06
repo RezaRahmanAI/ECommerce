@@ -183,22 +183,14 @@ export class ProductsService {
   private buildCsv(rows: Product[]): string {
     const header = [
       "ID",
-      "Name",
-      "Category",
-      "SKU",
-      "Stock",
+      "Headline",
       "Price",
-      "Purchase Rate",
       "Status",
     ];
     const csvRows = rows.map((product) => [
       product.id,
-      product.name,
-      product.categoryName,
-      product.sku,
-      String(product.stockQuantity),
+      product.headline,
       product.price.toFixed(2),
-      (product.purchaseRate ?? 0).toFixed(2),
       product.isActive ? "Active" : "Inactive",
     ]);
 
@@ -213,15 +205,15 @@ export class ProductsService {
     const updatedImages = (product.images || []).filter(
       (img) => img.imageUrl !== mediaUrl,
     );
-    const imageUrl =
-      product.imageUrl === mediaUrl
+    const imgUrl =
+      product.imgUrl === mediaUrl
         ? updatedImages[0]?.imageUrl || ""
-        : product.imageUrl;
+        : product.imgUrl;
 
     return {
       ...product,
       images: updatedImages,
-      imageUrl,
+      imgUrl,
     };
   }
 

@@ -23,12 +23,11 @@
       <div class="lg:col-span-7 flex flex-row gap-4">
         <!-- Vertical Thumbnails (Desktop Only) -->
         <div
-          *ngIf="gallery.length > 1"
+          *ngFor="let url of gallery; let i = index"
           class="hidden lg:flex flex-col gap-2 overflow-y-auto scrollbar-hide w-24 flex-shrink-0"
-          style="max-height: 550px;"
+          style="max-height: 550px"
         >
           <button
-            *ngFor="let url of gallery; let i = index"
             (click)="goToImage(i)"
             type="button"
             class="flex-shrink-0 w-full h-28 border transition-all duration-300 overflow-hidden relative"
@@ -56,21 +55,12 @@
             <ng-container *ngFor="let url of gallery; let i = index">
               <img
                 [src]="imageUrlService.getImageUrl(url)"
-                [alt]="product.name"
+                [alt]="product.headline"
                 class="absolute inset-0 w-full h-full object-cover transition-opacity duration-[1200ms] ease-in-out"
                 [class.opacity-100]="i === currentImageIndex"
                 [class.opacity-0]="i !== currentImageIndex"
               />
             </ng-container>
-
-            <!-- Tier Badge -->
-            <div *ngIf="product.tier" class="absolute top-6 right-6 z-10">
-              <span
-                class="px-4 py-1.5 bg-white/95 text-[10px] uppercase tracking-[0.3em] font-bold text-[#1a1a1a] border border-[#eee] backdrop-blur-sm shadow-sm"
-              >
-                {{ product.tier }}
-              </span>
-            </div>
 
             <!-- Navigation Arrows -->
             <button
@@ -124,13 +114,14 @@
       <!-- ===== RIGHT: Product Info ===== -->
       <div class="lg:col-span-5 space-y-8 lg:pl-4">
         <div class="space-y-4">
-          <h1 class="text-3xl lg:text-4xl font-serif italic text-[#1a1a1a] leading-tight">
-            {{ product.name }}
+          <h1
+            class="text-3xl lg:text-4xl font-serif italic text-[#1a1a1a] leading-tight"
+          >
+            {{ product.headline }}
           </h1>
-          <div class="flex items-center gap-4 text-[10px] uppercase tracking-[0.2em] font-bold text-[#bbb]">
-            <span>Item Ref:</span>
-            <span class="text-[#1a1a1a]">{{ product.sku }}</span>
-          </div>
+          <p *ngIf="product.subtitle" class="text-sm text-[#666] leading-relaxed">
+            {{ product.subtitle }}
+          </p>
         </div>
 
         <!-- Pricing Section -->
@@ -142,71 +133,98 @@
           ></app-price-display>
 
           <app-price-display
-            *ngIf="currentCompareAtPrice && currentCompareAtPrice > currentPrice"
+            *ngIf="
+              currentCompareAtPrice && currentCompareAtPrice > currentPrice
+            "
             class="line-through text-gray-400 text-lg"
             [amount]="currentCompareAtPrice"
             size="sm"
           ></app-price-display>
 
           <span
-            *ngIf="currentCompareAtPrice && currentCompareAtPrice > currentPrice"
+            *ngIf="
+              currentCompareAtPrice && currentCompareAtPrice > currentPrice
+            "
             class="text-[10px] font-bold text-red-500 uppercase tracking-[0.3em] ml-auto"
           >
-            Offer -{{ getDiscountPercentage({ price: currentPrice, compareAtPrice: currentCompareAtPrice }) }}%
+            Offer -{{
+              getDiscountPercentage({
+                price: currentPrice,
+                compareAtPrice: currentCompareAtPrice,
+              })
+            }}%
           </span>
         </div>
 
-        <!-- Selection System -->
-        <div class="space-y-8">
-          <!-- Sizes -->
-          <div *ngIf="product.variants && product.variants.length > 0" class="space-y-5">
-            <div class="flex items-center justify-between">
-              <p class="text-[10px] uppercase tracking-[0.2em] font-bold text-[#1a1a1a]">Select Size</p>
-              <button (click)="openSizeGuide()" type="button" class="text-[9px] uppercase tracking-[0.2em] text-[#999] hover:text-[#1a1a1a] transition-colors border-b border-[#eee] pb-0.5">Size Guide</button>
-            </div>
-            <div class="flex flex-wrap gap-2">
-              <button
-                *ngFor="let v of product.variants"
-                (click)="checkoutForm.patchValue({ selectedSize: v.size })"
-                type="button"
-                class="min-w-[60px] h-14 border text-[11px] font-bold uppercase tracking-[0.2em] transition-all duration-300"
-                [class.bg-[#1a1a1a]]="v.size === checkoutForm.controls.selectedSize.value"
-                [class.text-white]="v.size === checkoutForm.controls.selectedSize.value"
-                [class.border-[#1a1a1a]]="v.size === checkoutForm.controls.selectedSize.value"
-                [class.bg-white]="v.size !== checkoutForm.controls.selectedSize.value"
-                [class.text-[#1a1a1a]]="v.size !== checkoutForm.controls.selectedSize.value"
-                [class.border-[#eee]]="v.size !== checkoutForm.controls.selectedSize.value"
-              >
-                {{ v.size }}
-              </button>
-            </div>
-            <p *ngIf="checkoutForm.controls.selectedSize.value" class="text-[9px] uppercase tracking-[0.2em] text-[#bbb] font-medium">
-              Stock Status: <span class="text-[#1a1a1a]">In stock</span>
-            </p>
+        <!-- Rich Content Sections -->
+        <div class="space-y-10 py-6">
+          <!-- Benefits -->
+          <div *ngIf="product.benefitsContent" class="space-y-4">
+            <h3
+              class="text-[11px] uppercase tracking-[0.4em] font-bold text-[#c8922a]"
+            >
+              {{ product.benefitsTitle || "Key Benefits" }}
+            </h3>
+            <div
+              class="text-[15px] text-[#444] leading-[1.8] font-light prose prose-sm max-w-none"
+              [innerHTML]="product.benefitsContent"
+            ></div>
+          </div>
+
+          <!-- Usage -->
+          <div *ngIf="product.usageContent" class="space-y-4">
+            <h3
+              class="text-[11px] uppercase tracking-[0.4em] font-bold text-[#c8922a]"
+            >
+              {{ product.usageTitle || "How to Use" }}
+            </h3>
+            <div
+              class="text-[15px] text-[#444] leading-[1.8] font-light prose prose-sm max-w-none"
+              [innerHTML]="product.usageContent"
+            ></div>
+          </div>
+
+          <!-- Side Effects -->
+          <div *ngIf="product.sideEffectsContent" class="space-y-4">
+            <h3
+              class="text-[11px] uppercase tracking-[0.4em] font-bold text-[#c8922a]"
+            >
+              {{ product.sideEffectsTitle || "Side Effects" }}
+            </h3>
+            <div
+              class="text-[15px] text-[#444] leading-[1.8] font-light prose prose-sm max-w-none"
+              [innerHTML]="product.sideEffectsContent"
+            ></div>
           </div>
         </div>
 
-        <!-- Description & Features -->
-        <div class="space-y-8 pt-8 border-t border-[#eee]">
-          <div class="space-y-4" *ngIf="product.description">
-            <h3 class="text-[11px] uppercase tracking-[0.4em] font-bold text-[#c8922a]">Description</h3>
-            <p class="text-[16px] text-[#444] leading-[1.7] font-light">{{ product.description }}</p>
+        <!-- Features Info -->
+        <div class="grid grid-cols-2 gap-4 pt-6 border-t border-[#eee]">
+          <div class="flex items-center gap-3">
+            <div
+              class="w-8 h-8 rounded-full bg-white border border-[#eee] flex items-center justify-center"
+            >
+              <lucide-icon
+                [img]="icons.Truck"
+                class="w-4 h-4 text-[#888]"
+              ></lucide-icon>
+            </div>
+            <span class="text-[9px] uppercase tracking-[0.1em] text-[#888] font-bold"
+              >Priority Shipping</span
+            >
           </div>
-
-          <!-- Features Info -->
-          <div class="grid grid-cols-2 gap-4 pt-6">
-            <div class="flex items-center gap-3">
-              <div class="w-8 h-8 rounded-full bg-white border border-[#eee] flex items-center justify-center">
-                <lucide-icon [img]="icons.Truck" class="w-4 h-4 text-[#888]"></lucide-icon>
-              </div>
-              <span class="text-[9px] uppercase tracking-[0.1em] text-[#888] font-bold">Priority Shipping</span>
+          <div class="flex items-center gap-3">
+            <div
+              class="w-8 h-8 rounded-full bg-white border border-[#eee] flex items-center justify-center"
+            >
+              <lucide-icon
+                [img]="icons.ShieldCheck"
+                class="w-4 h-4 text-[#888]"
+              ></lucide-icon>
             </div>
-            <div class="flex items-center gap-3">
-              <div class="w-8 h-8 rounded-full bg-white border border-[#eee] flex items-center justify-center">
-                <lucide-icon [img]="icons.ShieldCheck" class="w-4 h-4 text-[#888]"></lucide-icon>
-              </div>
-              <span class="text-[9px] uppercase tracking-[0.1em] text-[#888] font-bold">Secure Payment</span>
-            </div>
+            <span class="text-[9px] uppercase tracking-[0.1em] text-[#888] font-bold"
+              >Secure Payment</span
+            >
           </div>
         </div>
       </div>
@@ -615,8 +633,3 @@
     </div>
   </div>
 </div>
-
-<app-size-guide
-  *ngIf="isSizeGuideOpen"
-  (close)="closeSizeGuide()"
-></app-size-guide>

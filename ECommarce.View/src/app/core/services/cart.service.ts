@@ -145,23 +145,11 @@ export class CartService {
   addItem(
     product: Product,
     quantity = 1,
-    size?: string,
   ): Observable<CartDto> {
-        
-    const hasVariants = product.variants && product.variants.length > 0;
-    const resolvedSize = 
-      size && size.trim() !== ""
-        ? size
-        : (hasVariants ? undefined : "One Size");
-
-    if (hasVariants && !resolvedSize) {
-      throw new Error("Size is required for this product.");
-    }
-
     const payload: AddToCartDto = {
       productId: product.id,
       quantity,
-      size: resolvedSize ?? "One Size",
+      size: "One Size",
     };
 
     return this.api
@@ -275,11 +263,11 @@ export class CartService {
     const mappedItems: CartItem[] = dto.items.map((i) => ({
       id: i.id.toString(), // Map backend numeric ID to string ID used in frontend UI
       productId: i.productId,
-      name: i.productName,
+      headline: i.productName,
       price: i.price,
       quantity: i.quantity,
       size: i.size,
-      imageUrl: i.imageUrl,
+      imgUrl: i.imageUrl,
       imageAlt: i.productName, // Basic fallback
       discountPercentage: i.salePrice ? Math.round(((i.salePrice - i.price) / i.salePrice) * 100) : 0,
       compareAtPrice: i.salePrice,
@@ -322,9 +310,5 @@ export class CartService {
       freeShippingRemaining,
       freeShippingProgress,
     };
-  }
-
-  notifySizeRequired(): void {
-    this.notificationService.error("Please select a size first");
   }
 }

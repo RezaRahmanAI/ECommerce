@@ -53,16 +53,11 @@ public class CartController : ControllerBase
         
         var product = await _context.Products
             .Include(p => p.Images)
-            .Include(p => p.Variants)
             .FirstOrDefaultAsync(p => p.Id == dto.ProductId && p.IsActive);
             
         if (product == null) return NotFound("Product not found");
 
-        var normalizedSize = (dto.Size ?? "").Trim().ToLower();
-        var variant = product.Variants.FirstOrDefault(v => 
-            v.Size != null && v.Size.Trim().ToLower() == normalizedSize);
-            
-        if (variant != null && variant.StockQuantity < dto.Quantity)
+        if (product.StockQuantity < dto.Quantity)
         {
             return BadRequest("Insufficient stock");
         }
@@ -259,7 +254,7 @@ public class CartController : ControllerBase
                     .ThenInclude(p => p!.Images)
             .Include(c => c.Items)
                 .ThenInclude(i => i.Product!)
-                    .ThenInclude(p => p!.Variants)
+                    .ThenInclude(p => p!.Images)
             .AsSplitQuery()
             .AsQueryable();
 
@@ -281,35 +276,14 @@ public class CartController : ControllerBase
             SessionId = cart.SessionId,
             Items = cart.Items.Select(i => 
             {
-                var normalizedSize = (i.Size ?? "").Trim().ToLower();
-                var variant = i.Product?.Variants?.FirstOrDefault(v => 
-                    v.Size != null && v.Size.Trim().ToLower() == normalizedSize);
-                
-                decimal price = 0;
-                decimal? salePrice = null;
-
-                if (variant != null && (variant.Price ?? 0) > 0)
-                {
-                    price = variant.Price ?? 0;
-                    salePrice = variant.CompareAtPrice;
-                }
-                else
-                {
-                    // Fallback: Get min variant price
-                    var validVariants = i.Product?.Variants?.Where(v => (v.Price ?? 0) > 0).ToList();
-                    if (validVariants != null && validVariants.Any())
-                    {
-                        var minVariant = validVariants.OrderBy(v => v.Price).First();
-                        price = minVariant.Price ?? 0;
-                        salePrice = minVariant.CompareAtPrice;
-                    }
-                }
+                decimal price = i.Product?.Price ?? 0;
+                decimal? salePrice = i.Product?.CompareAtPrice;
 
                 return new CartItemDto
                 {
                     Id = i.Id,
                     ProductId = i.ProductId,
-                    ProductName = i.Product?.Name ?? "Unknown",
+                    ProductName = i.Product?.Headline ?? "Unknown",
                     ProductSlug = i.Product?.Slug ?? "",
                     ImageUrl = i.Product?.Images?.FirstOrDefault(img => img.IsMain)?.Url ?? "",
                     Price = price,
@@ -317,7 +291,7 @@ public class CartController : ControllerBase
                     Quantity = i.Quantity,
                     Color = i.Color ?? string.Empty,
                     Size = i.Size ?? string.Empty,
-                    AvailableStock = variant?.StockQuantity ?? 0
+                    AvailableStock = i.Product?.StockQuantity ?? 0
                 };
             }).ToList()
         };

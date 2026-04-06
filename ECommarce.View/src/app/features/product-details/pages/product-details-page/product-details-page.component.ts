@@ -28,7 +28,6 @@ import { SiteSettingsService } from "../../../../core/services/site-settings.ser
 import { SHOW_LOADING } from "../../../../core/services/loading.service";
 
 import { ProductCardComponent } from "../../../../shared/components/product-card/product-card.component";
-import { SizeGuideComponent } from "../../../../shared/components/size-guide/size-guide.component";
 import { SafeHtmlPipe } from "../../../../shared/pipes/safe-html.pipe";
 import {
   LucideAngularModule,
@@ -55,7 +54,6 @@ import {
     FormsModule,
     PriceDisplayComponent,
     ProductCardComponent,
-    SizeGuideComponent,
     LucideAngularModule,
     SafeHtmlPipe,
   ],
@@ -88,13 +86,9 @@ export class ProductDetailsPageComponent {
   private readonly siteSettingsService = inject(SiteSettingsService);
   readonly settings$ = this.siteSettingsService.getSettings();
 
-  isSizeGuideOpen = false;
   currentImageIndex = 0;
 
 
-  private readonly selectedSizeSubject = new BehaviorSubject<string | null>(
-    null,
-  );
   private readonly quantitySubject = new BehaviorSubject<number>(1);
   readonly quantity$ = this.quantitySubject.asObservable();
   private readonly selectedMediaSubject = new BehaviorSubject<string | null>(
@@ -112,36 +106,8 @@ export class ProductDetailsPageComponent {
     ),
     filter((product): product is Product => Boolean(product)),
     tap((product) => {
-
-
-      const sizes = Array.from(
-        new Set(product.variants?.map((v) => v.size).filter(Boolean)),
-      );
-      // Sort sizes to select smallest first
-      const sizeOrder = [
-        "xs",
-        "s",
-        "m",
-        "l",
-        "xl",
-        "xxl",
-        "2xl",
-        "3xl",
-        "4xl",
-        "5xl",
-      ];
-      const sortedSizes = [...sizes].sort((a, b) => {
-        const aIdx = sizeOrder.indexOf((a || "").toLowerCase());
-        const bIdx = sizeOrder.indexOf((b || "").toLowerCase());
-        if (aIdx !== -1 && bIdx !== -1) return aIdx - bIdx;
-        if (aIdx !== -1) return -1;
-        if (bIdx !== -1) return 1;
-        return (a || "").localeCompare(b || "");
-      });
-      this.selectedSizeSubject.next(sortedSizes[0] ?? null);
-
       this.quantitySubject.next(1);
-      this.selectedMediaSubject.next(null); // Reset or set to first image
+      this.selectedMediaSubject.next(null);
       this.currentImageIndex = 0;
       this.analyticsService.trackViewContent(product);
     }),
@@ -156,11 +122,7 @@ export class ProductDetailsPageComponent {
 
   relatedProducts$ = this.product$.pipe(
     switchMap((product) => {
-      if (product.collectionId) {
-        return this.productService
-          .getRelatedProducts(product.collectionId, undefined, 4)
-          .pipe(map((res) => res.data));
-      } else if (product.categoryId) {
+      if (product.categoryId) {
         return this.productService
           .getRelatedProducts(undefined, product.categoryId, 4)
           .pipe(map((res) => res.data));
@@ -172,7 +134,6 @@ export class ProductDetailsPageComponent {
 
   readonly vm$ = combineLatest([
     this.product$,
-    this.selectedSizeSubject,
     this.quantitySubject,
     this.selectedMediaSubject,
     this.relatedProducts$,
@@ -180,67 +141,21 @@ export class ProductDetailsPageComponent {
     map(
       ([
         product,
-        selectedSize,
         quantity,
         selectedMedia,
         relatedProducts,
       ]) => {
-
-
-        const uniqueSizes = Array.from(
-          new Set(product.variants?.map((v) => v.size).filter(Boolean)),
-        );
-        // Sort sizes consistently
-        const sizeOrder = [
-          "xs",
-          "s",
-          "m",
-          "l",
-          "xl",
-          "xxl",
-          "2xl",
-          "3xl",
-          "4xl",
-          "5xl",
-        ];
-        const sortedUniqueSizes = [...uniqueSizes].sort((a, b) => {
-          const aIdx = sizeOrder.indexOf((a || "").toLowerCase());
-          const bIdx = sizeOrder.indexOf((b || "").toLowerCase());
-          if (aIdx !== -1 && bIdx !== -1) return aIdx - bIdx;
-          if (aIdx !== -1) return -1;
-          if (bIdx !== -1) return 1;
-          return (a || "").localeCompare(b || "");
-        });
-
-        const selectedVariant = product.variants?.find(
-          (v) =>
-            (v.size || "").trim().toLowerCase() ===
-            (selectedSize || "").trim().toLowerCase(),
-        );
-        const currentStock = selectedVariant
-          ? selectedVariant.stockQuantity
-          : product.stockQuantity;
-
-        // Use variant price if available and > 0, fallback to product price
-        const currentPrice =
-          (selectedVariant?.price ?? 0) > 0
-            ? selectedVariant!.price!
-            : product.price;
-        const currentCompareAtPrice =
-          (selectedVariant?.compareAtPrice ?? 0) > 0
-            ? selectedVariant!.compareAtPrice!
-            : product.compareAtPrice;
+        const currentPrice = product.price;
+        const currentCompareAtPrice = product.compareAtPrice;
 
         return {
           product,
-          selectedSize,
           quantity,
-          currentStock,
+          currentStock: 99, // Simplified model has no inventory tracking
           currentPrice,
           currentCompareAtPrice,
           selectedMedia: this.ensureSelectedMedia(product, selectedMedia),
           gallery: this.buildGallery(product),
-          uniqueSizes: sortedUniqueSizes,
           relatedProducts,
         };
       },
@@ -286,24 +201,6 @@ export class ProductDetailsPageComponent {
 
 
 
-  selectedSizeLabel(
-    product: Product | null,
-    selectedSize: string | null,
-  ): string {
-    if (selectedSize) return selectedSize;
-    const sizes = Array.from(
-      new Set(product?.variants?.map((v) => v.size).filter(Boolean)),
-    );
-    return sizes[0] ?? "";
-  }
-
-
-
-  selectSize(sizeLabel: string): void {
-    this.selectedSizeSubject.next(sizeLabel);
-    this.selectionError = "";
-  }
-
   selectMedia(mediaUrl: string): void {
     this.selectedMediaSubject.next(mediaUrl);
   }
@@ -320,24 +217,18 @@ export class ProductDetailsPageComponent {
     if (!product) {
       return;
     }
-    const selectedSize = this.selectedSizeSubject.getValue();
-    const uniqueSizesCount = Array.from(
-      new Set(product.variants?.map((v) => v.size).filter(Boolean)),
-    ).length;
-    const isSizeRequired = uniqueSizesCount > 0;
-
     const quantity = this.quantitySubject.getValue();
+
     this.cartService
       .addItem(
         product,
         quantity,
-        selectedSize ?? undefined,
       )
       .subscribe();
 
     // Show success notification
     this.notificationService.success(
-      `Added ${quantity} x ${product.name} to your bag`,
+      `Added ${quantity} x ${product.headline} to your bag`,
     );
 
     this.selectionError = "";
@@ -353,7 +244,7 @@ export class ProductDetailsPageComponent {
   getWhatsAppUrl(product: Product, whatsAppNumber: string | undefined): string {
     const phone = (whatsAppNumber || "").replace(/[^0-9]/g, "");
     const message = encodeURIComponent(
-      `Hi, I'm interested in "${product.name}" (${product.sku || ""}).\nPrice: ৳${product.price}\nPlease share more details.`,
+      `Hi, I'm interested in "${product.headline}".\nPrice: ৳${product.price}\nPlease share more details.`,
     );
     return `https://wa.me/${phone}?text=${message}`;
   }
@@ -371,14 +262,6 @@ export class ProductDetailsPageComponent {
 
 
 
-  openSizeGuide(): void {
-    this.isSizeGuideOpen = true;
-  }
-
-  closeSizeGuide(): void {
-    this.isSizeGuideOpen = false;
-  }
-
   prevImage(gallery: string[]): void {
     this.currentImageIndex =
       (this.currentImageIndex - 1 + gallery.length) % gallery.length;
@@ -394,14 +277,13 @@ export class ProductDetailsPageComponent {
 
   private buildGallery(product: Product): string[] {
     const images = product.images?.map((i) => i.imageUrl) ?? [];
-    // For vertical stack, we want the main image first, then the rest
     let gallery = [];
-    if (product.imageUrl) {
-      gallery.push(product.imageUrl);
+    if (product.imgUrl) {
+      gallery.push(product.imgUrl);
     }
     // Add other images, avoiding duplicates
     images.forEach((img) => {
-      if (img !== product.imageUrl) {
+      if (img !== product.imgUrl) {
         gallery.push(img);
       }
     });
@@ -412,9 +294,7 @@ export class ProductDetailsPageComponent {
     product: Product,
     selectedMedia: string | null,
   ): string | null {
-    // For the vertical stack, selectedMedia is less relevant for display swapping,
-    // but we can keep it if we want to highlight or scroll to an image later.
-    return selectedMedia ?? product.imageUrl ?? null;
+    return selectedMedia ?? product.imgUrl ?? null;
   }
   // Review Logic
   isReviewFormOpen = false;

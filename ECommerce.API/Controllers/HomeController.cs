@@ -62,9 +62,8 @@ public class HomeController : ControllerBase
         {
             entry.SlidingExpiration = TimeSpan.FromMinutes(10);
             var items = await _productRepo.ListAsync(new ProductsWithCategoriesSpecification(
-                sort: "id_desc", categoryId: null, collectionId: null,
-                categorySlug: null, collectionSlug: null, search: null,
-                tier: null, tags: null, isNew: true, isFeatured: null, skip: 0, take: 10));
+                sort: "id_desc", categoryId: null, categorySlug: null, search: null,
+                isNew: true, skip: 0, take: 10));
             return _mapper.Map<IReadOnlyList<Product>, IReadOnlyList<ProductListDto>>(items);
         });
  
@@ -73,9 +72,8 @@ public class HomeController : ControllerBase
         {
             entry.SlidingExpiration = TimeSpan.FromMinutes(10);
             var items = await _productRepo.ListAsync(new ProductsWithCategoriesSpecification(
-                sort: "id_desc", categoryId: null, collectionId: null,
-                categorySlug: null, collectionSlug: null, search: null,
-                tier: null, tags: null, isNew: null, isFeatured: true, skip: 0, take: 10));
+                sort: "id_desc", categoryId: null, categorySlug: null, search: null,
+                isNew: null, skip: 0, take: 10));
             return _mapper.Map<IReadOnlyList<Product>, IReadOnlyList<ProductListDto>>(items);
         });
 

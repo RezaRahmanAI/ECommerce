@@ -59,66 +59,38 @@ public class ProductService : IProductService
 
         var product = new Product
         {
-            Name = dto.Name,
-            Description = dto.Description,
-            ShortDescription = dto.ShortDescription,
-            StockQuantity = dto.InventoryVariants.Sum(v => v.Inventory),
-            IsActive = dto.StatusActive,
+            Headline = dto.Headline,
+            Subtitle = dto.Subtitle,
+            StockQuantity = dto.StockQuantity,
+            IsActive = dto.IsActive,
             CategoryId = category.Id,
-            ImageUrl = dto.Media?.MainImage?.ImageUrl ?? string.Empty,
+            Price = dto.Price,
+            CompareAtPrice = dto.CompareAtPrice,
+            PurchaseRate = dto.PurchaseRate,
             IsNew = dto.NewArrival,
-            IsFeatured = dto.IsFeatured,
-            Slug = GenerateSlug(dto.Name),
+            Slug = GenerateSlug(dto.Headline),
             Sku = $"PRD-{DateTime.UtcNow.Ticks}",
-            FabricAndCare = dto.Meta?.FabricAndCare,
-            ShippingAndReturns = dto.Meta?.ShippingAndReturns,
-            Tier = dto.Tier,
-            Tags = dto.Tags,
-            SortOrder = dto.SortOrder,
-            CollectionId = dto.CollectionId,
-            ProductType = dto.ProductType,
-            IsBundle = dto.IsBundle,
-            BundleQuantity = dto.BundleQuantity > 0 ? dto.BundleQuantity : 1
+            BenefitsTitle = dto.BenefitsTitle,
+            BenefitsContent = dto.BenefitsContent,
+            UsageTitle = dto.UsageTitle,
+            UsageContent = dto.UsageContent,
+            SideEffectsTitle = dto.SideEffectsTitle,
+            SideEffectsContent = dto.SideEffectsContent
         };
 
         _unitOfWork.Repository<Product>().Add(product);
         
-        // Handle Images & Variants ... (omitted for brevity in instruction but keep logic)
-        if (dto.Media?.MainImage != null)
+        // Handle Images - flat array from frontend
+        if (dto.Images != null && dto.Images.Count > 0)
         {
-            product.Images.Add(new ProductImage {
-                Url = dto.Media.MainImage.ImageUrl ?? string.Empty,
-                AltText = dto.Media.MainImage.Alt,
-                Label = dto.Media.MainImage.Label,
-                MediaType = dto.Media.MainImage.Type ?? "image",
-                IsMain = true,
-                Color = dto.Media.MainImage.Color
-            });
-        }
-
-        foreach (var thumb in dto.Media?.Thumbnails ?? new())
-        {
-            product.Images.Add(new ProductImage {
-                Url = thumb.ImageUrl ?? string.Empty,
-                AltText = thumb.Alt,
-                Label = thumb.Label,
-                MediaType = thumb.Type ?? "image",
-                IsMain = false,
-                Color = thumb.Color
-            });
-        }
-
-        if (dto.InventoryVariants != null)
-        {
-            foreach (var v in dto.InventoryVariants)
+            foreach (var img in dto.Images)
             {
-                product.Variants.Add(new ProductVariant {
-                    Sku = v.Sku,
-                    Price = v.SalePrice ?? v.Price,
-                    CompareAtPrice = v.SalePrice.HasValue ? v.Price : null,
-                    PurchaseRate = v.PurchaseRate,
-                    StockQuantity = v.Inventory,
-                    Size = v.Label
+                product.Images.Add(new ProductImage
+                {
+                    Url = img.ImageUrl ?? string.Empty,
+                    AltText = img.AltText,
+                    IsMain = img.IsPrimary,
+                    MediaType = "image"
                 });
             }
         }
@@ -144,65 +116,39 @@ public class ProductService : IProductService
         var category = await _unitOfWork.Repository<Category>().GetEntityWithSpec<Category>(categorySpec);
         if (category == null) throw new KeyNotFoundException($"Category {dto.Category} not found");
 
-        product.Name = dto.Name;
-        // Auto-update slug on name change
-        product.Slug = GenerateSlug(dto.Name);
-        product.Description = dto.Description;
-        product.ShortDescription = dto.ShortDescription;
-        product.IsActive = dto.StatusActive;
+        product.Headline = dto.Headline;
+        product.Slug = GenerateSlug(dto.Headline);
+        product.Subtitle = dto.Subtitle;
+        product.IsActive = dto.IsActive;
         product.CategoryId = category.Id;
-        product.ImageUrl = dto.Media?.MainImage?.ImageUrl ?? string.Empty;
+        product.Price = dto.Price;
+        product.CompareAtPrice = dto.CompareAtPrice;
+        product.PurchaseRate = dto.PurchaseRate;
+        product.StockQuantity = dto.StockQuantity;
         product.IsNew = dto.NewArrival;
-        product.IsFeatured = dto.IsFeatured;
-        product.FabricAndCare = dto.Meta?.FabricAndCare;
-        product.ShippingAndReturns = dto.Meta?.ShippingAndReturns;
-        product.Tier = dto.Tier;
-        product.Tags = dto.Tags;
-        product.SortOrder = dto.SortOrder;
-        product.CollectionId = dto.CollectionId;
-        product.ProductType = dto.ProductType;
-        product.IsBundle = dto.IsBundle;
-        product.BundleQuantity = dto.BundleQuantity > 0 ? dto.BundleQuantity : 1;
+        
+        product.BenefitsTitle = dto.BenefitsTitle;
+        product.BenefitsContent = dto.BenefitsContent;
+        product.UsageTitle = dto.UsageTitle;
+        product.UsageContent = dto.UsageContent;
+        product.SideEffectsTitle = dto.SideEffectsTitle;
+        product.SideEffectsContent = dto.SideEffectsContent;
 
-        // Sync images and variants ... (keep existing logic)
+        // Sync images - flat array from frontend
         foreach (var img in product.Images.ToList()) _unitOfWork.Repository<ProductImage>().Delete(img);
-        if (dto.Media?.MainImage != null)
+        if (dto.Images != null && dto.Images.Count > 0)
         {
-            product.Images.Add(new ProductImage {
-                Url = dto.Media.MainImage.ImageUrl ?? string.Empty,
-                AltText = dto.Media.MainImage.Alt,
-                Label = dto.Media.MainImage.Label,
-                MediaType = dto.Media.MainImage.Type ?? "image",
-                IsMain = true,
-                Color = dto.Media.MainImage.Color
-            });
+            foreach (var img in dto.Images)
+            {
+                product.Images.Add(new ProductImage
+                {
+                    Url = img.ImageUrl ?? string.Empty,
+                    AltText = img.AltText,
+                    IsMain = img.IsPrimary,
+                    MediaType = "image"
+                });
+            }
         }
-        foreach (var thumb in dto.Media?.Thumbnails ?? new())
-        {
-            product.Images.Add(new ProductImage {
-                Url = thumb.ImageUrl ?? string.Empty,
-                AltText = thumb.Alt,
-                Label = thumb.Label,
-                MediaType = thumb.Type ?? "image",
-                IsMain = false,
-                Color = thumb.Color
-            });
-        }
-
-        foreach (var v in product.Variants.ToList()) _unitOfWork.Repository<ProductVariant>().Delete(v);
-        foreach (var v in dto.InventoryVariants)
-        {
-            product.Variants.Add(new ProductVariant {
-                Sku = v.Sku,
-                Price = v.SalePrice ?? v.Price,
-                CompareAtPrice = v.SalePrice.HasValue ? v.Price : null,
-                PurchaseRate = v.PurchaseRate,
-                StockQuantity = v.Inventory,
-                Size = v.Label
-            });
-        }
-
-        product.StockQuantity = dto.InventoryVariants.Sum(v => v.Inventory);
 
         _unitOfWork.Repository<Product>().Update(product);
         await _unitOfWork.Complete();
@@ -250,17 +196,8 @@ public class ProductService : IProductService
         return slug.Length > 100 ? slug.Substring(0, 100).Trim('-') : slug;
     }
 
-    public async Task<List<string>> GetAvailableSizesAsync()
+    public Task<List<string>> GetAvailableSizesAsync()
     {
-        return await _cache.GetOrCreateAsync("product:sizes", async () => 
-        {
-            return await _unitOfWork.Repository<ProductVariant>()
-                .GetQueryable()
-                .Where(v => !string.IsNullOrEmpty(v.Size))
-                .Select(v => v.Size!)
-                .Distinct()
-                .OrderBy(s => s)
-                .ToListAsync();
-        }, TimeSpan.FromHours(24));
+        return Task.FromResult(new List<string>());
     }
 }

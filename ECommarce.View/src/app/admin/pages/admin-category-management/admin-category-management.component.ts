@@ -304,20 +304,29 @@ export class AdminCategoryManagementComponent implements OnInit, OnDestroy {
 
   private performSave(): void {
     const formValue = this.categoryForm.getRawValue();
-    const payload: Partial<Category> = {
+    const payload: any = {
       name: formValue.name ?? "",
       slug: formValue.slug ?? "",
-      parentId: formValue.parentId ?? null,
+      parentId: formValue.parentId ? Number(formValue.parentId) : null,
       imageUrl: formValue.imageUrl ?? "",
       isActive: formValue.isActive ?? true,
     };
 
+    console.log("[DEBUG] Saving category with payload:", JSON.stringify(payload, null, 2));
+
     if (this.mode === "create") {
-      this.categoriesService.create(payload).subscribe((created) => {
-        this.categoriesFlat.push(created);
-        this.rebuildTree();
-        this.selectCategory(created);
-        window.alert("Category created successfully.");
+      this.categoriesService.create(payload).subscribe({
+        next: (created) => {
+          this.categoriesFlat.push(created);
+          this.rebuildTree();
+          this.selectCategory(created);
+          window.alert("Category created successfully.");
+        },
+        error: (error) => {
+          console.error("Error creating category:", error);
+          const msg = error?.error?.message || error?.message || "Failed to create category";
+          window.alert(msg);
+        }
       });
       return;
     }
@@ -328,20 +337,27 @@ export class AdminCategoryManagementComponent implements OnInit, OnDestroy {
 
     this.categoriesService
       .update(this.selectedId, payload)
-      .subscribe((updated) => {
-        const index = this.categoriesFlat.findIndex(
-          (item) => item.id === updated.id,
-        );
-        if (index !== -1) {
-          const existing = this.categoriesFlat[index];
-          this.categoriesFlat[index] = {
-            ...existing,
-            ...updated,
-            productCount: existing.productCount,
-          };
-          this.rebuildTree();
-          this.selectCategory(this.categoriesFlat[index]);
-          window.alert("Category updated successfully.");
+      .subscribe({
+        next: (updated) => {
+          const index = this.categoriesFlat.findIndex(
+            (item) => item.id === updated.id,
+          );
+          if (index !== -1) {
+            const existing = this.categoriesFlat[index];
+            this.categoriesFlat[index] = {
+              ...existing,
+              ...updated,
+              productCount: existing.productCount,
+            };
+            this.rebuildTree();
+            this.selectCategory(this.categoriesFlat[index]);
+            window.alert("Category updated successfully.");
+          }
+        },
+        error: (error) => {
+          console.error("Error updating category:", error);
+          const msg = error?.error?.message || error?.message || "Failed to update category";
+          window.alert(msg);
         }
       });
   }

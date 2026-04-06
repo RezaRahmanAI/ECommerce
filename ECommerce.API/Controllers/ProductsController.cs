@@ -40,19 +40,14 @@ public class ProductsController : ControllerBase
     public async Task<ActionResult<PaginationDto<ProductDto>>> GetProducts(
         [FromQuery] string? sort, 
         [FromQuery] int? categoryId, 
-        [FromQuery] int? collectionId, 
         [FromQuery] string? categorySlug, 
-        [FromQuery] string? collectionSlug, 
         [FromQuery] string? searchTerm, 
-        [FromQuery] string? tier, 
-        [FromQuery] string? tags, 
         [FromQuery] bool? isNew, 
-        [FromQuery] bool? isFeatured,
         [FromQuery] int pageIndex = 1,
         [FromQuery] int pageSize = 12)
     {
         // Build a deterministic cache key from all query parameters
-        var cacheKey = $"products_{sort}_{categoryId}_{collectionId}_{categorySlug}_{collectionSlug}_{searchTerm}_{tier}_{tags}_{isNew}_{isFeatured}_{pageIndex}_{pageSize}";
+        var cacheKey = $"products_{sort}_{categoryId}_{categorySlug}_{searchTerm}_{isNew}_{pageIndex}_{pageSize}";
 
         if (_cache.TryGetValue(cacheKey, out PaginationDto<ProductDto>? cached) && cached != null)
         {
@@ -62,22 +57,13 @@ public class ProductsController : ControllerBase
         var skip = (pageIndex - 1) * pageSize;
         var take = pageSize;
 
-        var spec = new ProductsWithCategoriesSpecification(sort, categoryId, collectionId, categorySlug, collectionSlug, searchTerm, tier, tags, isNew, isFeatured, skip, take);
-        var countSpec = new ProductsWithCategoriesSpecification(sort, categoryId, collectionId, categorySlug, collectionSlug, searchTerm, tier, tags, isNew, isFeatured);
+        var spec = new ProductsWithCategoriesSpecification(sort, categoryId, categorySlug, searchTerm, isNew, skip, take);
+        var countSpec = new ProductsWithCategoriesSpecification(sort, categoryId, categorySlug, searchTerm, isNew);
 
         var totalItems = await _productsRepo.CountAsync(countSpec);
         var dtos = await _productsRepo.ListAsync<ProductDto>(spec);
         
-        // Calculate effective stock for combos in the list
-        for (int i = 0; i < dtos.Count; i++)
-        {
-            if (dtos[i].ProductType == ECommerce.Core.Enums.ProductType.Combo)
-            {
-                // We need the entity to calculate effective stock for combo
-                // But let's check if we can optimize this further if needed.
-                // For now, keeping the logic but applying it to the DTO.
-            }
-        }
+
 
         var result = new PaginationDto<ProductDto>(pageIndex, pageSize, totalItems, dtos);
         

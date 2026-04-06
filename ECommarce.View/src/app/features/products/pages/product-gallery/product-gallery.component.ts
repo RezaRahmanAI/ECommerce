@@ -36,12 +36,16 @@ export class ProductGalleryComponent implements OnInit {
   filteredProducts: Product[] = [];
   childCategories: any[] = [];
   
-  // New Hierarchical Sidebar State for Offers
+  // Sidebar State for Offers/General
   offerCategories: any[] = [];
   isOffersPage = false;
-
-  selectedSize: string = 'All Sizes';
-  allSizes = ['All Sizes', 'S', 'M', 'L', 'XL', 'XXL'];
+  loading = true;
+  title = "Products";
+  skeletonItems = Array(8).fill(0);
+  
+  // For virtual scrolling rows in a grid (e.g. 4 columns)
+  productRows: Product[][] = [];
+  readonly itemsPerRow = 5;
 
   constructor() {
     combineLatest([this.route.params, this.route.queryParams])
@@ -50,14 +54,6 @@ export class ProductGalleryComponent implements OnInit {
         this.loadProducts({ ...params, ...queryParams });
       });
   }
-
-  loading = true;
-  title = "Products";
-  skeletonItems = Array(8).fill(0);
-  
-  // For virtual scrolling rows in a grid (e.g. 4 columns)
-  productRows: Product[][] = [];
-  readonly itemsPerRow = 5;
 
   ngOnInit(): void {
   }
@@ -69,13 +65,6 @@ export class ProductGalleryComponent implements OnInit {
   private loadProducts(params: any): void {
     this.loading = true;
     const { categorySlug, collectionSlug, slug } = params;
-    // Query params for tier and tags are usually in queryParams, not route params,
-    // but the current implementation uses route params for slugs.
-    // We should check queryParams for filters like tier and tags.
-    // However, the method signature takes `params` which seems to come from `route.params`.
-    // Let's modify ngOnInit to combine params and queryParams.
-
-    // Changing implementation to look at queryParams as well
     const queryParams = this.route.snapshot.queryParams;
     const tier = queryParams["tier"];
     const tags = queryParams["tags"];
@@ -140,18 +129,6 @@ export class ProductGalleryComponent implements OnInit {
         }
       });
     }
-  }
-
-  selectSizeFilter(size: string): void {
-    this.selectedSize = size;
-    if (size === 'All Sizes') {
-      this.filteredProducts = [...this.products];
-    } else {
-      this.filteredProducts = this.products.filter(product => {
-        return product.variants?.some(v => v.size?.toUpperCase() === size);
-      });
-    }
-    this.cdr.markForCheck();
   }
 
   navigateToSub(href: string): void {

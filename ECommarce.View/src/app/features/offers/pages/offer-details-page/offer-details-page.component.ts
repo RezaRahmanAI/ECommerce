@@ -82,7 +82,6 @@ export class OfferDetailsPageComponent {
     city: ["Dhaka", Validators.required],
     area: ["", Validators.required],
     quantity: [1, [Validators.required, Validators.min(1), Validators.max(10)]],
-    size: ["M", [Validators.required]],
   });
 
   cities = Object.keys(BANGLADESH_LOCATIONS).sort();
@@ -183,7 +182,6 @@ export class OfferDetailsPageComponent {
     this.successMessage = "";
 
     const quantity = this.orderForm.controls.quantity.value ?? 1;
-    const size = this.orderForm.controls.size.value ?? "";
 
     this.customerOrderApi
       .placeOrder({
@@ -198,7 +196,7 @@ export class OfferDetailsPageComponent {
           {
             productId: this.offer.productId,
             quantity: quantity,
-            size: this.orderForm.controls.size.value ?? "M",
+            size: "One Size",
           },
         ],
       })
@@ -214,7 +212,7 @@ export class OfferDetailsPageComponent {
             productName: this.offer?.title ?? "Special Offer",
             unitPrice: this.offer?.price ?? 0,
             quantity: quantity,
-            size: size,
+            size: "One Size",
             imageUrl: this.offer?.imageUrl ?? "",
             totalPrice: this.total,
           };
@@ -232,10 +230,8 @@ export class OfferDetailsPageComponent {
 
           this.orderForm.reset({
             fullName: "",
-            phone: "",
             address: "",
             quantity: 1,
-            size: "M",
           });
         },
         error: () => {

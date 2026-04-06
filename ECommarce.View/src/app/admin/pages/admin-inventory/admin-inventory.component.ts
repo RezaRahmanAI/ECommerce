@@ -68,17 +68,18 @@ export class AdminInventoryComponent implements OnInit, OnDestroy {
     const lowerTerm = term.toLowerCase();
     this.filteredProducts = this.products.filter(
       (p) =>
-        p.productName.toLowerCase().includes(lowerTerm) ||
+        p.headline.toLowerCase().includes(lowerTerm) ||
         p.productSku.toLowerCase().includes(lowerTerm),
     );
   }
 
-  updateStock(variant: VariantInventoryDto, event: Event): void {
+  updateProductStock(product: ProductInventoryDto, event: Event): void {
     const input = event.target as HTMLInputElement;
     const newQuantity = parseInt(input.value, 10);
+    const variant = product.variants[0];
 
-    if (isNaN(newQuantity) || newQuantity < 0) {
-      input.value = variant.stockQuantity.toString(); // Revert
+    if (!variant || isNaN(newQuantity) || newQuantity < 0) {
+      if (variant) input.value = variant.stockQuantity.toString();
       return;
     }
 
@@ -87,19 +88,10 @@ export class AdminInventoryComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (res) => {
           variant.stockQuantity = newQuantity;
-          // Ideally update total stock in UI locally or reload
-          const product = this.products.find(
-            (p) =>
-              p.productId ===
-              this.products.find((p) => p.variants.includes(variant))
-                ?.productId,
-          );
-          if (product) {
-            product.totalStock = res.newTotal;
-          }
+          product.totalStock = res.newTotal;
         },
         error: () => {
-          input.value = variant.stockQuantity.toString(); // Revert on error
+          input.value = variant.stockQuantity.toString();
           alert("Failed to update stock");
         },
       });

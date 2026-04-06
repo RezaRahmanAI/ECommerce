@@ -105,7 +105,7 @@ public class AdminProductsController : ControllerBase
         // Apply filters
         if (!string.IsNullOrEmpty(searchTerm))
         {
-            query = query.Where(p => p.Name.Contains(searchTerm) || p.Sku.Contains(searchTerm));
+            query = query.Where(p => p.Headline.Contains(searchTerm) || p.Sku.Contains(searchTerm));
         }
 
         if (!string.IsNullOrEmpty(category) && category != "all")
@@ -123,7 +123,6 @@ public class AdminProductsController : ControllerBase
         var products = await query
             .Include(p => p.Category)
             .Include(p => p.Images)
-            .Include(p => p.Variants)
             .AsSplitQuery()
             .OrderByDescending(p => p.CreatedAt)
             .Skip((page - 1) * pageSize)
@@ -131,18 +130,17 @@ public class AdminProductsController : ControllerBase
             .Select(p => new
             {
                 p.Id,
-                p.Name,
-                p.Description,
-                p.ShortDescription,
+                Name = p.Headline,
+                p.Headline,
+                p.Subtitle,
                 p.Sku,
-                Price = p.Variants.FirstOrDefault() != null ? p.Variants.FirstOrDefault()!.Price ?? 0 : 0,
-                SalePrice = p.Variants.FirstOrDefault() != null ? p.Variants.FirstOrDefault()!.CompareAtPrice ?? null : null,
-                PurchaseRate = p.Variants.FirstOrDefault() != null ? p.Variants.FirstOrDefault()!.PurchaseRate ?? null : null,
+                p.Price,
+                SalePrice = p.CompareAtPrice,
+                p.PurchaseRate,
                 p.StockQuantity,
                 p.IsNew,
-                p.IsFeatured,
                 Status = p.IsActive ? "Active" : "Draft",
-                p.ImageUrl,
+                ImageUrl = p.Images.FirstOrDefault(i => i.IsMain) != null ? p.Images.FirstOrDefault(i => i.IsMain)!.Url : "",
                 Category = p.Category != null ? p.Category.Name : "",
                 CategoryId = p.CategoryId,
                 MediaUrls = p.Images.Select(i => i.Url).ToList(),
@@ -170,31 +168,7 @@ public class AdminProductsController : ControllerBase
         PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase
     };
 
-    private ProductVariantsDto DeserializeVariantsDto(string? json)
-    {
-        if (string.IsNullOrEmpty(json)) return new ProductVariantsDto();
-        try
-        {
-            return System.Text.Json.JsonSerializer.Deserialize<ProductVariantsDto>(json, _jsonOptions) ?? new ProductVariantsDto();
-        }
-        catch
-        {
-            return new ProductVariantsDto();
-        }
-    }
 
-    private ProductMetaDto DeserializeMetaDto(string? json)
-    {
-        if (string.IsNullOrEmpty(json)) return new ProductMetaDto();
-        try
-        {
-            return System.Text.Json.JsonSerializer.Deserialize<ProductMetaDto>(json, _jsonOptions) ?? new ProductMetaDto();
-        }
-        catch
-        {
-            return new ProductMetaDto();
-        }
-    }
 
     [HttpPost]
     public async Task<ActionResult> CreateProduct([FromBody] ProductCreateDto dto)
@@ -231,13 +205,7 @@ public class AdminProductsController : ControllerBase
     {
         try
         {
-            Console.WriteLine($"[ADMIN_DEBUG] Updating Product {id}: {dto.Name}, Type: {dto.ProductType}, BundleItems: {dto.BundleItems?.Count ?? -1}");
-            if (dto.BundleItems != null)
-            {
-                foreach(var bi in dto.BundleItems) {
-                    Console.WriteLine($"  [ADMIN_DEBUG] Component: {bi.ComponentProductId}, Variant: {bi.ComponentVariantId}, Qty: {bi.Quantity}");
-                }
-            }
+            Console.WriteLine($"[ADMIN_DEBUG] Updating Product {id}: {dto.Headline}");
             var result = await _productService.UpdateProductAsync(id, dto);
             if (result == null) return BadRequest(new { message = "Error updating product" });
 
@@ -262,18 +230,12 @@ public class AdminProductsController : ControllerBase
     {
         var product = await _context.Products
             .Include(p => p.Images)
-            .Include(p => p.Variants)
             .FirstOrDefaultAsync(p => p.Id == id);
 
         if (product == null)
             return NotFound();
 
         // Delete associated images from filesystem
-        if (!string.IsNullOrEmpty(product.ImageUrl))
-        {
-            DeleteImageFile(product.ImageUrl);
-        }
-
         foreach (var image in product.Images)
         {
             DeleteImageFile(image.Url);
@@ -338,52 +300,28 @@ public class AdminProductsController : ControllerBase
     public async Task<ActionResult<List<ProductInventoryDto>>> GetInventory()
     {
         var spec = new BaseSpecification<Product>();
-        spec.AddInclude(x => x.Variants);
-        
-        // Performance: Use AsNoTracking indirectly via the repository if it supports it, 
-        // but here we are using ListAsync(spec).
         var products = await _unitOfWork.Repository<Product>().ListAsync(spec);
 
         var inventory = products.Select(p => new ProductInventoryDto
         {
             ProductId = p.Id,
-            ProductName = p.Name,
+            ProductName = p.Headline,
             ProductSku = p.Sku ?? string.Empty,
-            ImageUrl = p.ImageUrl ?? string.Empty,
+            ImageUrl = p.Images?.FirstOrDefault(i => i.IsMain)?.Url ?? string.Empty,
             TotalStock = p.StockQuantity,
-            Variants = p.Variants.Select(v => new VariantInventoryDto
-            {
-                VariantId = v.Id,
-                Sku = v.Sku ?? string.Empty,
-                Size = v.Size ?? string.Empty,
-                StockQuantity = v.StockQuantity
-            }).ToList()
+            Variants = new List<VariantInventoryDto>() // Return empty for legacy frontend compat
         }).ToList();
 
         return Ok(inventory);
     }
 
-    [HttpPost("inventory/{variantId}")]
-    public async Task<ActionResult> UpdateStock(int variantId, UpdateStockDto dto)
+    [HttpPost("inventory/{productId}")]
+    public async Task<ActionResult> UpdateStock(int productId, UpdateStockDto dto)
     {
-        var variant = await _unitOfWork.Repository<ProductVariant>().GetByIdAsync(variantId);
-        if (variant == null) return NotFound(new { message = "Variant not found" });
-
-        var product = await _unitOfWork.Repository<Product>().GetByIdAsync(variant.ProductId);
-        if (product == null) return NotFound(new { message = "Parent product not found" });
+        var product = await _unitOfWork.Repository<Product>().GetByIdAsync(productId);
+        if (product == null) return NotFound(new { message = "Product not found" });
         
-        // Update variant stock
-        variant.StockQuantity = dto.Quantity;
-        _unitOfWork.Repository<ProductVariant>().Update(variant);
-
-        // Recalculate total stock for product
-        var variantSpec = new BaseSpecification<ProductVariant>(v => v.ProductId == product.Id);
-        var allVariants = await _unitOfWork.Repository<ProductVariant>().ListAsync(variantSpec);
-        
-        var targetVar = allVariants.FirstOrDefault(v => v.Id == variantId);
-        if (targetVar != null) targetVar.StockQuantity = dto.Quantity;
-
-        product.StockQuantity = allVariants.Sum(v => v.StockQuantity);
+        product.StockQuantity = dto.Quantity;
         _unitOfWork.Repository<Product>().Update(product);
 
         if (await _unitOfWork.Complete() > 0)

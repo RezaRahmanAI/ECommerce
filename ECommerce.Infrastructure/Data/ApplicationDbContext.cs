@@ -20,7 +20,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<Cart> Carts { get; set; }
     public DbSet<CartItem> CartItems { get; set; }
     public DbSet<Product> Products { get; set; }
-    public DbSet<ProductVariant> ProductVariants { get; set; }
+
     public DbSet<ProductImage> ProductImages { get; set; }
     public DbSet<NavigationMenu> NavigationMenus { get; set; }
     public DbSet<HeroBanner> HeroBanners { get; set; }
@@ -61,17 +61,12 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
                   .HasForeignKey(p => p.CategoryId)
                   .OnDelete(DeleteBehavior.Restrict);
 
-            entity.HasOne(p => p.Collection)
-                  .WithMany(c => c.Products)
-                  .HasForeignKey(p => p.CollectionId)
-                  .OnDelete(DeleteBehavior.Restrict);
-
             // Indexes for Performance
             entity.HasIndex(p => p.Slug).IsUnique();
             entity.HasIndex(p => p.Sku).IsUnique();
             entity.HasIndex(p => p.CategoryId);
             entity.HasIndex(p => p.IsNew);
-            entity.HasIndex(p => p.IsFeatured);
+            entity.HasIndex(p => p.Price);
             
             // Filtered index for active storefront products
             entity.HasIndex(p => new { p.IsActive, p.CategoryId })
@@ -82,24 +77,13 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             entity.HasIndex(p => p.StockQuantity);
             entity.HasIndex(p => p.CreatedAt);
 
-            // Constraint
-            entity.ToTable(t => t.HasCheckConstraint("CK_Product_Name", "LEN(Name) > 0")); 
-        });
-        
-        // Product Variant Configuration
-        builder.Entity<ProductVariant>(entity =>
-        {
-            entity.Property(v => v.Price).HasColumnType("decimal(18,2)");
-            entity.Property(v => v.CompareAtPrice).HasColumnType("decimal(18,2)");
-            entity.Property(v => v.PurchaseRate).HasColumnType("decimal(18,2)");
-            
-            entity.HasOne(v => v.Product)
-                  .WithMany(p => p.Variants)
-                  .HasForeignKey(v => v.ProductId)
-                  .OnDelete(DeleteBehavior.Cascade);
+            // Cost tracking config
+            entity.Property(p => p.Price).HasColumnType("decimal(18,2)");
+            entity.Property(p => p.CompareAtPrice).HasColumnType("decimal(18,2)");
+            entity.Property(p => p.PurchaseRate).HasColumnType("decimal(18,2)");
 
-            entity.HasIndex(v => v.ProductId);
-            entity.HasIndex(v => v.Price);
+            // Constraint
+            entity.ToTable(t => t.HasCheckConstraint("CK_Product_Name", "LEN(Headline) > 0")); 
         });
 
         // Category Self-Referencing Hierarchy

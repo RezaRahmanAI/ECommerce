@@ -41,11 +41,11 @@ export class OrderService {
   placeOrder(payload: PlaceOrderPayload): Observable<Order> {
     const items: OrderItem[] = payload.cartItems.map((item) => ({
       productId: Number(item.productId),
-      productName: item.name,
+      productName: item.headline,
       unitPrice: item.price,
       quantity: item.quantity,
       size: item.size,
-      imageUrl: item.imageUrl,
+      imageUrl: item.imgUrl,
       totalPrice: item.price * item.quantity,
     }));
 

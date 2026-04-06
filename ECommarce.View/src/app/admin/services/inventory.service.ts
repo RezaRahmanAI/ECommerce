@@ -11,9 +11,9 @@ export interface VariantInventoryDto {
 
 export interface ProductInventoryDto {
   productId: number;
-  productName: string;
+  headline: string;
   productSku: string;
-  imageUrl: string;
+  imgUrl: string;
   totalStock: number;
   variants: VariantInventoryDto[];
 }

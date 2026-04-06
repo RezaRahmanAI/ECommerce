@@ -43,13 +43,13 @@
         class="p-5 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/20 flex items-center gap-4"
       >
         <img
-          [src]="product.imageUrl || '/assets/placeholder.png'"
+          [src]="product.imgUrl || '/assets/placeholder.png'"
           class="w-12 h-12 rounded-lg object-cover border border-gray-200 dark:border-gray-700 bg-white"
           alt=""
         />
         <div>
           <h3 class="font-bold text-lg text-primary dark:text-white">
-            {{ product.productName }}
+            {{ product.headline }}
           </h3>
           <p class="text-xs text-gray-500 font-mono">
             SKU: {{ product.productSku }}
@@ -65,55 +65,36 @@
         </div>
       </div>
 
-      <!-- Variants Table -->
-      <div class="overflow-x-auto">
-        <table class="w-full text-left border-collapse">
-          <thead>
-            <tr
-              class="border-b border-gray-100 dark:border-gray-800 text-xs font-bold text-gray-500 uppercase tracking-wider bg-white dark:bg-surface-dark"
-            >
-              <th class="p-4 pl-6 w-1/3">Variant (Size)</th>
-              <th class="p-4 w-1/3">SKU</th>
-              <th class="p-4 pr-6 text-right w-1/3">Stock Level</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-gray-50 dark:divide-gray-800">
-            <tr
-              *ngFor="let variant of product.variants"
-              class="group hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors"
-            >
-              <td class="p-4 pl-6">
-                <span
-                  class="font-bold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded text-sm"
-                  >{{ variant.size }}</span
-                >
-              </td>
-              <td class="p-4 text-sm text-gray-500 font-mono">
-                {{ variant.sku || "-" }}
-              </td>
-              <td class="p-4 pr-6 text-right">
-                <div class="flex items-center justify-end gap-2">
-                  <span
-                    *ngIf="variant.stockQuantity <= 5"
-                    class="text-xs font-bold text-red-500 bg-red-50 dark:bg-red-900/20 px-2 py-1 rounded-full animate-pulse"
-                    >Low Stock</span
-                  >
+      <!-- Single Stock Control -->
+      <div class="px-6 py-6 pb-8 bg-white dark:bg-surface-dark flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="p-2.5 rounded-xl bg-primary/10 text-primary">
+            <lucide-icon [img]="icons.Box" class="w-5 h-5"></lucide-icon>
+          </div>
+          <div>
+            <p class="text-xs font-bold text-gray-400 uppercase tracking-widest leading-none mb-1">Current Inventory</p>
+            <p class="text-sm font-bold text-primary dark:text-white uppercase tracking-tight">Standard Unit Stock</p>
+          </div>
+        </div>
 
-                  <div
-                    class="flex items-center border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden bg-white dark:bg-surface-dark focus-within:ring-2 focus-within:ring-primary/20 transition-all"
-                  >
-                    <input
-                      type="number"
-                      [value]="variant.stockQuantity"
-                      (change)="updateStock(variant, $event)"
-                      class="w-20 p-2 text-center text-sm font-bold text-primary dark:text-white border-none focus:ring-0 bg-transparent"
-                    />
-                  </div>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+        <div class="flex items-center gap-4">
+          <div *ngIf="product.variants[0].stockQuantity <= 5" class="hidden sm:flex items-center gap-2 text-red-500 bg-red-50 dark:bg-red-900/10 px-3 py-1.5 rounded-full border border-red-100 dark:border-red-900/20">
+            <div class="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></div>
+            <span class="text-[10px] font-black uppercase tracking-wider">Low Stock Warning</span>
+          </div>
+
+          <div class="relative group/input">
+            <div class="absolute inset-y-0 left-3 flex items-center pointer-events-none text-gray-400 group-focus-within/input:text-primary transition-colors">
+              <span class="text-xs font-black uppercase">Qty</span>
+            </div>
+            <input
+              type="number"
+              [value]="product.variants[0].stockQuantity"
+              (change)="updateProductStock(product, $event)"
+              class="w-32 pl-12 pr-4 py-2.5 text-right font-black text-primary dark:text-white bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700 rounded-xl focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all outline-none"
+            />
+          </div>
+        </div>
       </div>
     </div>
 

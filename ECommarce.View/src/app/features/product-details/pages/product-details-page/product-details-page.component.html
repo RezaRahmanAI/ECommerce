@@ -9,7 +9,7 @@
           >Home</a
         >
         <span class="text-[#ccc] text-xs">/</span>
-        <span class="text-[#1a1a1a] font-bold">{{ vm.product.name }}</span>
+        <span class="text-[#1a1a1a] font-bold">{{ vm.product.headline }}</span>
       </nav>
     </div>
 
@@ -17,144 +17,120 @@
     <div class="site-container pb-8 md:pb-12">
       <!-- Mobile-only header (shown above image) -->
       <div class="lg:hidden mb-4 space-y-2 text-center">
-        <h1 class="text-xl sm:text-2xl font-serif italic text-[#1a1a1a] leading-tight">
-          {{ vm.product.name }}
+        <h1
+          class="text-xl sm:text-2xl font-serif italic text-[#1a1a1a] leading-tight"
+        >
+          {{ vm.product.headline }}
         </h1>
+        <p *ngIf="vm.product.subtitle" class="text-sm text-[#666] italic">
+          {{ vm.product.subtitle }}
+        </p>
       </div>
 
-      <div class="grid grid-cols-1 lg:grid-cols-12 ">
-        <!-- ===== LEFT: Image Gallery & Description (Unified) ===== -->
+      <div class="grid grid-cols-1 lg:grid-cols-12">
+        <!-- ===== LEFT: Image Gallery ===== -->
         <div class="lg:col-span-6 flex flex-col gap-10">
-            <div class="flex flex-row gap-4">
-              <!-- Thumbnails (Left on Desktop, Right on Mobile - fixed to Left/Vertical for desktop as requested) -->
-              <div
-                *ngIf="vm.gallery.length > 1"
-                class="hidden lg:flex flex-col gap-2 overflow-y-auto scrollbar-hide w-24 flex-shrink-0"
-                style="max-height: 550px;"
+          <div class="flex flex-row gap-4">
+            <!-- Thumbnails (Left on Desktop) -->
+            <div
+              *ngIf="vm.gallery.length > 1"
+              class="hidden lg:flex flex-col gap-2 overflow-y-auto scrollbar-hide w-24 flex-shrink-0"
+              style="max-height: 550px"
+            >
+              <button
+                *ngFor="let url of vm.gallery; let i = index"
+                (click)="goToImage(i)"
+                class="flex-shrink-0 w-full h-28 border transition-all duration-300 overflow-hidden relative"
+                [class.border-[#1a1a1a]]="i === currentImageIndex"
+                [class.border-transparent]="i !== currentImageIndex"
               >
-                <button
-                  *ngFor="let url of vm.gallery; let i = index"
-                  (click)="goToImage(i)"
-                  class="flex-shrink-0 w-full h-28 border transition-all duration-300 overflow-hidden relative"
-                  [class.border-[#1a1a1a]]="i === currentImageIndex"
-                  [class.border-transparent]="i !== currentImageIndex"
-                >
-                  <img
-                    [src]="imageUrlService.getImageUrl(url)"
-                    class="w-full h-full object-cover"
-                    [class.opacity-60]="i !== currentImageIndex"
-                  />
-                  <div
-                    *ngIf="i === currentImageIndex"
-                    class="absolute bottom-0 left-0 w-full h-0.5 bg-[#1a1a1a]"
-                  ></div>
-                </button>
-              </div>
-
-              <!-- Main Image Area -->
-              <div class="relative flex-1">
+                <img
+                  [src]="imageUrlService.getImageUrl(url)"
+                  class="w-full h-full object-cover"
+                  [class.opacity-60]="i !== currentImageIndex"
+                />
                 <div
-                  class="relative bg-[#ebebeb] overflow-hidden group aspect-[3/4] max-h-[50vh] md:max-h-[60vh] lg:max-h-[550px]"
-                >
-                  <!-- Images -->
-                  <ng-container *ngFor="let url of vm.gallery; let i = index">
-                    <img
-                      [src]="imageUrlService.getImageUrl(url)"
-                      [alt]="vm.product.name"
-                      class="absolute inset-0 w-full h-full object-cover transition-opacity duration-[1200ms] ease-in-out"
-                      [class.opacity-100]="i === currentImageIndex"
-                      [class.opacity-0]="i !== currentImageIndex"
-                    />
-                  </ng-container>
+                  *ngIf="i === currentImageIndex"
+                  class="absolute bottom-0 left-0 w-full h-0.5 bg-[#1a1a1a]"
+                ></div>
+              </button>
+            </div>
 
-                  <!-- Tier Badge -->
-                  <div
-                    *ngIf="vm.product.tier"
-                    class="absolute top-6 right-6 z-10"
-                  >
-                    <span
-                      class="px-4 py-1.5 bg-white/95 text-[10px] uppercase tracking-[0.3em] font-bold text-[#1a1a1a] border border-[#eee] backdrop-blur-sm shadow-sm"
-                    >
-                      {{ vm.product.tier }}
-                    </span>
-                  </div>
-
-                  <!-- Nav Arrows -->
-                  <button
-                    *ngIf="vm.gallery.length > 1"
-                    (click)="prevImage(vm.gallery)"
-                    class="absolute left-4 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-white/80 flex items-center justify-center shadow-lg transition-all duration-300 opacity-0 group-hover:opacity-100 hover:bg-white"
-                  >
-                    <lucide-icon
-                      [img]="icons.ChevronLeft"
-                      class="w-4 h-4"
-                    ></lucide-icon>
-                  </button>
-                  <button
-                    *ngIf="vm.gallery.length > 1"
-                    (click)="nextImage(vm.gallery)"
-                    class="absolute right-4 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-white/80 flex items-center justify-center shadow-lg transition-all duration-300 opacity-0 group-hover:opacity-100 hover:bg-white"
-                  >
-                    <lucide-icon
-                      [img]="icons.ChevronRight"
-                      class="w-4 h-4"
-                    ></lucide-icon>
-                  </button>
-                </div>
-              </div>
-
-              <!-- Mobile Thumbnails (Right side on mobile) -->
+            <!-- Main Image Area -->
+            <div class="relative flex-1">
               <div
-                *ngIf="vm.gallery.length > 1"
-                class="flex flex-row md:hidden gap-2 overflow-x-auto scrollbar-hide w-16 flex-shrink-0"
+                class="relative bg-[#ebebeb] overflow-hidden group aspect-[3/4] max-h-[50vh] md:max-h-[60vh] lg:max-h-[550px]"
               >
-                <button
-                  *ngFor="let url of vm.gallery; let i = index"
-                  (click)="goToImage(i)"
-                  class="flex-shrink-0 w-14 h-16 border transition-all duration-300 overflow-hidden relative"
-                  [class.border-[#1a1a1a]]="i === currentImageIndex"
-                  [class.border-transparent]="i !== currentImageIndex"
-                >
+                <!-- Images -->
+                <ng-container *ngFor="let url of vm.gallery; let i = index">
                   <img
                     [src]="imageUrlService.getImageUrl(url)"
-                    class="w-full h-full object-cover"
-                    [class.opacity-60]="i !== currentImageIndex"
+                    [alt]="vm.product.headline"
+                    class="absolute inset-0 w-full h-full object-cover transition-opacity duration-[1200ms] ease-in-out"
+                    [class.opacity-100]="i === currentImageIndex"
+                    [class.opacity-0]="i !== currentImageIndex"
                   />
+                </ng-container>
+
+                <!-- Nav Arrows -->
+                <button
+                  *ngIf="vm.gallery.length > 1"
+                  (click)="prevImage(vm.gallery)"
+                  class="absolute left-4 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-white/80 flex items-center justify-center shadow-lg transition-all duration-300 opacity-0 group-hover:opacity-100 hover:bg-white"
+                >
+                  <lucide-icon
+                    [img]="icons.ChevronLeft"
+                    class="w-4 h-4"
+                  ></lucide-icon>
+                </button>
+                <button
+                  *ngIf="vm.gallery.length > 1"
+                  (click)="nextImage(vm.gallery)"
+                  class="absolute right-4 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-white/80 flex items-center justify-center shadow-lg transition-all duration-300 opacity-0 group-hover:opacity-100 hover:bg-white"
+                >
+                  <lucide-icon
+                    [img]="icons.ChevronRight"
+                    class="w-4 h-4"
+                  ></lucide-icon>
                 </button>
               </div>
             </div>
 
-            <!-- Description & Details (Desktop Only: In Left Column) -->
-            <div class="hidden lg:block space-y-8 py-8 border-t border-[#eee] mt-10">
-              <!-- Primary Description -->
-              <div class="space-y-4">
-                <h3
-                  class="text-[11px] uppercase tracking-[0.4em] font-bold text-accent"
-                >
-                  Description
-                </h3>
-                <p
-                  class="text-[17px] text-primary/80 leading-[1.8] font-light max-w-[90%]"
-                  [innerHTML]="vm.product.description | safeHtml"
-                ></p>
-              </div>
-              </div>
+            <!-- Mobile Thumbnails (Right side on mobile) -->
+            <div
+              *ngIf="vm.gallery.length > 1"
+              class="flex flex-row md:hidden gap-2 overflow-x-auto scrollbar-hide w-16 flex-shrink-0"
+            >
+              <button
+                *ngFor="let url of vm.gallery; let i = index"
+                (click)="goToImage(i)"
+                class="flex-shrink-0 w-14 h-16 border transition-all duration-300 overflow-hidden relative"
+                [class.border-[#1a1a1a]]="i === currentImageIndex"
+                [class.border-transparent]="i !== currentImageIndex"
+              >
+                <img
+                  [src]="imageUrlService.getImageUrl(url)"
+                  class="w-full h-full object-cover"
+                  [class.opacity-60]="i !== currentImageIndex"
+                />
+              </button>
             </div>
+          </div>
+        </div>
 
         <!-- ===== RIGHT: Product Info & Actions (Sticky) ===== -->
         <div class="lg:col-span-6 lg:sticky lg:top-24 lg:self-start">
-          <div class="flex flex-col">
+          <div class="flex flex-col space-y-6">
             <!-- Product Identity (Desktop Only) -->
             <div class="hidden lg:block space-y-4">
-              <h1 class="text-2xl lg:text-3xl font-serif italic text-[#1a1a1a] leading-[1.2]">
-                {{ vm.product.name }}
-              </h1>
-              <div
-                class="flex items-center gap-4 text-[10px] uppercase tracking-[0.2em] font-bold"
+              <h1
+                class="text-2xl lg:text-3xl font-serif italic text-[#1a1a1a] leading-[1.2]"
               >
-                <span class="text-[#bbb]">Item Ref:</span>
-                <span class="text-[#1a1a1a]">{{ vm.product.sku }}</span>
-              </div>
+                {{ vm.product.headline }}
+              </h1>
+              <p *ngIf="vm.product.subtitle" class="text-lg text-[#666] italic leading-relaxed">
+                {{ vm.product.subtitle }}
+              </p>
             </div>
 
             <!-- Pricing Section -->
@@ -191,52 +167,8 @@
               </span>
             </div>
 
-
-
-            <!-- Variants: Size -->
-            <div *ngIf="vm.uniqueSizes.length > 0" class="space-y-5">
-              <div class="flex items-center justify-between">
-                <p
-                  class="text-[10px] uppercase tracking-[0.2em] font-bold text-[#1a1a1a]"
-                >
-                  Select Size
-                </p>
-                <button
-                  (click)="openSizeGuide()"
-                  class="text-[9px] uppercase tracking-[0.2em] text-[#999] hover:text-[#1a1a1a] transition-colors border-b border-[#eee] pb-0.5"
-                >
-                  Size Guide
-                </button>
-              </div>
-              <div class="flex flex-wrap gap-2">
-                <button
-                  *ngFor="let size of vm.uniqueSizes"
-                  (click)="selectSize(size || '')"
-                  class="min-w-[60px] h-14 border text-[11px] font-bold uppercase tracking-[0.2em] transition-all duration-300"
-                  [class.bg-[#1a1a1a]]="size === vm.selectedSize"
-                  [class.text-white]="size === vm.selectedSize"
-                  [class.border-[#1a1a1a]]="size === vm.selectedSize"
-                  [class.bg-white]="size !== vm.selectedSize"
-                  [class.text-[#1a1a1a]]="size !== vm.selectedSize"
-                  [class.border-[#eee]]="size !== vm.selectedSize"
-                  [class.hover:border-[#1a1a1a]]="size !== vm.selectedSize"
-                >
-                  {{ size }}
-                </button>
-              </div>
-              <p
-                *ngIf="vm.selectedSize"
-                class="text-[9px] uppercase tracking-[0.2em] text-[#bbb] font-medium"
-              >
-                Stock Status:
-                <span class="text-[#1a1a1a]"
-                  >{{ vm.currentStock }} available</span
-                >
-              </p>
-            </div>
-
             <!-- Actions -->
-            <div class="flex flex-col gap-4 pt-4">
+            <div class="flex flex-col gap-4">
               <!-- Quantity -->
               <div
                 class="flex items-center h-12 border border-[#eee] bg-white group hover:border-[#aaa] transition-colors"
@@ -263,32 +195,22 @@
                 </button>
               </div>
 
-              <!-- Errors -->
-              <p
-                *ngIf="selectionError"
-                class="text-[10px] text-red-600 bg-red-50 p-4 tracking-wider leading-relaxed"
-              >
-                {{ selectionError }}
-              </p>
-
               <!-- Main Buttons -->
               <div class="grid grid-cols-1 gap-3">
                 <button
                   (click)="addToCart(vm.product)"
-                  [disabled]="!vm.currentStock"
                   class="w-full h-14 bg-primary text-white text-[11px] font-bold uppercase tracking-[0.3em] hover:opacity-90 transition-all duration-300 disabled:opacity-20 flex items-center justify-center gap-4 rounded-xl shadow-lg shadow-primary/10"
                 >
                   <lucide-icon
                     [img]="icons.ShoppingBag"
                     class="w-4 h-4"
                   ></lucide-icon>
-                  {{ vm.currentStock ? "Add to Shopping Bag" : "Sold Out" }}
+                  Add to Shopping Bag
                 </button>
 
                 <button
                   (click)="buyNow(vm.product)"
-                  [disabled]="!vm.currentStock"
-                  class="w-full h-14 bg-accent text-white text-[11px] font-bold uppercase tracking-[0.3em] hover:opacity-90 transition-all duration-300 disabled:opacity-20 rounded-xl shadow-lg shadow-accent/20"
+                  class="w-full h-14 bg-accent text-white text-[11px] font-bold uppercase tracking-[0.3em] hover:opacity-90 transition-all duration-300 rounded-xl shadow-lg shadow-accent/20"
                 >
                   Secure Checkout
                 </button>
@@ -310,24 +232,47 @@
               </a>
             </div>
 
-            <!-- Description & Details (Mobile Only: Below Buttons) -->
-            <div class="lg:hidden space-y-6 pt-8 border-t border-[#eee]">
-              <!-- Primary Description -->
-              <div class="space-y-3">
+            <!-- Rich Content Sections -->
+            <div class="space-y-10 pt-8 border-t border-[#eee]">
+              <!-- Benefits -->
+              <div *ngIf="vm.product.benefitsContent" class="space-y-4">
                 <h3
-                  class="text-[10px] uppercase tracking-[0.3em] font-bold text-[#c8922a]"
+                  class="text-[11px] uppercase tracking-[0.4em] font-bold text-accent"
                 >
-                  Description
+                  {{ vm.product.benefitsTitle || 'Key Benefits' }}
                 </h3>
-                <p
-                  class="text-[15px] text-[#444] leading-[1.6] font-light"
-                  [innerHTML]="vm.product.description | safeHtml"
-                ></p>
+                <div
+                  class="text-[15px] text-[#444] leading-[1.8] font-light prose prose-sm max-w-none"
+                  [innerHTML]="vm.product.benefitsContent | safeHtml"
+                ></div>
+              </div>
+
+              <!-- Usage -->
+              <div *ngIf="vm.product.usageContent" class="space-y-4">
+                <h3
+                  class="text-[11px] uppercase tracking-[0.4em] font-bold text-accent"
+                >
+                  {{ vm.product.usageTitle || 'Usage Guide' }}
+                </h3>
+                <div
+                  class="text-[15px] text-[#444] leading-[1.8] font-light prose prose-sm max-w-none"
+                  [innerHTML]="vm.product.usageContent | safeHtml"
+                ></div>
+              </div>
+
+              <!-- Side Effects -->
+              <div *ngIf="vm.product.sideEffectsContent" class="space-y-4">
+                <h3
+                  class="text-[11px] uppercase tracking-[0.4em] font-bold text-accent"
+                >
+                  {{ vm.product.sideEffectsTitle || 'Side Effects' }}
+                </h3>
+                <div
+                  class="text-[15px] text-red-500/80 leading-[1.8] font-light prose prose-sm max-w-none"
+                  [innerHTML]="vm.product.sideEffectsContent | safeHtml"
+                ></div>
               </div>
             </div>
-
-            <!-- Features Info -->
-            <div class="grid grid-cols-2 gap-4 pt-6 border-t border-[#eee]">
               <div class="flex items-center gap-3">
                 <div
                   class="w-8 h-8 rounded-full bg-[#f9f9f9] flex items-center justify-center"
@@ -355,7 +300,6 @@
                   class="text-[9px] uppercase tracking-[0.1em] text-[#888] font-bold"
                   >Secure Payment</span
                 >
-              </div>
             </div>
           </div>
         </div>
@@ -538,8 +482,4 @@
     </div>
   </div>
 
-  <app-size-guide
-    *ngIf="isSizeGuideOpen"
-    (close)="closeSizeGuide()"
-  ></app-size-guide>
 </ng-container>

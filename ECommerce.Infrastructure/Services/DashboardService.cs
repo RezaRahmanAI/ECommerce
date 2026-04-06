@@ -63,7 +63,7 @@ public class DashboardService : IDashboardService
                     Quantity = g.Sum(i => i.Quantity),
                     Product = _context.Products
                         .Where(p => p.Id == g.Key)
-                        .Select(p => p.Variants.OrderBy(v => v.Id).Select(v => (decimal?)v.PurchaseRate).FirstOrDefault() ?? 0)
+                        .Select(p => p.PurchaseRate)
                         .FirstOrDefault()
                 })
                 .ToListAsync();
@@ -109,7 +109,6 @@ public class DashboardService : IDashboardService
         var products = await _context.Products
             .AsNoTracking()
             .Include(p => p.Images)
-            .Include(p => p.Variants)
             .Take(100) // Limit initial fetch
             .ToListAsync();
 
@@ -117,11 +116,11 @@ public class DashboardService : IDashboardService
             .Select(p => new PopularProductDto
             {
                 Id = p.Id,
-                Name = p.Name,
-                Price = p.Variants.FirstOrDefault()?.Price ?? 0,
+                Name = p.Headline,
+                Price = p.Price,
                 Stock = p.StockQuantity,
                 SoldCount = soldCounts.GetValueOrDefault(p.Id, 0),
-                ImageUrl = p.ImageUrl ?? p.Images.FirstOrDefault()?.Url ?? ""
+                ImageUrl = p.Images.FirstOrDefault(i => i.IsMain)?.Url ?? ""
             })
             .OrderByDescending(x => x.SoldCount)
             .Take(5)

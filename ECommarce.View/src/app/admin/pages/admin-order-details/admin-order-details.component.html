@@ -87,14 +87,6 @@
               <h4 class="font-medium text-primary dark:text-white">
                 {{ item.productName }}
               </h4>
-              <p
-                *ngIf="item.size"
-                class="text-sm font-medium mt-1 inline-flex flex-wrap gap-2"
-              >
-                <span class="px-2 py-0.5 bg-gray-100 dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300">
-                  Size: {{ item.size }}
-                </span>
-              </p>
               <p class="text-sm text-gray-500 dark:text-gray-400">
                 Qty: {{ item.quantity }} ×
                 <app-price-display

@@ -4,26 +4,16 @@
   (ngSubmit)="saveProduct()"
 >
   <!-- Page Heading & Global Actions -->
-  <div
-    class="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-center"
-  >
+  <div class="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
     <div>
-      <div
-        class="flex items-center gap-2 text-sm text-text-secondary-light dark:text-text-secondary-dark mb-1"
-      >
+      <div class="flex items-center gap-2 text-sm text-text-secondary-light dark:text-text-secondary-dark mb-1">
+        <span>Admin</span>
+        <lucide-icon [img]="icons.ChevronRight" class="w-3.5 h-3.5"></lucide-icon>
         <span>Products</span>
-        <lucide-icon
-          [img]="icons.ChevronRight"
-          class="w-3.5 h-3.5"
-        ></lucide-icon>
-        <span
-          class="font-medium text-text-main-light dark:text-text-main-dark"
-          >{{ isEditMode ? "Edit" : "Add New" }}</span
-        >
+        <lucide-icon [img]="icons.ChevronRight" class="w-3.5 h-3.5"></lucide-icon>
+        <span class="font-medium text-text-main-light dark:text-text-main-dark">{{ isEditMode ? "Edit" : "New" }}</span>
       </div>
-      <h1
-        class="text-3xl font-bold text-text-main-light dark:text-text-main-dark"
-      >
+      <h1 class="text-3xl font-bold text-text-main-light dark:text-text-main-dark">
         {{ pageTitle }}
       </h1>
     </div>
@@ -31,625 +21,301 @@
       <button
         class="flex h-10 items-center justify-center rounded-lg border border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark px-4 text-sm font-semibold text-text-main-light dark:text-text-main-dark hover:bg-gray-50 dark:hover:bg-gray-800"
         type="button"
-        (click)="discard()"
+        routerLink="/admin/products"
       >
-        Discard
+        Cancel
       </button>
       <button
-        class="flex h-10 items-center justify-center gap-2 rounded-lg bg-primary px-6 text-sm font-bold text-white hover:bg-[#083a4a] shadow-lg shadow-primary/20"
+        class="flex h-10 items-center justify-center gap-2 rounded-lg bg-primary px-6 text-sm font-bold text-white hover:bg-primary/90 shadow-lg shadow-primary/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
         type="submit"
+        [disabled]="isSaving"
       >
-        <lucide-icon [img]="icons.Check" class="w-5 h-5"></lucide-icon>
+        <lucide-icon *ngIf="!isSaving" [img]="icons.Check" class="w-5 h-5"></lucide-icon>
+        <span *ngIf="isSaving" class="animate-spin border-2 border-white/30 border-t-white rounded-full w-4 h-4 mr-2"></span>
         {{ isEditMode ? "Update Product" : "Save Product" }}
       </button>
     </div>
   </div>
+
   <div class="grid grid-cols-1 gap-8 lg:grid-cols-3">
-    <!-- Left Column (Main Info) -->
+    <!-- Left Column (Main Content) -->
     <div class="flex flex-col gap-8 lg:col-span-2">
-      <!-- General Information Card -->
-      <div
-        class="rounded-xl border border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark p-6 shadow-sm"
-      >
-        <h2
-          class="mb-4 text-lg font-bold text-text-main-light dark:text-text-main-dark"
-        >
-          General Information
-        </h2>
-        <div class="flex flex-col gap-5">
+      
+      <!-- Basic Information -->
+      <section class="rounded-xl border border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark p-6 shadow-sm">
+        <div class="flex items-center gap-2 mb-6">
+          <div class="p-2 rounded-lg bg-primary/10 text-primary">
+            <lucide-icon [img]="icons.Type" class="w-5 h-5"></lucide-icon>
+          </div>
+          <h2 class="text-xl font-bold text-text-main-light dark:text-text-main-dark">Basic Information</h2>
+        </div>
+        
+        <div class="grid gap-6">
+          <div class="grid gap-4 sm:grid-cols-2">
+            <label class="flex flex-col gap-1.5">
+              <span class="text-sm font-semibold text-text-main-light dark:text-text-main-dark">Headline (Name)</span>
+              <input
+                class="w-full rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark px-4 py-2.5 text-text-main-light dark:text-text-main-dark focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+                placeholder="Enter product headline..."
+                type="text"
+                formControlName="headline"
+              />
+            </label>
+            <label class="flex flex-col gap-1.5">
+              <span class="text-sm font-semibold text-text-main-light dark:text-text-main-dark">Slug (URL)</span>
+              <input
+                class="w-full rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark px-4 py-2.5 text-text-main-light dark:text-text-main-dark focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all font-mono text-sm"
+                placeholder="product-url-slug"
+                type="text"
+                formControlName="slug"
+              />
+            </label>
+          </div>
 
           <label class="flex flex-col gap-1.5">
-            <span
-              class="text-sm font-medium text-text-main-light dark:text-text-main-dark"
-              >Product Name</span
-            >
-            <input
-              class="w-full rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark px-4 py-2.5 text-text-main-light dark:text-text-main-dark placeholder:text-text-secondary-light focus:border-primary focus:ring-1 focus:ring-primary"
-              placeholder="e.g. Premium Silk Hijab - Midnight Blue"
-              type="text"
-              formControlName="name"
-            />
-          </label>
-          <label class="flex flex-col gap-1.5">
-            <span
-              class="text-sm font-medium text-text-main-light dark:text-text-main-dark"
-              >Description</span
-            >
-            <div
-              class="overflow-hidden rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark"
-            >
-              <!-- Rich Text Toolbar -->
-              <div
-                class="flex items-center gap-1 border-b border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark px-2 py-2"
-              >
-                <button
-                  class="p-1 text-text-secondary-light hover:text-primary transition-colors"
-                  type="button"
-                  title="Bold"
-                  (click)="applyFormatting('bold', descriptionArea)"
-                >
-                  <lucide-icon [img]="icons.Bold" class="w-5 h-5"></lucide-icon>
-                </button>
-                <button
-                  class="p-1 text-text-secondary-light hover:text-primary transition-colors"
-                  type="button"
-                  title="Italic"
-                  (click)="applyFormatting('italic', descriptionArea)"
-                >
-                  <lucide-icon
-                    [img]="icons.Italic"
-                    class="w-5 h-5"
-                  ></lucide-icon>
-                </button>
-                <button
-                  class="p-1 text-text-secondary-light hover:text-primary transition-colors"
-                  type="button"
-                  title="Underline"
-                  (click)="applyFormatting('underline', descriptionArea)"
-                >
-                  <lucide-icon
-                    [img]="icons.Underline"
-                    class="w-5 h-5"
-                  ></lucide-icon>
-                </button>
-                <div
-                  class="mx-1 h-4 w-px bg-border-light dark:bg-border-dark"
-                ></div>
-                <button
-                  class="p-1 text-text-secondary-light hover:text-primary transition-colors"
-                  type="button"
-                  title="Bullet List"
-                  (click)="applyFormatting('list', descriptionArea)"
-                >
-                  <lucide-icon [img]="icons.List" class="w-5 h-5"></lucide-icon>
-                </button>
-                <button
-                  class="p-1 text-text-secondary-light hover:text-primary transition-colors"
-                  type="button"
-                  title="Insert Link"
-                  (click)="applyFormatting('link', descriptionArea)"
-                >
-                  <lucide-icon [img]="icons.Link" class="w-5 h-5"></lucide-icon>
-                </button>
+            <span class="text-sm font-semibold text-text-main-light dark:text-text-main-dark text-subtitle">Subtitle (Short Description)</span>
+            <div class="overflow-hidden rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark focus-within:ring-2 focus-within:ring-primary/20 transition-all">
+              <!-- Toolbar -->
+              <div class="flex items-center gap-1 border-b border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark px-2 py-1.5">
+                <button type="button" (click)="applyFormatting('bold', 'subtitle', subtitleArea)" class="p-1.5 text-text-secondary-light hover:text-primary transition-colors hover:bg-primary/10 rounded" title="Bold"><lucide-icon [img]="icons.Bold" class="w-4 h-4"></lucide-icon></button>
+                <button type="button" (click)="applyFormatting('italic', 'subtitle', subtitleArea)" class="p-1.5 text-text-secondary-light hover:text-primary transition-colors hover:bg-primary/10 rounded" title="Italic"><lucide-icon [img]="icons.Italic" class="w-4 h-4"></lucide-icon></button>
+                <button type="button" (click)="applyFormatting('underline', 'subtitle', subtitleArea)" class="p-1.5 text-text-secondary-light hover:text-primary transition-colors hover:bg-primary/10 rounded" title="Underline"><lucide-icon [img]="icons.Underline" class="w-4 h-4"></lucide-icon></button>
+                <div class="mx-1 h-4 w-px bg-border-light dark:bg-border-dark"></div>
+                <button type="button" (click)="applyFormatting('list', 'subtitle', subtitleArea)" class="p-1.5 text-text-secondary-light hover:text-primary transition-colors hover:bg-primary/10 rounded" title="List"><lucide-icon [img]="icons.List" class="w-4 h-4"></lucide-icon></button>
               </div>
               <textarea
-                #descriptionArea
-                class="w-full resize-y border-none bg-transparent p-4 text-text-main-light dark:text-text-main-dark placeholder:text-text-secondary-light focus:ring-0"
-                placeholder="Describe your product here..."
-                rows="6"
-                formControlName="description"
+                #subtitleArea
+                class="w-full resize-y border-none bg-transparent p-4 text-text-main-light dark:text-text-main-dark focus:ring-0"
+                placeholder="Enter a captivating subtitle..."
+                rows="4"
+                formControlName="subtitle"
               ></textarea>
             </div>
-            <span class="text-xs text-text-secondary-light"
-              >Tell your customers about the material, fit, and care
-              instructions.</span
-            >
           </label>
-
         </div>
-      </div>
-      <!-- Product Options (Colors & Sizes) -->
-      <div
-        class="rounded-xl border border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark p-6 shadow-sm"
-        formGroupName="variants"
-      >
-        <h2
-          class="mb-4 text-lg font-bold text-text-main-light dark:text-text-main-dark"
-        >
-          Product Options
-        </h2>
-        <div class="space-y-6">
+      </section>
 
+      <!-- Detailed Content Sections -->
+      <section class="rounded-xl border border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark p-6 shadow-sm">
+        <div class="flex items-center gap-2 mb-6">
+          <div class="p-2 rounded-lg bg-blue-500/10 text-blue-500">
+            <lucide-icon [img]="icons.FileText" class="w-5 h-5"></lucide-icon>
+          </div>
+          <h2 class="text-xl font-bold text-text-main-light dark:text-text-main-dark">Product Details</h2>
+        </div>
 
-          <!-- Sizes Section -->
-          <div class="space-y-4" formArrayName="sizes">
-            <div class="flex items-center justify-between">
-              <div>
-                <h3
-                  class="text-sm font-semibold text-text-main-light dark:text-text-main-dark"
-                >
-                  Sizes
-                </h3>
-                <p class="text-xs text-text-secondary-light">
-                  Define pricing, stock, and sale price for each size.
-                </p>
+        <div class="space-y-8">
+          <!-- Benefits -->
+          <div class="space-y-4">
+            <label class="flex flex-col gap-1.5">
+              <span class="text-sm font-semibold text-text-main-light dark:text-text-main-dark">Benefits Section Title</span>
+              <input formControlName="benefitsTitle" class="w-full rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark px-4 py-2 text-text-main-light dark:text-text-main-dark focus:border-primary focus:ring-2 focus:ring-primary/20" />
+            </label>
+            <div class="overflow-hidden rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark transition-all">
+              <div class="flex items-center gap-1 border-b border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark px-2 py-1.5">
+                <button type="button" (click)="applyFormatting('bold', 'benefitsContent', bArea)" class="p-1.5 text-text-secondary-light hover:text-primary transition-colors hover:bg-primary/10 rounded"><lucide-icon [img]="icons.Bold" class="w-4 h-4"></lucide-icon></button>
+                <button type="button" (click)="applyFormatting('list', 'benefitsContent', bArea)" class="p-1.5 text-text-secondary-light hover:text-primary transition-colors hover:bg-primary/10 rounded"><lucide-icon [img]="icons.List" class="w-4 h-4"></lucide-icon></button>
               </div>
-              <button
-                class="flex items-center gap-2 text-sm font-semibold text-primary hover:text-[#083a4a]"
-                type="button"
-                (click)="addSize()"
-              >
-                <lucide-icon
-                  [img]="icons.PlusCircle"
-                  class="w-5 h-5"
-                ></lucide-icon>
-                Add size
-              </button>
+              <textarea #bArea formControlName="benefitsContent" class="w-full resize-y border-none bg-transparent p-4 text-text-main-light dark:text-text-main-dark focus:ring-0" rows="5" placeholder="List the benefits..."></textarea>
             </div>
-            <!-- ... -->
-            <div
-              class="flex flex-col gap-3 rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark p-4"
-              *ngFor="let size of sizesArray.controls; let sizeIndex = index"
-              [formGroupName]="sizeIndex"
-            >
-              <div
-                class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-[1.5fr_1fr_1fr_1fr_1fr_auto] gap-3 items-end"
-              >
-                <label
-                  class="flex flex-col gap-1 text-xs font-medium text-text-secondary-light uppercase"
-                >
-                  Size
-                  <div class="flex gap-2 relative">
-                    <div class="flex-1 min-w-0 relative">
-                      <button type="button" 
-                              (click)="toggleSizeDropdown(sizeIndex, $event)"
-                              class="flex w-full items-center justify-between rounded-lg border border-border-light dark:border-border-dark bg-white dark:bg-black/20 px-3 py-2 text-sm text-text-main-light dark:text-text-main-dark">
-                        <span>{{ size.get('label')?.value && standardSizes.includes(size.get('label')?.value) ? size.get('label')?.value : (size.get('label')?.value ? 'Custom...' : 'Select Size') }}</span>
-                        <lucide-icon [img]="icons.ChevronDown" class="h-4 w-4 opacity-50"></lucide-icon>
-                      </button>
-                      
-                      <div *ngIf="openSizeDropdownIndex === sizeIndex" 
-                           class="absolute z-50 mt-1 max-h-48 w-full overflow-y-auto rounded-md border border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
-                        
-                        <div (click)="selectSize(sizeIndex, '', $event)"
-                             class="relative cursor-pointer select-none py-2 px-3 hover:bg-primary/10 hover:text-primary text-text-main-light dark:text-text-main-dark transition-colors duration-150">
-                             Select Size
-                        </div>
-                        
-                        <div *ngFor="let sz of allAvailableSizes" 
-                             (click)="selectSize(sizeIndex, sz, $event)"
-                             class="relative cursor-pointer select-none py-2 px-3 hover:bg-primary/10 hover:text-primary text-text-main-light dark:text-text-main-dark text-sm transition-colors duration-150 flex justify-between items-center group">
-                          <span>{{ sz }}</span>
-                          <lucide-icon *ngIf="size.get('label')?.value === sz" [img]="icons.Check" class="h-4 w-4 text-primary"></lucide-icon>
-                        </div>
-                        
-                        <div (click)="selectSize(sizeIndex, 'custom', $event)"
-                             class="relative cursor-pointer select-none py-2 px-3 hover:bg-primary/10 hover:text-primary text-text-main-light dark:text-text-main-dark border-t border-border-light dark:border-border-dark transition-colors duration-150">
-                             Custom...
-                        </div>
-                      </div>
-                    </div>
-                    <input
-                      *ngIf="
-                        size.get('label')?.value === 'custom' ||
-                        (size.get('label')?.value &&
-                          !standardSizes.includes(size.get('label')?.value) && 
-                          !allAvailableSizes.includes(size.get('label')?.value))
-                      "
-                      class="flex-1 min-w-0 rounded-lg border border-border-light dark:border-border-dark bg-white dark:bg-black/20 px-3 py-2 text-sm text-text-main-light dark:text-text-main-dark"
-                      formControlName="label"
-                      placeholder="Enter size"
-                      (click)="$event.stopPropagation()"
-                    />
-                    <input
-                      type="hidden"
-                      formControlName="label"
-                      *ngIf="allAvailableSizes.includes(size.get('label')?.value) || standardSizes.includes(size.get('label')?.value)"
-                    />
-                  </div>
-                </label>
-                <label
-                  class="flex flex-col gap-1 text-xs font-medium text-text-secondary-light uppercase"
-                >
-                Regular Price
-                  <input
-                    class="w-full min-w-0 rounded-lg border border-border-light dark:border-border-dark bg-white dark:bg-black/20 px-3 py-2 text-sm text-text-main-light dark:text-text-main-dark"
-                    type="number"
-                    placeholder="0.00"
-                    formControlName="price"
-                  />
-                </label>
-                <label
-                  class="flex flex-col gap-1 text-xs font-medium text-text-secondary-light uppercase"
-                >
-                  Sale Price
-                  <input
-                    class="w-full min-w-0 rounded-lg border border-border-light dark:border-border-dark bg-white dark:bg-black/20 px-3 py-2 text-sm text-text-main-light dark:text-text-main-dark"
-                    type="number"
-                    placeholder="0.00"
-                    formControlName="salePrice"
-                  />
-                </label>
-                <label
-                  class="flex flex-col gap-1 text-xs font-medium text-text-secondary-light uppercase"
-                >
-                  Buy Rate
-                  <input
-                    class="w-full min-w-0 rounded-lg border border-border-light dark:border-border-dark bg-white dark:bg-black/20 px-3 py-2 text-sm text-text-main-light dark:text-text-main-dark"
-                    type="number"
-                    placeholder="0.00"
-                    formControlName="purchaseRate"
-                  />
-                </label>
-                <label
-                  class="flex flex-col gap-1 text-xs font-medium text-text-secondary-light uppercase"
-                >
-                  Stock
-                  <input
-                    class="w-full min-w-0 rounded-lg border border-border-light dark:border-border-dark bg-white dark:bg-black/20 px-3 py-2 text-sm text-text-main-light dark:text-text-main-dark"
-                    type="number"
-                    formControlName="stock"
-                  />
-                </label>
-                <label
-                  class="flex items-center gap-2 text-xs font-bold text-text-main-light dark:text-text-main-dark uppercase h-full pb-3"
-                >
-                  <input
-                    class="text-primary focus:ring-primary w-4 h-4 cursor-pointer"
-                    type="radio"
-                    name="selectedSize"
-                    [checked]="size.get('selected')?.value"
-                    (change)="setSelectedSize(sizeIndex)"
-                  />
-                  Default
-                </label>
+          </div>
+
+          <!-- Usage -->
+          <div class="space-y-4">
+            <label class="flex flex-col gap-1.5">
+              <span class="text-sm font-semibold text-text-main-light dark:text-text-main-dark">Usage Instructions Title</span>
+              <input formControlName="usageTitle" class="w-full rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark px-4 py-2 text-text-main-light dark:text-text-main-dark focus:border-primary focus:ring-2 focus:ring-primary/20" />
+            </label>
+            <div class="overflow-hidden rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark transition-all">
+              <div class="flex items-center gap-1 border-b border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark px-2 py-1.5">
+                <button type="button" (click)="applyFormatting('bold', 'usageContent', uArea)" class="p-1.5 text-text-secondary-light hover:text-primary transition-colors hover:bg-primary/10 rounded"><lucide-icon [img]="icons.Bold" class="w-4 h-4"></lucide-icon></button>
+                <button type="button" (click)="applyFormatting('list', 'usageContent', uArea)" class="p-1.5 text-text-secondary-light hover:text-primary transition-colors hover:bg-primary/10 rounded"><lucide-icon [img]="icons.List" class="w-4 h-4"></lucide-icon></button>
               </div>
-              <button
-                class="w-fit text-xs font-semibold text-red-500 hover:underline"
-                type="button"
-                (click)="removeSize(sizeIndex)"
-              >
-                Remove size
-              </button>
+              <textarea #uArea formControlName="usageContent" class="w-full resize-y border-none bg-transparent p-4 text-text-main-light dark:text-text-main-dark focus:ring-0" rows="5" placeholder="Explain how to use..."></textarea>
+            </div>
+          </div>
+
+          <!-- Side Effects -->
+          <div class="space-y-4">
+            <label class="flex flex-col gap-1.5">
+              <span class="text-sm font-semibold text-text-main-light dark:text-text-main-dark">Side Effects Section Title</span>
+              <input formControlName="sideEffectsTitle" class="w-full rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark px-4 py-2 text-text-main-light dark:text-text-main-dark focus:border-primary focus:ring-2 focus:ring-primary/20" />
+            </label>
+            <div class="overflow-hidden rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark transition-all">
+              <div class="flex items-center gap-1 border-b border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark px-2 py-1.5">
+                <button type="button" (click)="applyFormatting('bold', 'sideEffectsContent', seArea)" class="p-1.5 text-text-secondary-light hover:text-primary transition-colors hover:bg-primary/10 rounded"><lucide-icon [img]="icons.Bold" class="w-4 h-4"></lucide-icon></button>
+                <button type="button" (click)="applyFormatting('list', 'sideEffectsContent', seArea)" class="p-1.5 text-text-secondary-light hover:text-primary transition-colors hover:bg-primary/10 rounded"><lucide-icon [img]="icons.List" class="w-4 h-4"></lucide-icon></button>
+              </div>
+              <textarea #seArea formControlName="sideEffectsContent" class="w-full resize-y border-none bg-transparent p-4 text-text-main-light dark:text-text-main-dark focus:ring-0" rows="5" placeholder="Mention any side effects or precautions..."></textarea>
             </div>
           </div>
         </div>
-      </div>
+      </section>
 
-
-      <!-- Media Card -->
-      <div
-        class="rounded-xl border border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark p-6 shadow-sm"
-      >
-        <div class="mb-4 flex items-center justify-between">
-          <h2
-            class="text-lg font-bold text-text-main-light dark:text-text-main-dark"
-          >
-            Media
-          </h2>
-          <button
-            class="text-sm font-medium text-primary hover:underline"
-            type="button"
-            (click)="addFromUrl()"
-          >
-            Add from URL
+      <!-- Media Section -->
+      <section class="rounded-xl border border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark p-6 shadow-sm">
+        <div class="flex items-center justify-between mb-6">
+          <div class="flex items-center gap-2">
+            <div class="p-2 rounded-lg bg-orange-500/10 text-orange-500">
+              <lucide-icon [img]="icons.Upload" class="w-5 h-5"></lucide-icon>
+            </div>
+            <h2 class="text-xl font-bold text-text-main-light dark:text-text-main-dark">Media</h2>
+          </div>
+          <button type="button" (click)="fileInput.click()" class="text-sm font-semibold text-primary hover:bg-primary/10 px-3 py-1.5 rounded-lg border border-primary/20 transition-all">
+            Upload Media
           </button>
         </div>
+
         <div
-          class="rounded-lg border-2 border-dashed border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark p-8 transition-colors hover:border-primary/50"
+          class="group relative flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark p-10 transition-all hover:border-primary/50 hover:bg-primary/5"
           (dragover)="handleDragOver($event)"
           (drop)="handleDrop($event)"
           (click)="fileInput.click()"
         >
-          <div class="flex flex-col items-center justify-center text-center">
-            <div
-              class="mb-3 rounded-full bg-surface-light dark:bg-surface-dark p-3 shadow-sm"
-            >
-              <lucide-icon
-                [img]="icons.Upload"
-                class="w-8 h-8 text-primary"
-              ></lucide-icon>
-            </div>
-            <p
-              class="text-sm font-medium text-text-main-light dark:text-text-main-dark"
-            >
-              <span class="text-primary cursor-pointer hover:underline"
-                >Click to upload</span
-              >
-              or drag and drop
-            </p>
-            <p class="mt-1 text-xs text-text-secondary-light">
-              SVG, PNG, JPG or GIF (max. 800x400px)
-            </p>
+          <div class="p-4 rounded-full bg-surface-light dark:bg-surface-dark shadow-sm mb-4 group-hover:scale-110 transition-transform">
+            <lucide-icon [img]="icons.Upload" class="w-8 h-8 text-primary"></lucide-icon>
           </div>
-          <input
-            #fileInput
-            class="hidden"
-            type="file"
-            multiple
-            (change)="handleFilesSelected($event)"
-          />
+          <p class="text-base font-semibold text-text-main-light dark:text-text-main-dark">Drag and drop images here</p>
+          <p class="text-sm text-text-secondary-light mt-1">or click to browse from files</p>
+          <input #fileInput class="hidden" type="file" multiple (change)="handleFilesSelected($event)" />
         </div>
-        <p *ngIf="mediaError" class="mt-3 text-xs text-red-500">
+
+        <p *ngIf="mediaError" class="mt-4 flex items-center gap-2 text-sm text-red-500 font-medium bg-red-500/10 p-3 rounded-lg">
+          <lucide-icon [img]="icons.AlertCircle" class="w-4 h-4"></lucide-icon>
           {{ mediaError }}
         </p>
-        <div class="mt-6 space-y-4" formArrayName="mediaItems">
-          <div
-            *ngFor="
-              let media of mediaItemsArray.controls;
-              let mediaIndex = index;
-              trackBy: trackByIndex
-            "
-            class="flex flex-col gap-4 rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark p-4"
-            [formGroupName]="mediaIndex"
-          >
-            <div class="flex flex-col gap-4 sm:flex-row">
-              <div
-                class="relative h-36 w-full overflow-hidden rounded-lg border border-border-light dark:border-border-dark bg-white sm:w-40"
-              >
-                <img
-                  [alt]="media.get('alt')?.value || 'Product media'"
-                  class="h-full w-full object-cover"
-                  [src]="imageUrlService.getImageUrl(media.get('url')?.value)"
-                />
-                <div
-                  *ngIf="media.get('type')?.value === 'video'"
-                  class="absolute inset-0 flex items-center justify-center bg-black/40"
-                >
-                  <lucide-icon
-                    [img]="icons.PlayCircle"
-                    class="w-10 h-10 text-white"
-                  ></lucide-icon>
-                </div>
-              </div>
-              <div class="flex-1 grid gap-3 sm:grid-cols-2">
-                <label
-                  class="flex flex-col gap-1 text-xs font-medium text-text-secondary-light uppercase"
-                >
-                  Label
-                  <input
-                    class="rounded-lg border border-border-light dark:border-border-dark bg-white dark:bg-black/20 px-3 py-2 text-sm text-text-main-light dark:text-text-main-dark"
-                    type="text"
-                    formControlName="label"
-                  />
-                </label>
-                <label
-                  class="flex flex-col gap-1 text-xs font-medium text-text-secondary-light uppercase"
-                >
-                  Alt text
-                  <input
-                    class="rounded-lg border border-border-light dark:border-border-dark bg-white dark:bg-black/20 px-3 py-2 text-sm text-text-main-light dark:text-text-main-dark"
-                    type="text"
-                    formControlName="alt"
-                  />
-                </label>
-                <label
-                  class="flex flex-col gap-1 text-xs font-medium text-text-secondary-light uppercase"
-                >
-                  Media type
-                  <select
-                    class="rounded-lg border border-border-light dark:border-border-dark bg-white dark:bg-black/20 px-3 py-2 text-sm text-text-main-light dark:text-text-main-dark"
-                    formControlName="type"
-                  >
-                    <option value="image">Image</option>
-                    <option value="video">Video</option>
-                  </select>
-                </label>
 
-                <div class="flex flex-col justify-between gap-3">
-                  <label
-                    class="flex items-center gap-2 text-xs font-medium text-text-secondary-light uppercase"
-                  >
-                    <input
-                      class="text-primary focus:ring-primary"
-                      type="radio"
-                      name="mainMedia"
-                      [checked]="media.get('isMain')?.value"
-                      (change)="setMainMedia(mediaIndex)"
-                    />
-                    Main media
-                  </label>
-                  <button
-                    class="text-xs font-semibold text-red-500 hover:underline"
-                    type="button"
-                    (click)="removeMediaItem(mediaIndex)"
-                  >
-                    Remove media
-                  </button>
-                </div>
+        <div class="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-4" formArrayName="mediaItems">
+          <div
+            *ngFor="let media of mediaItemsArray.controls; let i = index; trackBy: trackByIndex"
+            class="group relative flex flex-col overflow-hidden rounded-xl border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark transition-all hover:shadow-md"
+            [formGroupName]="i"
+          >
+            <!-- Preview -->
+            <div class="relative aspect-video w-full overflow-hidden bg-gray-100">
+              <img [src]="imageUrlService.getImageUrl(media.get('url')?.value)" class="h-full w-full object-cover transition-transform group-hover:scale-105" />
+              <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-3">
+                <button type="button" (click)="removeMediaItem(i)" class="text-xs font-bold text-white bg-red-600 px-3 py-1.5 rounded-lg hover:bg-red-700 transition-colors">
+                  Remove
+                </button>
+              </div>
+              <div *ngIf="media.get('isMain')?.value" class="absolute top-2 left-2 bg-primary text-white text-[10px] font-black uppercase px-2 py-0.5 rounded shadow-lg">
+                Primary
               </div>
             </div>
+            
+            <!-- Controls -->
+            <div class="p-4 space-y-3">
+              <input formControlName="alt" placeholder="Alt text..." class="w-full text-xs bg-transparent border-b border-border-light dark:border-border-dark py-1 focus:border-primary outline-none" />
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="radio" name="mainMedia" [checked]="media.get('isMain')?.value" (change)="setMainMedia(i)" class="w-3 h-3 text-primary focus:ring-primary" />
+                <span class="text-xs font-bold uppercase tracking-wider text-text-secondary-light">Set as Primary</span>
+              </label>
+            </div>
           </div>
-          <p
-            *ngIf="mediaItemsArray.length === 0"
-            class="text-xs text-text-secondary-light"
-          >
-            No media added yet. Add at least one image or video to preview on
-            the product pages.
-          </p>
         </div>
-      </div>
-
+      </section>
     </div>
-    <!-- Right Column (Organization & Settings) -->
-    <div class="flex flex-col gap-8 lg:col-span-1">
-      <!-- Status Card -->
-      <div
-        class="rounded-xl border border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark p-6 shadow-sm"
-      >
-        <h2
-          class="mb-4 text-lg font-bold text-text-main-light dark:text-text-main-dark"
-        >
-          Product Status
-        </h2>
-        <div class="flex items-center justify-between mb-4">
-          <span
-            class="text-sm font-medium text-text-main-light dark:text-text-main-dark"
-            >Draft / Active</span
-          >
-          <label class="relative inline-flex cursor-pointer items-center">
-            <input
-              class="peer sr-only"
-              type="checkbox"
-              formControlName="statusActive"
-            />
-            <div
-              class="peer h-6 w-11 rounded-full bg-gray-200 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-primary peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none dark:bg-gray-700"
-            ></div>
-          </label>
+
+    <!-- Right Column (Settings) -->
+    <div class="flex flex-col gap-8">
+      
+      <!-- Visibility & Status -->
+      <section class="rounded-xl border border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark p-6 shadow-sm">
+        <h2 class="text-lg font-bold text-text-main-light dark:text-text-main-dark mb-6">Status & Visibility</h2>
+        
+        <div class="space-y-4">
+          <div class="flex items-center justify-between p-3 rounded-lg bg-background-light dark:bg-background-dark border border-border-light dark:border-border-dark">
+            <span class="text-sm font-bold text-text-main-light dark:text-text-main-dark uppercase tracking-tight">Active Status</span>
+            <label class="relative inline-flex cursor-pointer items-center">
+              <input class="peer sr-only" type="checkbox" formControlName="isActive" />
+              <div class="peer h-6 w-11 rounded-full bg-gray-200 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-primary peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none dark:bg-gray-700"></div>
+            </label>
+          </div>
+
+          <div class="flex items-center justify-between p-3 rounded-lg bg-background-light dark:bg-background-dark border border-border-light dark:border-border-dark">
+            <span class="text-sm font-bold text-text-main-light dark:text-text-main-dark uppercase tracking-tight">New Arrival</span>
+            <label class="relative inline-flex cursor-pointer items-center">
+              <input class="peer sr-only" type="checkbox" formControlName="newArrival" />
+              <div class="peer h-6 w-11 rounded-full bg-gray-200 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-primary peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none dark:bg-gray-700"></div>
+            </label>
+          </div>
         </div>
 
-        <div class="flex items-center justify-between mb-4">
-          <span
-            class="text-sm font-medium text-text-main-light dark:text-text-main-dark"
-            >New Arrival</span
-          >
-          <label class="relative inline-flex cursor-pointer items-center">
-            <input
-              class="peer sr-only"
-              type="checkbox"
-              formControlName="newArrival"
-            />
-            <div
-              class="peer h-6 w-11 rounded-full bg-gray-200 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-primary peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none dark:bg-gray-700"
-            ></div>
-          </label>
-        </div>
-
-        <div class="flex items-center justify-between mb-4">
-          <span
-            class="text-sm font-medium text-text-main-light dark:text-text-main-dark"
-            >Is Featured</span
-          >
-          <label class="relative inline-flex cursor-pointer items-center">
-            <input
-              class="peer sr-only"
-              type="checkbox"
-              formControlName="isFeatured"
-            />
-            <div
-              class="peer h-6 w-11 rounded-full bg-gray-200 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-primary peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none dark:bg-gray-700"
-            ></div>
-          </label>
-        </div>
-
-        <div class="rounded-lg bg-accent/20 p-3">
-          <p
-            class="text-xs text-primary/80 font-medium flex items-center gap-2"
-          >
-            <lucide-icon [img]="icons.Eye" class="w-4 h-4"></lucide-icon>
-            This product will be visible on the store immediately upon saving.
+        <div class="mt-6 p-3 rounded-lg bg-primary/5 border border-primary/10">
+          <p class="text-xs text-text-secondary-light flex gap-2">
+            <lucide-icon [img]="icons.Eye" class="w-4 h-4 text-primary mt-0.5 shrink-0"></lucide-icon>
+            When active, this product will be visible in the catalog and searchable by customers.
           </p>
         </div>
-      </div>
-      <!-- Organization Card -->
-      <div
-        class="rounded-xl border border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark p-6 shadow-sm"
-      >
-        <h2
-          class="mb-4 text-lg font-bold text-text-main-light dark:text-text-main-dark"
-        >
-          Organization
-        </h2>
-        <div class="flex flex-col gap-5">
-          <label class="flex flex-col gap-1.5">
-            <span
-              class="text-sm font-medium text-text-main-light dark:text-text-main-dark"
-              >Category</span
-            >
-            <select
-              class="w-full rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark px-3 py-2.5 text-text-main-light dark:text-text-main-dark focus:border-primary focus:ring-1 focus:ring-primary"
-              formControlName="category"
-            >
-              <option value="" disabled>Select category</option>
-              <option *ngFor="let cat of categories" [value]="cat.id">
-                {{ cat.name }}
-              </option>
-            </select>
-          </label>
+      </section>
 
-          <label
-            class="flex flex-col gap-1.5"
-            *ngIf="filteredCollections.length > 0"
-          >
-            <span
-              class="text-sm font-medium text-text-main-light dark:text-text-main-dark"
-              >Collection</span
-            >
-            <select
-              class="w-full rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark px-3 py-2.5 text-text-main-light dark:text-text-main-dark focus:border-primary focus:ring-1 focus:ring-primary"
-              formControlName="collection"
-            >
-              <option value="">Select collection</option>
-              <option *ngFor="let col of filteredCollections" [value]="col.id">
-                {{ col.name }}
-              </option>
-            </select>
-          </label>
-
-          <!-- ilyn.global Design Fields -->
+      <!-- Pricing Section -->
+      <section class="rounded-xl border border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark p-6 shadow-sm">
+        <h2 class="text-lg font-bold text-text-main-light dark:text-text-main-dark mb-6">Pricing</h2>
+        
+        <div class="grid gap-6">
           <label class="flex flex-col gap-1.5">
-            <span
-              class="text-sm font-medium text-text-main-light dark:text-text-main-dark flex items-center gap-2"
-            >
-              Tier
-              <span class="text-xs text-accent font-bold">Premium</span>
-            </span>
-            <select
-              class="w-full rounded-lg border border-accent/30 dark:border-accent/50 bg-background-light dark:bg-background-dark px-3 py-2.5 text-text-main-light dark:text-text-main-dark focus:border-accent focus:ring-1 focus:ring-accent hover:border-accent/50 transition-colors"
-              formControlName="tier"
-            >
-              <option value="">Select tier</option>
-              <option value="Premium">Premium</option>
-              <option value="Luxury">Luxury</option>
-              <option value="Platinum">Platinum</option>
-              <option value="Sahara">Sahara</option>
-            </select>
-            <span class="text-xs text-text-secondary-light"
-              >Tier level for ilyn.global-style categorization</span
-            >
+            <span class="text-sm font-semibold text-text-main-light dark:text-text-main-dark">Purchase Rate (Cost)</span>
+            <div class="relative">
+              <span class="absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary-light font-bold">৳</span>
+              <input
+                class="w-full rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark pl-8 pr-4 py-2.5 text-text-main-light dark:text-text-main-dark focus:border-primary focus:ring-2 focus:ring-primary/20 appearance-none"
+                type="number"
+                placeholder="0.00"
+                formControlName="purchaseRate"
+              />
+            </div>
+            <span class="text-[10px] text-text-secondary-light uppercase font-bold tracking-widest">Buying price</span>
           </label>
 
           <label class="flex flex-col gap-1.5">
-            <span
-              class="text-sm font-medium text-text-main-light dark:text-text-main-dark flex items-center gap-2"
-            >
-              Tags
-              <span class="text-xs text-accent">Optional</span>
-            </span>
-            <input
-              class="w-full rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark px-3 py-2.5 text-text-main-light dark:text-text-main-dark focus:border-primary focus:ring-1 focus:ring-primary"
-              type="text"
-              placeholder="e.g. seasonal, bestseller, limited (comma-separated)"
-              formControlName="tags"
-            />
-            <span class="text-xs text-text-secondary-light"
-              >Add comma-separated tags for better categorization</span
-            >
+            <span class="text-sm font-semibold text-text-main-light dark:text-text-main-dark">Sale Price (Current)</span>
+            <div class="relative">
+              <span class="absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary-light font-bold">৳</span>
+              <input
+                class="w-full rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark pl-8 pr-4 py-2.5 text-text-main-light dark:text-text-main-dark focus:border-primary focus:ring-2 focus:ring-primary/20 appearance-none"
+                type="number"
+                placeholder="0.00"
+                formControlName="price"
+              />
+            </div>
           </label>
 
           <label class="flex flex-col gap-1.5">
-            <span
-              class="text-sm font-medium text-text-main-light dark:text-text-main-dark flex items-center gap-2"
-            >
-              Sort Order
-              <span class="text-xs text-text-secondary-light"
-                >(Display priority)</span
-              >
-            </span>
-            <input
-              class="w-full rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark px-3 py-2.5 text-text-main-light dark:text-text-main-dark focus:border-primary focus:ring-1 focus:ring-primary"
-              type="number"
-              placeholder="0"
-              formControlName="sortOrder"
-              min="0"
-            />
-            <span class="text-xs text-text-secondary-light"
-              >Lower numbers appear first (0 = no priority)</span
-            >
+            <span class="text-sm font-semibold text-text-main-light dark:text-text-main-dark">Regular Price (Optional)</span>
+            <div class="relative">
+              <span class="absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary-light font-bold">৳</span>
+              <input
+                class="w-full rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark pl-8 pr-4 py-2.5 text-text-main-light dark:text-text-main-dark focus:border-primary focus:ring-2 focus:ring-primary/20 appearance-none"
+                type="number"
+                placeholder="0.00"
+                formControlName="compareAtPrice"
+              />
+            </div>
+            <span class="text-[10px] text-text-secondary-light uppercase font-bold tracking-widest">Crossed-out price</span>
           </label>
         </div>
-      </div>
+      </section>
+
+      <!-- Organization -->
+      <section class="rounded-xl border border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark p-6 shadow-sm">
+        <h2 class="text-lg font-bold text-text-main-light dark:text-text-main-dark mb-6">Organization</h2>
+        
+        <label class="flex flex-col gap-1.5">
+          <span class="text-sm font-semibold text-text-main-light dark:text-text-main-dark">Category</span>
+          <select
+            class="w-full rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark px-3 py-2.5 text-text-main-light dark:text-text-main-dark focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none"
+            formControlName="category"
+          >
+            <option value="" disabled>Select a category</option>
+            <option *ngFor="let cat of categories" [value]="cat.name">
+              {{ cat.name }}
+            </option>
+          </select>
+        </label>
+      </section>
+
     </div>
   </div>
 </form>

@@ -89,9 +89,8 @@
           <!-- No Products Found -->
           <div *ngIf="!loading && filteredProducts.length === 0" class="flex flex-col items-center justify-center py-20 text-center bg-white border border-gray-100 rounded-xl">
             <lucide-icon [name]="icons.Package" class="w-12 h-12 text-gray-200 mb-4"></lucide-icon>
-            <h3 class="text-lg font-black text-primary mb-2">No products found</h3>
-            <p class="text-gray-400 text-xs max-w-xs mx-auto">Try a different size or clear filters.</p>
-            <button *ngIf="selectedSize !== 'All Sizes'" (click)="selectSizeFilter('All Sizes')" class="mt-4 px-6 py-2 bg-accent text-white text-xs font-black uppercase rounded-xl">Clear Size Filter</button>
+            <h3 class="text-lg font-black text-primary mb-2">No products found for this category</h3>
+            <p class="text-gray-400 text-xs max-w-xs mx-auto">Please check back later or explore other categories.</p>
           </div>
         </div>
       </div>

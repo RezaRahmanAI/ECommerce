@@ -50,7 +50,6 @@ import { ImageUrlService } from "../../../../core/services/image-url.service";
 import { SettingsService } from "../../../../admin/services/settings.service";
 import { DeliveryMethod } from "../../../../admin/models/settings.models";
 import { PriceDisplayComponent } from "../../../../shared/components/price-display/price-display.component";
-import { SizeGuideComponent } from "../../../../shared/components/size-guide/size-guide.component";
 
 @Component({
   selector: "app-landing-page",
@@ -61,7 +60,6 @@ import { SizeGuideComponent } from "../../../../shared/components/size-guide/siz
     RouterModule,
     PriceDisplayComponent,
     LucideAngularModule,
-    SizeGuideComponent,
   ],
   templateUrl: "./landing-page.component.html",
   styleUrl: "./landing-page.component.css",
@@ -106,7 +104,6 @@ export class LandingPageComponent implements OnInit {
   isOrdering = false;
   errorMessage = "";
   didAutofill = false;
-  isSizeGuideOpen = false;
   deliveryMethods: DeliveryMethod[] = [];
   selectedMethod: DeliveryMethod | null = null;
 
@@ -117,7 +114,6 @@ export class LandingPageComponent implements OnInit {
     city: ["Dhaka", Validators.required],
     area: ["", Validators.required],
     deliveryMethodId: [0, Validators.required],
-    selectedSize: [""],
     quantity: [1, [Validators.required, Validators.min(1)]],
   });
 
@@ -155,15 +151,7 @@ export class LandingPageComponent implements OnInit {
           this.isLoading = false;
 
           if (product) {
-            const sizes = Array.from(
-              new Set(product.variants?.map((v) => v.size).filter(Boolean)),
-            );
-            this.checkoutForm.patchValue({
-              selectedSize:
-                product.variants?.find((v) => v.isDefault)?.size ??
-                sizes[0] ??
-                "",
-            });
+            // Product loaded successfully
           }
 
           if (methods.length > 0) {
@@ -295,40 +283,14 @@ export class LandingPageComponent implements OnInit {
     }
   }
 
-  openSizeGuide(): void {
-    this.isSizeGuideOpen = true;
-  }
-
-  closeSizeGuide(): void {
-    this.isSizeGuideOpen = false;
-  }
-
-
-
-  selectedSizeLabel(size: string | null): string {
-    return size || "Select size";
-  }
-
   get currentPrice(): number {
     if (!this.product) return 0;
-    const selectedSize = this.checkoutForm.controls.selectedSize.value;
-    const variant = this.product.variants?.find((v) => v.size === selectedSize);
-
-    if (variant?.price && variant.price > 0) {
-      return variant.price;
-    }
     return this.product.price;
   }
 
   get currentCompareAtPrice(): number | undefined {
     if (!this.product) return undefined;
-    const selectedSize = this.checkoutForm.controls.selectedSize.value;
-    const variant = this.product.variants?.find((v) => v.size === selectedSize);
-
-    if (variant?.compareAtPrice && variant.compareAtPrice > 0) {
-      return variant.compareAtPrice;
-    }
-    return this.product?.compareAtPrice;
+    return this.product.compareAtPrice;
   }
 
   get total(): number {
@@ -346,11 +308,11 @@ export class LandingPageComponent implements OnInit {
     if (!this.product) return [];
     const images = this.product.images?.map((i) => i.imageUrl) ?? [];
     let gallery = [];
-    if (this.product.imageUrl) {
-      gallery.push(this.product.imageUrl);
+    if (this.product.imgUrl) {
+      gallery.push(this.product.imgUrl);
     }
     images.forEach((img) => {
-      if (img !== this.product?.imageUrl) {
+      if (img !== this.product?.imgUrl) {
         gallery.push(img);
       }
     });
@@ -417,20 +379,7 @@ export class LandingPageComponent implements OnInit {
     if (this.isOrdering || !this.product) return;
     this.errorMessage = "";
 
-    const sizes = Array.from(
-      new Set(this.product.variants?.map((v) => v.size).filter(Boolean)),
-    );
-    const isSizeRequired = sizes.length > 0;
-
-    const formRaw = this.checkoutForm.getRawValue();
-
-    if (
-      this.checkoutForm.invalid ||
-      (isSizeRequired && !formRaw.selectedSize)
-    ) {
-      if (isSizeRequired && !formRaw.selectedSize) {
-        this.errorMessage = "Please select a size.";
-      }
+    if (this.checkoutForm.invalid) {
       this.checkoutForm.markAllAsTouched();
       return;
     }
@@ -444,14 +393,17 @@ export class LandingPageComponent implements OnInit {
     const cartItem: CartItem = {
       id: "landing-" + Date.now(),
       productId: this.product.id,
-      name: this.product.name,
+      headline: this.product.headline || "",
       price: this.currentPrice,
       quantity: form.quantity,
-      size: form.selectedSize,
-      imageUrl: this.product.imageUrl || "",
-      imageAlt: this.product.name,
-      discountPercentage: this.getDiscountPercentage({ price: this.currentPrice, compareAtPrice: this.currentCompareAtPrice }),
-      compareAtPrice: this.currentCompareAtPrice
+      size: "One Size",
+      imgUrl: this.product.imgUrl || "",
+      imageAlt: this.product.headline || "",
+      discountPercentage: this.getDiscountPercentage({
+        price: this.currentPrice,
+        compareAtPrice: this.currentCompareAtPrice,
+      }),
+      compareAtPrice: this.currentCompareAtPrice,
     };
 
     const cartItems = [cartItem];
@@ -462,72 +414,53 @@ export class LandingPageComponent implements OnInit {
       subtotal: subtotal,
       tax: 0,
       shipping: shipping,
-      discount: (this.currentCompareAtPrice ? (this.currentCompareAtPrice - this.currentPrice) : 0) * form.quantity,
+      discount:
+        (this.currentCompareAtPrice
+          ? this.currentCompareAtPrice - this.currentPrice
+          : 0) * form.quantity,
       total: subtotal + shipping,
       freeShippingThreshold: 0,
       freeShippingRemaining: 0,
-      freeShippingProgress: 100
+      freeShippingProgress: 100,
     };
 
     // 2. Place order directly via OrderService
-    this.orderService.placeOrder({
-      state: {
-        fullName: form.fullName,
-        phone: form.phone,
-        address: form.address,
-        city: form.city,
-        area: form.area,
-        deliveryMethodId: form.deliveryMethodId
-      },
-      cartItems,
-      summary,
-      deliveryMethodId: form.deliveryMethodId
-    })
-    .pipe(
-      takeUntilDestroyed(this.destroyRef)
-    )
-    .subscribe({
-      next: (order) => {
-        this.isOrdering = false;
-        if (order?.id) {
-          void this.router.navigate(["/order-confirmation", order.id]);
-        }
-      },
-      error: (error: Error) => {
-        this.isOrdering = false;
-        this.errorMessage = error.message ?? "Unable to place order.";
-      },
-    });
+    this.orderService
+      .placeOrder({
+        state: {
+          fullName: form.fullName,
+          phone: form.phone,
+          address: form.address,
+          city: form.city,
+          area: form.area,
+          deliveryMethodId: form.deliveryMethodId,
+        },
+        cartItems,
+        summary,
+        deliveryMethodId: form.deliveryMethodId,
+      })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (order) => {
+          this.isOrdering = false;
+          if (order?.id) {
+            void this.router.navigate(["/order-confirmation", order.id]);
+          }
+        },
+        error: (error: Error) => {
+          this.isOrdering = false;
+          this.errorMessage = error.message ?? "Unable to place order.";
+        },
+      });
   }
 
   addToCart(): void {
     if (this.isOrdering || !this.product) return;
     this.errorMessage = "";
 
-    const sizes = Array.from(
-      new Set(this.product.variants?.map((v) => v.size).filter(Boolean)),
-    );
-    const isSizeRequired = sizes.length > 0;
-
-    const formRaw = this.checkoutForm.getRawValue();
-
-    if (
-      (isSizeRequired && !formRaw.selectedSize)
-    ) {
-      if (isSizeRequired && !formRaw.selectedSize) {
-        this.errorMessage = "Please select a size.";
-      }
-      this.checkoutForm.markAllAsTouched();
-      return;
-    }
-
     const form = this.checkoutForm.getRawValue();
     this.cartService
-      .addItem(
-        this.product,
-        form.quantity,
-        form.selectedSize,
-      )
+      .addItem(this.product, form.quantity)
       .subscribe();
   }
 }

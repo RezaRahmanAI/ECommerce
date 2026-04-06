@@ -18,7 +18,7 @@ public class TestMap {
                 Items = new List<OrderItem> {
                     new OrderItem {
                         ProductId = 1,
-                        Product = new Product { Id = 1, Name = "Test" }
+                        Product = new Product { Id = 1, Headline = "Test" }
                     }
                 }
             };

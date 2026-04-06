@@ -19,11 +19,11 @@ export interface CustomerGrowth {
 
 export interface TopProduct {
   id: number;
-  name: string;
+  headline: string;
   price: number;
   stock: number;
   soldCount: number;
-  imageUrl: string;
+  imgUrl: string;
 }
 
 @Injectable({

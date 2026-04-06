@@ -213,10 +213,10 @@
           >
             <div
               class="w-full h-full bg-center bg-no-repeat bg-cover transition-transform duration-500 group-hover:scale-105"
-              [attr.data-alt]="product.name"
+              [attr.data-alt]="product.headline"
               [style.background-image]="
                 'url(' +
-                imageUrlService.getImageUrl(product.imageUrl || '') +
+                imageUrlService.getImageUrl(product.imgUrl || '') +
                 ')'
               "
             ></div>
@@ -234,7 +234,7 @@
               <h3
                 class="text-primary text-base font-bold leading-tight line-clamp-2 mb-1 group-hover:underline decoration-1 underline-offset-4"
               >
-                {{ product.name }}
+                {{ product.headline }}
               </h3>
               <app-price-display
                 class="text-primary"
@@ -243,7 +243,7 @@
               ></app-price-display>
             </div>
             <p class="text-secondary-text text-sm mb-3">
-              {{ product.description }}
+              {{ product.subtitle }}
             </p>
             <button
               class="w-full py-2.5 rounded-lg border border-primary text-primary font-bold text-sm hover:bg-primary hover:text-white transition-all duration-200 flex items-center justify-center gap-2"

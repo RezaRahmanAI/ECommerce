@@ -46,77 +46,23 @@ public class OrderService : IOrderService
                 throw new KeyNotFoundException($"Product {itemDto.ProductId} not found");
             }
 
-            // Calculate total units to deduct (Quantity * BundleMultiplier)
-            int multiplier = product.IsBundle ? product.BundleQuantity : 1;
-            int totalDeduction = itemDto.Quantity * multiplier;
+            // Calculate total units to deduct
+            int totalDeduction = itemDto.Quantity;
 
-            // 1. Deduct from specific variant if size/variant is selected
-            if (!string.IsNullOrEmpty(itemDto.Size))
-            {
-                var normalizedSize = itemDto.Size.Trim().ToLower();
-                var variant = product.Variants.FirstOrDefault(v => 
-                    v.Size != null && v.Size.Trim().ToLower() == normalizedSize);
-                
-                if (variant != null)
-                {
-                    if (variant.StockQuantity < totalDeduction)
-                        throw new InvalidOperationException($"Insufficient stock for {product.Name} ({itemDto.Size}). Needed: {totalDeduction}, Available: {variant.StockQuantity}");
-                    
-                    variant.StockQuantity -= totalDeduction;
-                    // Repository update isn't strictly necessary when tracking is enabled, 
-                    // but keeping it for explicitness or in case GenericRepository requires it for its internal state.
-                    _unitOfWork.Repository<ProductVariant>().Update(variant);
-                }
-            }
-
-            // 2. Deduct from main product stock (as an aggregate or for simple products)
+            // Deduct from main product stock
             if (product.StockQuantity < totalDeduction)
-                throw new InvalidOperationException($"Insufficient stock for {product.Name}. Needed: {totalDeduction}, Available: {product.StockQuantity}");
+                throw new InvalidOperationException($"Insufficient stock for {product.Headline}. Needed: {totalDeduction}, Available: {product.StockQuantity}");
 
             product.StockQuantity -= totalDeduction;
             _unitOfWork.Repository<Product>().Update(product);
 
-            // Price Fallback logic (Keep as is)
-            decimal unitPrice = 0;
-            // Lookup variant for price even for combo if combo has its own variants
-            ProductVariant? priceVariant = null;
-            if (!string.IsNullOrEmpty(itemDto.Size))
-            {
-                 var normalizedSize = itemDto.Size.Trim().ToLower();
-                 priceVariant = product.Variants.FirstOrDefault(v => 
-                    v.Size != null && v.Size.Trim().ToLower() == normalizedSize);
-            }
-
-            if (priceVariant != null && (priceVariant.Price ?? 0) > 0)
-            {
-                unitPrice = priceVariant.Price ?? 0;
-            }
-            else
-            {
-                // Fallback: Get the minimum positive active price from any variant
-                var validVariants = product.Variants.Where(v => (v.Price ?? 0) > 0).ToList();
-                if (validVariants.Any())
-                {
-                    unitPrice = validVariants.Min(v => {
-                        var p = v.Price ?? 0;
-                        var cp = v.CompareAtPrice ?? 0;
-                        return (cp > 0 && cp < p) ? cp : p;
-                    });
-                }
-            }
-            
-            // Image fallback: Try to get color-specific image if available
-            var itemImageUrl = product.ImageUrl;
-            if (!string.IsNullOrEmpty(itemDto.Color) && product.Images != null)
-            {
-                var colorImg = product.Images.FirstOrDefault(i => i.Color == itemDto.Color);
-                if (colorImg != null) itemImageUrl = colorImg.Url;
-            }
+            decimal unitPrice = product.Price;
+            var itemImageUrl = product.Images?.FirstOrDefault(i => i.IsMain)?.Url ?? "";
 
             var orderItem = new OrderItem
             {
                 ProductId = product.Id,
-                ProductName = product.Name,
+                ProductName = product.Headline,
                 UnitPrice = unitPrice,
                 Quantity = itemDto.Quantity,
                 Color = itemDto.Color,
@@ -236,20 +182,7 @@ public class OrderService : IOrderService
                 {
                     if (productDict.TryGetValue(item.ProductId, out var product))
                     {
-                        int multiplier = product.IsBundle ? product.BundleQuantity : 1;
-                        product.StockQuantity += item.Quantity * multiplier;
-
-                        if (!string.IsNullOrEmpty(item.Size))
-                        {
-                            var normalizedSize = item.Size.Trim().ToLower();
-                            var variant = product.Variants.FirstOrDefault(v => 
-                                v.Size != null && v.Size.Trim().ToLower() == normalizedSize);
-                            
-                            if (variant != null)
-                            {
-                                variant.StockQuantity += item.Quantity * multiplier;
-                            }
-                        }
+                        product.StockQuantity += item.Quantity;
                     }
                 }
             }

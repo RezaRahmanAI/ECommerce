@@ -24,7 +24,7 @@ export class AnalyticsService {
   trackViewContent(product: any): void {
     if (typeof fbq === "function") {
       fbq("track", "ViewContent", {
-        content_name: product.name,
+        content_name: product.headline,
         content_ids: [product.id],
         content_type: "product",
         value: product.price,
@@ -38,7 +38,7 @@ export class AnalyticsService {
         items: [
           {
             item_id: product.id,
-            item_name: product.name,
+            item_name: product.headline,
             price: product.price,
           },
         ],
@@ -62,7 +62,7 @@ export class AnalyticsService {
         value: total,
         items: items.map((i) => ({
           item_id: i.productId,
-          item_name: i.name,
+          item_name: i.headline,
           price: i.price,
           quantity: i.quantity,
         })),
@@ -73,7 +73,7 @@ export class AnalyticsService {
   trackAddToCart(item: any): void {
     if (typeof fbq === "function") {
       fbq("track", "AddToCart", {
-        content_name: item.name,
+        content_name: item.headline,
         content_ids: [item.productId],
         content_type: "product",
         value: item.price * item.quantity,
@@ -87,7 +87,7 @@ export class AnalyticsService {
         items: [
           {
             item_id: item.productId,
-            item_name: item.name,
+            item_name: item.headline,
             price: item.price,
             quantity: item.quantity,
           },
@@ -112,7 +112,7 @@ export class AnalyticsService {
         currency: "BDT",
         items: order.items.map((i: any) => ({
           item_id: i.productId,
-          item_name: i.name,
+          item_name: i.headline,
           price: i.price,
           quantity: i.quantity,
         })),
