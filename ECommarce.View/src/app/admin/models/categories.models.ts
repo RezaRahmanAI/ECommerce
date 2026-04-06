@@ -1,8 +1,8 @@
 export interface Category {
-  id: string;
+  id: number;
   name: string;
   slug: string;
-  parentId?: string | null;
+  parentId?: number | null;
   imageUrl?: string;
   isActive: boolean;
   productCount: number;
@@ -25,6 +25,6 @@ export interface CategoryNode {
 }
 
 export interface ReorderPayload {
-  parentId: string | null;
-  orderedIds: string[];
+  parentId: number | null;
+  orderedIds: number[];
 }

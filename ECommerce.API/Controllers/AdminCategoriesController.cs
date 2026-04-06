@@ -4,6 +4,7 @@ using ECommerce.Infrastructure.Data;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Text.RegularExpressions;
 
 namespace ECommerce.API.Controllers;
 
@@ -33,10 +34,10 @@ public class AdminCategoriesController : ControllerBase
             .AsNoTracking()
             .Select(c => new CategoryListResponse
             {
-                id = c.Id.ToString(),
+                id = c.Id,
                 name = c.Name,
                 slug = c.Slug,
-                parentId = c.ParentId.HasValue ? c.ParentId.Value.ToString() : null,
+                parentId = c.ParentId,
                 imageUrl = c.ImageUrl,
                 isActive = c.IsActive,
                 productCount = c.Products.Count,
@@ -48,24 +49,21 @@ public class AdminCategoriesController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<CategoryListResponse>> GetById(string id)
+    public async Task<ActionResult<CategoryListResponse>> GetById(int id)
     {
-        if (!int.TryParse(id, out var categoryId))
-            return BadRequest("Invalid category ID");
-
         var category = await _context.Categories
             .AsNoTracking()
-            .FirstOrDefaultAsync(c => c.Id == categoryId);
+            .FirstOrDefaultAsync(c => c.Id == id);
 
         if (category == null)
             return NotFound();
 
         return Ok(new CategoryListResponse
         {
-            id = category.Id.ToString(),
+            id = category.Id,
             name = category.Name,
             slug = category.Slug,
-            parentId = category.ParentId.HasValue ? category.ParentId.Value.ToString() : null,
+            parentId = category.ParentId,
             imageUrl = category.ImageUrl,
             isActive = category.IsActive,
             productCount = category.Products.Count,
@@ -109,13 +107,6 @@ public class AdminCategoriesController : ControllerBase
             ? GenerateSlug(request.name) 
             : GenerateSlug(request.slug);
 
-        int? parentId = null;
-        if (!string.IsNullOrEmpty(request.parentId))
-        {
-            if (int.TryParse(request.parentId, out var parsed))
-                parentId = parsed;
-        }
-
         var category = new Category
         {
             Name = request.name,
@@ -123,7 +114,7 @@ public class AdminCategoriesController : ControllerBase
             ImageUrl = request.imageUrl,
             IsActive = request.isActive,
             DisplayOrder = request.sortOrder,
-            ParentId = parentId
+            ParentId = null
         };
 
         _context.Categories.Add(category);
@@ -131,10 +122,10 @@ public class AdminCategoriesController : ControllerBase
 
         return Ok(new CategoryListResponse
         {
-            id = category.Id.ToString(),
+            id = category.Id,
             name = category.Name,
             slug = category.Slug,
-            parentId = category.ParentId.HasValue ? category.ParentId.Value.ToString() : null,
+            parentId = category.ParentId,
             imageUrl = category.ImageUrl,
             isActive = category.IsActive,
             productCount = 0,
@@ -142,13 +133,11 @@ public class AdminCategoriesController : ControllerBase
         });
     }
 
-    [HttpPost("{id}")]
-    public async Task<ActionResult<CategoryListResponse>> Update(string id, [FromBody] CategoryCreateRequest request)
+    [HttpPut("{id:int}")]
+    [HttpPost("{id:int}")]
+    public async Task<ActionResult<CategoryListResponse>> Update(int id, [FromBody] CategoryCreateRequest request)
     {
-        if (!int.TryParse(id, out var categoryId))
-            return BadRequest("Invalid category ID");
-
-        var category = await _context.Categories.FindAsync(categoryId);
+        var category = await _context.Categories.FindAsync(id);
         if (category == null)
             return NotFound();
 
@@ -163,24 +152,16 @@ public class AdminCategoriesController : ControllerBase
         category.IsActive = request.isActive;
         category.DisplayOrder = request.sortOrder;
 
-        if (!string.IsNullOrEmpty(request.parentId))
-        {
-            if (int.TryParse(request.parentId, out var parsed) && parsed != categoryId)
-                category.ParentId = parsed;
-        }
-        else
-        {
-            category.ParentId = null;
-        }
+        category.ParentId = null;
 
         await _context.SaveChangesAsync();
 
         return Ok(new CategoryListResponse
         {
-            id = category.Id.ToString(),
+            id = category.Id,
             name = category.Name,
             slug = category.Slug,
-            parentId = category.ParentId.HasValue ? category.ParentId.Value.ToString() : null,
+            parentId = category.ParentId,
             imageUrl = category.ImageUrl,
             isActive = category.IsActive,
             productCount = category.Products.Count,
@@ -188,16 +169,14 @@ public class AdminCategoriesController : ControllerBase
         });
     }
 
-    [HttpPost("{id}/delete")]
-    public async Task<ActionResult> Delete(string id)
+    [HttpDelete("{id:int}")]
+    [HttpPost("{id:int}/delete")]
+    public async Task<ActionResult> Delete(int id)
     {
-        if (!int.TryParse(id, out var categoryId))
-            return BadRequest("Invalid category ID");
-
         var category = await _context.Categories
             .Include(c => c.Products)
             .Include(c => c.ChildCategories)
-            .FirstOrDefaultAsync(c => c.Id == categoryId);
+            .FirstOrDefaultAsync(c => c.Id == id);
 
         if (category == null)
             return NotFound();
@@ -220,10 +199,7 @@ public class AdminCategoriesController : ControllerBase
         if (request.orderedIds == null || request.orderedIds.Count == 0)
             return BadRequest("orderedIds is required");
 
-        var ids = request.orderedIds
-            .Where(s => int.TryParse(s, out _))
-            .Select(int.Parse)
-            .ToList();
+        var ids = request.orderedIds.ToList();
 
         for (int i = 0; i < ids.Count; i++)
         {
@@ -241,11 +217,9 @@ public class AdminCategoriesController : ControllerBase
         if (string.IsNullOrWhiteSpace(name))
             return string.Empty;
 
-        var slug = name.ToLowerInvariant()
-            .Replace("[^a-z0-9\\s-]", "")
-            .Replace(" ", "-")
-            .Replace("--", "-")
-            .Trim('-');
+        var slug = Regex.Replace(name.ToLowerInvariant(), @"[^a-z0-9\s-]", "");
+        slug = Regex.Replace(slug, @"\s+", "-");
+        slug = Regex.Replace(slug, @"-+", "-").Trim('-');
 
         return slug.Length > 100 ? slug[..100].Trim('-') : slug;
     }
@@ -255,7 +229,6 @@ public class CategoryCreateRequest
 {
     public string name { get; set; } = string.Empty;
     public string? slug { get; set; }
-    public string? parentId { get; set; }
     public string? imageUrl { get; set; }
     public bool isActive { get; set; } = true;
     public int sortOrder { get; set; }
@@ -263,10 +236,10 @@ public class CategoryCreateRequest
 
 public class CategoryListResponse
 {
-    public string id { get; set; } = string.Empty;
+    public int id { get; set; }
     public string name { get; set; } = string.Empty;
     public string slug { get; set; } = string.Empty;
-    public string? parentId { get; set; }
+    public int? parentId { get; set; }
     public string? imageUrl { get; set; }
     public bool isActive { get; set; }
     public int productCount { get; set; }
@@ -275,5 +248,5 @@ public class CategoryListResponse
 
 public class ReorderRequest
 {
-    public List<string> orderedIds { get; set; } = new();
+    public List<int> orderedIds { get; set; } = new();
 }
