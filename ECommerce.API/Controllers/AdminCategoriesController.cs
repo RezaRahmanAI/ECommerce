@@ -107,10 +107,6 @@ public class AdminCategoriesController : ControllerBase
             ? GenerateSlug(request.name) 
             : GenerateSlug(request.slug);
 
-        int? parentId = request.parentId;
-        if (parentId.HasValue && !await _context.Categories.AnyAsync(c => c.Id == parentId.Value))
-            return BadRequest(new { message = "Invalid parent category ID" });
-
         var category = new Category
         {
             Name = request.name,
@@ -118,7 +114,7 @@ public class AdminCategoriesController : ControllerBase
             ImageUrl = request.imageUrl,
             IsActive = request.isActive,
             DisplayOrder = request.sortOrder,
-            ParentId = parentId
+            ParentId = null
         };
 
         _context.Categories.Add(category);
@@ -156,17 +152,7 @@ public class AdminCategoriesController : ControllerBase
         category.IsActive = request.isActive;
         category.DisplayOrder = request.sortOrder;
 
-        if (request.parentId.HasValue)
-        {
-            if (request.parentId.Value == id)
-                return BadRequest(new { message = "A category cannot be its own parent" });
-
-            var parentExists = await _context.Categories.AnyAsync(c => c.Id == request.parentId.Value);
-            if (!parentExists)
-                return BadRequest(new { message = "Invalid parent category ID" });
-        }
-
-        category.ParentId = request.parentId;
+        category.ParentId = null;
 
         await _context.SaveChangesAsync();
 
@@ -243,7 +229,6 @@ public class CategoryCreateRequest
 {
     public string name { get; set; } = string.Empty;
     public string? slug { get; set; }
-    public int? parentId { get; set; }
     public string? imageUrl { get; set; }
     public bool isActive { get; set; } = true;
     public int sortOrder { get; set; }

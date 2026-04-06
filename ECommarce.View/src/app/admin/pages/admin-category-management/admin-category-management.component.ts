@@ -308,7 +308,6 @@ export class AdminCategoryManagementComponent implements OnInit, OnDestroy {
     const payload: any = {
       name: formValue.name ?? "",
       slug: formValue.slug ?? "",
-      parentId: formValue.parentId ?? null,
       imageUrl: formValue.imageUrl ?? "",
       isActive: formValue.isActive ?? true,
     };
