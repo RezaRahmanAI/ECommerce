@@ -1,4 +1,3 @@
-using ECommerce.Core.DTOs;
 using ECommerce.Core.Entities;
 using ECommerce.Infrastructure.Data;
 using Microsoft.AspNetCore.Authorization;
@@ -36,12 +35,8 @@ public class AdminCategoriesController : ControllerBase
             {
                 id = c.Id,
                 name = c.Name,
-                slug = c.Slug,
-                parentId = c.ParentId,
                 imageUrl = c.ImageUrl,
-                isActive = c.IsActive,
-                productCount = c.Products.Count,
-                sortOrder = c.DisplayOrder
+                isActive = c.IsActive
             })
             .ToListAsync();
 
@@ -62,12 +57,8 @@ public class AdminCategoriesController : ControllerBase
         {
             id = category.Id,
             name = category.Name,
-            slug = category.Slug,
-            parentId = category.ParentId,
             imageUrl = category.ImageUrl,
-            isActive = category.IsActive,
-            productCount = category.Products.Count,
-            sortOrder = category.DisplayOrder
+            isActive = category.IsActive
         });
     }
 
@@ -103,25 +94,17 @@ public class AdminCategoriesController : ControllerBase
         if (string.IsNullOrWhiteSpace(request.name))
             return BadRequest(new { message = "Category name is required" });
 
-        var slug = string.IsNullOrWhiteSpace(request.slug) 
-            ? GenerateSlug(request.name) 
-            : GenerateSlug(request.slug);
-        var parentId = request.parentId;
-        var nextSortOrder = request.sortOrder > 0
-            ? request.sortOrder
-            : await _context.Categories
-                .Where(c => c.ParentId == parentId)
-                .Select(c => (int?)c.DisplayOrder)
-                .MaxAsync() + 1 ?? 1;
-
         var category = new Category
         {
             Name = request.name,
-            Slug = slug,
+            Slug = GenerateSlug(request.name),
+            Icon = null,
             ImageUrl = request.imageUrl,
+            MetaTitle = null,
+            MetaDescription = null,
             IsActive = request.isActive,
-            DisplayOrder = nextSortOrder,
-            ParentId = parentId
+            DisplayOrder = 0,
+            ParentId = null
         };
 
         _context.Categories.Add(category);
@@ -131,12 +114,8 @@ public class AdminCategoriesController : ControllerBase
         {
             id = category.Id,
             name = category.Name,
-            slug = category.Slug,
-            parentId = category.ParentId,
             imageUrl = category.ImageUrl,
-            isActive = category.IsActive,
-            productCount = 0,
-            sortOrder = category.DisplayOrder
+            isActive = category.IsActive
         });
     }
 
@@ -152,13 +131,14 @@ public class AdminCategoriesController : ControllerBase
             return BadRequest(new { message = "Category name is required" });
 
         category.Name = request.name;
-        category.Slug = string.IsNullOrWhiteSpace(request.slug) 
-            ? GenerateSlug(request.name) 
-            : GenerateSlug(request.slug);
+        category.Slug = GenerateSlug(request.name);
+        category.Icon = null;
         category.ImageUrl = request.imageUrl;
+        category.MetaTitle = null;
+        category.MetaDescription = null;
         category.IsActive = request.isActive;
-        category.DisplayOrder = request.sortOrder > 0 ? request.sortOrder : category.DisplayOrder;
-        category.ParentId = request.parentId;
+        category.ParentId = null;
+        category.DisplayOrder = 0;
 
         await _context.SaveChangesAsync();
 
@@ -166,12 +146,8 @@ public class AdminCategoriesController : ControllerBase
         {
             id = category.Id,
             name = category.Name,
-            slug = category.Slug,
-            parentId = category.ParentId,
             imageUrl = category.ImageUrl,
-            isActive = category.IsActive,
-            productCount = category.Products.Count,
-            sortOrder = category.DisplayOrder
+            isActive = category.IsActive
         });
     }
 
@@ -181,7 +157,6 @@ public class AdminCategoriesController : ControllerBase
     {
         var category = await _context.Categories
             .Include(c => c.Products)
-            .Include(c => c.ChildCategories)
             .FirstOrDefaultAsync(c => c.Id == id);
 
         if (category == null)
@@ -190,32 +165,10 @@ public class AdminCategoriesController : ControllerBase
         if (category.Products.Any())
             return BadRequest(new { message = "Cannot delete category with products" });
 
-        if (category.ChildCategories.Any())
-            return BadRequest(new { message = "Cannot delete category with sub-categories" });
-
         _context.Categories.Remove(category);
         await _context.SaveChangesAsync();
 
         return NoContent();
-    }
-
-    [HttpPost("reorder")]
-    public async Task<ActionResult<bool>> Reorder([FromBody] ReorderRequest request)
-    {
-        if (request.orderedIds == null || request.orderedIds.Count == 0)
-            return BadRequest("orderedIds is required");
-
-        var ids = request.orderedIds.ToList();
-
-        for (int i = 0; i < ids.Count; i++)
-        {
-            var category = await _context.Categories.FindAsync(ids[i]);
-            if (category != null)
-                category.DisplayOrder = i + 1;
-        }
-
-        await _context.SaveChangesAsync();
-        return Ok(true);
     }
 
     private static string GenerateSlug(string name)
@@ -234,26 +187,14 @@ public class AdminCategoriesController : ControllerBase
 public class CategoryCreateRequest
 {
     public string name { get; set; } = string.Empty;
-    public string? slug { get; set; }
     public string? imageUrl { get; set; }
     public bool isActive { get; set; } = true;
-    public int sortOrder { get; set; }
-    public int? parentId { get; set; }
 }
 
 public class CategoryListResponse
 {
     public int id { get; set; }
     public string name { get; set; } = string.Empty;
-    public string slug { get; set; } = string.Empty;
-    public int? parentId { get; set; }
     public string? imageUrl { get; set; }
     public bool isActive { get; set; }
-    public int productCount { get; set; }
-    public int sortOrder { get; set; }
-}
-
-public class ReorderRequest
-{
-    public List<int> orderedIds { get; set; } = new();
 }

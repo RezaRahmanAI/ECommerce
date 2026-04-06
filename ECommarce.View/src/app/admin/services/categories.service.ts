@@ -1,11 +1,7 @@
 import { Injectable, inject } from "@angular/core";
 import { Observable, map } from "rxjs";
 
-import {
-  Category,
-  CategoryNode,
-  ReorderPayload,
-} from "../models/categories.models";
+import { Category } from "../models/categories.models";
 import { ApiHttpClient } from "../../core/http/http-client";
 
 @Injectable({
@@ -22,11 +18,11 @@ export class CategoriesService {
     return this.api.get<Category>(`/admin/categories/${id}`);
   }
 
-  create(payload: Partial<Category>): Observable<Category> {
+  create(payload: Omit<Category, "id">): Observable<Category> {
     return this.api.post<Category>("/admin/categories", payload);
   }
 
-  update(id: number, payload: Partial<Category>): Observable<Category> {
+  update(id: number, payload: Omit<Category, "id">): Observable<Category> {
     return this.api.put<Category>(`/admin/categories/${id}`, payload);
   }
 
@@ -42,13 +38,5 @@ export class CategoriesService {
     return this.api
       .post<{ url: string }>("/admin/categories/upload-image", formData)
       .pipe(map((response) => response.url));
-  }
-
-  reorder(payload: ReorderPayload): Observable<boolean> {
-    return this.api.post<boolean>("/admin/categories/reorder", payload);
-  }
-
-  getTree(): Observable<CategoryNode[]> {
-    return this.api.get<CategoryNode[]>("/admin/categories/tree");
   }
 }
