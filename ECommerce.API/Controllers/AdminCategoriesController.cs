@@ -3,7 +3,6 @@ using ECommerce.Infrastructure.Data;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Text.RegularExpressions;
 
 namespace ECommerce.API.Controllers;
 
@@ -27,11 +26,11 @@ public class AdminCategoriesController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<List<CategoryListResponse>>> GetAll()
+    public async Task<ActionResult<List<CategoryResponse>>> GetAll()
     {
         var categories = await _context.Categories
             .AsNoTracking()
-            .Select(c => new CategoryListResponse
+            .Select(c => new CategoryResponse
             {
                 id = c.Id,
                 name = c.Name,
@@ -44,7 +43,7 @@ public class AdminCategoriesController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<CategoryListResponse>> GetById(int id)
+    public async Task<ActionResult<CategoryResponse>> GetById(int id)
     {
         var category = await _context.Categories
             .AsNoTracking()
@@ -53,7 +52,7 @@ public class AdminCategoriesController : ControllerBase
         if (category == null)
             return NotFound();
 
-        return Ok(new CategoryListResponse
+        return Ok(new CategoryResponse
         {
             id = category.Id,
             name = category.Name,
@@ -89,7 +88,7 @@ public class AdminCategoriesController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<ActionResult<CategoryListResponse>> Create([FromBody] CategoryCreateRequest request)
+    public async Task<ActionResult<CategoryResponse>> Create([FromBody] CategoryRequest request)
     {
         if (string.IsNullOrWhiteSpace(request.name))
             return BadRequest(new { message = "Category name is required" });
@@ -97,17 +96,14 @@ public class AdminCategoriesController : ControllerBase
         var category = new Category
         {
             Name = request.name,
-            Slug = GenerateSlug(request.name),
             ImageUrl = request.imageUrl,
-            IsActive = request.isActive,
-            DisplayOrder = await _context.Categories.Select(c => (int?)c.DisplayOrder).MaxAsync() + 1 ?? 1,
-            ParentId = null
+            IsActive = request.isActive
         };
 
         _context.Categories.Add(category);
         await _context.SaveChangesAsync();
 
-        return Ok(new CategoryListResponse
+        return Ok(new CategoryResponse
         {
             id = category.Id,
             name = category.Name,
@@ -117,8 +113,7 @@ public class AdminCategoriesController : ControllerBase
     }
 
     [HttpPut("{id:int}")]
-    [HttpPost("{id:int}")]
-    public async Task<ActionResult<CategoryListResponse>> Update(int id, [FromBody] CategoryCreateRequest request)
+    public async Task<ActionResult<CategoryResponse>> Update(int id, [FromBody] CategoryRequest request)
     {
         var category = await _context.Categories.FindAsync(id);
         if (category == null)
@@ -128,13 +123,12 @@ public class AdminCategoriesController : ControllerBase
             return BadRequest(new { message = "Category name is required" });
 
         category.Name = request.name;
-        category.Slug = GenerateSlug(request.name);
         category.ImageUrl = request.imageUrl;
         category.IsActive = request.isActive;
 
         await _context.SaveChangesAsync();
 
-        return Ok(new CategoryListResponse
+        return Ok(new CategoryResponse
         {
             id = category.Id,
             name = category.Name,
@@ -144,12 +138,10 @@ public class AdminCategoriesController : ControllerBase
     }
 
     [HttpDelete("{id:int}")]
-    [HttpPost("{id:int}/delete")]
     public async Task<ActionResult> Delete(int id)
     {
         var category = await _context.Categories
             .Include(c => c.Products)
-            .Include(c => c.ChildCategories)
             .FirstOrDefaultAsync(c => c.Id == id);
 
         if (category == null)
@@ -158,36 +150,21 @@ public class AdminCategoriesController : ControllerBase
         if (category.Products.Any())
             return BadRequest(new { message = "Cannot delete category with products" });
 
-        if (category.ChildCategories.Any())
-            return BadRequest(new { message = "Cannot delete category with sub-categories" });
-
         _context.Categories.Remove(category);
         await _context.SaveChangesAsync();
 
         return NoContent();
     }
-
-    private static string GenerateSlug(string name)
-    {
-        if (string.IsNullOrWhiteSpace(name))
-            return string.Empty;
-
-        var slug = Regex.Replace(name.ToLowerInvariant(), @"[^a-z0-9\s-]", "");
-        slug = Regex.Replace(slug, @"\s+", "-");
-        slug = Regex.Replace(slug, @"-+", "-").Trim('-');
-
-        return slug.Length > 100 ? slug[..100].Trim('-') : slug;
-    }
 }
 
-public class CategoryCreateRequest
+public class CategoryRequest
 {
     public string name { get; set; } = string.Empty;
     public string? imageUrl { get; set; }
     public bool isActive { get; set; } = true;
 }
 
-public class CategoryListResponse
+public class CategoryResponse
 {
     public int id { get; set; }
     public string name { get; set; } = string.Empty;

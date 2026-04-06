@@ -64,7 +64,7 @@ export class ProductGalleryComponent implements OnInit {
 
   private loadProducts(params: any): void {
     this.loading = true;
-    const { categorySlug, collectionSlug, slug } = params;
+    const { categoryId, collectionSlug, slug } = params;
     const queryParams = this.route.snapshot.queryParams;
     const tier = queryParams["tier"];
     const tags = queryParams["tags"];
@@ -83,11 +83,11 @@ export class ProductGalleryComponent implements OnInit {
         this.title = "Search Products";
       }
     } else if (
-      categorySlug ||
+      categoryId ||
       (this.route.snapshot.url[0]?.path === "category" && slug)
     ) {
-      filterParams.categorySlug = categorySlug || slug;
-      this.title = (categorySlug || slug).replace(/-/g, " ");
+      filterParams.categoryId = categoryId || slug;
+      this.title = (categoryId || slug).toString();
     } else if (this.route.snapshot.url[0]?.path === "offers") {
       filterParams.isFeatured = true;
       this.isOffersPage = true;
@@ -117,18 +117,6 @@ export class ProductGalleryComponent implements OnInit {
         this.cdr.markForCheck();
       },
     });
-
-    // Load Category and Subcategories for Sidebar
-    if (categorySlug || (this.route.snapshot.url[0]?.path === "category" && slug)) {
-      const activeSlug = categorySlug || slug;
-      this.categoryService.getCategories().subscribe(categories => {
-        const currentCat = categories.find(c => c.slug === activeSlug);
-        if (currentCat) {
-          this.childCategories = currentCat.childCategories || [];
-          this.cdr.markForCheck();
-        }
-      });
-    }
   }
 
   navigateToSub(href: string): void {
@@ -144,13 +132,11 @@ export class ProductGalleryComponent implements OnInit {
       categories.forEach(cat => {
         const catId = String(cat.id);
         if (productCategories.has(catId)) {
-          const catChildCols = cat.childCategories?.filter((child: any) => productCategories.has(String(child.id))) || [];
-          if (catChildCols.length > 0 || productCategories.has(catId)) {
-             hierarchy.push({
-               ...cat,
-               childCategories: catChildCols
-             });
-          }
+           hierarchy.push({
+             id: cat.id,
+             name: cat.name,
+             imageUrl: cat.imageUrl
+           });
         }
       });
       this.offerCategories = hierarchy;

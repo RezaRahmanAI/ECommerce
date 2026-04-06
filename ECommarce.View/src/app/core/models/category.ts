@@ -1,12 +1,6 @@
 export interface Category {
-  id: number | string;
+  id: number;
   name: string;
-  slug: string;
-  description?: string;
   imageUrl: string;
-  href?: string;
-  displayOrder?: number;
-  isActive?: boolean;
-  productCount?: number;
-  childCategories?: Category[];
+  isActive: boolean;
 }

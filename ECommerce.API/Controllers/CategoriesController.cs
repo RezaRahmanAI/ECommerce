@@ -1,45 +1,37 @@
-using AutoMapper;
 using ECommerce.Core.DTOs;
 using ECommerce.Core.Entities;
 using ECommerce.Core.Interfaces;
-using ECommerce.Core.Specifications;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Caching.Memory;
 
 namespace ECommerce.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Microsoft.AspNetCore.OutputCaching.OutputCache(PolicyName = "Categories")]
 public class CategoriesController : ControllerBase
 {
     private readonly IGenericRepository<Category> _categoryRepo;
-    private readonly IMapper _mapper;
-    private readonly IMemoryCache _cache;
 
-    public CategoriesController(IGenericRepository<Category> categoryRepo, IMapper mapper, IMemoryCache cache)
+    public CategoriesController(IGenericRepository<Category> categoryRepo)
     {
         _categoryRepo = categoryRepo;
-        _mapper = mapper;
-        _cache = cache;
     }
 
     [HttpGet]
-    [ResponseCache(Duration = 600)]
-    public async Task<ActionResult<IReadOnlyList<CategoryDto>>> GetCategories()
+    public async Task<ActionResult<List<CategoryDto>>> GetCategories()
     {
-        const string cacheKey = "categories_all";
-
-        if (_cache.TryGetValue(cacheKey, out IReadOnlyList<CategoryDto>? cached) && cached != null)
-        {
-            return Ok(cached);
-        }
-
-        var spec = new CategoriesWithSubCategoriesSpec();
-        var categories = await _categoryRepo.ListAsync(spec);
-        var result = _mapper.Map<IReadOnlyList<CategoryDto>>(categories);
+        var categories = await _categoryRepo.ListAllAsync();
         
-        _cache.Set(cacheKey, result, new MemoryCacheEntryOptions { Size = 1, AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10) });
+        var result = categories
+            .Where(c => c.IsActive)
+            .Select(c => new CategoryDto
+            {
+                Id = c.Id,
+                Name = c.Name,
+                ImageUrl = c.ImageUrl,
+                IsActive = c.IsActive
+            })
+            .ToList();
+            
         return Ok(result);
     }
 }

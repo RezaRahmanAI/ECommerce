@@ -86,21 +86,15 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             entity.ToTable(t => t.HasCheckConstraint("CK_Product_Name", "LEN(Headline) > 0")); 
         });
 
-        // Category Self-Referencing Hierarchy
+        // Category Configuration
         builder.Entity<Category>(entity =>
         {
-            entity.HasOne(c => c.Parent)
-                  .WithMany(c => c.ChildCategories)
-                  .HasForeignKey(c => c.ParentId)
-                  .OnDelete(DeleteBehavior.Restrict);
-            
-            entity.HasIndex(c => c.Slug);
         });
 
         builder.Entity<Collection>(entity =>
         {
             entity.HasOne(c => c.Category)
-                  .WithMany(c => c.Collections)
+                  .WithMany()
                   .HasForeignKey(c => c.CategoryId)
                   .OnDelete(DeleteBehavior.Cascade);
             
