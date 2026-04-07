@@ -31,6 +31,7 @@ export interface ProductCreatePayload {
   sideEffectsContent?: string;
   usageTitle?: string;
   usageContent?: string;
+  stockQuantity: number;
 }
 
 export interface ProductUpdatePayload {
@@ -52,6 +53,7 @@ export interface ProductUpdatePayload {
   sideEffectsContent?: string;
   usageTitle?: string;
   usageContent?: string;
+  stockQuantity: number;
 }
 
 export type ProductsStatusTab = "All Items" | "Active" | "Drafts" | "Archived";

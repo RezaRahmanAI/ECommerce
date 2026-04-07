@@ -12,7 +12,6 @@ import {
   map,
   of,
   switchMap,
-  tap,
 } from "rxjs";
 import {
   LucideAngularModule,
@@ -35,7 +34,8 @@ import {
   ShieldCheck,
   ShoppingBag,
   CreditCard,
-  MessageCircle,
+  MessageSquare,
+  X,
 } from "lucide-angular";
 import { BANGLADESH_LOCATIONS } from "../../../../core/utils/bangladesh-locations";
 
@@ -85,7 +85,8 @@ export class LandingPageComponent implements OnInit {
     ShieldCheck,
     ShoppingBag,
     CreditCard,
-    MessageCircle,
+    MessageSquare,
+    X,
   };
   private readonly route = inject(ActivatedRoute);
   private readonly productService = inject(ProductService);
@@ -100,32 +101,51 @@ export class LandingPageComponent implements OnInit {
   private readonly orderService = inject(OrderService);
 
   product: Product | null = null;
+  siteSettings: any = null;
   isLoading = false;
   isOrdering = false;
   errorMessage = "";
-  didAutofill = false;
+  date = new Date();
+  
   deliveryMethods: DeliveryMethod[] = [];
   selectedMethod: DeliveryMethod | null = null;
 
+  reviews: any[] = [
+    {
+      customerName: "Rahim Ahmed",
+      comment: "অসাধারণ প্রোডাক্ট! আমি অনেকদিন ধরে এমন কিছু খুঁজছিলাম। প্যাকেজিং খুবই ডিসক্রিট ছিল।",
+      reviewImage: null
+    },
+    {
+      customerName: "Karim Uddin",
+      comment: "খুবই দ্রুত ডেলিভারি পেয়েছি। প্রোডাক্টের মান অনেক ভালো। ধন্যবাদ অর্জামার্টকে।",
+      reviewImage: null
+    },
+    {
+      customerName: "Siddique Ullah",
+      comment: "প্রথমে একটু দ্বিধায় ছিলাম, কিন্তু ব্যবহারের পর বুঝলাম এটা আসলেই কার্যকরী।",
+      reviewImage: null
+    }
+  ];
+  currentReviewIndex = 0;
+
+  offerItems: any[] = [];
+  
+  isModalOpen = false;
+  selectedPopupItem: any = null;
+  modalQuantity = 1;
+
   readonly checkoutForm = this.formBuilder.nonNullable.group({
+    phone: ["", [Validators.required, Validators.minLength(11)]],
     fullName: ["", [Validators.required, Validators.minLength(2)]],
-    phone: ["", [Validators.required, Validators.minLength(7)]],
-    address: ["", [Validators.required, Validators.minLength(5)]],
-    city: ["Dhaka", Validators.required],
+    district: ["", Validators.required],
     area: ["", Validators.required],
+    address: ["", [Validators.required, Validators.minLength(5)]],
     deliveryMethodId: [0, Validators.required],
-    quantity: [1, [Validators.required, Validators.min(1)]],
   });
 
-  cities = Object.keys(BANGLADESH_LOCATIONS).sort();
-  filteredCities: string[] = [];
-  citySearch = "";
-  isCityDropdownOpen = false;
-
-  areas: string[] = [];
-  filteredAreas: string[] = [];
-  areaSearch = "";
-  isAreaDropdownOpen = false;
+  districts = Object.keys(BANGLADESH_LOCATIONS).sort();
+  availableAreas: string[] = [];
 
   ngOnInit(): void {
     this.loadProductAndSettings();
@@ -142,17 +162,24 @@ export class LandingPageComponent implements OnInit {
         switchMap((slug) => this.productService.getBySlug(slug)),
       ),
       this.settingsService.getPublicDeliveryMethods(),
+      this.settingsService.settings$,
+      this.productService.getProducts({})
     ])
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: ([product, methods]) => {
+        next: ([product, methods, settings, productsResponse]: [Product | null, DeliveryMethod[], any, { data?: Product[] }]) => {
           this.product = product;
+          this.siteSettings = settings;
           this.deliveryMethods = methods;
+          
+          const allProducts = productsResponse?.data || [];
+          this.offerItems = allProducts.map((p: Product) => ({
+            ...p,
+            name: p.headline,
+            imageUrl: this.imageUrlService.getImageUrl(p.imgUrl),
+            quantity: p.id === product?.id ? 1 : 0
+          }));
           this.isLoading = false;
-
-          if (product) {
-            // Product loaded successfully
-          }
 
           if (methods.length > 0) {
             const defaultMethod =
@@ -162,12 +189,10 @@ export class LandingPageComponent implements OnInit {
               deliveryMethodId: defaultMethod.id,
             });
             this.selectedMethod = defaultMethod;
-            
-            // Initial city/area setup
-            const initialCity = this.checkoutForm.controls.city.value;
-            this.areas = BANGLADESH_LOCATIONS[initialCity] || [];
-            this.filteredAreas = [...this.areas];
-            this.updateDeliveryMethodByCity(initialCity);
+          }
+
+          if (!settings) {
+            this.settingsService.getSettings().subscribe();
           }
         },
         error: () => {
@@ -193,13 +218,13 @@ export class LandingPageComponent implements OnInit {
       )
       .subscribe((customer) => {
         if (customer) {
-          this.didAutofill = true;
           this.checkoutForm.patchValue(
             {
               fullName: customer.name,
               address: customer.address,
+              district: customer.city || "Dhaka"
             },
-            { emitEvent: false },
+            { emitEvent: true },
           );
         }
       });
@@ -211,14 +236,11 @@ export class LandingPageComponent implements OnInit {
           this.deliveryMethods.find((m) => m.id === id) || null;
       });
 
-    this.checkoutForm.controls.city.valueChanges
+    this.checkoutForm.controls.district.valueChanges
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((city) => {
-        this.areas = BANGLADESH_LOCATIONS[city] || [];
-        this.filteredAreas = [...this.areas];
+        this.availableAreas = BANGLADESH_LOCATIONS[city] || [];
         this.checkoutForm.patchValue({ area: "" });
-        this.areaSearch = "";
-        this.citySearch = city;
         this.updateDeliveryMethodByCity(city);
       });
   }
@@ -236,105 +258,64 @@ export class LandingPageComponent implements OnInit {
     }
   }
 
-  filterCities(event: Event): void {
-    const query = (event.target as HTMLInputElement).value.toLowerCase();
-    this.citySearch = query;
-    this.filteredCities = this.cities.filter((c) =>
-      c.toLowerCase().includes(query),
-    );
+  scrollToOrderForm(): void {
+    const el = document.getElementById("order");
+    if (el) el.scrollIntoView({ behavior: "smooth" });
   }
 
-  selectCity(city: string): void {
-    this.checkoutForm.patchValue({ city });
-    this.citySearch = city;
-    this.isCityDropdownOpen = false;
+  prevReview(): void {
+    this.currentReviewIndex = (this.currentReviewIndex - 1 + this.reviews.length) % this.reviews.length;
   }
 
-  toggleCityDropdown(): void {
-    this.isCityDropdownOpen = !this.isCityDropdownOpen;
-    if (this.isCityDropdownOpen) {
-      this.isAreaDropdownOpen = false;
-      this.filteredCities = [...this.cities];
-      this.citySearch = this.checkoutForm.controls.city.value || "";
+  nextReview(): void {
+    this.currentReviewIndex = (this.currentReviewIndex + 1) % this.reviews.length;
+  }
+
+  goToReview(index: number): void {
+    this.currentReviewIndex = index;
+  }
+
+  changeQty(item: any, delta: number): void {
+    const newQty = (item.quantity || 0) + delta;
+    item.quantity = Math.max(0, newQty);
+  }
+
+  updateQuantity(item: any, event: any): void {
+    const val = parseInt(event.target.value, 10);
+    item.quantity = isNaN(val) ? 0 : Math.max(0, val);
+  }
+
+  openProductModal(item: any): void {
+    this.selectedPopupItem = item;
+    this.modalQuantity = item.quantity > 0 ? item.quantity : 1;
+    this.isModalOpen = true;
+  }
+
+  closeProductModal(): void {
+    this.isModalOpen = false;
+    this.selectedPopupItem = null;
+  }
+
+  updateModalQuantity(delta: number): void {
+    this.modalQuantity = Math.max(1, this.modalQuantity + delta);
+  }
+
+  confirmModalAdd(): void {
+    if (this.selectedPopupItem) {
+      this.selectedPopupItem.quantity = this.modalQuantity;
+      this.closeProductModal();
     }
   }
 
-  filterAreas(event: Event): void {
-    const query = (event.target as HTMLInputElement).value.toLowerCase();
-    this.areaSearch = query;
-    this.filteredAreas = this.areas.filter((a) =>
-      a.toLowerCase().includes(query),
-    );
-  }
-
-  selectArea(area: string): void {
-    this.checkoutForm.patchValue({ area });
-    this.areaSearch = area;
-    this.isAreaDropdownOpen = false;
-  }
-
-  toggleAreaDropdown(): void {
-    if (!this.checkoutForm.controls.city.value) return;
-    this.isAreaDropdownOpen = !this.isAreaDropdownOpen;
-    if (this.isAreaDropdownOpen) {
-      this.isCityDropdownOpen = false;
-      this.filteredAreas = [...this.areas];
-      this.areaSearch = this.checkoutForm.controls.area.value || "";
-    }
-  }
-
-  get currentPrice(): number {
-    if (!this.product) return 0;
-    return this.product.price;
-  }
-
-  get currentCompareAtPrice(): number | undefined {
-    if (!this.product) return undefined;
-    return this.product.compareAtPrice;
+  get subtotal(): number {
+    return this.offerItems.reduce((acc, item) => acc + (item.price * (item.quantity || 0)), 0);
   }
 
   get total(): number {
-    if (!this.product) return 0;
-    const subtotal =
-      this.currentPrice * this.checkoutForm.controls.quantity.value;
+    const sub = this.subtotal;
+    if (sub === 0) return 0;
     const shipping = this.selectedMethod?.cost ?? 0;
-    return subtotal + shipping;
-  }
-
-  // UI Helpers matching ProductDetailsPageComponent
-  currentImageIndex = 0;
-
-  get gallery(): string[] {
-    if (!this.product) return [];
-    const images = this.product.images?.map((i) => i.imageUrl) ?? [];
-    let gallery = [];
-    if (this.product.imgUrl) {
-      gallery.push(this.product.imgUrl);
-    }
-    images.forEach((img) => {
-      if (img !== this.product?.imgUrl) {
-        gallery.push(img);
-      }
-    });
-    return gallery;
-  }
-
-
-
-  prevImage(): void {
-    const len = this.gallery.length;
-    if (len === 0) return;
-    this.currentImageIndex = (this.currentImageIndex - 1 + len) % len;
-  }
-
-  nextImage(): void {
-    const len = this.gallery.length;
-    if (len === 0) return;
-    this.currentImageIndex = (this.currentImageIndex + 1) % len;
-  }
-
-  goToImage(index: number): void {
-    this.currentImageIndex = index;
+    return sub + shipping;
   }
 
   hasDiscount(product: { price: number; compareAtPrice?: number }): boolean {
@@ -354,29 +335,8 @@ export class LandingPageComponent implements OnInit {
     return Math.round((discount / (product.compareAtPrice ?? 1)) * 100);
   }
 
-
-
-
-
-  increaseQuantity(): void {
-    const current = this.checkoutForm.controls.quantity.value;
-    this.checkoutForm.patchValue({ quantity: current + 1 });
-  }
-
-  decreaseQuantity(): void {
-    const current = this.checkoutForm.controls.quantity.value;
-    if (current > 1) {
-      this.checkoutForm.patchValue({ quantity: current - 1 });
-    }
-  }
-
-  private calculateShipping(subtotal: number, city: string): number {
-    const isInsideDhaka = city.toLowerCase().includes("dhaka");
-    return isInsideDhaka ? 60 : 120; // Default values consistent with user's earlier message
-  }
-
   placeOrder(): void {
-    if (this.isOrdering || !this.product) return;
+    if (this.isOrdering || this.subtotal === 0) return;
     this.errorMessage = "";
 
     if (this.checkoutForm.invalid) {
@@ -385,82 +345,62 @@ export class LandingPageComponent implements OnInit {
     }
 
     this.isOrdering = true;
-    this.errorMessage = "";
-
     const form = this.checkoutForm.getRawValue();
 
-    // 1. Construct local order payload to bypass global cart
-    const cartItem: CartItem = {
-      id: "landing-" + Date.now(),
-      productId: this.product.id,
-      headline: this.product.headline || "",
-      price: this.currentPrice,
-      quantity: form.quantity,
-      size: "One Size",
-      imgUrl: this.product.imgUrl || "",
-      imageAlt: this.product.headline || "",
-      discountPercentage: this.getDiscountPercentage({
-        price: this.currentPrice,
-        compareAtPrice: this.currentCompareAtPrice,
-      }),
-      compareAtPrice: this.currentCompareAtPrice,
-    };
+    const selectedItems = this.offerItems.filter(i => i.quantity > 0);
+    const cartItems: any[] = selectedItems.map(item => ({
+      id: "landing-" + item.id + "-" + Date.now(),
+      productId: item.id,
+      name: item.headline,
+      price: item.price,
+      quantity: item.quantity,
+      imageUrl: item.imgUrl,
+      imageAlt: item.headline,
+      discountPercentage: this.getDiscountPercentage(item),
+      compareAtPrice: item.compareAtPrice,
+      size: "One Size"
+    }));
 
-    const cartItems = [cartItem];
-    const subtotal = this.currentPrice * form.quantity;
-    const shipping = this.calculateShipping(subtotal, form.city);
+    const subtotal = this.subtotal;
+    const shipping = this.selectedMethod?.cost ?? 0;
+    
     const summary: CartSummary = {
-      itemsCount: form.quantity,
+      itemsCount: selectedItems.reduce((acc, i) => acc + i.quantity, 0),
       subtotal: subtotal,
       tax: 0,
       shipping: shipping,
-      discount:
-        (this.currentCompareAtPrice
-          ? this.currentCompareAtPrice - this.currentPrice
-          : 0) * form.quantity,
+      discount: selectedItems.reduce((acc, i) => acc + ((i.compareAtPrice ? (i.compareAtPrice - i.price) : 0) * i.quantity), 0),
       total: subtotal + shipping,
       freeShippingThreshold: 0,
       freeShippingRemaining: 0,
-      freeShippingProgress: 100,
+      freeShippingProgress: 100
     };
 
-    // 2. Place order directly via OrderService
-    this.orderService
-      .placeOrder({
-        state: {
-          fullName: form.fullName,
-          phone: form.phone,
-          address: form.address,
-          city: form.city,
-          area: form.area,
-          deliveryMethodId: form.deliveryMethodId,
-        },
-        cartItems,
-        summary,
-        deliveryMethodId: form.deliveryMethodId,
-      })
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: (order) => {
-          this.isOrdering = false;
-          if (order?.id) {
-            void this.router.navigate(["/order-confirmation", order.id]);
-          }
-        },
-        error: (error: Error) => {
-          this.isOrdering = false;
-          this.errorMessage = error.message ?? "Unable to place order.";
-        },
-      });
-  }
-
-  addToCart(): void {
-    if (this.isOrdering || !this.product) return;
-    this.errorMessage = "";
-
-    const form = this.checkoutForm.getRawValue();
-    this.cartService
-      .addItem(this.product, form.quantity)
-      .subscribe();
+    this.orderService.placeOrder({
+      state: {
+        fullName: form.fullName,
+        phone: form.phone,
+        address: form.address,
+        city: form.district,
+        area: form.area,
+        deliveryMethodId: form.deliveryMethodId
+      },
+      cartItems,
+      summary,
+      deliveryMethodId: form.deliveryMethodId
+    })
+    .pipe(takeUntilDestroyed(this.destroyRef))
+    .subscribe({
+      next: (order) => {
+        this.isOrdering = false;
+        if (order?.id) {
+          void this.router.navigate(["/order-confirmation", order.id]);
+        }
+      },
+      error: (error: Error) => {
+        this.isOrdering = false;
+        this.errorMessage = error.message ?? "Unable to place order.";
+      },
+    });
   }
 }

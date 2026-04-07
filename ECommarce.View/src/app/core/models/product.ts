@@ -19,6 +19,8 @@ export interface Product {
   sideEffectsContent?: string;
   usageTitle?: string;
   usageContent?: string;
+  reviewsTitle?: string;
+  stockQuantity?: number;
   purchaseRate: number;
   price: number;
   compareAtPrice?: number;

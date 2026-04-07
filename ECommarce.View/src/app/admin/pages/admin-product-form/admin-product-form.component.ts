@@ -101,6 +101,7 @@ export class AdminProductFormComponent implements OnDestroy {
     purchaseRate: [0, [Validators.required, Validators.min(0)]],
     price: [0, [Validators.required, Validators.min(0)]],
     compareAtPrice: [null as number | null, [Validators.min(0)]],
+    stockQuantity: [0, [Validators.required, Validators.min(0)]],
     newArrival: [false],
     
     benefitsTitle: ["Key Benefits"],
@@ -171,6 +172,7 @@ export class AdminProductFormComponent implements OnDestroy {
         purchaseRate: product.purchaseRate || 0,
         price: product.price,
         compareAtPrice: product.compareAtPrice,
+        stockQuantity: product.stockQuantity ?? 0,
         newArrival: product.isNew,
         benefitsTitle: product.benefitsTitle || "Key Benefits",
         benefitsContent: product.benefitsContent,
@@ -357,6 +359,7 @@ export class AdminProductFormComponent implements OnDestroy {
       purchaseRate: Number(raw.purchaseRate),
       price: Number(raw.price),
       compareAtPrice: raw.compareAtPrice ? Number(raw.compareAtPrice) : undefined,
+      stockQuantity: Number(raw.stockQuantity) || 0,
       newArrival: Boolean(raw.newArrival),
       imgUrl: mainMedia?.url || "",
       images: images,
