@@ -1,5 +1,5 @@
-import { CommonModule } from "@angular/common";
-import { Component, OnInit, inject } from "@angular/core";
+import { CommonModule, isPlatformBrowser } from "@angular/common";
+import { Component, OnInit, inject, PLATFORM_ID } from "@angular/core";
 import { ActivatedRoute, RouterModule } from "@angular/router";
 import { Observable, switchMap } from "rxjs";
 import { OrderDetail, OrderStatus } from "../../models/orders.models";
@@ -19,6 +19,7 @@ import {
   User,
   Mail,
   Phone,
+  ChevronDown,
 } from "lucide-angular";
 
 @Component({
@@ -45,12 +46,24 @@ export class AdminOrderDetailsComponent implements OnInit {
     User,
     Mail,
     Phone,
+    ChevronDown,
   };
   private route = inject(ActivatedRoute);
   private ordersService = inject(OrdersService);
   readonly imageUrlService = inject(ImageUrlService);
+  private platformId = inject(PLATFORM_ID);
 
   order$: Observable<OrderDetail> | null = null;
+
+  statusOptions: OrderStatus[] = [
+    "Pending",
+    "Confirmed",
+    "Processing",
+    "Packed",
+    "Shipped",
+    "Delivered",
+    "Cancelled",
+  ];
 
   ngOnInit(): void {
     this.order$ = this.route.paramMap.pipe(
@@ -83,12 +96,27 @@ export class AdminOrderDetailsComponent implements OnInit {
   }
 
   updateStatus(orderId: number, newStatus: OrderStatus): void {
-    if (!confirm(`Update status to ${newStatus}?`)) return;
-
     this.ordersService.updateStatus(orderId, newStatus).subscribe(() => {
-      // Refresh order details by triggering the stream again if needed,
-      // or just reload page for now since we are using observable stream directly
-      window.location.reload();
+      this.refreshOrder();
     });
+  }
+
+  onStatusChange(orderId: number, event: Event): void {
+    const select = event.target as HTMLSelectElement;
+    const newStatus = select.value as OrderStatus;
+    if (newStatus) {
+      this.updateStatus(orderId, newStatus);
+    }
+  }
+
+  private refreshOrder(): void {
+    const id = Number(this.route.snapshot.paramMap.get("id"));
+    this.order$ = this.ordersService.getOrderById(id);
+  }
+
+  printInvoice(): void {
+    if (isPlatformBrowser(this.platformId)) {
+      window.print();
+    }
   }
 }

@@ -19,7 +19,7 @@
           <div
             class="absolute inset-0 bg-cover bg-center transition-transform duration-[12000ms] ease-out"
             [ngClass]="{ 'scale-110': i === currentSlide }"
-            [style.background-image]="'url(' + imageUrlService.getImageUrl(slide.image) + ')'"
+            [style.background-image]="'url(' + imageUrlService.getImageUrl(slide.image, 1200) + ')'"
           ></div>
 
           <!-- Content Overlay -->

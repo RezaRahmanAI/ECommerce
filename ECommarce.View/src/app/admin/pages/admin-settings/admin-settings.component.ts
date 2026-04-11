@@ -5,7 +5,9 @@ import {
   OnInit,
   ViewChild,
   inject,
+  PLATFORM_ID,
 } from "@angular/core";
+import { isPlatformBrowser } from "@angular/common";
 import {
   NonNullableFormBuilder,
   ReactiveFormsModule,
@@ -57,6 +59,7 @@ export class AdminSettingsComponent implements OnInit {
   };
   private formBuilder = inject(NonNullableFormBuilder);
   private settingsService = inject(SettingsService);
+  private platformId = inject(PLATFORM_ID);
 
   @ViewChild("fileUpload") fileUpload?: ElementRef<HTMLInputElement>;
 
@@ -185,9 +188,9 @@ export class AdminSettingsComponent implements OnInit {
       Object.keys(this.settingsForm.controls).forEach((key) => {
         if (this.settingsForm.get(key)?.invalid) invalidFields.push(key);
       });
-      window.alert(
-        `Please fill in all required fields: ${invalidFields.join(", ")}`,
-      );
+      if (isPlatformBrowser(this.platformId)) {
+        window.alert(`Please fill in all required fields: ${invalidFields.join(", ")}`);
+      }
       return;
     }
 
@@ -301,8 +304,6 @@ export class AdminSettingsComponent implements OnInit {
         if (this.lastSettings) {
           this.lastSettings.logoUrl = res.url;
         }
-        // Update form or just preview? Form doesn't have logoUrl control explicitly binding to anything relevant for submit (except preservation),
-        // but we updated lastSettings.logoUrl so saveChanges() picks it up.
         this.logoPreviewUrl = this.imageUrlService.getImageUrl(res.url);
       },
       error: (err) => {
@@ -353,12 +354,14 @@ export class AdminSettingsComponent implements OnInit {
       return;
     }
 
-    navigator.clipboard.writeText(this.stripePublishableKey).then(() => {
-      this.copiedKey = true;
-      setTimeout(() => {
-        this.copiedKey = false;
-      }, 2000);
-    });
+    if (isPlatformBrowser(this.platformId)) {
+      navigator.clipboard.writeText(this.stripePublishableKey).then(() => {
+        this.copiedKey = true;
+        setTimeout(() => {
+          this.copiedKey = false;
+        }, 2000);
+      });
+    }
   }
 
   startAddZone(): void {
@@ -385,9 +388,9 @@ export class AdminSettingsComponent implements OnInit {
       Object.keys(this.zoneForm.controls).forEach((key) => {
         if (this.zoneForm.get(key)?.invalid) invalidFields.push(key);
       });
-      window.alert(
-        `Please fill in all required fields: ${invalidFields.join(", ")}`,
-      );
+      if (isPlatformBrowser(this.platformId)) {
+        window.alert(`Please fill in all required fields: ${invalidFields.join(", ")}`);
+      }
       return;
     }
 
@@ -431,21 +434,22 @@ export class AdminSettingsComponent implements OnInit {
   }
 
   deleteZone(zone: ShippingZone): void {
-    if (!confirm(`Delete the ${zone.name} zone?`)) {
-      return;
-    }
-
-    this.settingsService.deleteShippingZone(zone.id).subscribe((success) => {
-      if (!success) {
+    if (isPlatformBrowser(this.platformId)) {
+      if (!confirm(`Delete the ${zone.name} zone?`)) {
         return;
       }
-      this.shippingZones = this.shippingZones.filter(
-        (item) => item.id !== zone.id,
-      );
-    });
+
+      this.settingsService.deleteShippingZone(zone.id).subscribe((success) => {
+        if (!success) {
+          return;
+        }
+        this.shippingZones = this.shippingZones.filter(
+          (item) => item.id !== zone.id,
+        );
+      });
+    }
   }
 
-  // Delivery Methods Methods
   startAddDelivery(): void {
     this.showDeliveryForm = true;
     this.editingDeliveryId = null;
@@ -477,9 +481,9 @@ export class AdminSettingsComponent implements OnInit {
       Object.keys(this.deliveryForm.controls).forEach((key) => {
         if (this.deliveryForm.get(key)?.invalid) invalidFields.push(key);
       });
-      window.alert(
-        `Please fill in all required fields: ${invalidFields.join(", ")}`,
-      );
+      if (isPlatformBrowser(this.platformId)) {
+        window.alert(`Please fill in all required fields: ${invalidFields.join(", ")}`);
+      }
       return;
     }
 
@@ -526,15 +530,17 @@ export class AdminSettingsComponent implements OnInit {
   }
 
   deleteDelivery(method: DeliveryMethod): void {
-    if (!confirm(`Delete the "${method.name}" delivery method?`)) {
-      return;
-    }
+    if (isPlatformBrowser(this.platformId)) {
+      if (!confirm(`Delete the "${method.name}" delivery method?`)) {
+        return;
+      }
 
-    this.settingsService.deleteDeliveryMethod(method.id).subscribe(() => {
-      this.deliveryMethods = this.deliveryMethods.filter(
-        (m) => m.id !== method.id,
-      );
-    });
+      this.settingsService.deleteDeliveryMethod(method.id).subscribe(() => {
+        this.deliveryMethods = this.deliveryMethods.filter(
+          (m) => m.id !== method.id,
+        );
+      });
+    }
   }
 
   rateClass(rate: string): string {

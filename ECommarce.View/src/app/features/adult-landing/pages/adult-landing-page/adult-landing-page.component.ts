@@ -1,5 +1,5 @@
-import { Component, DestroyRef, OnInit, inject } from "@angular/core";
-import { CommonModule } from "@angular/common";
+import { Component, DestroyRef, OnInit, inject, PLATFORM_ID } from "@angular/core";
+import { CommonModule, isPlatformBrowser } from "@angular/common";
 import { FormBuilder, ReactiveFormsModule, Validators } from "@angular/forms";
 import { ActivatedRoute, Router, RouterModule } from "@angular/router";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
@@ -101,6 +101,7 @@ export class AdultLandingPageComponent implements OnInit {
   private readonly settingsService = inject(SettingsService);
   readonly imageUrlService = inject(ImageUrlService);
   private readonly orderService = inject(OrderService);
+  private readonly platformId = inject(PLATFORM_ID);
 
   product: AdultProduct | null = null;
   landingPage: any = null;
@@ -242,30 +243,42 @@ export class AdultLandingPageComponent implements OnInit {
       });
 
     this.checkoutForm.controls.district.valueChanges
-      .pipe(takeUntilDestroyed(this.destroyRef))
+      .pipe(
+        filter((city) => !!city),
+        takeUntilDestroyed(this.destroyRef)
+      )
       .subscribe((city) => {
         this.availableAreas = BANGLADESH_LOCATIONS[city] || [];
-        this.checkoutForm.patchValue({ area: "" });
+        this.checkoutForm.patchValue({ area: "" }, { emitEvent: false });
         this.updateDeliveryMethodByCity(city);
       });
   }
 
   private updateDeliveryMethodByCity(city: string): void {
-    const isDhaka = city.toLowerCase() === "dhaka";
-    const method = this.deliveryMethods.find((m) =>
-      isDhaka
-        ? m.name.toLowerCase().includes("inside")
-        : m.name.toLowerCase().includes("outside"),
-    );
+    if (!this.deliveryMethods.length) return;
+    const methods = [...this.deliveryMethods].filter((m) => m.isActive);
+    if (!methods.length) return;
+    const cityLow = city.toLowerCase().trim();
+    const isDhaka = cityLow === "dhaka";
+    const inside = methods.filter((m) => m.name.toLowerCase().includes("inside") || m.name.toLowerCase().includes("dhaka"));
+    const outside = methods.filter((m) => m.name.toLowerCase().includes("outside"));
+    let method: any;
+    if (isDhaka) {
+      method = inside.length ? inside[0] : outside.length ? outside[0] : methods[0];
+    } else {
+      method = outside.length ? outside[0] : inside.length ? inside[0] : methods[0];
+    }
     if (method) {
-      this.checkoutForm.patchValue({ deliveryMethodId: method.id });
+      this.checkoutForm.patchValue({ deliveryMethodId: method.id }, { emitEvent: false });
       this.selectedMethod = method;
     }
   }
 
   scrollToOrderForm(): void {
-    const el = document.getElementById("order");
-    if (el) el.scrollIntoView({ behavior: "smooth" });
+    if (isPlatformBrowser(this.platformId)) {
+      const el = document.getElementById("order");
+      if (el) el.scrollIntoView({ behavior: "smooth" });
+    }
   }
 
   prevReview(): void {

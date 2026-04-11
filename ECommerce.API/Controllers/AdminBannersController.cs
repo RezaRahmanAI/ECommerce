@@ -92,6 +92,7 @@ public class AdminBannersController : ControllerBase
         await _context.SaveChangesAsync();
 
         _cache.Remove("home_banners");
+        await _cacheStore.EvictByTagAsync("banners", default);
 
         return CreatedAtAction(nameof(GetBannerById), new { id = banner.Id }, new HeroBannerDto
         {
@@ -126,6 +127,7 @@ public class AdminBannersController : ControllerBase
 
         await _context.SaveChangesAsync();
         _cache.Remove("home_banners");
+        await _cacheStore.EvictByTagAsync("banners", default);
 
         return Ok(new HeroBannerDto
         {
@@ -151,6 +153,7 @@ public class AdminBannersController : ControllerBase
         await _context.SaveChangesAsync();
 
         _cache.Remove("home_banners");
+        await _cacheStore.EvictByTagAsync("banners", default);
 
         return NoContent();
     }

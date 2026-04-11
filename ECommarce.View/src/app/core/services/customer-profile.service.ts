@@ -1,4 +1,5 @@
-import { Injectable, inject } from "@angular/core";
+import { Injectable, inject, PLATFORM_ID } from "@angular/core";
+import { isPlatformBrowser } from "@angular/common";
 import { HttpParams } from "@angular/common/http";
 import { BehaviorSubject, Observable, map, tap } from "rxjs";
 import { Order, OrderStatus } from "../models/order";
@@ -25,23 +26,33 @@ export class CustomerProfileService {
   private readonly api = inject(ApiHttpClient);
   private readonly baseUrl = "/customers";
   private readonly storageKey = "customer_phone";
+  private readonly platformId = inject(PLATFORM_ID);
 
-  private readonly phoneSubject = new BehaviorSubject<string | null>(
-    this.getStoredPhone(),
-  );
+  private readonly phoneSubject = new BehaviorSubject<string | null>(null);
   readonly phone$ = this.phoneSubject.asObservable();
 
+  constructor() {
+    this.phoneSubject.next(this.getStoredPhone());
+  }
+
   getStoredPhone(): string | null {
-    return localStorage.getItem(this.storageKey);
+    if (isPlatformBrowser(this.platformId)) {
+      return localStorage.getItem(this.storageKey);
+    }
+    return null;
   }
 
   storePhone(phone: string): void {
-    localStorage.setItem(this.storageKey, phone);
+    if (isPlatformBrowser(this.platformId)) {
+      localStorage.setItem(this.storageKey, phone);
+    }
     this.phoneSubject.next(phone);
   }
 
   clearPhone(): void {
-    localStorage.removeItem(this.storageKey);
+    if (isPlatformBrowser(this.platformId)) {
+      localStorage.removeItem(this.storageKey);
+    }
     this.phoneSubject.next(null);
   }
 

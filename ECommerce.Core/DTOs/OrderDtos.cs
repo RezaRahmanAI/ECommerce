@@ -45,3 +45,14 @@ public class OrderDto
     public DateTime CreatedAt { get; set; }
     public List<OrderItemDto> Items { get; set; } = new();
 }
+
+public class OrderUpdateDto
+{
+    public string? CustomerName { get; set; }
+    public string? CustomerPhone { get; set; }
+    public string? ShippingAddress { get; set; }
+    public string? City { get; set; }
+    public string? Area { get; set; }
+    public string? Status { get; set; }
+    public List<OrderItemDto>? Items { get; set; }
+}

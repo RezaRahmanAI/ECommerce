@@ -18,9 +18,9 @@ module.exports = {
         "border-color": "var(--color-border)",
       },
       fontFamily: {
-        sans: ["Montserrat", "sans-serif"],
-        display: ["Montserrat", "sans-serif"],
-        serif: ["Montserrat", "serif"],
+        sans: ["'Hind Siliguri'", "Montserrat", "sans-serif"],
+        display: ["'Hind Siliguri'", "Montserrat", "sans-serif"],
+        serif: ["'Hind Siliguri'", "Montserrat", "serif"],
       },
       borderRadius: {
         DEFAULT: "0.25rem",

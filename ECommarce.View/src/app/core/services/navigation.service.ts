@@ -7,21 +7,8 @@ export interface MegaMenuItem {
   id: number;
   name: string;
   slug: string;
-  childCategories: MegaMenuChildCategory[];
+  imageUrl?: string;
   isOpen?: boolean; // For mobile toggle
-}
-
-export interface MegaMenuChildCategory {
-  id: number;
-  name: string;
-  slug: string;
-  collections: MegaMenuCollection[];
-}
-
-export interface MegaMenuCollection {
-  id: number;
-  name: string;
-  slug: string;
 }
 
 @Injectable({

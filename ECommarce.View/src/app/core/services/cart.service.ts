@@ -1,4 +1,5 @@
-import { Injectable, inject } from "@angular/core";
+import { Injectable, inject, PLATFORM_ID } from "@angular/core";
+import { isPlatformBrowser } from "@angular/common";
 import {
   BehaviorSubject,
   Observable,
@@ -40,6 +41,7 @@ export class CartService {
   private readonly analyticsService = inject(AnalyticsService);
   private readonly notificationService = inject(NotificationService);
   private readonly api = inject(ApiHttpClient);
+  private readonly platformId = inject(PLATFORM_ID);
 
   private readonly cartItemsSubject = new BehaviorSubject<CartItem[]>([]);
   readonly cartItems$ = this.cartItemsSubject.asObservable();
@@ -65,41 +67,46 @@ export class CartService {
 
     this.settingsService.getSettings().subscribe();
 
-    // Initial load from server
-    this.refreshCartFromServer();
+    if (isPlatformBrowser(this.platformId)) {
+      // Initial load from server
+      this.refreshCartFromServer();
 
-    // Setup debounced qty updates
-    this.qtyUpdateSubject
-      .pipe(
-        filter((update) => update !== null),
-        debounceTime(500),
-        switchMap((update) => {
-          const numericId = parseInt(update!.id, 10);
-          return this.api
-            .put<CartDto>(
-              `${this.apiUrl}/items/${numericId}`,
-              { quantity: update!.qty },
-              this.options,
-            )
-            .pipe(
-              catchError((err) => {
-                console.error(
-                  "Failed to sync qty with server, refreshing cart",
-                  err,
-                );
-                this.refreshCartFromServer(); // Re-sync if failed
-                return of(null);
-              }),
-            );
-        }),
-        takeUntilDestroyed(),
-      )
-      .subscribe((dto) => {
-        if (dto) this.updateLocalState(dto);
-      });
+      // Setup debounced qty updates
+      this.qtyUpdateSubject
+        .pipe(
+          filter((update) => update !== null),
+          debounceTime(500),
+          switchMap((update) => {
+            const numericId = parseInt(update!.id, 10);
+            return this.api
+              .put<CartDto>(
+                `${this.apiUrl}/items/${numericId}`,
+                { quantity: update!.qty },
+                this.options,
+              )
+              .pipe(
+                catchError((err) => {
+                  console.error(
+                    "Failed to sync qty with server, refreshing cart",
+                    err,
+                  );
+                  this.refreshCartFromServer(); // Re-sync if failed
+                  return of(null);
+                }),
+              );
+          }),
+          takeUntilDestroyed(),
+        )
+        .subscribe((dto) => {
+          if (dto) this.updateLocalState(dto);
+        });
+    }
   }
 
   getSessionId(): string {
+    if (!isPlatformBrowser(this.platformId)) {
+      return "ssr-session";
+    }
     let sessionId = localStorage.getItem(this.sessionIdKey);
     // Explicitly reject invalid strings that might be stored accidentally
     if (
@@ -233,6 +240,7 @@ export class CartService {
   }
 
   mergeGuestCart(): Observable<CartDto | null> {
+    if (!isPlatformBrowser(this.platformId)) return of(null);
     const sessionId = localStorage.getItem(this.sessionIdKey);
     if (!sessionId) return of(null);
 
@@ -309,6 +317,7 @@ export class CartService {
       freeShippingThreshold: this.freeShippingThreshold,
       freeShippingRemaining,
       freeShippingProgress,
+      items,
     };
   }
 }

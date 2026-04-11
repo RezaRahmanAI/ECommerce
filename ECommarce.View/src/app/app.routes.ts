@@ -367,12 +367,7 @@ export const appRoutes: Routes = [
         (m) => m.ProductGalleryComponent,
       ),
   },
-  {
-    path: "shop/:parentSlug/:childSlug",
-    loadComponent: () =>
-      import("./features/products/pages/product-gallery/product-gallery.component").then(
-        (m) => m.ProductGalleryComponent,
-      ),
-  },
   { path: "**", redirectTo: "" },
 ];
+
+export default appRoutes;

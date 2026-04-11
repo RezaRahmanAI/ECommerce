@@ -36,9 +36,11 @@
       body.loaded { visibility: visible; }
     </style>
     <script>
-      document.addEventListener('DOMContentLoaded', function() {
-        document.body.classList.add('loaded');
-      });
+      if (typeof document !== 'undefined') {
+        document.addEventListener('DOMContentLoaded', function() {
+          document.body.classList.add('loaded');
+        });
+      }
     </script>
   </head>
   <body>

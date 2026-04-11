@@ -1,4 +1,5 @@
-import { Injectable } from "@angular/core";
+import { Injectable, inject, PLATFORM_ID } from "@angular/core";
+import { isPlatformBrowser } from "@angular/common";
 import { BehaviorSubject, Observable, map, of, tap, switchMap } from "rxjs";
 
 import { CheckoutState } from "../models/checkout";
@@ -24,13 +25,18 @@ export class CheckoutService {
     private readonly orderService: OrderService,
     private readonly profileService: CustomerProfileService,
   ) {
-    const storedState = this.loadState();
-    this.stateSubject.next(storedState ?? this.buildDefaultState());
+    this.platformId = inject(PLATFORM_ID);
+    if (isPlatformBrowser(this.platformId)) {
+      const storedState = this.loadState();
+      this.stateSubject.next(storedState ?? this.buildDefaultState());
 
-    this.state$.subscribe((state) => {
-      localStorage.setItem(this.activeStorageKey, JSON.stringify(state));
-    });
+      this.state$.subscribe((state) => {
+        localStorage.setItem(this.activeStorageKey, JSON.stringify(state));
+      });
+    }
   }
+
+  private platformId: any;
 
   updateState(partial: Partial<CheckoutState>): void {
     this.stateSubject.next({ ...this.stateSubject.getValue(), ...partial });
@@ -82,15 +88,18 @@ export class CheckoutService {
   }
 
   private loadState(): CheckoutState | null {
-    const stored = localStorage.getItem(this.activeStorageKey);
-    if (!stored) {
-      return null;
-    }
+    if (isPlatformBrowser(this.platformId)) {
+      const stored = localStorage.getItem(this.activeStorageKey);
+      if (!stored) {
+        return null;
+      }
 
-    try {
-      return JSON.parse(stored) as CheckoutState;
-    } catch {
-      return null;
+      try {
+        return JSON.parse(stored) as CheckoutState;
+      } catch {
+        return null;
+      }
     }
+    return null;
   }
 }

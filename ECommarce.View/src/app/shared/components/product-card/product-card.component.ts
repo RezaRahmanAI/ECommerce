@@ -1,5 +1,5 @@
-import { Component, Input, ChangeDetectionStrategy, OnInit } from "@angular/core";
-import { CommonModule } from "@angular/common";
+import { Component, Input, ChangeDetectionStrategy, OnInit, inject, PLATFORM_ID } from "@angular/core";
+import { CommonModule, isPlatformBrowser } from "@angular/common";
 import { RouterLink } from "@angular/router";
 
 import {
@@ -36,10 +36,11 @@ export class ProductCardComponent implements OnInit {
   showQuickAdd = false;
   isOrdering = false;
 
-  constructor(
-    public readonly imageUrlService: ImageUrlService,
-    private readonly cartService: CartService,
-  ) {}
+  public readonly imageUrlService = inject(ImageUrlService);
+  private readonly cartService = inject(CartService);
+  private readonly platformId = inject(PLATFORM_ID);
+
+  constructor() {}
 
   ngOnInit() {
   }
@@ -109,7 +110,7 @@ export class ProductCardComponent implements OnInit {
           1,
         )
         .subscribe(() => {
-          if (this.isOrdering) {
+          if (this.isOrdering && isPlatformBrowser(this.platformId)) {
             window.location.href = "/checkout";
           }
         });

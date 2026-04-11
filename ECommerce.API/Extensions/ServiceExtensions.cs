@@ -43,22 +43,7 @@ public static class ServiceExtensions
 
         // 3. Caching
         services.AddMemoryCache();
-        
-        var redisConn = config["Redis:ConnectionString"];
-        Console.WriteLine($"[DEBUG] Redis Connection String from Config: '{redisConn}'");
-        if (string.IsNullOrEmpty(redisConn) || redisConn.Equals("Disabled", StringComparison.OrdinalIgnoreCase))
-        {
-            services.AddDistributedMemoryCache();
-        }
-        else
-        {
-            services.AddStackExchangeRedisCache(options =>
-            {
-                options.Configuration = redisConn;
-                options.InstanceName = "Arzamart_";
-            });
-        }
-
+        services.AddDistributedMemoryCache();
         services.AddSingleton<ICacheService, CacheService>();
 
         services.AddOutputCache(options =>
@@ -73,7 +58,12 @@ public static class ServiceExtensions
             options.AddPolicy("Categories", builder =>
                 builder.Expire(TimeSpan.FromHours(1))
                        .Tag("categories"));
+
+            options.AddPolicy("Images", builder =>
+                builder.Expire(TimeSpan.FromDays(1))
+                       .SetVaryByQuery("w", "h", "q"));
         });
+
 
         services.AddResponseCaching();
 
@@ -111,6 +101,7 @@ public static class ServiceExtensions
         services.AddScoped<IProductService, ProductService>();
         services.AddScoped<IReviewService, ReviewService>();
         services.AddScoped<IAdultProductService, AdultProductService>();
+        services.AddScoped<INotificationService, ECommerce.API.Services.NotificationService>();
         services.AddSignalR();
 
         services.Configure<SteadfastSettings>(config.GetSection("Steadfast"));

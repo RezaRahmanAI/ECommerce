@@ -8,7 +8,7 @@ declare const gtag: any;
   providedIn: "root",
 })
 export class AnalyticsService {
-  private readonly document = inject(DOCUMENT);
+  private readonly document = inject(DOCUMENT, { optional: true });
 
   trackPageView(): void {
     if (typeof fbq === "function") {

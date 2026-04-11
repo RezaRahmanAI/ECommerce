@@ -2,13 +2,20 @@ import {
   HttpInterceptorFn,
   HttpErrorResponse,
 } from "@angular/common/http";
-import { inject } from "@angular/core";
+import { inject, PLATFORM_ID } from "@angular/core";
+import { isPlatformBrowser } from "@angular/common";
 import { finalize, retry, timer } from "rxjs";
 import { LoadingService } from "../services/loading.service";
 
 export const jwtInterceptor: HttpInterceptorFn = (req, next) => {
   const loading = inject(LoadingService);
-  const token = localStorage.getItem("arza_token");
+  const platformId = inject(PLATFORM_ID);
+  
+  let token: string | null = null;
+  if (isPlatformBrowser(platformId)) {
+    token = localStorage.getItem("sherashop-token");
+  }
+  
   const isFormData = req.body instanceof FormData;
 
   loading.show();

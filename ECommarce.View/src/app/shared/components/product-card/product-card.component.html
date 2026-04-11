@@ -3,7 +3,7 @@
   <a [routerLink]="['/product', product.slug]" class="relative aspect-[3/4] block overflow-hidden bg-supporting border border-border-color rounded sm:rounded-lg">
     <img
       *ngIf="mainImage"
-      [src]="imageUrlService.getImageUrl(mainImage)"
+      [src]="imageUrlService.getImageUrl(mainImage, 400)"
       [alt]="product.headline"
       loading="lazy"
       decoding="async"

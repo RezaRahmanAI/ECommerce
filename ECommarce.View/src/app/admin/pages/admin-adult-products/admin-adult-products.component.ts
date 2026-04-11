@@ -1,5 +1,5 @@
-import { CommonModule } from "@angular/common";
-import { Component, OnDestroy, OnInit, inject } from "@angular/core";
+import { CommonModule, isPlatformBrowser } from "@angular/common";
+import { Component, OnDestroy, OnInit, inject, PLATFORM_ID } from "@angular/core";
 import { FormControl, ReactiveFormsModule } from "@angular/forms";
 import { RouterModule } from "@angular/router";
 import { debounceTime, distinctUntilChanged, Subject, takeUntil } from "rxjs";
@@ -43,6 +43,7 @@ export class AdminAdultProductsComponent implements OnInit, OnDestroy {
   
   private adultProductService = inject(AdultProductService);
   readonly imageUrlService = inject(ImageUrlService);
+  private platformId = inject(PLATFORM_ID);
   private destroy$ = new Subject<void>();
 
   isLoading = false;
@@ -91,13 +92,15 @@ export class AdminAdultProductsComponent implements OnInit, OnDestroy {
   }
 
   deleteProduct(product: AdultProduct): void {
-    const confirmed = window.confirm(`Delete ${product.headline}?`);
-    if (!confirmed) {
-      return;
+    if (isPlatformBrowser(this.platformId)) {
+      const confirmed = window.confirm(`Delete ${product.headline}?`);
+      if (!confirmed) {
+        return;
+      }
+      this.adultProductService.delete(product.id).subscribe(() => {
+        this.allProducts = this.allProducts.filter(p => p.id !== product.id);
+        this.filterProducts(this.searchControl.value);
+      });
     }
-    this.adultProductService.delete(product.id).subscribe(() => {
-      this.allProducts = this.allProducts.filter(p => p.id !== product.id);
-      this.filterProducts(this.searchControl.value);
-    });
   }
 }

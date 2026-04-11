@@ -42,18 +42,28 @@ public class CacheService : ICacheService
         }
 
         // Layer 2: Distributed
-        var distributedResult = await _distributedCache.GetStringAsync(key);
-        if (distributedResult == null) return default;
-
-        var deserialized = JsonSerializer.Deserialize<T>(distributedResult, _jsonOptions);
-        
-        // Backfill memory cache
-        if (deserialized != null)
+        try 
         {
-            _memoryCache.Set(key, deserialized, TimeSpan.FromMinutes(1)); // Short backfill TTL
-        }
+            var distributedResult = await _distributedCache.GetStringAsync(key);
+            if (distributedResult == null) return default;
 
-        return deserialized;
+            var deserialized = JsonSerializer.Deserialize<T>(distributedResult, _jsonOptions);
+            
+            // Backfill memory cache
+            if (deserialized != null)
+            {
+                _memoryCache.Set(key, deserialized, TimeSpan.FromMinutes(1)); // Short backfill TTL
+            }
+
+            return deserialized;
+        }
+        catch (Exception ex)
+        {
+            // Log once per failure? Or just swallow and let Layer 1/Factory handle it.
+            // We'll let it fall through to the factory.
+            Console.WriteLine($"[CacheService] Redis GET failed for key '{key}': {ex.Message}. Falling back to source.");
+            return default;
+        }
     }
 
     public async Task SetAsync<T>(string key, T value, TimeSpan? expiration = null)
@@ -67,16 +77,30 @@ public class CacheService : ICacheService
 
         var serialized = JsonSerializer.Serialize(value, _jsonOptions);
         
-        await _distributedCache.SetStringAsync(key, serialized, options);
+        try
+        {
+            await _distributedCache.SetStringAsync(key, serialized, options);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[CacheService] Redis SET failed for key '{key}': {ex.Message}. Using MemoryCache only.");
+        }
+
         _memoryCache.Set(key, value, expiration ?? TimeSpan.FromHours(1));
-        
         _cacheKeys.TryAdd(key, 0);
     }
 
     public async Task RemoveAsync(string key)
     {
         _memoryCache.Remove(key);
-        await _distributedCache.RemoveAsync(key);
+        try
+        {
+            await _distributedCache.RemoveAsync(key);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[CacheService] Redis REMOVE failed for key '{key}': {ex.Message}");
+        }
         _cacheKeys.TryRemove(key, out _);
     }
 

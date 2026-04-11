@@ -1,5 +1,5 @@
-import { CommonModule } from "@angular/common";
-import { Component, OnDestroy, OnInit, inject } from "@angular/core";
+import { Component, OnDestroy, OnInit, inject, PLATFORM_ID } from "@angular/core";
+import { CommonModule, isPlatformBrowser } from "@angular/common";
 import { FormBuilder, ReactiveFormsModule, Validators } from "@angular/forms";
 import { Subject, takeUntil } from "rxjs";
 import { AdminReview } from "../../models/reviews.models";
@@ -37,6 +37,7 @@ export class AdminReviewsComponent implements OnInit, OnDestroy {
   };
   private reviewsService = inject(AdminReviewsService);
   private fb = inject(FormBuilder);
+  private platformId = inject(PLATFORM_ID);
   private destroy$ = new Subject<void>();
 
   reviews: AdminReview[] = [];
@@ -88,9 +89,11 @@ export class AdminReviewsComponent implements OnInit, OnDestroy {
         Object.keys(this.reviewForm.controls).forEach((key) => {
           if (this.reviewForm.get(key)?.invalid) invalidFields.push(key);
         });
-        window.alert(
-          `Please fill in all required fields: ${invalidFields.join(", ")}`,
-        );
+        if (isPlatformBrowser(this.platformId)) {
+          window.alert(
+            `Please fill in all required fields: ${invalidFields.join(", ")}`,
+          );
+        }
       }
       return;
     }
@@ -109,10 +112,12 @@ export class AdminReviewsComponent implements OnInit, OnDestroy {
   }
 
   deleteReview(id: number): void {
-    if (confirm("Are you sure you want to delete this review?")) {
-      this.reviewsService.delete(id).subscribe(() => {
-        this.loadReviews();
-      });
+    if (isPlatformBrowser(this.platformId)) {
+      if (confirm("Are you sure you want to delete this review?")) {
+        this.reviewsService.delete(id).subscribe(() => {
+          this.loadReviews();
+        });
+      }
     }
   }
 

@@ -1,4 +1,5 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { BehaviorSubject } from 'rxjs';
 
 import { User as AuthUser } from '../models/entities';
@@ -9,9 +10,14 @@ import { Address, PaymentMethod, UserProfile } from '../models/user';
 })
 export class UserService {
   private readonly storageKey = 'user_profiles';
+  private readonly platformId = inject(PLATFORM_ID);
 
-  private readonly profilesSubject = new BehaviorSubject<UserProfile[]>(this.loadProfiles());
+  private readonly profilesSubject = new BehaviorSubject<UserProfile[]>([]);
   readonly profiles$ = this.profilesSubject.asObservable();
+
+  constructor() {
+    this.profilesSubject.next(this.loadProfiles());
+  }
 
   ensureUserProfile(user: AuthUser): void {
     const profiles = this.profilesSubject.getValue();
@@ -116,20 +122,25 @@ export class UserService {
   }
 
   private loadProfiles(): UserProfile[] {
-    const stored = localStorage.getItem(this.storageKey);
-    if (!stored) {
-      return [];
-    }
+    if (isPlatformBrowser(this.platformId)) {
+      const stored = localStorage.getItem(this.storageKey);
+      if (!stored) {
+        return [];
+      }
 
-    try {
-      return JSON.parse(stored) as UserProfile[];
-    } catch {
-      return [];
+      try {
+        return JSON.parse(stored) as UserProfile[];
+      } catch {
+        return [];
+      }
     }
+    return [];
   }
 
   private updateProfiles(profiles: UserProfile[]): void {
     this.profilesSubject.next(profiles);
-    localStorage.setItem(this.storageKey, JSON.stringify(profiles));
+    if (isPlatformBrowser(this.platformId)) {
+      localStorage.setItem(this.storageKey, JSON.stringify(profiles));
+    }
   }
 }

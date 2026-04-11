@@ -1,5 +1,5 @@
-import { CommonModule } from "@angular/common";
-import { Component } from "@angular/core";
+import { CommonModule, isPlatformBrowser } from "@angular/common";
+import { Component, inject, PLATFORM_ID } from "@angular/core";
 import {
   FormBuilder,
   FormGroup,
@@ -105,6 +105,7 @@ export class ContactComponent {
   successMessage = "";
   helpCenterLink: string | null = null;
   form!: FormGroup;
+  private platformId = inject(PLATFORM_ID);
 
   constructor(
     private formBuilder: FormBuilder,
@@ -144,7 +145,9 @@ export class ContactComponent {
   }
 
   openDirections(): void {
-    window.open(this.mapsUrl, "_blank", "noopener");
+    if (isPlatformBrowser(this.platformId)) {
+      window.open(this.mapsUrl, "_blank", "noopener");
+    }
   }
 
   onSubmit(): void {

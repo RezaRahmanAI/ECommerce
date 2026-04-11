@@ -18,13 +18,15 @@ public class OrderService : IOrderService
     private readonly IMapper _mapper;
     private readonly CustomerService _customerService;
     private readonly ISteadfastService _steadfastService;
+    private readonly INotificationService _notificationService;
 
-    public OrderService(IUnitOfWork unitOfWork, IMapper mapper, CustomerService customerService, ISteadfastService steadfastService)
+    public OrderService(IUnitOfWork unitOfWork, IMapper mapper, CustomerService customerService, ISteadfastService steadfastService, INotificationService notificationService)
     {
         _unitOfWork = unitOfWork;
         _mapper = mapper;
         _customerService = customerService;
         _steadfastService = steadfastService;
+        _notificationService = notificationService;
     }
 
     public async Task<OrderDto> CreateOrderAsync(OrderCreateDto orderDto)
@@ -136,6 +138,17 @@ public class OrderService : IOrderService
         try {
             var result = _mapper.Map<Order, OrderDto>(order);
             Console.WriteLine("--- MAPPING SUCCESSFUL ---");
+
+            // Notify admins about new order
+            try 
+            {
+                await _notificationService.NotifyNewOrderAsync(result.Id, result.OrderNumber, result.CustomerName);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[Notification] Error sending new order notification: {ex.Message}");
+            }
+
             return result;
         } catch (Exception ex) {
             Console.WriteLine($"--- MAPPING FAILED: {ex.Message} ---");
@@ -226,5 +239,83 @@ public class OrderService : IOrderService
         var orders = await _unitOfWork.Repository<Order>().ListAsync(spec);
         
         return (_mapper.Map<IReadOnlyList<Order>, IReadOnlyList<OrderDto>>(orders), total);
+    }
+
+    public async Task<bool> UpdateOrderAsync(int id, OrderUpdateDto orderUpdateDto)
+    {
+        var spec = new BaseSpecification<Order>(x => x.Id == id);
+        spec.AddInclude(x => x.Items);
+        var order = await _unitOfWork.Repository<Order>().GetEntityWithSpec(spec);
+
+        if (order == null) return false;
+
+        // Update basic fields if provided
+        if (orderUpdateDto.CustomerName != null) order.CustomerName = orderUpdateDto.CustomerName;
+        if (orderUpdateDto.CustomerPhone != null) order.CustomerPhone = orderUpdateDto.CustomerPhone;
+        if (orderUpdateDto.ShippingAddress != null) order.ShippingAddress = orderUpdateDto.ShippingAddress;
+        if (orderUpdateDto.City != null) order.City = orderUpdateDto.City;
+        if (orderUpdateDto.Area != null) order.Area = orderUpdateDto.Area;
+
+        // Update Items if provided
+        if (orderUpdateDto.Items != null)
+        {
+            // Simple approach: Replace items and handle stock logic if order isn't cancelled
+            // 1. Return old stock if order wasn't cancelled
+            if (order.Status != OrderStatus.Cancelled)
+            {
+                foreach (var item in order.Items)
+                {
+                    var product = await _unitOfWork.Repository<Product>().GetByIdAsync(item.ProductId);
+                    if (product != null)
+                    {
+                        product.StockQuantity += item.Quantity;
+                        _unitOfWork.Repository<Product>().Update(product);
+                    }
+                }
+            }
+
+            // 2. Clear old items
+            order.Items = new List<OrderItem>();
+
+            // 3. Add new items and deduct stock
+            foreach (var itemDto in orderUpdateDto.Items)
+            {
+                var product = await _unitOfWork.Repository<Product>().GetByIdAsync(itemDto.ProductId);
+                if (product == null) throw new KeyNotFoundException($"Product {itemDto.ProductId} not found");
+
+                if (order.Status != OrderStatus.Cancelled)
+                {
+                    product.StockQuantity -= itemDto.Quantity;
+                    _unitOfWork.Repository<Product>().Update(product);
+                }
+
+                order.Items.Add(new OrderItem
+                {
+                    ProductId = product.Id,
+                    ProductName = product.Headline,
+                    UnitPrice = itemDto.UnitPrice ?? product.Price,
+                    Quantity = itemDto.Quantity,
+                    Color = itemDto.Color,
+                    Size = itemDto.Size,
+                    ImageUrl = product.Images?.FirstOrDefault(i => i.IsMain)?.Url ?? ""
+                });
+            }
+
+            // 4. Recalculate totals
+            order.SubTotal = order.Items.Sum(i => i.TotalPrice);
+            order.Total = order.SubTotal + order.Tax + order.ShippingCost;
+        }
+
+        // Update Status if provided
+        if (orderUpdateDto.Status != null)
+        {
+            if (Enum.TryParse<OrderStatus>(orderUpdateDto.Status, true, out var newStatus))
+            {
+                order.Status = newStatus;
+            }
+        }
+
+        _unitOfWork.Repository<Order>().Update(order);
+        return await _unitOfWork.Complete() > 0;
     }
 }

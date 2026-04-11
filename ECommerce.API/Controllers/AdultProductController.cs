@@ -56,7 +56,7 @@ public class AdultProductController : ControllerBase
     }
 
     [Authorize(Roles = "Admin")]
-    [HttpPut("{id}")]
+    [HttpPost("{id}")]
     public async Task<IActionResult> Update(int id, AdultProductCreateUpdateDto dto)
     {
         var result = await _service.UpdateAsync(id, dto);
@@ -65,7 +65,7 @@ public class AdultProductController : ControllerBase
     }
 
     [Authorize(Roles = "Admin")]
-    [HttpDelete("{id}")]
+    [HttpPost("{id}/delete")]
     public async Task<IActionResult> Delete(int id)
     {
         var result = await _service.DeleteAsync(id);

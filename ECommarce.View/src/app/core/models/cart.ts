@@ -21,4 +21,5 @@ export interface CartSummary {
   freeShippingThreshold: number;
   freeShippingRemaining: number;
   freeShippingProgress: number;
+  items?: CartItem[];
 }

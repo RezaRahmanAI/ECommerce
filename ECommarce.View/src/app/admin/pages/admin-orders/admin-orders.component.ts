@@ -1,10 +1,11 @@
-import { CommonModule } from "@angular/common";
+import { CommonModule, isPlatformBrowser } from "@angular/common";
 import {
   Component,
   HostListener,
   OnDestroy,
   OnInit,
   inject,
+  PLATFORM_ID,
 } from "@angular/core";
 import { FormControl, ReactiveFormsModule } from "@angular/forms";
 import { RouterModule } from "@angular/router";
@@ -27,6 +28,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Calendar,
+  PenLine,
 } from "lucide-angular";
 
 import {
@@ -35,6 +37,7 @@ import {
   OrdersQueryParams,
 } from "../../models/orders.models";
 import { OrdersService } from "../../services/orders.service";
+import { SignalrService } from "../../../core/services/signalr.service";
 import { PriceDisplayComponent } from "../../../shared/components/price-display/price-display.component";
 
 interface OrderStats {
@@ -74,8 +77,11 @@ export class AdminOrdersComponent implements OnInit, OnDestroy {
     ChevronLeft,
     ChevronRight,
     Calendar,
+    PenLine,
   };
   private ordersService = inject(OrdersService);
+  private signalrService = inject(SignalrService);
+  private platformId = inject(PLATFORM_ID);
   private destroy$ = new Subject<void>();
 
   isLoading = false;
@@ -196,6 +202,21 @@ export class AdminOrdersComponent implements OnInit, OnDestroy {
         this.page = 1;
         this.loadOrders();
       });
+
+    // Listen for real-time updates
+    this.signalrService.newOrder$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        console.log("[AdminOrders] New order received, refreshing list...");
+        this.loadOrders(false);
+      });
+
+    this.signalrService.orderStatusUpdate$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        console.log("[AdminOrders] Order status updated, refreshing stats...");
+        this.loadOrders(false);
+      });
   }
 
   ngOnDestroy(): void {
@@ -289,6 +310,16 @@ export class AdminOrdersComponent implements OnInit, OnDestroy {
     this.actionMenuOpenId = null;
   }
 
+  onStatusChange(order: Order, event: Event): void {
+    const select = event.target as HTMLSelectElement;
+    const newStatus = select.value as OrderStatus;
+    if (newStatus && newStatus !== order.status) {
+      this.ordersService.updateStatus(order.id, newStatus).subscribe(() => {
+        this.loadOrders(false);
+      });
+    }
+  }
+
   cancelOrder(order: Order, event: Event): void {
     event.stopPropagation();
     const shouldCancel = window.confirm("Cancel this order?");
@@ -304,12 +335,23 @@ export class AdminOrdersComponent implements OnInit, OnDestroy {
     this.ordersService.exportOrders(this.buildParams()).subscribe((csv) => {
       const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
       const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = "orders-export.csv";
-      link.click();
+      if (isPlatformBrowser(this.platformId)) {
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = "orders-export.csv";
+        link.click();
+      }
       URL.revokeObjectURL(url);
     });
+  }
+
+  exportToExcel(): void {
+    if (isPlatformBrowser(this.platformId)) {
+      const link = document.createElement("a");
+      link.href = "assets/sample-orders-export.xlsx";
+      link.download = "orders-export.xlsx";
+      link.click();
+    }
   }
 
   printOrders(): void {

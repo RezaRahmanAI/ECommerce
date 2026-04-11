@@ -1,6 +1,7 @@
 import { Injectable, inject } from "@angular/core";
-import { Observable, shareReplay, startWith, BehaviorSubject, switchMap } from "rxjs";
+import { Observable, shareReplay, startWith, BehaviorSubject, switchMap, tap } from "rxjs";
 import { ApiHttpClient } from "../http/http-client";
+import { SignalrService } from "./signalr.service";
 
 export interface SiteSettings {
   websiteName: string;
@@ -27,14 +28,23 @@ export interface SiteSettings {
 })
 export class SiteSettingsService {
   private api = inject(ApiHttpClient);
+  private signalr = inject(SignalrService);
 
   private readonly refreshSubject = new BehaviorSubject<void>(void 0);
+
+  constructor() {
+    // Listen for real-time updates from SignalR
+    this.signalr.settingsUpdate$.subscribe(() => {
+      console.log("[SiteSettingsService] Real-time refresh triggered");
+      this.refreshSettings();
+    });
+  }
 
   // Cache settings to avoid multiple calls, but allow refresh
   private settings$ = this.refreshSubject.pipe(
     switchMap(() => this.api.get<SiteSettings>("/sitesettings")),
     startWith({
-      websiteName: "Arza Mart",
+      websiteName: "SheraShopBD",
       currency: "BDT",
       freeShippingThreshold: 5000,
       shippingCharge: 0,

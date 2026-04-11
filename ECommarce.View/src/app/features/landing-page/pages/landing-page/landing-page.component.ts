@@ -1,5 +1,5 @@
-import { Component, DestroyRef, OnInit, inject } from "@angular/core";
-import { CommonModule } from "@angular/common";
+import { Component, DestroyRef, OnInit, inject, PLATFORM_ID } from "@angular/core";
+import { CommonModule, isPlatformBrowser } from "@angular/common";
 import { FormBuilder, ReactiveFormsModule, Validators } from "@angular/forms";
 import { ActivatedRoute, Router, RouterModule } from "@angular/router";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
@@ -12,6 +12,7 @@ import {
   map,
   of,
   switchMap,
+  startWith,
 } from "rxjs";
 import {
   LucideAngularModule,
@@ -99,6 +100,7 @@ export class LandingPageComponent implements OnInit {
   private readonly settingsService = inject(SettingsService);
   readonly imageUrlService = inject(ImageUrlService);
   private readonly orderService = inject(OrderService);
+  private readonly platformId = inject(PLATFORM_ID);
 
   product: Product | null = null;
   siteSettings: any = null;
@@ -237,30 +239,85 @@ export class LandingPageComponent implements OnInit {
       });
 
     this.checkoutForm.controls.district.valueChanges
-      .pipe(takeUntilDestroyed(this.destroyRef))
+      .pipe(
+        filter((city) => !!city),
+        takeUntilDestroyed(this.destroyRef)
+      )
       .subscribe((city) => {
         this.availableAreas = BANGLADESH_LOCATIONS[city] || [];
-        this.checkoutForm.patchValue({ area: "" });
-        this.updateDeliveryMethodByCity(city);
+        this.checkoutForm.patchValue({ area: "" }, { emitEvent: false });
+      });
+
+    // Robust Delivery Method Listener (Waiting for both district and methods)
+    combineLatest([
+      this.checkoutForm.controls.district.valueChanges.pipe(startWith(this.checkoutForm.controls.district.value)),
+      this.settingsService.getPublicDeliveryMethods().pipe(startWith([]))
+    ])
+    .pipe(
+      debounceTime(100),
+      takeUntilDestroyed(this.destroyRef)
+    )
+    .subscribe(([city, methods]) => {
+      this.applyDeliveryMethodLogic(city as string, methods as DeliveryMethod[]);
+    });
+
+    this.checkoutForm.controls.address.valueChanges
+      .pipe(
+        debounceTime(500),
+        distinctUntilChanged(),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe((address) => {
+        if (!address) return;
+        const addrLower = address.toLowerCase();
+        const currentDistrict = this.checkoutForm.controls.district.value.toLowerCase();
+        
+        // If address contains "dhaka" but district is not dhaka, and user hasn't explicitly picked another district
+        if (addrLower.includes("dhaka") && currentDistrict !== "dhaka") {
+          if (!currentDistrict) {
+            this.checkoutForm.patchValue({ district: "Dhaka" });
+          }
+        }
       });
   }
 
-  private updateDeliveryMethodByCity(city: string): void {
-    const isDhaka = city.toLowerCase() === "dhaka";
-    const method = this.deliveryMethods.find((m) =>
-      isDhaka
-        ? m.name.toLowerCase().includes("inside")
-        : m.name.toLowerCase().includes("outside"),
-    );
+  private applyDeliveryMethodLogic(city: string, methods: DeliveryMethod[]): void {
+    if (!methods || !methods.length || !city) return;
+    const active = methods.filter((m) => m.isActive);
+    if (!active.length) return;
+    const cityLow = city.toLowerCase().trim();
+    const isDhaka = cityLow === "dhaka";
+
+    const inside = active.filter((m) => m.name.toLowerCase().includes("inside") || m.name.toLowerCase().includes("dhaka"));
+    const outside = active.filter((m) => m.name.toLowerCase().includes("outside"));
+
+    let method: DeliveryMethod | undefined;
+    if (isDhaka) {
+      method = inside.length ? inside[0] : outside.length ? outside[0] : undefined;
+    } else {
+      method = outside.length ? outside[0] : inside.length ? inside[0] : undefined;
+    }
+
+    if (!method && active.length > 0) {
+      method = active[0];
+    }
+
     if (method) {
-      this.checkoutForm.patchValue({ deliveryMethodId: method.id });
+      this.checkoutForm.patchValue({ deliveryMethodId: method.id }, { emitEvent: false });
       this.selectedMethod = method;
     }
   }
 
+  private updateDeliveryMethodByCity(city: string): void {
+    if (!this.deliveryMethods || !this.deliveryMethods.length) return;
+    this.applyDeliveryMethodLogic(city, this.deliveryMethods);
+  }
+
   scrollToOrderForm(): void {
-    const el = document.getElementById("order");
-    if (el) el.scrollIntoView({ behavior: "smooth" });
+    if (isPlatformBrowser(this.platformId)) {
+      const el = document.getElementById("order");
+      if (el) el.scrollIntoView({ behavior: "smooth" });
+    }
   }
 
   prevReview(): void {

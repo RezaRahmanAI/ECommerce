@@ -1,4 +1,5 @@
-import { Injectable, inject } from "@angular/core";
+import { Injectable, inject, PLATFORM_ID } from "@angular/core";
+import { isPlatformBrowser } from "@angular/common";
 import { BehaviorSubject, Observable, map, tap } from "rxjs";
 
 import { MOCK_ORDERS } from "../data/mock-orders";
@@ -23,6 +24,7 @@ interface PlaceOrderPayload {
 export class OrderService {
   private readonly customerOrderApi = inject(CustomerOrderApiService);
   private readonly storageKey = "orders";
+  private readonly platformId = inject(PLATFORM_ID);
   private readonly ordersSubject = new BehaviorSubject<Order[]>(
     this.loadOrders(),
   );
@@ -104,12 +106,14 @@ export class OrderService {
   }
 
   private loadOrders(): Order[] {
-    const stored = localStorage.getItem(this.storageKey);
-    if (stored) {
-      try {
-        return JSON.parse(stored) as Order[];
-      } catch {
-        return [...MOCK_ORDERS];
+    if (isPlatformBrowser(this.platformId)) {
+      const stored = localStorage.getItem(this.storageKey);
+      if (stored) {
+        try {
+          return JSON.parse(stored) as Order[];
+        } catch {
+          return [...MOCK_ORDERS];
+        }
       }
     }
 
@@ -117,10 +121,12 @@ export class OrderService {
   }
 
   private persistOrders(): void {
-    localStorage.setItem(
-      this.storageKey,
-      JSON.stringify(this.ordersSubject.getValue()),
-    );
+    if (isPlatformBrowser(this.platformId)) {
+      localStorage.setItem(
+        this.storageKey,
+        JSON.stringify(this.ordersSubject.getValue()),
+      );
+    }
   }
 
   private buildOrder(

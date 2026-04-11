@@ -1,5 +1,5 @@
-import { CommonModule } from "@angular/common";
-import { Component, OnDestroy, OnInit, inject } from "@angular/core";
+import { Component, OnDestroy, OnInit, inject, PLATFORM_ID } from "@angular/core";
+import { CommonModule, isPlatformBrowser } from "@angular/common";
 import { FormBuilder, ReactiveFormsModule, Validators } from "@angular/forms";
 import { RouterModule } from "@angular/router";
 import { Subject, takeUntil } from "rxjs";
@@ -44,6 +44,7 @@ export class AdminCategoryManagementComponent implements OnInit, OnDestroy {
 
   private categoriesService = inject(CategoriesService);
   private formBuilder = inject(FormBuilder);
+  private platformId = inject(PLATFORM_ID);
   private destroy$ = new Subject<void>();
 
   categories: Category[] = [];
@@ -127,24 +128,26 @@ export class AdminCategoryManagementComponent implements OnInit, OnDestroy {
   }
 
   deleteCategory(category: Category): void {
-    const confirmed = window.confirm(`Delete ${category.name}?`);
-    if (!confirmed) {
-      return;
-    }
+    if (isPlatformBrowser(this.platformId)) {
+      const confirmed = window.confirm(`Delete ${category.name}?`);
+      if (!confirmed) {
+        return;
+      }
 
-    this.categoriesService.delete(category.id).subscribe({
-      next: () => {
-        this.categories = this.categories.filter((item) => item.id !== category.id);
-        this.applyFilter();
-        if (this.selectedId === category.id) {
-          this.startCreate();
-        }
-      },
-      error: (err) => {
-        const errorMsg = err.error?.message || "Failed to delete category.";
-        window.alert(errorMsg);
-      },
-    });
+      this.categoriesService.delete(category.id).subscribe({
+        next: () => {
+          this.categories = this.categories.filter((item) => item.id !== category.id);
+          this.applyFilter();
+          if (this.selectedId === category.id) {
+            this.startCreate();
+          }
+        },
+        error: (err) => {
+          const errorMsg = err.error?.message || "Failed to delete category.";
+          window.alert(errorMsg);
+        },
+      });
+    }
   }
 
   handleImageUpload(event: Event): void {
@@ -200,7 +203,9 @@ export class AdminCategoryManagementComponent implements OnInit, OnDestroy {
         },
         error: (error) => {
           const msg = error?.error?.message || "Failed to create category";
-          window.alert(msg);
+          if (isPlatformBrowser(this.platformId)) {
+            window.alert(msg);
+          }
         },
       });
       return;

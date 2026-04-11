@@ -1,5 +1,5 @@
-import { Component, inject } from "@angular/core";
-import { CommonModule } from "@angular/common";
+import { Component, inject, PLATFORM_ID } from "@angular/core";
+import { CommonModule, isPlatformBrowser } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { ActivatedRoute, Router, RouterLink } from "@angular/router";
 import { HttpContext } from "@angular/common/http";
@@ -84,6 +84,7 @@ export class ProductDetailsPageComponent {
   readonly imageUrlService = inject(ImageUrlService);
   private readonly analyticsService = inject(AnalyticsService);
   private readonly siteSettingsService = inject(SiteSettingsService);
+  private readonly platformId = inject(PLATFORM_ID);
   readonly settings$ = this.siteSettingsService.getSettings();
 
   currentImageIndex = 0;
@@ -254,9 +255,11 @@ export class ProductDetailsPageComponent {
   }
 
   scrollToReviews(): void {
-    const reviewsSection = document.getElementById("reviews");
-    if (reviewsSection) {
-      reviewsSection.scrollIntoView({ behavior: "smooth" });
+    if (isPlatformBrowser(this.platformId)) {
+      const reviewsSection = document.getElementById("reviews");
+      if (reviewsSection) {
+        reviewsSection.scrollIntoView({ behavior: "smooth" });
+      }
     }
   }
 
@@ -340,7 +343,9 @@ export class ProductDetailsPageComponent {
         this.reviewRating = 5;
 
         // Refresh reviews
-        window.location.reload();
+        if (isPlatformBrowser(this.platformId)) {
+          window.location.reload();
+        }
       },
       error: (err: unknown) => {
         this.isSubmittingReview = false;

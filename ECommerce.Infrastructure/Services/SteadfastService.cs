@@ -46,7 +46,7 @@ public class SteadfastService : ISteadfastService
                 recipient_phone = order.CustomerPhone,
                 recipient_address = order.ShippingAddress,
                 cod_amount = order.Total,
-                note = "Order from Arza",
+                note = "Order from SheraShopBD",
                 item_description = $"Order {order.OrderNumber}"
             };
             

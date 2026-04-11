@@ -1,7 +1,8 @@
-import { Component, inject, OnInit, Renderer2 } from "@angular/core";
-import { DOCUMENT, CommonModule } from "@angular/common";
+import { Component, inject, OnInit, Renderer2, PLATFORM_ID } from "@angular/core";
+import { DOCUMENT, CommonModule, isPlatformBrowser } from "@angular/common";
 import { Title } from "@angular/platform-browser";
 import { SiteSettingsService } from "./core/services/site-settings.service";
+import { SignalrService } from "./core/services/signalr.service";
 import { NavigationEnd, Router, RouterOutlet } from "@angular/router";
 import { filter, map, startWith } from "rxjs";
 
@@ -32,10 +33,12 @@ export class AppComponent implements OnInit {
   private router = inject(Router);
   private siteSettingsService = inject(SiteSettingsService);
   private renderer = inject(Renderer2);
-  private document = inject(DOCUMENT);
+  private document = inject(DOCUMENT, { optional: true });
   private logger = inject(LoggerService);
   private titleService = inject(Title);
   private analyticsService = inject(AnalyticsService);
+  private signalrService = inject(SignalrService);
+  private platformId = inject(PLATFORM_ID);
 
   showPublicLayout$ = this.router.events.pipe(
     filter((event) => event instanceof NavigationEnd),
@@ -50,29 +53,36 @@ export class AppComponent implements OnInit {
     this.logger.info("Application initialized with professional logging");
 
     // Track PageViews on route changes
-    this.router.events
-      .pipe(filter((event) => event instanceof NavigationEnd))
-      .subscribe(() => {
-        if (!this.router.url.startsWith("/admin")) {
-          this.analyticsService.trackPageView();
-        }
-      });
+    if (isPlatformBrowser(this.platformId)) {
+      this.router.events
+        .pipe(filter((event) => event instanceof NavigationEnd))
+        .subscribe(() => {
+          if (!this.router.url.startsWith("/admin")) {
+            this.analyticsService.trackPageView();
+          }
+        });
+    }
 
     this.siteSettingsService.getSettings().subscribe((settings) => {
       if (settings.websiteName) {
         this.titleService.setTitle(settings.websiteName);
       }
-      if (settings.facebookPixelId) {
-        this.injectFacebookPixel(settings.facebookPixelId);
-      }
-      if (settings.googleTagId) {
-        this.injectGoogleTag(settings.googleTagId);
+      if (isPlatformBrowser(this.platformId)) {
+        if (settings.facebookPixelId) {
+          this.injectFacebookPixel(settings.facebookPixelId);
+        }
+        if (settings.googleTagId) {
+          this.injectGoogleTag(settings.googleTagId);
+        }
       }
     });
   }
 
   private injectFacebookPixel(pixelId: string) {
-    if (this.document.getElementById("fb-pixel-script")) return;
+    if (!isPlatformBrowser(this.platformId)) return;
+    const doc = this.document;
+    if (!doc) return;
+    if (doc.getElementById("fb-pixel-script")) return;
 
     const script = this.renderer.createElement("script");
     script.id = "fb-pixel-script";
@@ -87,17 +97,20 @@ export class AppComponent implements OnInit {
       'https://connect.facebook.net/en_US/fbevents.js');
       fbq('init', '${pixelId}');
     `;
-    this.renderer.appendChild(this.document.head, script);
+    this.renderer.appendChild(doc.head, script);
   }
 
   private injectGoogleTag(tagId: string) {
-    if (this.document.getElementById("google-tag-script")) return;
+    if (!isPlatformBrowser(this.platformId)) return;
+    const doc = this.document;
+    if (!doc) return;
+    if (doc.getElementById("google-tag-script")) return;
 
     const script = this.renderer.createElement("script");
     script.id = "google-tag-script";
     script.src = `https://www.googletagmanager.com/gtag/js?id=${tagId}`;
     script.async = true;
-    this.renderer.appendChild(this.document.head, script);
+    this.renderer.appendChild(doc.head, script);
 
     const script2 = this.renderer.createElement("script");
     script2.text = `
@@ -106,6 +119,6 @@ export class AppComponent implements OnInit {
       gtag('js', new Date());
       gtag('config', '${tagId}');
     `;
-    this.renderer.appendChild(this.document.head, script2);
+    this.renderer.appendChild(doc.head, script2);
   }
 }

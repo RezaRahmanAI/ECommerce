@@ -74,7 +74,10 @@ try
     app.UseSwagger();
     app.UseSwaggerUI();
     
-    app.UseHttpsRedirection();
+    if (!app.Environment.IsDevelopment())
+    {
+        app.UseHttpsRedirection();
+    }
     app.UseResponseCompression();
 
     // Static Files & Media
@@ -99,6 +102,10 @@ try
 
 
     app.MapControllers();
+    app.MapHub<ECommerce.API.Hubs.NotificationHub>("/hubs/notifications");
+
+    // Welcome Message at root /
+    app.MapGet("/", () => Results.Ok(new { message = "SheraShopBD API is running", version = "1.0.0", status = "Healthy" }));
 
     // ── 5. Database Seeding (Manual Migrations Required) ──────────────
     using (var scope = app.Services.CreateScope())
@@ -109,9 +116,12 @@ try
             var context = services.GetRequiredService<ApplicationDbContext>();
             var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
             var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+
+            // Auto-apply migrations on startup to synchronize schema
+            await context.Database.MigrateAsync();
             
-            // Seed data only (context.Database.Migrate() remains disabled)
-            DataSeeder.SeedAsync(userManager, roleManager, context).GetAwaiter().GetResult();
+            // Seed data only
+            await DataSeeder.SeedAsync(userManager, roleManager, context);
         }
         catch (Exception ex)
         {

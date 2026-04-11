@@ -14,10 +14,12 @@ namespace ECommerce.API.Controllers;
 public class AdminOrdersController : ControllerBase
 {
     private readonly IOrderService _orderService;
+    private readonly INotificationService _notificationService;
 
-    public AdminOrdersController(IOrderService orderService)
+    public AdminOrdersController(IOrderService orderService, INotificationService notificationService)
     {
         _orderService = orderService;
+        _notificationService = notificationService;
     }
 
     [HttpGet]
@@ -58,7 +60,33 @@ public class AdminOrdersController : ControllerBase
         var success = await _orderService.UpdateOrderStatusAsync(id, dto.Status);
         if (!success) return BadRequest(new { message = "Error updating order status" });
 
+        // Notify about order status update
+        await _notificationService.NotifyOrderStatusUpdateAsync(id, dto.Status);
+        
         return Ok(new { message = "Order status updated successfully" });
+    }
+
+    [HttpPost("{id}")]
+    public async Task<ActionResult> UpdateOrder(int id, [FromBody] OrderUpdateDto orderUpdateDto)
+    {
+        try
+        {
+            var success = await _orderService.UpdateOrderAsync(id, orderUpdateDto);
+            if (!success) return BadRequest(new { message = "Error updating order" });
+
+            // Notify about order update
+            await _notificationService.NotifyOrderStatusUpdateAsync(id, orderUpdateDto.Status ?? "");
+
+            return Ok(new { message = "Order updated successfully" });
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
     }
 }
 

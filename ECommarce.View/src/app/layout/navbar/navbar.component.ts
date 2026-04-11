@@ -1,5 +1,5 @@
-import { Component, inject, HostListener } from "@angular/core";
-import { CommonModule } from "@angular/common";
+import { Component, inject, HostListener, PLATFORM_ID } from "@angular/core";
+import { CommonModule, isPlatformBrowser } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 
 import { RouterModule, Router, NavigationEnd } from "@angular/router";
@@ -41,6 +41,7 @@ export class NavbarComponent {
   private readonly router = inject(Router);
   public readonly imageUrlService = inject(ImageUrlService);
   private readonly profileService = inject(CustomerProfileService);
+  private readonly platformId = inject(PLATFORM_ID);
 
   readonly icons = {
     Search,
@@ -73,7 +74,9 @@ export class NavbarComponent {
 
   @HostListener("window:scroll", [])
   onWindowScroll() {
-    this.isScrolled = window.scrollY > 35;
+    if (isPlatformBrowser(this.platformId)) {
+      this.isScrolled = window.scrollY > 35;
+    }
   }
 
   readonly vm$ = combineLatest([
@@ -112,7 +115,7 @@ export class NavbarComponent {
 
   toggleSearch(): void {
     this.isSearchOpen = !this.isSearchOpen;
-    if (this.isSearchOpen) {
+    if (this.isSearchOpen && isPlatformBrowser(this.platformId)) {
       setTimeout(() => {
         const input = document.getElementById("navbar-search-input");
         if (input) input.focus();
@@ -122,7 +125,7 @@ export class NavbarComponent {
 
   toggleMobileSearch(): void {
     this.isSearchOpen = !this.isSearchOpen;
-    if (this.isSearchOpen) {
+    if (this.isSearchOpen && isPlatformBrowser(this.platformId)) {
       setTimeout(() => {
         const input = document.getElementById("mobile-search-input");
         if (input) input.focus();

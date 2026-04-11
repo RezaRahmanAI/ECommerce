@@ -1,4 +1,5 @@
-import { Injectable, inject } from "@angular/core";
+import { Injectable, inject, PLATFORM_ID } from "@angular/core";
+import { isPlatformBrowser } from "@angular/common";
 import { BehaviorSubject, catchError, map, Observable, of, tap } from "rxjs";
 import { ApiHttpClient } from "../http/http-client";
 import { AuthResponse, LoginPayload, User } from "../models/entities";
@@ -11,13 +12,16 @@ export class AuthService {
   currentUser = this.userSubject.asObservable();
   isLoggedIn$ = this.currentUser.pipe(map((user) => !!user));
 
-  private currentUserKey = "arza-user";
-  private tokenKey = "arza_token";
+  private currentUserKey = "sherashop-user";
+  private tokenKey = "sherashop-token";
 
   api = inject(ApiHttpClient);
+  private platformId = inject(PLATFORM_ID);
 
   constructor() {
-    this.hydrateSession();
+    if (isPlatformBrowser(this.platformId)) {
+      this.hydrateSession();
+    }
   }
 
   private hydrateSession() {
@@ -57,20 +61,27 @@ export class AuthService {
 
   setSession(user: User, token: string) {
     this.userSubject.next(user);
-    localStorage.setItem(this.currentUserKey, JSON.stringify(user));
-    if (token) {
-      localStorage.setItem(this.tokenKey, token);
+    if (isPlatformBrowser(this.platformId)) {
+      localStorage.setItem(this.currentUserKey, JSON.stringify(user));
+      if (token) {
+        localStorage.setItem(this.tokenKey, token);
+      }
     }
   }
 
   private clearSession() {
     this.userSubject.next(null);
-    localStorage.removeItem(this.currentUserKey);
-    localStorage.removeItem(this.tokenKey);
+    if (isPlatformBrowser(this.platformId)) {
+      localStorage.removeItem(this.currentUserKey);
+      localStorage.removeItem(this.tokenKey);
+    }
   }
 
   getAccessToken(): string | null {
-    return localStorage.getItem(this.tokenKey);
+    if (isPlatformBrowser(this.platformId)) {
+      return localStorage.getItem(this.tokenKey);
+    }
+    return null;
   }
 
   getCurrentUser() {
@@ -111,15 +122,22 @@ export class AuthService {
   }
 
   saveEmail(email: string): void {
-    localStorage.setItem("arza-saved-email", email);
+    if (isPlatformBrowser(this.platformId)) {
+      localStorage.setItem("sherashop-saved-email", email);
+    }
   }
 
   getSavedEmail(): string | null {
-    return localStorage.getItem("arza-saved-email");
+    if (isPlatformBrowser(this.platformId)) {
+      return localStorage.getItem("sherashop-saved-email");
+    }
+    return null;
   }
 
   clearSavedEmail(): void {
-    localStorage.removeItem("arza-saved-email");
+    if (isPlatformBrowser(this.platformId)) {
+      localStorage.removeItem("sherashop-saved-email");
+    }
   }
 
   updateCurrentUser(partial: Partial<User>): void {

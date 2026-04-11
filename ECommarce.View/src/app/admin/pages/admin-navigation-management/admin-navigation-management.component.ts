@@ -1,5 +1,5 @@
-import { CommonModule } from "@angular/common";
-import { Component, OnDestroy, OnInit, inject } from "@angular/core";
+import { Component, OnDestroy, OnInit, inject, PLATFORM_ID } from "@angular/core";
+import { CommonModule, isPlatformBrowser } from "@angular/common";
 import { FormBuilder, ReactiveFormsModule, Validators } from "@angular/forms";
 import { Subject, takeUntil } from "rxjs";
 import { AdminNavigationMenu } from "../../models/navigation.models";
@@ -43,6 +43,7 @@ export class AdminNavigationManagementComponent implements OnInit, OnDestroy {
   };
   private navService = inject(AdminNavigationService);
   private fb = inject(FormBuilder);
+  private platformId = inject(PLATFORM_ID);
   private destroy$ = new Subject<void>();
 
   menus: AdminNavigationMenu[] = [];
@@ -137,9 +138,9 @@ export class AdminNavigationManagementComponent implements OnInit, OnDestroy {
       Object.keys(this.menuForm.controls).forEach((key) => {
         if (this.menuForm.get(key)?.invalid) invalidFields.push(key);
       });
-      window.alert(
-        `Please fill in all required fields: ${invalidFields.join(", ")}`,
-      );
+      if (isPlatformBrowser(this.platformId)) {
+        window.alert(`Please fill in all required fields: ${invalidFields.join(", ")}`);
+      }
       return;
     }
 
@@ -168,10 +169,12 @@ export class AdminNavigationManagementComponent implements OnInit, OnDestroy {
   }
 
   deleteMenu(id: number): void {
-    if (confirm("Are you sure? This will delete all sub-menus too.")) {
-      this.navService.delete(id).subscribe(() => {
-        this.loadMenus();
-      });
+    if (isPlatformBrowser(this.platformId)) {
+      if (confirm("Are you sure? This will delete all sub-menus too.")) {
+        this.navService.delete(id).subscribe(() => {
+          this.loadMenus();
+        });
+      }
     }
   }
 

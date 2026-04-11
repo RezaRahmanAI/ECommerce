@@ -9,4 +9,5 @@ public interface IOrderService
     Task<(IReadOnlyList<OrderDto> Items, int Total)> GetOrdersForAdminAsync(string? searchTerm, string? status, string? dateRange, int page, int pageSize);
     Task<OrderDto?> GetOrderByIdAsync(int id);
     Task<bool> UpdateOrderStatusAsync(int id, string status);
+    Task<bool> UpdateOrderAsync(int id, OrderUpdateDto orderUpdateDto);
 }

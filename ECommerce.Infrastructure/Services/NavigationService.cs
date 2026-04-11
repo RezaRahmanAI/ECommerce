@@ -38,6 +38,7 @@ public class NavigationService : INavigationService
                 {
                     Id = c.Id,
                     Name = c.Name,
+                    Slug = c.Slug,
                     ImageUrl = c.ImageUrl
                 })
             };

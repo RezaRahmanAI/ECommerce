@@ -1,5 +1,5 @@
-import { CommonModule } from "@angular/common";
-import { Component, OnDestroy, OnInit, inject } from "@angular/core";
+import { CommonModule, isPlatformBrowser } from "@angular/common";
+import { Component, OnDestroy, OnInit, inject, PLATFORM_ID } from "@angular/core";
 import { FormBuilder, ReactiveFormsModule, Validators } from "@angular/forms";
 import { Subject, takeUntil } from "rxjs";
 import { AdminBanner } from "../../models/banners.models";
@@ -45,6 +45,7 @@ export class AdminBannersComponent implements OnInit, OnDestroy {
   private bannersService = inject(AdminBannersService);
   private fb = inject(FormBuilder);
   readonly imageUrlService = inject(ImageUrlService);
+  private platformId = inject(PLATFORM_ID);
   private destroy$ = new Subject<void>();
 
   banners: AdminBanner[] = [];
@@ -141,9 +142,11 @@ export class AdminBannersComponent implements OnInit, OnDestroy {
       Object.keys(this.bannerForm.controls).forEach((key) => {
         if (this.bannerForm.get(key)?.invalid) invalidFields.push(key);
       });
-      window.alert(
-        `Please fill in all required fields: ${invalidFields.join(", ")}`,
-      );
+      if (isPlatformBrowser(this.platformId)) {
+        window.alert(
+          `Please fill in all required fields: ${invalidFields.join(", ")}`,
+        );
+      }
       return;
     }
 
@@ -172,10 +175,12 @@ export class AdminBannersComponent implements OnInit, OnDestroy {
   }
 
   deleteBanner(id: number): void {
-    if (confirm("Are you sure you want to delete this banner?")) {
-      this.bannersService.delete(id).subscribe(() => {
-        this.loadBanners();
-      });
+    if (isPlatformBrowser(this.platformId)) {
+      if (confirm("Are you sure you want to delete this banner?")) {
+        this.bannersService.delete(id).subscribe(() => {
+          this.loadBanners();
+        });
+      }
     }
   }
 

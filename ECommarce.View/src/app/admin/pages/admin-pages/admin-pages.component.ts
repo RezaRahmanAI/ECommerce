@@ -1,5 +1,5 @@
-import { CommonModule } from "@angular/common";
-import { Component, OnDestroy, OnInit, inject } from "@angular/core";
+import { Component, OnDestroy, OnInit, inject, PLATFORM_ID } from "@angular/core";
+import { CommonModule, isPlatformBrowser } from "@angular/common";
 import { FormBuilder, ReactiveFormsModule, Validators } from "@angular/forms";
 import { Subject, takeUntil } from "rxjs";
 import { AdminPage } from "../../models/pages.models";
@@ -31,6 +31,7 @@ export class AdminPagesComponent implements OnInit, OnDestroy {
   };
   private pagesService = inject(AdminPagesService);
   private fb = inject(FormBuilder);
+  private platformId = inject(PLATFORM_ID);
   private destroy$ = new Subject<void>();
 
   pages: AdminPage[] = [];
@@ -114,9 +115,9 @@ export class AdminPagesComponent implements OnInit, OnDestroy {
       Object.keys(this.pageForm.controls).forEach((key) => {
         if (this.pageForm.get(key)?.invalid) invalidFields.push(key);
       });
-      window.alert(
-        `Please fill in all required fields: ${invalidFields.join(", ")}`,
-      );
+      if (isPlatformBrowser(this.platformId)) {
+        window.alert(`Please fill in all required fields: ${invalidFields.join(", ")}`);
+      }
       return;
     }
 
@@ -145,10 +146,12 @@ export class AdminPagesComponent implements OnInit, OnDestroy {
   }
 
   deletePage(id: number): void {
-    if (confirm("Are you sure you want to delete this page?")) {
-      this.pagesService.delete(id).subscribe(() => {
-        this.loadPages();
-      });
+    if (isPlatformBrowser(this.platformId)) {
+      if (confirm("Are you sure you want to delete this page?")) {
+        this.pagesService.delete(id).subscribe(() => {
+          this.loadPages();
+        });
+      }
     }
   }
 

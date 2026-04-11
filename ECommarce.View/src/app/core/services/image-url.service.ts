@@ -6,11 +6,17 @@ import { environment } from "../../../environments/environment";
 })
 export class ImageUrlService {
   /**
-   * Converts relative image URLs to absolute URLs pointing to the backend server
+   * Converts relative image URLs to optimized absolute URLs handling resizing and WebP conversion
    * @param imageUrl - The image URL (can be relative or absolute)
-   * @returns Absolute URL to the image
+   * @param w - Optional width
+   * @param h - Optional height
+   * @returns Absolute URL to the optimized image
    */
-  getImageUrl(imageUrl: string | null | undefined): string {
+  getImageUrl(
+    imageUrl: string | null | undefined,
+    w?: number,
+    h?: number,
+  ): string {
     if (!imageUrl || typeof imageUrl !== "string") {
       return "assets/images/placeholder.png";
     }
@@ -27,15 +33,26 @@ export class ImageUrlService {
       return trimmedUrl;
     }
 
-    // Convert relative URL to absolute URL using backend base URL
+    // We route through our API image optimizer
     // environment.apiBaseUrl is typically something like "https://api.example.com/api"
-    // We want the root domain for static files.
-    const baseUrl = environment.apiBaseUrl.replace(/\/api\/?$/, "");
-    const cleanPath = trimmedUrl.startsWith("/")
-      ? trimmedUrl
-      : "/" + trimmedUrl;
+    const apiBase = environment.apiBaseUrl.endsWith("/")
+      ? environment.apiBaseUrl.slice(0, -1)
+      : environment.apiBaseUrl;
 
-    const finalUrl = `${baseUrl}${cleanPath}`;
+    const cleanPath = trimmedUrl.startsWith("/")
+      ? trimmedUrl.substring(1)
+      : trimmedUrl;
+
+    let finalUrl = `${apiBase}/images/${cleanPath}`;
+
+    // Append resizing parameters if provided
+    const params: string[] = [];
+    if (w) params.push(`w=${w}`);
+    if (h) params.push(`h=${h}`);
+
+    if (params.length > 0) {
+      finalUrl += `?${params.join("&")}`;
+    }
 
     return finalUrl;
   }

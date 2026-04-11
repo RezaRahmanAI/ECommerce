@@ -1,5 +1,5 @@
-import { CommonModule } from "@angular/common";
-import { Component, OnDestroy, inject } from "@angular/core";
+import { Component, OnDestroy, inject, PLATFORM_ID } from "@angular/core";
+import { CommonModule, isPlatformBrowser } from "@angular/common";
 import {
   AbstractControl,
   FormArray,
@@ -82,6 +82,7 @@ export class AdminProductFormComponent implements OnDestroy {
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   public imageUrlService = inject(ImageUrlService);
+  private platformId = inject(PLATFORM_ID);
 
   isEditMode = false;
   productId: number | null = null;
@@ -268,7 +269,10 @@ export class AdminProductFormComponent implements OnDestroy {
         replacement = `\n<ul>\n  <li>${selectedText || "Item"}</li>\n</ul>`;
         break;
       case "link":
-        const url = window.prompt("Enter URL", "https://");
+        let url: string | null = null;
+        if (isPlatformBrowser(this.platformId)) {
+          url = window.prompt("Enter URL", "https://");
+        }
         if (url) {
           replacement = `<a href="${url}" class="text-primary hover:underline" target="_blank">${selectedText || "Link Text"}</a>`;
         } else {
@@ -304,7 +308,9 @@ export class AdminProductFormComponent implements OnDestroy {
 
     if (this.form.invalid) {
       this.form.markAllAsTouched();
-      window.alert("Please fill in all required fields correctly.");
+      if (isPlatformBrowser(this.platformId)) {
+        window.alert("Please fill in all required fields correctly.");
+      }
       return;
     }
 
@@ -324,13 +330,17 @@ export class AdminProductFormComponent implements OnDestroy {
       next: () => {
         this.isSaving = false;
         const action = this.isEditMode ? "updated" : "created";
-        window.alert(`Product ${action} successfully.`);
+        if (isPlatformBrowser(this.platformId)) {
+          window.alert(`Product ${action} successfully.`);
+        }
         void this.router.navigate(["/admin/products"]);
       },
       error: (error) => {
         this.isSaving = false;
         console.error("Save error:", error);
-        window.alert("Failed to save product. Please try again.");
+        if (isPlatformBrowser(this.platformId)) {
+          window.alert("Failed to save product. Please try again.");
+        }
       }
     });
   }

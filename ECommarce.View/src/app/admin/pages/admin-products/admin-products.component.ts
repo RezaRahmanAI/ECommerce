@@ -1,5 +1,5 @@
-import { CommonModule } from "@angular/common";
-import { Component, OnDestroy, OnInit, inject } from "@angular/core";
+import { CommonModule, isPlatformBrowser } from "@angular/common";
+import { Component, OnDestroy, OnInit, inject, PLATFORM_ID } from "@angular/core";
 import { FormControl, ReactiveFormsModule } from "@angular/forms";
 import { ActivatedRoute, RouterModule } from "@angular/router";
 import { debounceTime, distinctUntilChanged, Subject, takeUntil } from "rxjs";
@@ -60,6 +60,7 @@ export class AdminProductsComponent implements OnInit, OnDestroy {
   private productsService = inject(ProductsService);
   private route = inject(ActivatedRoute);
   readonly imageUrlService = inject(ImageUrlService);
+  private platformId = inject(PLATFORM_ID);
   private destroy$ = new Subject<void>();
 
   pageTitle = "Products";
@@ -165,13 +166,15 @@ export class AdminProductsComponent implements OnInit, OnDestroy {
     this.productsService
       .exportProducts(this.buildQueryParams())
       .subscribe((csv) => {
-        const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-        const url = URL.createObjectURL(blob);
-        const anchor = document.createElement("a");
-        anchor.href = url;
-        anchor.download = "products.csv";
-        anchor.click();
-        URL.revokeObjectURL(url);
+        if (isPlatformBrowser(this.platformId)) {
+          const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+          const url = URL.createObjectURL(blob);
+          const anchor = document.createElement("a");
+          anchor.href = url;
+          anchor.download = "products.csv";
+          anchor.click();
+          URL.revokeObjectURL(url);
+        }
       });
   }
 

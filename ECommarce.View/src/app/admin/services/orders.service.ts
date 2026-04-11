@@ -1,4 +1,5 @@
-import { Injectable, inject } from "@angular/core";
+import { Injectable, inject, PLATFORM_ID } from "@angular/core";
+import { isPlatformBrowser } from "@angular/common";
 import { HttpParams } from "@angular/common/http";
 import { Observable, map } from "rxjs";
 
@@ -15,6 +16,7 @@ import { ApiHttpClient } from "../../core/http/http-client";
 })
 export class OrdersService {
   private readonly api = inject(ApiHttpClient);
+  private readonly platformId = inject(PLATFORM_ID);
 
   getOrderById(id: number): Observable<OrderDetail> {
     return this.api.get<OrderDetail>(`/admin/orders/${id}`);
@@ -59,7 +61,9 @@ export class OrdersService {
   }
 
   print(): void {
-    window.print();
+    if (isPlatformBrowser(this.platformId)) {
+      window.print();
+    }
   }
 
   updateStatus(orderId: number, status: OrderStatus): Observable<Order> {

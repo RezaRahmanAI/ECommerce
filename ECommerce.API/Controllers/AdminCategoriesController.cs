@@ -3,6 +3,8 @@ using ECommerce.Infrastructure.Data;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.OutputCaching;
+using ECommerce.Core.Interfaces;
 
 namespace ECommerce.API.Controllers;
 
@@ -14,15 +16,21 @@ public class AdminCategoriesController : ControllerBase
     private readonly ApplicationDbContext _context;
     private readonly IWebHostEnvironment _environment;
     private readonly IConfiguration _config;
+    private readonly IOutputCacheStore _cacheStore;
+    private readonly ICacheService _cache;
 
     public AdminCategoriesController(
         ApplicationDbContext context,
         IWebHostEnvironment environment,
-        IConfiguration config)
+        IConfiguration config,
+        IOutputCacheStore cacheStore,
+        ICacheService cache)
     {
         _context = context;
         _environment = environment;
         _config = config;
+        _cacheStore = cacheStore;
+        _cache = cache;
     }
 
     [HttpGet]
@@ -34,6 +42,7 @@ public class AdminCategoriesController : ControllerBase
             {
                 id = c.Id,
                 name = c.Name,
+                slug = c.Slug,
                 imageUrl = c.ImageUrl,
                 isActive = c.IsActive
             })
@@ -56,6 +65,7 @@ public class AdminCategoriesController : ControllerBase
         {
             id = category.Id,
             name = category.Name,
+            slug = category.Slug,
             imageUrl = category.ImageUrl,
             isActive = category.IsActive
         });
@@ -96,23 +106,30 @@ public class AdminCategoriesController : ControllerBase
         var category = new Category
         {
             Name = request.name,
+            Slug = string.IsNullOrWhiteSpace(request.slug) 
+                   ? GenerateSlug(request.name) 
+                   : request.slug.ToLower().Replace(" ", "-"),
             ImageUrl = request.imageUrl,
             IsActive = request.isActive
         };
 
         _context.Categories.Add(category);
         await _context.SaveChangesAsync();
+        
+        await _cacheStore.EvictByTagAsync("categories", default);
+        await _cache.RemoveAsync("nav:mega-menu");
 
         return Ok(new CategoryResponse
         {
             id = category.Id,
             name = category.Name,
+            slug = category.Slug,
             imageUrl = category.ImageUrl,
             isActive = category.IsActive
         });
     }
 
-    [HttpPut("{id:int}")]
+    [HttpPost("{id:int}")]
     public async Task<ActionResult<CategoryResponse>> Update(int id, [FromBody] CategoryRequest request)
     {
         var category = await _context.Categories.FindAsync(id);
@@ -123,21 +140,28 @@ public class AdminCategoriesController : ControllerBase
             return BadRequest(new { message = "Category name is required" });
 
         category.Name = request.name;
+        category.Slug = string.IsNullOrWhiteSpace(request.slug) 
+                        ? GenerateSlug(request.name) 
+                        : request.slug.ToLower().Replace(" ", "-");
         category.ImageUrl = request.imageUrl;
         category.IsActive = request.isActive;
 
         await _context.SaveChangesAsync();
+        
+        await _cacheStore.EvictByTagAsync("categories", default);
+        await _cache.RemoveAsync("nav:mega-menu");
 
         return Ok(new CategoryResponse
         {
             id = category.Id,
             name = category.Name,
+            slug = category.Slug,
             imageUrl = category.ImageUrl,
             isActive = category.IsActive
         });
     }
 
-    [HttpDelete("{id:int}")]
+    [HttpPost("{id:int}/delete")]
     public async Task<ActionResult> Delete(int id)
     {
         var category = await _context.Categories
@@ -153,13 +177,25 @@ public class AdminCategoriesController : ControllerBase
         _context.Categories.Remove(category);
         await _context.SaveChangesAsync();
 
+        await _cacheStore.EvictByTagAsync("categories", default);
+        await _cache.RemoveAsync("nav:mega-menu");
+
         return NoContent();
+    }
+
+    private string GenerateSlug(string name)
+    {
+        return name.ToLower().Trim()
+            .Replace(" ", "-")
+            .Replace("&", "and")
+            .Replace("--", "-");
     }
 }
 
 public class CategoryRequest
 {
     public string name { get; set; } = string.Empty;
+    public string? slug { get; set; }
     public string? imageUrl { get; set; }
     public bool isActive { get; set; } = true;
 }
@@ -168,6 +204,7 @@ public class CategoryResponse
 {
     public int id { get; set; }
     public string name { get; set; } = string.Empty;
+    public string slug { get; set; } = string.Empty;
     public string? imageUrl { get; set; }
     public bool isActive { get; set; }
 }

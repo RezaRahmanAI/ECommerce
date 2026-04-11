@@ -47,6 +47,13 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         builder.Entity<NavigationMenu>().HasQueryFilter(n => n.IsActive);
         builder.Entity<HeroBanner>().HasQueryFilter(h => h.IsActive);
 
+        // Aligned filters for items dependent on Product's IsActive status
+        // to resolve "required end of relationship" warnings
+        builder.Entity<CartItem>().HasQueryFilter(i => i.Product != null && i.Product.IsActive);
+        builder.Entity<ProductImage>().HasQueryFilter(i => i.Product != null && i.Product.IsActive);
+        builder.Entity<Review>().HasQueryFilter(i => i.Product != null && i.Product.IsActive);
+        // OrderItem is NOT filtered here to preserve historical order data (handled via optional navigation)
+
         // Delivery Method Configuration
         builder.Entity<DeliveryMethod>(entity =>
         {
@@ -137,7 +144,8 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             entity.HasOne(i => i.Product)
                   .WithMany()
                   .HasForeignKey(i => i.ProductId)
-                  .OnDelete(DeleteBehavior.Restrict);
+                  .OnDelete(DeleteBehavior.Restrict)
+                  .IsRequired(false);
 
             entity.HasIndex(i => i.ProductId);
             entity.HasIndex(i => i.OrderId);

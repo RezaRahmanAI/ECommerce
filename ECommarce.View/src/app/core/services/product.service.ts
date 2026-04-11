@@ -9,6 +9,7 @@ import { Product } from "../models/product";
 import { Pagination } from "../models/pagination";
 import { Review } from "../models/review";
 import { environment } from "../../../environments/environment";
+import { SignalrService } from "./signalr.service";
 
 @Injectable({
   providedIn: "root",
@@ -17,8 +18,16 @@ export class ProductService {
   private readonly api = inject(ApiHttpClient);
   private readonly baseUrl = "/products";
   private readonly adminBaseUrl = "/admin/products";
+  private readonly signalr = inject(SignalrService);
 
   private readonly refreshSubject = new BehaviorSubject<void>(void 0);
+
+  constructor() {
+    this.signalr.productUpdate$.subscribe(() => {
+      console.log("[ProductService] Real-time product refresh triggered");
+      this.refreshData();
+    });
+  }
 
   // Reactive Data Streams
   readonly homeData$ = this.refreshSubject.pipe(

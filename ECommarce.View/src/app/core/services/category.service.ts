@@ -17,6 +17,7 @@ export class CategoryService {
         .map((category) => ({
           id: category.id,
           name: category.name,
+          slug: category.slug,
           imageUrl: category.imageUrl ?? "",
           isActive: category.isActive,
         })),

@@ -14,6 +14,7 @@ import {
   tap,
   startWith,
   shareReplay,
+  take,
 } from "rxjs";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 
@@ -105,6 +106,7 @@ export class CheckoutPageComponent {
   isLoading = false;
   errorMessage = "";
   didAutofill = false;
+  selectedMethod: DeliveryMethod | null = null;
 
   private readonly settingsService = inject(SettingsService);
 
@@ -201,8 +203,21 @@ export class CheckoutPageComponent {
         this.checkoutForm.patchValue({ area: "" });
         this.areaSearch = "";
         this.citySearch = city; // Keep search input synced
-        this.updateDeliveryMethodByCity(city);
+        // Logic moved to a more robust listener
       });
+
+    // Unified listener for city/address changes to update delivery method
+    combineLatest([
+      this.checkoutForm.controls.city.valueChanges.pipe(startWith(this.checkoutForm.controls.city.value)),
+      this.deliveryMethods$
+    ])
+    .pipe(
+      debounceTime(100),
+      takeUntilDestroyed(this.destroyRef)
+    )
+    .subscribe(([city, methods]) => {
+      this.applyDeliveryMethodLogic(city as string, methods as DeliveryMethod[]);
+    });
 
     this.checkoutForm.controls.phone.valueChanges
       .pipe(
@@ -236,6 +251,26 @@ export class CheckoutPageComponent {
         }
 
         this.didAutofill = false;
+      });
+
+    this.checkoutForm.controls.address.valueChanges
+      .pipe(
+        debounceTime(500),
+        distinctUntilChanged(),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe((address) => {
+        if (!address) return;
+        const addrLower = address.toLowerCase();
+        const currentCity = this.checkoutForm.controls.city.value.toLowerCase();
+        
+        // If address contains "dhaka" but city is not dhaka, and user hasn't explicitly picked another city
+        if (addrLower.includes("dhaka") && currentCity !== "dhaka") {
+          // Only auto-switch if city is empty or not yet set to a specific one
+          if (!currentCity) {
+            this.selectCity("Dhaka");
+          }
+        }
       });
   }
 
@@ -277,17 +312,32 @@ export class CheckoutPageComponent {
       });
   }
 
+  private applyDeliveryMethodLogic(city: string, methods: DeliveryMethod[]): void {
+    if (!methods || !methods.length || !city) return;
+    const active = methods.filter((m) => m.isActive);
+    if (!active.length) return;
+
+    const cityLower = city.toLowerCase().trim();
+    const isDhaka = cityLower === "dhaka";
+
+    const inside = active.filter((m) => m.name.toLowerCase().includes("inside") || m.name.toLowerCase().includes("dhaka"));
+    const outside = active.filter((m) => m.name.toLowerCase().includes("outside"));
+    let method: DeliveryMethod | undefined;
+    if (isDhaka) {
+      method = inside.length ? inside[0] : outside.length ? outside[0] : active[0];
+    } else {
+      method = outside.length ? outside[0] : inside.length ? inside[0] : active[0];
+    }
+
+    if (method) {
+      this.checkoutForm.patchValue({ deliveryMethodId: Number(method.id) }, { emitEvent: false });
+      this.selectedMethod = method;
+    }
+  }
+
   private updateDeliveryMethodByCity(city: string): void {
-    const isDhaka = city.toLowerCase() === "dhaka";
-    this.deliveryMethods$.subscribe((methods) => {
-      const method = methods.find((m) =>
-        isDhaka
-          ? m.name.toLowerCase().includes("inside")
-          : m.name.toLowerCase().includes("outside"),
-      );
-      if (method) {
-        this.checkoutForm.patchValue({ deliveryMethodId: method.id });
-      }
+    this.deliveryMethods$.pipe(take(1)).subscribe((methods) => {
+      this.applyDeliveryMethodLogic(city, methods);
     });
   }
 
