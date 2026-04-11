@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.OutputCaching;
+using ECommerce.API.Extensions;
 using ECommerce.Core.Interfaces;
 
 namespace ECommerce.API.Controllers;
@@ -79,7 +80,7 @@ public class AdminCategoriesController : ControllerBase
         if (file == null || file.Length == 0)
             return BadRequest("No file uploaded");
 
-        var externalPath = _config["ExternalMediaPath"] ?? Path.Combine(_environment.ContentRootPath, "wwwroot", "uploads");
+        var externalPath = FileStorageExtensions.GetExternalMediaPath(_config, _environment);
         var uploadsFolder = Path.Combine(externalPath, "categories");
         
         if (!Directory.Exists(uploadsFolder))

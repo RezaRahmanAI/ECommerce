@@ -13,6 +13,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 
 using Microsoft.AspNetCore.OutputCaching;
+using ECommerce.API.Extensions;
 
 namespace ECommerce.API.Controllers;
 
@@ -53,7 +54,7 @@ public class AdminProductsController : ControllerBase
                 return BadRequest("No files uploaded");
 
             var uploadedUrls = new List<string>();
-            var externalPath = _config["ExternalMediaPath"] ?? Path.Combine(_environment.ContentRootPath, "wwwroot", "uploads");
+            var externalPath = FileStorageExtensions.GetExternalMediaPath(_config, _environment);
             var uploadsFolder = Path.Combine(externalPath, "products");
             if (!Directory.Exists(uploadsFolder))
             {
@@ -284,7 +285,7 @@ public class AdminProductsController : ControllerBase
         try
         {
             var fileName = Path.GetFileName(imageUrl);
-            var externalPath = _config["ExternalMediaPath"] ?? Path.Combine(_environment.ContentRootPath, "wwwroot", "uploads");
+            var externalPath = FileStorageExtensions.GetExternalMediaPath(_config, _environment);
             var filePath = Path.Combine(externalPath, "products", fileName);
             if (System.IO.File.Exists(filePath))
             {

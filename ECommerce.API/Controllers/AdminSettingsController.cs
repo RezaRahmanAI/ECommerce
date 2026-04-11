@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.AspNetCore.OutputCaching;
+using ECommerce.API.Extensions;
 using ECommerce.Core.Interfaces;
 
 namespace ECommerce.API.Controllers;
@@ -114,7 +115,7 @@ public class AdminSettingsController : ControllerBase
         if (file == null || file.Length == 0)
             return BadRequest("No file uploaded");
 
-        var externalPath = _config["ExternalMediaPath"] ?? Path.Combine(Directory.GetParent(_environment.ContentRootPath)!.FullName, "ArzaMedia");
+        var externalPath = FileStorageExtensions.GetExternalMediaPath(_config, _environment);
         var uploadsFolder = Path.Combine(externalPath, "settings");
         Directory.CreateDirectory(uploadsFolder);
 

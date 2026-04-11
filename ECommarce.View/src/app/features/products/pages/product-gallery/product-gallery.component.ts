@@ -82,12 +82,12 @@ export class ProductGalleryComponent implements OnInit {
       } else {
         this.title = "Search Products";
       }
-    } else if (
-      categoryId ||
-      (this.route.snapshot.url[0]?.path === "category" && slug)
-    ) {
-      filterParams.categoryId = categoryId || slug;
-      this.title = (categoryId || slug).toString();
+    } else if (this.route.snapshot.url[0]?.path === "category" && slug) {
+      filterParams.categorySlug = slug;
+      this.title = slug.replace(/-/g, " ");
+    } else if (categoryId) {
+      filterParams.categoryId = categoryId;
+      this.title = categoryId.toString();
     } else if (this.route.snapshot.url[0]?.path === "offers") {
       filterParams.isFeatured = true;
       this.isOffersPage = true;

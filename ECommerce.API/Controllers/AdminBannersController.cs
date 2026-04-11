@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.AspNetCore.OutputCaching;
+using ECommerce.API.Extensions;
 
 namespace ECommerce.API.Controllers;
 
@@ -164,7 +165,7 @@ public class AdminBannersController : ControllerBase
         if (file == null || file.Length == 0)
             return BadRequest("No file uploaded");
 
-        var externalPath = _config["ExternalMediaPath"] ?? Path.Combine(_environment.ContentRootPath, "wwwroot", "uploads");
+        var externalPath = FileStorageExtensions.GetExternalMediaPath(_config, _environment);
         var uploadsFolder = Path.Combine(externalPath, "banners");
         Directory.CreateDirectory(uploadsFolder);
 

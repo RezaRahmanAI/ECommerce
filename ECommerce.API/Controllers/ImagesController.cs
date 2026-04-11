@@ -3,6 +3,7 @@ using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
 using Microsoft.AspNetCore.OutputCaching;
 using System.IO;
+using ECommerce.API.Extensions;
 
 namespace ECommerce.API.Controllers;
 
@@ -90,17 +91,6 @@ public class ImagesController : ControllerBase
 
     private string ResolveExternalMediaPath()
     {
-        var configuredPath = _config["ExternalMediaPath"];
-        if (!string.IsNullOrWhiteSpace(configuredPath))
-        {
-            return configuredPath;
-        }
-
-        var contentRoot = _env.ContentRootPath;
-        var parent = Directory.GetParent(contentRoot);
-
-        return parent != null
-            ? Path.Combine(parent.FullName, "ArzaMedia")
-            : Path.Combine(contentRoot, "ArzaMedia");
+        return FileStorageExtensions.GetExternalMediaPath(_config, _env);
     }
 }

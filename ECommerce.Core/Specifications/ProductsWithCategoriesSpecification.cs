@@ -8,6 +8,7 @@ public class ProductsWithCategoriesSpecification : BaseSpecification<Product>
         : base(x => 
             (string.IsNullOrEmpty(search) || x.Headline.ToLower().Contains(search.ToLower()) || (x.Subtitle != null && x.Subtitle.ToLower().Contains(search.ToLower()))) &&
             (!categoryId.HasValue || x.CategoryId == categoryId) &&
+            (string.IsNullOrEmpty(categorySlug) || (x.Category != null && x.Category.Slug == categorySlug)) &&
             (!isNew.HasValue || x.IsNew == isNew.Value)
         )
     {

@@ -10,7 +10,7 @@ public static class FileStorageExtensions
 
         try
         {
-            externalMediaPath = ResolveMediaPath(config, env);
+            externalMediaPath = GetExternalMediaPath(config, env);
         }
         catch (Exception ex)
         {
@@ -42,7 +42,7 @@ public static class FileStorageExtensions
         return externalMediaPath;
     }
 
-    private static string ResolveMediaPath(IConfiguration config, IWebHostEnvironment env)
+    public static string GetExternalMediaPath(IConfiguration config, IWebHostEnvironment env)
     {
         var configuredPath = config["ExternalMediaPath"];
         if (!string.IsNullOrWhiteSpace(configuredPath))

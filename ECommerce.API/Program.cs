@@ -111,21 +111,33 @@ try
     using (var scope = app.Services.CreateScope())
     {
         var services = scope.ServiceProvider;
-        try
-        {
-            var context = services.GetRequiredService<ApplicationDbContext>();
-            var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
-            var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+        var config = services.GetRequiredService<IConfiguration>();
+        var skipInit = config.GetValue<bool>("SkipDbInit");
 
-            // Auto-apply migrations on startup to synchronize schema
-            await context.Database.MigrateAsync();
-            
-            // Seed data only
-            await DataSeeder.SeedAsync(userManager, roleManager, context);
-        }
-        catch (Exception ex)
+        if (skipInit)
         {
-            Log.Error(ex, "An error occurred during seeding.");
+            Log.Information(">>> Skipping Database Migration and Seeding due to SkipDbInit=true");
+        }
+        else
+        {
+            try
+            {
+                var context = services.GetRequiredService<ApplicationDbContext>();
+                var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
+                var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+
+                Log.Information(">>> Checking Database Migrations and Seeding...");
+                // Auto-apply migrations on startup to synchronize schema
+                await context.Database.MigrateAsync();
+                
+                // Seed data only
+                await DataSeeder.SeedAsync(userManager, roleManager, context);
+                Log.Information(">>> Database Synchronization Complete.");
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "An error occurred during seeding.");
+            }
         }
     }
 
