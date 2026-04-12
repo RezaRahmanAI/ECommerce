@@ -13,7 +13,7 @@ Log.Logger = new LoggerConfiguration()
 
 try
 {
-    Log.Information("Starting ARZA API...");
+    Log.Information("Starting SheraShop API...");
 
     var builder = WebApplication.CreateBuilder(args);
 
@@ -151,7 +151,7 @@ catch (HostAbortedException)
 }
 catch (Exception ex)
 {
-    Log.Fatal(ex, "ARZA API terminated unexpectedly during startup.");
+    Log.Fatal(ex, "SheraShop API terminated unexpectedly during startup.");
     // Ensure error is visible in stdout for IIS diagnostic
     Console.Error.WriteLine($"FATAL STARTUP ERROR: {ex.Message}");
     Console.Error.WriteLine(ex.StackTrace);

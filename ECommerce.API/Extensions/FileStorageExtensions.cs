@@ -15,7 +15,7 @@ public static class FileStorageExtensions
         catch (Exception ex)
         {
             Console.Error.WriteLine($"WARNING: External media path resolution failed: {ex.Message}");
-            externalMediaPath = Path.Combine(Path.GetTempPath(), "ArzaMedia");
+            externalMediaPath = Path.Combine(Path.GetTempPath(), "SheraShopMedia");
         }
 
         try
@@ -54,8 +54,8 @@ public static class FileStorageExtensions
         var parent = Directory.GetParent(contentRoot);
 
         return parent != null
-            ? Path.Combine(parent.FullName, "ArzaMedia")
-            : Path.Combine(contentRoot, "ArzaMedia");
+            ? Path.Combine(parent.FullName, "SheraShopMedia")
+            : Path.Combine(contentRoot, "SheraShopMedia");
     }
 
     private static void EnsureUploadDirectories(string rootPath)
