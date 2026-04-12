@@ -33,15 +33,15 @@
 
         
         <!-- Headline -->
-        <h1 *ngIf="product.headline" 
+        <h1 *ngIf="product?.headline" 
             class="text-white text-[1.3rem] md:text-[1.8rem] font-bold leading-tight max-w-2xl animate-fade-in delay-100">
-          {{ product.headline }}
+          {{ product?.headline }}
         </h1>
         
         <!-- Description -->
-        <div *ngIf="product.subtitle" 
+        <div *ngIf="product?.subtitle" 
              class="hero-subtitle text-white/90 text-sm md:text-lg max-w-2xl font-light mb-8 break-words animate-fade-in delay-200" 
-             [innerHTML]="product.subtitle">
+             [innerHTML]="product?.subtitle">
         </div>
         
         <!-- CTA Button (Slightly smaller for compact top) -->
@@ -56,24 +56,24 @@
 
       <!-- Product Showcase Bottom Part (70% approx) -->
       <div class="relative z-10 w-full max-w-4xl mx-auto flex justify-center items-end pb-8 px-4 md:px-6 md:pb-10 md:basis-[62%] md:flex-none min-h-0">
-        <img *ngIf="product.imgUrl" 
-             [src]="imageUrlService.getImageUrl(product.imgUrl)" 
-             [alt]="product.headline" 
+        <img *ngIf="product?.imgUrl" 
+             [src]="imageUrlService.getImageUrl(product?.imgUrl)" 
+             [alt]="product?.headline" 
              class="max-w-full max-h-full object-contain drop-shadow-[0_20px_50px_rgba(0,0,0,0.8)] animate-hero-visual block">
       </div>
     </section>
 
     <!-- BENEFITS SECTION -->
-    <section class="bg-white py-16" *ngIf="product.benefitsTitle || product.benefitsContent">
+    <section class="bg-white py-16" *ngIf="product?.benefitsTitle || product?.benefitsContent">
       <div class="max-w-4xl mx-auto flex flex-col lg:flex-row items-center justify-between gap-10 md:gap-16 px-4 md:px-10">
         <div class="flex-1 text-center lg:text-left break-words">
           <div class="mb-6">
             <p class="text-[10px] uppercase tracking-[0.4em] text-[#c8922a] font-bold mb-2">Why Choose Us</p>
             <h2 class="text-3xl md:text-4xl font-serif italic text-[#1a1a1a]">
-              {{ product.benefitsTitle || 'ব্যবহারের সুবিধাঃ' }}
+              {{ product?.benefitsTitle || 'ব্যবহারের সুবিধাঃ' }}
             </h2>
           </div>
-          <div class="text-[#555] text-sm md:text-base leading-relaxed mb-8 ql-editor !text-left" [innerHTML]="product.benefitsContent"></div>
+          <div class="text-[#555] text-sm md:text-base leading-relaxed mb-8 ql-editor !text-left" [innerHTML]="product?.benefitsContent"></div>
           <div class="flex flex-col gap-3 mx-auto lg:mx-0 w-full max-w-[420px] lg:max-w-none">
             <a *ngIf="siteSettings?.facebookUrl"
                [href]="siteSettings?.facebookUrl"
@@ -99,25 +99,25 @@
           </div>
         </div>
         <div class="flex-1 flex justify-center relative min-h-[320px]">
-          <img *ngIf="product.imgUrl" 
-               [src]="imageUrlService.getImageUrl(product.imgUrl)" 
-               [alt]="product.headline" 
+          <img *ngIf="product?.imgUrl" 
+               [src]="imageUrlService.getImageUrl(product?.imgUrl)" 
+               [alt]="product?.headline" 
                class="max-w-full h-auto object-contain border border-[#e0e0e0]">
         </div>
       </div>
     </section>
 
     <!-- USAGE RULES SECTION -->
-    <section class="bg-[#fafafa] py-16" *ngIf="product.usageTitle || product.usageContent">
+    <section class="bg-[#fafafa] py-16" *ngIf="product?.usageTitle || product?.usageContent">
       <div class="max-w-4xl mx-auto flex flex-col lg:flex-row-reverse items-center justify-between gap-10 md:gap-16 px-4 md:px-10 text-center lg:text-left">
         <div class="flex-1 break-words">
           <div class="mb-6">
             <p class="text-[10px] uppercase tracking-[0.4em] text-[#c8922a] font-bold mb-2">How To Use</p>
             <h2 class="text-3xl md:text-4xl font-serif italic text-[#1a1a1a]">
-              {{ product.usageTitle || 'লুব্রিকেন্ট জেল ব্যবহারের নিয়মঃ' }}
+              {{ product?.usageTitle || 'লুব্রিকেন্ট জেল ব্যবহারের নিয়মঃ' }}
             </h2>
           </div>
-          <div class="text-[#555] text-sm md:text-base leading-relaxed mb-8 ql-editor !text-left" [innerHTML]="product.usageContent"></div>
+          <div class="text-[#555] text-sm md:text-base leading-relaxed mb-8 ql-editor !text-left" [innerHTML]="product?.usageContent"></div>
           <div class="flex flex-col gap-3 mx-auto lg:mx-0 w-full max-w-[420px] lg:max-w-none">
             <a *ngIf="siteSettings?.facebookUrl"
                [href]="siteSettings?.facebookUrl"
@@ -143,82 +143,98 @@
           </div>
         </div>
         <div class="flex-1 flex justify-center relative min-h-[320px]">
-          <img *ngIf="product.imgUrl" 
-               [src]="imageUrlService.getImageUrl(product.imgUrl)" 
-               [alt]="product.headline" 
+          <img *ngIf="product?.imgUrl" 
+               [src]="imageUrlService.getImageUrl(product?.imgUrl)" 
+               [alt]="product?.headline" 
                class="max-w-full h-auto object-contain border border-[#e0e0e0]">
         </div>
       </div>
     </section>
 
-    <!-- REVIEWS -->
-    <section class="bg-white py-16 text-center border-t border-[#e0e0e0]" *ngIf="reviews.length > 0">
-      <div class="mb-12">
-        <p class="text-[10px] uppercase tracking-[0.4em] text-[#c8922a] font-bold mb-2">Refined Experience</p>
-        <h2 class="text-3xl md:text-4xl font-serif italic text-[#1a1a1a]">{{ product.reviewsTitle || 'Customer Testimonies' }}</h2>
+    <!-- MODERN REVIEWS SECTION -->
+    <section class="py-24 px-4 md:px-8 overflow-hidden bg-white" *ngIf="false">
+      <!-- Section Header -->
+      <div class="max-w-7xl mx-auto text-center mb-16">
+        <span class="font-label text-[#c8922a] text-[0.75rem] uppercase tracking-[0.2em] block mb-4">REFINED EXPERIENCE</span>
+        <h2 class="font-display text-4xl md:text-5xl font-extrabold text-[#1a1a1a] tracking-tight uppercase">
+          {{ product?.reviewsTitle || 'Customer Testimonies' }}
+        </h2>
+        <div class="mt-6 w-24 h-1 bg-[#c8922a] mx-auto opacity-20"></div>
       </div>
-      
-      <div class="relative max-w-4xl mx-auto px-10 overflow-hidden">
-        <!-- Navigation -->
-        <button class="absolute left-0 top-1/2 -translate-y-1/2 w-12 h-12 bg-white border border-[#e0e0e0] flex items-center justify-center text-gray-600 transition-colors hover:border-[#1a1a1a] hover:text-[#1a1a1a] z-20" 
-                (click)="prevReview()" *ngIf="reviews.length > 1">
-          <lucide-icon [img]="icons.ChevronLeft" class="w-5 h-5"></lucide-icon>
-        </button>
-        <button class="absolute right-0 top-1/2 -translate-y-1/2 w-12 h-12 bg-white border border-[#e0e0e0] flex items-center justify-center text-gray-600 transition-colors hover:border-[#1a1a1a] hover:text-[#1a1a1a] z-20" 
-                (click)="nextReview()" *ngIf="reviews.length > 1">
-          <lucide-icon [img]="icons.ChevronRight" class="w-5 h-5"></lucide-icon>
-        </button>
 
-        <!-- Slider Track -->
-        <div class="flex transition-transform duration-500 ease-in-out gap-6" 
-             [style.transform]="'translateX(-' + (currentReviewIndex * (100 / (reviews.length > 3 ? 3 : reviews.length))) + '%)'">
-          <div *ngFor="let review of reviews; let i = index" 
-               class="flex-shrink-0 w-full sm:w-1/2 lg:w-1/3 py-2">
-            <div class="bg-white border border-[#e0e0e0] p-6 h-full flex flex-col gap-4 text-left">
-              <!-- If review has an image, show it -->
-              <div class="w-full aspect-square border border-[#e0e0e0] p-1 bg-[#fafafa] relative" *ngIf="review.reviewImage">
-                <img [src]="imageUrlService.getImageUrl(review.reviewImage)" [alt]="review.customerName" 
-                     class="absolute inset-0 w-full h-full object-cover">
-              </div>
-              
-              <!-- Reviewer Info & Stars -->
-              <div>
-                <div class="flex items-center justify-between mb-2">
-                  <span class="font-semibold text-sm text-[#1a1a1a]">{{ review.customerName }}</span>
-                </div>
-                <!-- Stars (Gold) -->
-                <div class="flex gap-0.5 mb-3">
-                  <lucide-icon *ngFor="let _ of [1,2,3,4,5]" [img]="icons.Star" class="w-3.5 h-3.5 fill-[#c8922a] text-[#c8922a]"></lucide-icon>
-                </div>
-              </div>
+      <!-- Tonal Background for Contrast -->
+      <div class="bg-gray-50 rounded-[2rem] py-16 relative max-w-[1400px] mx-auto overflow-hidden">
+        
+        <!-- Floating Nav Controls -->
+        <div class="absolute inset-y-0 left-4 md:left-12 flex items-center z-10" *ngIf="reviews.length > 1">
+          <button (click)="prevReview()" 
+                  class="w-12 h-12 rounded-full bg-white/70 backdrop-blur-xl flex items-center justify-center text-gray-800 shadow-sm hover:bg-white transition-all">
+            <lucide-icon [img]="icons.ChevronLeft" class="w-5 h-5"></lucide-icon>
+          </button>
+        </div>
+        <div class="absolute inset-y-0 right-4 md:right-12 flex items-center z-10" *ngIf="reviews.length > 1">
+          <button (click)="nextReview()" 
+                  class="w-12 h-12 rounded-full bg-white/70 backdrop-blur-xl flex items-center justify-center text-gray-800 shadow-sm hover:bg-white transition-all">
+            <lucide-icon [img]="icons.ChevronRight" class="w-5 h-5"></lucide-icon>
+          </button>
+        </div>
 
-              <!-- Comment Aesthetic -->
-              <div class="text-sm text-[#555] leading-relaxed italic ql-editor" [innerHTML]="review.comment">
+        <!-- Slider Container -->
+        <div class="relative px-8 md:px-24">
+          <div class="flex transition-transform duration-500 ease-out gap-8"
+               [style.transform]="'translateX(-' + (currentReviewIndex * (100 / 3)) + '%)'">
+            
+            <div *ngFor="let review of reviews; let i = index" 
+                 class="w-full md:w-[calc(33.333%-1.33rem)] flex-shrink-0">
+              <div class="bg-white p-10 md:p-12 rounded-xl shadow-[0_24px_48px_-12px_rgba(0,0,0,0.04)] h-full flex flex-col luxury-card">
+                
+                <!-- Stars -->
+                <div class="flex gap-1 mb-6">
+                  <lucide-icon *ngFor="let s of [1,2,3,4,5]" 
+                              [img]="icons.Star" 
+                              class="w-4 h-4 fill-[#c8922a] text-[#c8922a]"></lucide-icon>
+                </div>
+
+                <!-- Testimonial Text -->
+                <div class="font-body text-lg leading-relaxed text-gray-600 mb-8 flex-grow ql-editor !p-0" 
+                   [innerHTML]="review.comment">
+                </div>
+
+                <!-- Customer Info -->
+                <div class="flex items-center gap-4 border-t border-gray-100 pt-6">
+                  <img [src]="imageUrlService.getImageUrl(review.reviewImage || 'assets/default-avatar.png')" 
+                       [alt]="review.customerName" 
+                       class="w-12 h-12 rounded-full object-cover grayscale">
+                  <div>
+                    <h4 class="font-display font-bold text-[#1a1a1a]">{{ review.customerName }}</h4>
+                    <span class="text-[10px] text-[#c8922a] uppercase tracking-widest font-bold">Verified Purchase</span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Dots -->
-        <div class="flex justify-center gap-2 mt-8" *ngIf="reviews.length > 1">
-          <div *ngFor="let r of reviews; let i = index" 
-               class="h-1 cursor-pointer transition-all duration-300" 
-               [class]="currentReviewIndex === i ? 'bg-[#1a1a1a] w-8' : 'bg-[#e0e0e0] w-4'"
-               (click)="goToReview(i)">
-          </div>
+        <!-- Pagination Dots -->
+        <div class="flex justify-center items-center gap-3 mt-12" *ngIf="totalPages.length > 1">
+          <span *ngFor="let startIndex of totalPages" 
+                (click)="goToReview(startIndex)"
+                class="cursor-pointer transition-all duration-300"
+                [class]="currentReviewIndex === startIndex ? 'w-6 h-2 rounded-full bg-[#c8922a]' : 'w-2 h-2 rounded-full bg-gray-200 hover:bg-gray-300'">
+          </span>
         </div>
       </div>
     </section>
 
     <!-- SIDE EFFECTS -->
-    <section class="max-w-4xl mx-auto py-16 px-4 md:px-10 border-t border-[#e0e0e0] mt-16 text-center" *ngIf="product.sideEffectsTitle || product.sideEffectsContent">
+    <section class="max-w-4xl mx-auto py-16 px-4 md:px-10 border-t border-[#e0e0e0] mt-16 text-center" *ngIf="product?.sideEffectsTitle || product?.sideEffectsContent">
       <div class="mb-8 break-words">
         <p class="text-[10px] uppercase tracking-[0.4em] text-[#c8922a] font-bold mb-2">Important Notice</p>
         <h2 class="text-3xl font-serif italic text-[#1a1a1a]">
-          {{ product.sideEffectsTitle || 'লুব্রিকেন্ট জেল এর পার্শ্বপ্রতিক্রিয়াঃ' }}
+          {{ product?.sideEffectsTitle || 'লুব্রিকেন্ট জেল এর পার্শ্বপ্রতিক্রিয়াঃ' }}
         </h2>
       </div>
-      <div class="bg-[#fafafa] border border-[#e0e0e0] p-6 md:p-8 text-[#555] text-sm md:text-base ql-editor !text-center" [innerHTML]="product.sideEffectsContent"></div>
+      <div class="bg-[#fafafa] border border-[#e0e0e0] p-6 md:p-8 text-[#555] text-sm md:text-base ql-editor !text-center" [innerHTML]="product?.sideEffectsContent"></div>
     </section>
 
     <!-- ORDER FORM -->
@@ -445,44 +461,44 @@
     <div class="grid grid-cols-1 md:grid-cols-2">
       <!-- Image Column -->
       <div class="bg-[#fafafa] p-8 flex items-center justify-center border-b md:border-b-0 md:border-r border-gray-100">
-        <img [src]="selectedPopupItem.imageUrl" 
-             [alt]="selectedPopupItem.name" 
+        <img [src]="selectedPopupItem?.imageUrl" 
+             [alt]="selectedPopupItem?.name" 
              class="w-full h-auto max-h-[300px] object-contain drop-shadow-xl">
       </div>
 
       <!-- Content Column -->
       <div class="p-6 md:p-8 flex flex-col gap-6">
         <div>
-          <h3 class="text-xl font-serif italic text-primary mb-2">{{ selectedPopupItem.name }}</h3>
-          <div class="text-2xl font-bold text-[#c8922a]">৳ {{ selectedPopupItem.price | number:'1.2-2' }}</div>
+          <h3 class="text-xl font-serif italic text-primary mb-2">{{ selectedPopupItem?.name }}</h3>
+          <div class="text-2xl font-bold text-[#c8922a]">৳ {{ selectedPopupItem?.price | number:'1.2-2' }}</div>
         </div>
 
         <div class="space-y-6 overflow-y-auto max-h-[40vh] pr-2 custom-scrollbar" *ngIf="product">
           <!-- Benefits -->
-          <div *ngIf="product.benefitsContent" class="space-y-2">
+          <div *ngIf="product?.benefitsContent" class="space-y-2">
             <h4 class="text-xs uppercase tracking-widest font-bold text-[#c8922a]">
-              {{ product.benefitsTitle || 'ব্যবহারের সুবিধা' }}
+              {{ product?.benefitsTitle || 'ব্যবহারের সুবিধা' }}
             </h4>
             <div class="text-sm text-[#555] leading-relaxed ql-editor !p-0 !text-left" 
-                 [innerHTML]="product.benefitsContent"></div>
+                 [innerHTML]="product?.benefitsContent"></div>
           </div>
 
           <!-- How to Use -->
-          <div *ngIf="product.usageContent" class="space-y-2 pt-4 border-t border-gray-100">
+          <div *ngIf="product?.usageContent" class="space-y-2 pt-4 border-t border-gray-100">
             <h4 class="text-xs uppercase tracking-widest font-bold text-[#c8922a]">
-              {{ product.usageTitle || 'ব্যবহারের নিয়ম' }}
+              {{ product?.usageTitle || 'ব্যবহারের নিয়ম' }}
             </h4>
             <div class="text-sm text-[#555] leading-relaxed ql-editor !p-0 !text-left" 
-                 [innerHTML]="product.usageContent"></div>
+                 [innerHTML]="product?.usageContent"></div>
           </div>
 
           <!-- Side Effects -->
-          <div *ngIf="product.sideEffectsContent" class="space-y-2 pt-4 border-t border-gray-100">
+          <div *ngIf="product?.sideEffectsContent" class="space-y-2 pt-4 border-t border-gray-100">
             <h4 class="text-xs uppercase tracking-widest font-bold text-[#c8922a]">
-              {{ product.sideEffectsTitle || 'পার্শ্বপ্রতিক্রিয়া' }}
+              {{ product?.sideEffectsTitle || 'পার্শ্বপ্রতিক্রিয়া' }}
             </h4>
             <div class="text-[13px] text-[#555] leading-relaxed ql-editor !p-0 !text-left" 
-                 [innerHTML]="product.sideEffectsContent"></div>
+                 [innerHTML]="product?.sideEffectsContent"></div>
           </div>
         </div>
 

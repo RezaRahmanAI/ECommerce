@@ -1,4 +1,4 @@
-import { Component, DestroyRef, OnInit, inject, PLATFORM_ID, ChangeDetectionStrategy } from "@angular/core";
+import { Component, DestroyRef, OnInit, inject, PLATFORM_ID, ChangeDetectionStrategy, ChangeDetectorRef } from "@angular/core";
 import { CommonModule, isPlatformBrowser } from "@angular/common";
 import { FormBuilder, ReactiveFormsModule, Validators } from "@angular/forms";
 import { ActivatedRoute, Router, RouterModule } from "@angular/router";
@@ -104,6 +104,7 @@ export class LandingPageComponent implements OnInit {
   readonly imageUrlService = inject(ImageUrlService);
   private readonly orderService = inject(OrderService);
   private readonly platformId = inject(PLATFORM_ID);
+  private readonly cdr = inject(ChangeDetectorRef);
 
   product: Product | null = null;
   siteSettings: any = null;
@@ -159,52 +160,73 @@ export class LandingPageComponent implements OnInit {
 
   private loadProductAndSettings(): void {
     this.isLoading = true;
+    this.errorMessage = '';
+    this.cdr.markForCheck();
 
-    combineLatest([
-      this.route.paramMap.pipe(
-        map((params) => params.get("slug") ?? ""),
-        filter((slug) => slug.length > 0),
-        switchMap((slug) => this.productService.getBySlug(slug)),
-      ),
-      this.settingsService.getPublicDeliveryMethods(),
-      this.settingsService.settings$,
-      this.productService.getProducts({})
-    ])
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: ([product, methods, settings, productsResponse]: [Product | null, DeliveryMethod[], any, { data?: Product[] }]) => {
-          this.product = product;
-          this.siteSettings = settings;
+    this.route.paramMap.pipe(
+      map((params) => params.get('slug') ?? ''),
+      filter((slug) => slug.length > 0),
+      switchMap((slug) => this.productService.getBySlug(slug).pipe(
+        catchError((err) => {
+          console.error('Product fetch error:', err);
+          this.errorMessage = 'Product not found or server error.';
+          this.isLoading = false;
+          this.cdr.markForCheck();
+          return of(null);
+        })
+      )),
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe((product) => {
+      this.product = product;
+      this.isLoading = false;
+      this.cdr.markForCheck();
+
+      if (product) {
+        this.settingsService.getPublicDeliveryMethods().pipe(
+          catchError(() => of([]))
+        ).subscribe((methods) => {
           this.deliveryMethods = methods;
-          
-          const allProducts = productsResponse?.data || [];
-          this.offerItems = allProducts.map((p: Product) => ({
+          if (methods && methods.length > 0) {
+            const active = methods.filter((m) => m.isActive);
+            if (active.length > 0) {
+              const defaultMethod =
+                active.find((m) => m.name.toLowerCase().includes('inside')) || active[0];
+              this.checkoutForm.patchValue({ deliveryMethodId: defaultMethod.id });
+              this.selectedMethod = defaultMethod;
+            }
+          }
+          this.cdr.markForCheck();
+        });
+
+        this.productService.getProducts({}).pipe(
+          map((res) => res.data || []),
+          catchError(() => of([]))
+        ).subscribe((allProducts) => {
+          this.offerItems = allProducts.map((p) => ({
             ...p,
             name: p.headline,
             imageUrl: this.imageUrlService.getImageUrl(p.imgUrl),
-            quantity: p.id === product?.id ? 1 : 0
+            quantity: p.id === product.id ? 1 : 0,
           }));
-          this.isLoading = false;
-
-          if (methods.length > 0) {
-            const defaultMethod =
-              methods.find((m) => m.name.toLowerCase().includes("inside")) ||
-              methods[0];
-            this.checkoutForm.patchValue({
-              deliveryMethodId: defaultMethod.id,
+          if (!this.offerItems.find((i) => i.id === product.id)) {
+            this.offerItems.unshift({
+              ...product,
+              name: product.headline,
+              imageUrl: this.imageUrlService.getImageUrl(product.imgUrl),
+              quantity: 1,
             });
-            this.selectedMethod = defaultMethod;
           }
+          this.cdr.markForCheck();
+        });
 
-          if (!settings) {
-            this.settingsService.getSettings().subscribe();
-          }
-        },
-        error: () => {
-          this.isLoading = false;
-          this.errorMessage = "Product not found.";
-        },
-      });
+        this.settingsService.getSettings().pipe(
+          catchError(() => of(null))
+        ).subscribe((settings) => {
+          this.siteSettings = settings;
+          this.cdr.markForCheck();
+        });
+      }
+    });
   }
 
   private setupFormWatchers(): void {
@@ -323,16 +345,35 @@ export class LandingPageComponent implements OnInit {
     }
   }
 
-  prevReview(): void {
-    this.currentReviewIndex = (this.currentReviewIndex - 1 + this.reviews.length) % this.reviews.length;
+  nextReview(): void {
+    const jump = 3;
+    if (this.currentReviewIndex + jump < this.reviews.length) {
+      this.currentReviewIndex += jump;
+    } else {
+      this.currentReviewIndex = 0;
+    }
+    this.cdr.markForCheck();
   }
 
-  nextReview(): void {
-    this.currentReviewIndex = (this.currentReviewIndex + 1) % this.reviews.length;
+  prevReview(): void {
+    const jump = 3;
+    if (this.currentReviewIndex - jump >= 0) {
+      this.currentReviewIndex -= jump;
+    } else {
+      // Go to last possible start index
+      this.currentReviewIndex = Math.floor((this.reviews.length - 1) / jump) * jump;
+    }
+    this.cdr.markForCheck();
   }
 
   goToReview(index: number): void {
     this.currentReviewIndex = index;
+    this.cdr.markForCheck();
+  }
+
+  get totalPages(): number[] {
+    const pagesCount = Math.ceil(this.reviews.length / 3);
+    return Array(pagesCount).fill(0).map((_, i) => i * 3);
   }
 
   changeQty(item: any, delta: number): void {
