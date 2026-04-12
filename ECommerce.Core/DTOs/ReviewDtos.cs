@@ -25,16 +25,26 @@ public class CreateReviewDto
     [Required]
     public string CustomerName { get; set; } = string.Empty;
 
+    public string? CustomerAvatar { get; set; }
+
     [Range(1, 5)]
     public int Rating { get; set; }
 
     [Required]
     [MaxLength(1000)]
     public string Comment { get; set; } = string.Empty;
+
+    public bool IsVerifiedPurchase { get; set; } = true;
+    public bool IsFeatured { get; set; } = false;
 }
 
 public class ReviewUpdateDto
 {
+    public int ProductId { get; set; }
+    public string CustomerName { get; set; } = string.Empty;
+    public string? CustomerAvatar { get; set; }
     public int Rating { get; set; }
     public string Comment { get; set; } = string.Empty;
+    public bool IsVerifiedPurchase { get; set; }
+    public bool IsFeatured { get; set; }
 }

@@ -1,17 +1,18 @@
 import { Injectable, inject } from "@angular/core";
-import { Observable } from "rxjs";
+import { Observable, of } from "rxjs";
 import { ApiHttpClient } from "../../core/http/http-client";
 
 export interface AdminReview {
   id: number;
-  userName: string;
-  userAvatar: string;
+  customerName: string;
+  customerAvatar: string;
   rating: number;
   comment: string;
   isVerifiedPurchase: boolean;
-  createdAt: string;
+  date: string;
   productId: number;
   productName: string;
+  isFeatured: boolean;
   likes: number;
 }
 
@@ -20,20 +21,28 @@ export interface AdminReview {
 })
 export class AdminReviewsService {
   private readonly api = inject(ApiHttpClient);
-  private readonly baseUrl = "/admin/reviews";
+  private readonly baseUrl = "/admin/reviews"; 
 
   getAll(): Observable<AdminReview[]> {
     return this.api.get<AdminReview[]>(this.baseUrl);
+  }
+
+  create(payload: any): Observable<AdminReview> {
+    return this.api.post<AdminReview>(this.baseUrl, payload);
   }
 
   delete(id: number): Observable<void> {
     return this.api.delete<void>(`${this.baseUrl}/${id}`);
   }
 
-  update(
-    id: number,
-    payload: { rating: number; comment: string },
-  ): Observable<AdminReview> {
+  update(id: number, payload: any): Observable<AdminReview> {
     return this.api.post<AdminReview>(`${this.baseUrl}/${id}`, payload);
+  }
+
+  uploadAvatar(file: File): Observable<string[]> {
+    if (!file) return of([]);
+    const formData = new FormData();
+    formData.append("files", file);
+    return this.api.post<string[]>(`${this.baseUrl}/upload-avatar`, formData);
   }
 }

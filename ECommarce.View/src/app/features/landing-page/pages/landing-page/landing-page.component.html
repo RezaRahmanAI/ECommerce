@@ -20,60 +20,98 @@
 
   <div *ngIf="product && !isLoading" class="animate-fade-in">
     
-    <!-- FULL HEIGHT HERO (30/70 Professional Split) -->
-    <section class="min-h-[100svh] md:h-[100svh] flex flex-col items-center relative overflow-hidden bg-black">
+    <!-- PREMIUM SIDE-BY-SIDE HERO -->
+    <section class="min-h-[100svh] flex flex-col md:flex-row items-center relative overflow-hidden bg-black px-6 md:px-12 lg:px-20 py-20 md:py-0">
       <!-- Background Texture -->
-      <div class="absolute inset-0 z-0 bg-cover bg-center opacity-70" 
-           style="background-image: linear-gradient(to bottom, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0.9) 100%), url('https://images.unsplash.com/photo-1550684848-fac1c5b4e853?auto=format&fit=crop&q=80&w=2070');"
+      <div class="absolute inset-0 z-0 bg-cover bg-center opacity-60 scale-105" 
+           style="background-image: linear-gradient(135deg, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0.95) 100%), url('https://images.unsplash.com/photo-1550684848-fac1c5b4e853?auto=format&fit=crop&q=80&w=2070');"
            loading="eager">
       </div>
       
-      <!-- Content Top Part (30% approx) -->
-      <div class="relative z-10 flex flex-col items-center justify-center w-full max-w-4xl mx-auto px-4 md:px-6 pt-10 pb-6 md:py-8 text-center md:basis-[38%] md:flex-none">
-
+      <!-- Content Left Column -->
+      <div class="relative z-10 flex flex-col items-center md:items-start justify-center w-full md:w-1/2 text-center md:text-left">
         
+        <!-- Premium Badge -->
+        <div class="premium-badge mb-8 animate-fade-in">
+          <span class="w-1.5 h-1.5 rounded-full bg-[#c8922a] inline-block mr-2 shadow-[0_0_10px_rgba(200,146,42,0.8)]"></span>
+          <span class="text-[10px] md:text-[11px] uppercase tracking-[0.3em] font-bold text-[#c8922a]/90">Premium Wellness Collection</span>
+        </div>
+
         <!-- Headline -->
-        <h1 *ngIf="product?.headline" 
-            class="text-white text-[1.3rem] md:text-[1.8rem] font-bold leading-tight max-w-2xl animate-fade-in delay-100">
-          {{ product?.headline }}
+        <h1 *ngIf="product.headline" 
+            class="text-white text-[2.5rem] md:text-[4.5rem] lg:text-[5.5rem] font-serif font-bold leading-[0.9] mb-4 animate-fade-in delay-100 uppercase tracking-tighter">
+          {{ product.headline }}
         </h1>
         
         <!-- Description -->
-        <div *ngIf="product?.subtitle" 
-             class="hero-subtitle text-white/90 text-sm md:text-lg max-w-2xl font-light mb-8 break-words animate-fade-in delay-200" 
-             [innerHTML]="product?.subtitle">
+        <div *ngIf="product.subtitle" 
+             class="hero-subtitle text-white/50 text-sm md:text-base max-w-md font-light mb-10 break-words animate-fade-in delay-200" 
+             [innerHTML]="product.subtitle">
         </div>
         
-        <!-- CTA Button (Slightly smaller for compact top) -->
-        <div class="mt-8 animate-fade-in delay-300 flex flex-col w-full max-w-[420px] mx-auto">
+        <!-- CTA Buttons -->
+        <div class="flex flex-col sm:flex-row gap-4 w-full md:w-auto animate-fade-in delay-300 mb-16">
           <button (click)="scrollToOrderForm()" 
-                  class="bg-[#1a1a1a] text-white px-8 h-12 text-xs font-semibold uppercase tracking-[0.15em] flex items-center justify-center gap-2 hover:bg-[#333] transition-all duration-300 w-full">
-            <lucide-icon [img]="icons.ShoppingCart" class="w-4 h-4"></lucide-icon>
-            অর্ডার করুন
+                  class="group relative bg-transparent border border-[#c8922a]/50 text-white px-8 h-14 text-[10px] font-black uppercase tracking-[0.2em] flex items-center justify-center gap-3 hover:bg-[#c8922a] hover:border-[#c8922a] transition-all duration-500 overflow-hidden">
+            <span class="relative z-10 flex items-center gap-2">
+              <lucide-icon [img]="icons.ShoppingCart" class="w-4 h-4"></lucide-icon>
+              Order Now — ৳{{ product.price || 0 }}
+            </span>
           </button>
+          
+        </div>
+
+        <!-- Stats Section -->
+        <div class="flex items-start gap-8 md:gap-12 animate-fade-in delay-500 border-t border-white/10 pt-8 w-full md:w-auto">
+          <div class="flex flex-col gap-1">
+            <span class="text-xl md:text-2xl font-serif font-bold text-white leading-none">100%</span>
+            <span class="text-[9px] uppercase tracking-widest text-white/40 font-bold leading-tight">Natural<br>Puritas</span>
+          </div>
+          <div class="w-px h-10 bg-white/10 hidden md:block"></div>
+          <div class="flex flex-col gap-1">
+            <span class="text-xl md:text-2xl font-serif font-bold text-white leading-none">9k+</span>
+            <span class="text-[9px] uppercase tracking-widest text-white/40 font-bold leading-tight">Global<br>Clients</span>
+          </div>
+          <div class="w-px h-10 bg-white/10 hidden md:block"></div>
+          <div class="flex flex-col gap-1">
+            <span class="text-xl md:text-2xl font-serif font-bold text-white leading-none">No. 1</span>
+            <span class="text-[9px] uppercase tracking-widest text-white/40 font-bold leading-tight">Quality<br>Choice</span>
+          </div>
         </div>
       </div>
 
-      <!-- Product Showcase Bottom Part (70% approx) -->
-      <div class="relative z-10 w-full max-w-4xl mx-auto flex justify-center items-end pb-8 px-4 md:px-6 md:pb-10 md:basis-[62%] md:flex-none min-h-0">
-        <img *ngIf="product?.imgUrl" 
-             [src]="imageUrlService.getImageUrl(product?.imgUrl)" 
-             [alt]="product?.headline" 
-             class="max-w-full max-h-full object-contain drop-shadow-[0_20px_50px_rgba(0,0,0,0.8)] animate-hero-visual block">
+      <!-- Right Column: Product Showcase -->
+      <div class="relative z-10 w-full md:w-1/2 flex justify-center items-center mt-16 md:mt-0">
+        <div class="relative group">
+          <!-- Background Glow -->
+          <div class="absolute -inset-20 bg-[#c8922a]/10 blur-[100px] rounded-full group-hover:bg-[#c8922a]/20 transition-all duration-700"></div>
+          
+          <!-- Image Frame -->
+          <div class="relative z-10 p-2 bg-gradient-to-b from-white/10 to-transparent backdrop-blur-sm border border-white/10 shadow-2xl animate-hero-visual">
+            <img *ngIf="product.imgUrl" 
+                 [src]="imageUrlService.getImageUrl(product.imgUrl)" 
+                 [alt]="product.headline" 
+                 class="max-w-full h-auto max-h-[500px] md:max-h-[600px] object-contain block group-hover:scale-105 transition-transform duration-1000">
+          </div>
+          
+          <!-- Floating Accent -->
+          <div class="absolute -bottom-6 -right-6 w-24 h-24 border-b-2 border-r-2 border-[#c8922a]/30 animate-pulse"></div>
+          <div class="absolute -top-6 -left-6 w-24 h-24 border-t-2 border-l-2 border-[#c8922a]/30 animate-pulse"></div>
+        </div>
       </div>
     </section>
 
     <!-- BENEFITS SECTION -->
-    <section class="bg-white py-16" *ngIf="product?.benefitsTitle || product?.benefitsContent">
+    <section class="bg-white py-16" *ngIf="product.benefitsTitle || product.benefitsContent">
       <div class="max-w-4xl mx-auto flex flex-col lg:flex-row items-center justify-between gap-10 md:gap-16 px-4 md:px-10">
         <div class="flex-1 text-center lg:text-left break-words">
           <div class="mb-6">
             <p class="text-[10px] uppercase tracking-[0.4em] text-[#c8922a] font-bold mb-2">Why Choose Us</p>
             <h2 class="text-3xl md:text-4xl font-serif italic text-[#1a1a1a]">
-              {{ product?.benefitsTitle || 'ব্যবহারের সুবিধাঃ' }}
+              {{ product.benefitsTitle || 'ব্যবহারের সুবিধাঃ' }}
             </h2>
           </div>
-          <div class="text-[#555] text-sm md:text-base leading-relaxed mb-8 ql-editor !text-left" [innerHTML]="product?.benefitsContent"></div>
+          <div class="text-[#555] text-sm md:text-base leading-relaxed mb-8 ql-editor !text-left" [innerHTML]="product.benefitsContent"></div>
           <div class="flex flex-col gap-3 mx-auto lg:mx-0 w-full max-w-[420px] lg:max-w-none">
             <a *ngIf="siteSettings?.facebookUrl"
                [href]="siteSettings?.facebookUrl"
@@ -99,25 +137,25 @@
           </div>
         </div>
         <div class="flex-1 flex justify-center relative min-h-[320px]">
-          <img *ngIf="product?.imgUrl" 
-               [src]="imageUrlService.getImageUrl(product?.imgUrl)" 
-               [alt]="product?.headline" 
+          <img *ngIf="product.imgUrl" 
+               [src]="imageUrlService.getImageUrl(product.imgUrl)" 
+               [alt]="product.headline" 
                class="max-w-full h-auto object-contain border border-[#e0e0e0]">
         </div>
       </div>
     </section>
 
     <!-- USAGE RULES SECTION -->
-    <section class="bg-[#fafafa] py-16" *ngIf="product?.usageTitle || product?.usageContent">
+    <section class="bg-[#fafafa] py-16" *ngIf="product.usageTitle || product.usageContent">
       <div class="max-w-4xl mx-auto flex flex-col lg:flex-row-reverse items-center justify-between gap-10 md:gap-16 px-4 md:px-10 text-center lg:text-left">
         <div class="flex-1 break-words">
           <div class="mb-6">
             <p class="text-[10px] uppercase tracking-[0.4em] text-[#c8922a] font-bold mb-2">How To Use</p>
             <h2 class="text-3xl md:text-4xl font-serif italic text-[#1a1a1a]">
-              {{ product?.usageTitle || 'লুব্রিকেন্ট জেল ব্যবহারের নিয়মঃ' }}
+              {{ product.usageTitle || 'লুব্রিকেন্ট জেল ব্যবহারের নিয়মঃ' }}
             </h2>
           </div>
-          <div class="text-[#555] text-sm md:text-base leading-relaxed mb-8 ql-editor !text-left" [innerHTML]="product?.usageContent"></div>
+          <div class="text-[#555] text-sm md:text-base leading-relaxed mb-8 ql-editor !text-left" [innerHTML]="product.usageContent"></div>
           <div class="flex flex-col gap-3 mx-auto lg:mx-0 w-full max-w-[420px] lg:max-w-none">
             <a *ngIf="siteSettings?.facebookUrl"
                [href]="siteSettings?.facebookUrl"
@@ -143,9 +181,9 @@
           </div>
         </div>
         <div class="flex-1 flex justify-center relative min-h-[320px]">
-          <img *ngIf="product?.imgUrl" 
-               [src]="imageUrlService.getImageUrl(product?.imgUrl)" 
-               [alt]="product?.headline" 
+          <img *ngIf="product.imgUrl" 
+               [src]="imageUrlService.getImageUrl(product.imgUrl)" 
+               [alt]="product.headline" 
                class="max-w-full h-auto object-contain border border-[#e0e0e0]">
         </div>
       </div>
@@ -227,14 +265,14 @@
     </section>
 
     <!-- SIDE EFFECTS -->
-    <section class="max-w-4xl mx-auto py-16 px-4 md:px-10 border-t border-[#e0e0e0] mt-16 text-center" *ngIf="product?.sideEffectsTitle || product?.sideEffectsContent">
+    <section class="max-w-4xl mx-auto py-16 px-4 md:px-10 border-t border-[#e0e0e0] mt-16 text-center" *ngIf="product.sideEffectsTitle || product.sideEffectsContent">
       <div class="mb-8 break-words">
         <p class="text-[10px] uppercase tracking-[0.4em] text-[#c8922a] font-bold mb-2">Important Notice</p>
         <h2 class="text-3xl font-serif italic text-[#1a1a1a]">
-          {{ product?.sideEffectsTitle || 'লুব্রিকেন্ট জেল এর পার্শ্বপ্রতিক্রিয়াঃ' }}
+          {{ product.sideEffectsTitle || 'লুব্রিকেন্ট জেল এর পার্শ্বপ্রতিক্রিয়াঃ' }}
         </h2>
       </div>
-      <div class="bg-[#fafafa] border border-[#e0e0e0] p-6 md:p-8 text-[#555] text-sm md:text-base ql-editor !text-center" [innerHTML]="product?.sideEffectsContent"></div>
+      <div class="bg-[#fafafa] border border-[#e0e0e0] p-6 md:p-8 text-[#555] text-sm md:text-base ql-editor !text-center" [innerHTML]="product.sideEffectsContent"></div>
     </section>
 
     <!-- ORDER FORM -->
@@ -461,44 +499,44 @@
     <div class="grid grid-cols-1 md:grid-cols-2">
       <!-- Image Column -->
       <div class="bg-[#fafafa] p-8 flex items-center justify-center border-b md:border-b-0 md:border-r border-gray-100">
-        <img [src]="selectedPopupItem?.imageUrl" 
-             [alt]="selectedPopupItem?.name" 
+        <img [src]="selectedPopupItem.imageUrl" 
+             [alt]="selectedPopupItem.name" 
              class="w-full h-auto max-h-[300px] object-contain drop-shadow-xl">
       </div>
 
       <!-- Content Column -->
       <div class="p-6 md:p-8 flex flex-col gap-6">
         <div>
-          <h3 class="text-xl font-serif italic text-primary mb-2">{{ selectedPopupItem?.name }}</h3>
-          <div class="text-2xl font-bold text-[#c8922a]">৳ {{ selectedPopupItem?.price | number:'1.2-2' }}</div>
+          <h3 class="text-xl font-serif italic text-primary mb-2">{{ selectedPopupItem.name }}</h3>
+          <div class="text-2xl font-bold text-[#c8922a]">৳ {{ selectedPopupItem.price | number:'1.2-2' }}</div>
         </div>
 
         <div class="space-y-6 overflow-y-auto max-h-[40vh] pr-2 custom-scrollbar" *ngIf="product">
           <!-- Benefits -->
-          <div *ngIf="product?.benefitsContent" class="space-y-2">
+          <div *ngIf="product.benefitsContent" class="space-y-2">
             <h4 class="text-xs uppercase tracking-widest font-bold text-[#c8922a]">
-              {{ product?.benefitsTitle || 'ব্যবহারের সুবিধা' }}
+              {{ product.benefitsTitle || 'ব্যবহারের সুবিধা' }}
             </h4>
             <div class="text-sm text-[#555] leading-relaxed ql-editor !p-0 !text-left" 
-                 [innerHTML]="product?.benefitsContent"></div>
+                 [innerHTML]="product.benefitsContent"></div>
           </div>
 
           <!-- How to Use -->
-          <div *ngIf="product?.usageContent" class="space-y-2 pt-4 border-t border-gray-100">
+          <div *ngIf="product.usageContent" class="space-y-2 pt-4 border-t border-gray-100">
             <h4 class="text-xs uppercase tracking-widest font-bold text-[#c8922a]">
-              {{ product?.usageTitle || 'ব্যবহারের নিয়ম' }}
+              {{ product.usageTitle || 'ব্যবহারের নিয়ম' }}
             </h4>
             <div class="text-sm text-[#555] leading-relaxed ql-editor !p-0 !text-left" 
-                 [innerHTML]="product?.usageContent"></div>
+                 [innerHTML]="product.usageContent"></div>
           </div>
 
           <!-- Side Effects -->
-          <div *ngIf="product?.sideEffectsContent" class="space-y-2 pt-4 border-t border-gray-100">
+          <div *ngIf="product.sideEffectsContent" class="space-y-2 pt-4 border-t border-gray-100">
             <h4 class="text-xs uppercase tracking-widest font-bold text-[#c8922a]">
-              {{ product?.sideEffectsTitle || 'পার্শ্বপ্রতিক্রিয়া' }}
+              {{ product.sideEffectsTitle || 'পার্শ্বপ্রতিক্রিয়া' }}
             </h4>
             <div class="text-[13px] text-[#555] leading-relaxed ql-editor !p-0 !text-left" 
-                 [innerHTML]="product?.sideEffectsContent"></div>
+                 [innerHTML]="product.sideEffectsContent"></div>
           </div>
         </div>
 

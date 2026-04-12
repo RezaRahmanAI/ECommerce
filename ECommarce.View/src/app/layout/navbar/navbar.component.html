@@ -5,7 +5,7 @@
   <ng-container *ngIf="vm$ | async as vm">
     <div class="site-container">
       <!-- Row 1: Logo & Nav & Icons -->
-      <div class="flex items-center justify-between h-12 lg:h-12">
+      <div class="flex items-center justify-between h-16 lg:h-20">
         <!-- Logo -->
         <a routerLink="/" class="flex-shrink-0 flex items-center group">
           <img
@@ -15,8 +15,11 @@
                 : 'assets/logo.svg'
             "
             [alt]="vm.settings.websiteName || 'SheraShopBD'"
-            class="h-8 w-auto object-contain transition-transform duration-300 group-hover:scale-105"
+            class="h-12 lg:h-16 w-auto object-contain transition-transform duration-300 group-hover:scale-105"
           />
+          <span class="hidden lg:block ml-3 font-display font-black text-2xl uppercase tracking-tighter text-primary group-hover:text-accent transition-colors duration-300">
+            SheraShop
+          </span>
         </a>
 
         <!-- Center-Right: Navigation Links -->
@@ -38,10 +41,7 @@
             <lucide-icon [img]="icons.Search" class="w-5 h-5"></lucide-icon>
           </button>
           
-          <a routerLink="/offers" class="flex items-center gap-1.5 text-primary hover:text-accent transition-colors cursor-pointer group">
-            <lucide-icon [img]="icons.Tag" class="w-4 h-4 text-primary/40 group-hover:text-accent transition-colors"></lucide-icon>
-            <span class="text-[11px] font-bold uppercase tracking-wider hidden sm:inline">Offer</span>
-          </a>
+
           
           <a routerLink="/cart" class="relative group p-1 text-primary hover:text-accent transition-all duration-300 cursor-pointer">
             <lucide-icon [img]="icons.ShoppingBag" class="w-5 h-5 stroke-[2]"></lucide-icon>
@@ -108,10 +108,53 @@
             <input
               type="text"
               [(ngModel)]="searchQuery"
+              (input)="onSearchInput()"
+              (focus)="showResults = !!searchQuery"
               (keyup.enter)="onSearch()"
+              id="navbar-search-input"
               placeholder="Search for products..."
               class="w-full h-10 pl-5 pr-12 bg-supporting/40 border border-border-color rounded-lg text-sm text-text-main placeholder:text-gray-400 focus:ring-2 focus:ring-primary/10 focus:border-primary/20 focus:bg-white transition-all duration-300"
             />
+            
+            <!-- Desktop Search Results Dropdown -->
+            <div *ngIf="showResults && (searchResults.length > 0 || isSearching)" 
+                 class="search-results-dropdown absolute top-full left-0 right-0 mt-2 bg-white/95 backdrop-blur-xl border border-border-color shadow-2xl rounded-2xl overflow-hidden z-[100] animate-fade-in-up origin-top">
+              
+              <div *ngIf="isSearching" class="p-8 text-center">
+                <div class="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+                <p class="mt-2 text-[10px] uppercase tracking-widest text-text-sub">Searching premium products...</p>
+              </div>
+
+              <div *ngIf="!isSearching && searchResults.length > 0" class="max-h-[400px] overflow-y-auto custom-scrollbar">
+                <div *ngFor="let product of searchResults" 
+                     (click)="onResultClick(product)"
+                     class="group flex items-center gap-4 p-4 hover:bg-supporting/30 transition-all duration-300 cursor-pointer border-b border-supporting last:border-0">
+                  <div class="h-16 w-16 rounded-xl bg-supporting/20 overflow-hidden flex-shrink-0 shadow-sm transition-transform duration-500 group-hover:scale-105">
+                    <img [src]="imageUrlService.getImageUrl(product.imgUrl, 128, 128)" 
+                         [alt]="product.name" 
+                         class="h-full w-full object-cover"/>
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <h4 class="text-xs font-bold text-text-main truncate group-hover:text-primary transition-colors leading-tight">{{ product.name }}</h4>
+                    <p class="text-[10px] text-text-sub mt-1 truncate">{{ product.headline }}</p>
+                    <div class="mt-2 flex items-center gap-2">
+                       <span class="text-xs font-black text-primary">৳ {{ product.price | number }}</span>
+                       <span *ngIf="product.compareAtPrice" class="text-[9px] text-text-sub line-through">৳ {{ product.compareAtPrice | number }}</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="p-4 bg-supporting/10 text-center border-t border-border-color">
+                  <button (click)="onSearch()" class="text-[9px] font-black uppercase tracking-[0.2em] text-primary hover:text-accent transition-colors">
+                    View All Results
+                  </button>
+                </div>
+              </div>
+
+              <div *ngIf="!isSearching && searchResults.length === 0" class="p-12 text-center">
+                 <p class="text-[11px] font-bold text-text-sub">No products match your search.</p>
+              </div>
+            </div>
             <button
               (click)="onSearch()"
               class="absolute right-2 px-4 py-2 bg-white text-gray-400 hover:text-primary transition-all duration-300"
@@ -126,62 +169,120 @@
 </header>
 
 <!-- Spacer to push content below fixed navbar -->
-<div class="h-16 lg:h-28"></div>
+<div class="h-20 lg:h-36"></div>
 
-<!-- Mobile Navigation Overlay (Refined) -->
+<!-- Mobile Search Overlay -->
 <div
-  *ngIf="isMenuOpen"
+  *ngIf="isSearchOpen"
   class="lg:hidden fixed inset-0 z-[100] bg-white pt-20 px-5 overflow-y-auto animate-fade-in"
 >
-  <!-- Mobile Search Bar -->
-  <div *ngIf="isSearchOpen" class="mb-6 animate-fade-in">
-    <div class="relative">
+  <ng-container *ngIf="vm$ | async as vm">
+    <div class="flex justify-between items-center mb-8">
+      <h2 class="text-lg font-black uppercase tracking-widest text-primary">Search Products</h2>
+      <button (click)="isSearchOpen = false" class="p-2 bg-supporting/30 rounded-full hover:bg-supporting/50 transition-colors">
+        <lucide-icon [img]="icons.X" class="w-5 h-5 text-text-main"></lucide-icon>
+      </button>
+    </div>
+
+    <!-- Mobile Search Bar -->
+    <div class="relative mb-6">
       <input
         #mobileSearchInput
         id="mobile-search-input"
         type="text"
         [(ngModel)]="searchQuery"
+        (input)="onSearchInput()"
+        (focus)="showResults = !!searchQuery"
         (keyup.enter)="onSearch()"
-        placeholder="Search for products..."
-        class="w-full h-12 pl-12 pr-12 bg-supporting/40 border border-border-color rounded-xl text-base text-text-main placeholder:text-gray-400"
+        placeholder="Enter product name..."
+        class="w-full h-14 pl-12 pr-12 bg-supporting/40 border border-border-color rounded-2xl text-base text-text-main placeholder:text-gray-400 focus:ring-2 focus:ring-primary/10 transition-all duration-300"
       />
       <lucide-icon [img]="icons.Search" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"></lucide-icon>
-      <button (click)="toggleMobileSearch()" class="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-gray-400 hover:text-primary">
-        <lucide-icon [img]="icons.X" class="w-5 h-5"></lucide-icon>
+      <button (click)="searchQuery = ''; showResults = false" *ngIf="searchQuery" class="absolute right-4 top-1/2 -translate-y-1/2 p-2 text-gray-400 hover:text-primary">
+        <lucide-icon [img]="icons.X" class="w-4 h-4"></lucide-icon>
       </button>
-    </div>
-  </div>
 
-  <div class="flex justify-between items-center mb-6">
-     <img src="assets/logo.svg" class="h-7 w-auto" alt="Logo" />
-     <button (click)="closeMenu()" class="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors">
-       <lucide-icon [img]="icons.X" class="w-5 h-5"></lucide-icon>
-     </button>
-  </div>
-  <nav class="flex flex-col gap-1">
-    <ng-container *ngIf="vm$ | async as vm">
+      <!-- Mobile Search Results Container -->
+      <div *ngIf="showResults" class="search-results-dropdown mt-6 space-y-4 animate-fade-in pb-10">
+        <div *ngIf="isSearching" class="py-12 text-center">
+          <div class="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+          <p class="mt-3 text-[10px] uppercase tracking-widest text-text-sub">Searching...</p>
+        </div>
+
+        <ng-container *ngIf="!isSearching">
+          <div *ngFor="let product of searchResults" 
+               (click)="onResultClick(product)"
+               class="flex items-center gap-4 bg-supporting/10 p-4 rounded-3xl active:scale-95 transition-all duration-200 border border-transparent active:border-primary/10">
+            <div class="h-16 w-16 rounded-2xl bg-white overflow-hidden flex-shrink-0 shadow-sm">
+              <img [src]="imageUrlService.getImageUrl(product.imgUrl, 128, 128)" 
+                   class="h-full w-full object-cover"/>
+            </div>
+            <div class="flex-1 min-w-0">
+              <h4 class="text-sm font-bold text-text-main truncate">{{ product.name }}</h4>
+              <p class="text-[11px] text-text-sub truncate">{{ product.headline }}</p>
+              <p class="text-sm font-black text-primary mt-1">৳ {{ product.price | number }}</p>
+            </div>
+          </div>
+          
+          <div *ngIf="searchResults.length === 0 && searchQuery" class="py-12 text-center text-sm text-text-sub border-2 border-dashed border-supporting rounded-3xl">
+            No products match your search.
+          </div>
+        </ng-container>
+      </div>
+    </div>
+  </ng-container>
+</div>
+
+<!-- Mobile Menu Overlay (Categories & Account) -->
+<div
+  *ngIf="isMenuOpen"
+  class="lg:hidden fixed inset-0 z-[100] bg-white pt-20 px-5 overflow-y-auto animate-fade-in"
+>
+  <ng-container *ngIf="vm$ | async as vm">
+    <div class="flex justify-between items-center mb-8">
+       <img 
+         [src]="vm.settings.logoUrl ? imageUrlService.getImageUrl(vm.settings.logoUrl) : 'assets/logo.svg'" 
+         class="h-12 w-auto object-contain" 
+         [alt]="vm.settings.websiteName || 'Logo'" 
+       />
+       <button (click)="closeMenu()" class="p-2 bg-supporting/30 rounded-full hover:bg-supporting/50 transition-colors">
+         <lucide-icon [img]="icons.X" class="w-5 h-5 text-text-main"></lucide-icon>
+       </button>
+    </div>
+
+    <!-- Navigation List -->
+    <div class="mb-4">
+      <h3 class="text-[10px] font-black uppercase tracking-[0.3em] text-text-sub mb-4 px-2">Collections</h3>
+      <nav class="flex flex-col gap-2">
         <a 
             *ngFor="let item of vm.menu"
             [routerLink]="['/category', item.slug]"
             (click)="closeMenu()"
-            class="py-4 px-2 border-b border-gray-100 text-sm font-semibold uppercase tracking-wider text-text-main hover:text-primary hover:bg-gray-50 transition-colors rounded-lg"
+            class="flex items-center justify-between py-4 px-4 bg-supporting/10 rounded-2xl text-xs font-bold uppercase tracking-wider text-text-main active:bg-supporting/30 transition-colors"
         >
-            {{ item.name }}
+            <span>{{ item.name }}</span>
+            <lucide-icon [img]="icons.ChevronDown" class="w-4 h-4 -rotate-90 opacity-20"></lucide-icon>
         </a>
-    </ng-container>
-  </nav>
-  <div class="mt-8 pb-8">
-    <a routerLink="/offers" (click)="closeMenu()" class="flex items-center gap-3 py-3 px-2 text-sm font-semibold uppercase tracking-wider text-text-main hover:text-primary hover:bg-gray-50 transition-colors rounded-lg">
-      <lucide-icon [img]="icons.Tag" class="w-4 h-4"></lucide-icon>
-      Offers
-    </a>
-    <a routerLink="/cart" (click)="closeMenu()" class="flex items-center gap-3 py-3 px-2 text-sm font-semibold uppercase tracking-wider text-text-main hover:text-primary hover:bg-gray-50 transition-colors rounded-lg">
-      <lucide-icon [img]="icons.ShoppingBag" class="w-4 h-4"></lucide-icon>
-      Cart
-    </a>
-    <a routerLink="/profile" (click)="closeMenu()" class="flex items-center gap-3 py-3 px-2 text-sm font-semibold uppercase tracking-wider text-text-main hover:text-primary hover:bg-gray-50 transition-colors rounded-lg">
-      <lucide-icon [img]="icons.User" class="w-4 h-4"></lucide-icon>
-      Account
-    </a>
-  </div>
+      </nav>
+    </div>
+
+    <!-- Account Actions -->
+    <div class="mt-8 pb-10 border-t border-supporting pt-8">
+      <h3 class="text-[10px] font-black uppercase tracking-[0.3em] text-text-sub mb-4 px-2">Account</h3>
+      <div class="grid grid-cols-2 gap-3">
+        <a routerLink="/cart" (click)="closeMenu()" class="flex flex-col gap-3 py-6 px-4 bg-supporting/10 rounded-2xl items-start active:bg-supporting/30 transition-colors">
+          <div class="p-2 bg-white rounded-xl shadow-sm">
+            <lucide-icon [img]="icons.ShoppingBag" class="w-5 h-5 text-primary"></lucide-icon>
+          </div>
+          <span class="text-[10px] font-black uppercase tracking-wider">Cart</span>
+        </a>
+        <a routerLink="/profile" (click)="closeMenu()" class="flex flex-col gap-3 py-6 px-4 bg-supporting/10 rounded-2xl items-start active:bg-supporting/30 transition-colors">
+          <div class="p-2 bg-white rounded-xl shadow-sm">
+            <lucide-icon [img]="icons.User" class="w-5 h-5 text-primary"></lucide-icon>
+          </div>
+          <span class="text-[10px] font-black uppercase tracking-wider">Profile</span>
+        </a>
+      </div>
+    </div>
+  </ng-container>
 </div>

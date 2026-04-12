@@ -102,13 +102,39 @@ input[type=number] {
   scrollbar-width: none;
 }
 
-.font-display {
-  font-family: 'Montserrat', sans-serif;
+.font-serif {
+  font-family: 'Playfair Display', serif;
 }
 
-.font-label {
-  font-family: 'Montserrat', sans-serif;
-  letter-spacing: 0.1em;
+.premium-badge {
+  display: flex;
+  items-center: center;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 8px 16px;
+  border-radius: 100px;
+  border: 1px solid rgba(200, 146, 42, 0.2);
+  width: fit-content;
+}
+
+.image-frame {
+  position: relative;
+  transition: all 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.hero-subtitle ::ng-deep p {
+  margin-bottom: 0.5rem;
+  line-height: 1.6;
+}
+
+/* Button Hover Effects */
+button.group:hover .relative {
+  transform: translateY(-1px);
+}
+
+@media (max-width: 768px) {
+  .font-serif {
+    font-size: 2.5rem !important;
+  }
 }
 
 .luxury-card {

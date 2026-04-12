@@ -65,7 +65,8 @@ public static class FileStorageExtensions
             Path.Combine(rootPath, "categories"),
             Path.Combine(rootPath, "products"),
             Path.Combine(rootPath, "banners"),
-            Path.Combine(rootPath, "subcategories")
+            Path.Combine(rootPath, "subcategories"),
+            Path.Combine(rootPath, "reviews")
         };
 
         foreach (var path in uploadPaths)

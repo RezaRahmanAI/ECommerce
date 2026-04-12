@@ -1,17 +1,25 @@
 export interface AdminReview {
   id: number;
-  userName: string;
-  userAvatar: string;
+  customerName: string; // Renamed from userName to match backend
+  customerAvatar: string; // Renamed from userAvatar
   rating: number;
   comment: string;
   isVerifiedPurchase: boolean;
-  createdAt: string;
+  date: string; // Renamed from createdAt
   productId: number;
   productName: string;
+  isFeatured: boolean;
   likes: number;
 }
 
 export interface ReviewUpdatePayload {
+  productId: number;
+  customerName: string;
+  customerAvatar?: string;
   rating: number;
   comment: string;
+  isVerifiedPurchase: boolean;
+  isFeatured: boolean;
 }
+
+export interface ReviewCreatePayload extends ReviewUpdatePayload {}
