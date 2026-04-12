@@ -16,6 +16,7 @@ export const appRoutes: Routes = [
       import("./features/men/pages/men-products-page/men-products-page.component").then(
         (m) => m.MenProductsPageComponent,
       ),
+    data: { preload: true },
   },
   {
     path: "women",
@@ -23,6 +24,7 @@ export const appRoutes: Routes = [
       import("./features/women/pages/women-products-page/women-products-page.component").then(
         (m) => m.WomenProductsPageComponent,
       ),
+    data: { preload: true },
   },
   {
     path: "children",
@@ -89,6 +91,7 @@ export const appRoutes: Routes = [
       import("./features/product-details/pages/product-details-page/product-details-page.component").then(
         (m) => m.ProductDetailsPageComponent,
       ),
+    data: { preload: true },
   },
   {
     path: "offer/:slug",
@@ -352,6 +355,7 @@ export const appRoutes: Routes = [
       import("./features/products/pages/product-gallery/product-gallery.component").then(
         (m) => m.ProductGalleryComponent,
       ),
+    data: { preload: true },
   },
   {
     path: "collection/:slug",

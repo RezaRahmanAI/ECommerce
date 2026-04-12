@@ -29,9 +29,8 @@ public class AdminProductsController : ControllerBase
     private readonly IConfiguration _config;
     private readonly ICacheService _cache;
     private readonly IOutputCacheStore _cacheStore;
-    private readonly INotificationService _notificationService;
 
-    public AdminProductsController(ApplicationDbContext context, IWebHostEnvironment environment, IProductService productService, IUnitOfWork unitOfWork, IConfiguration config, ICacheService cache, IOutputCacheStore cacheStore, INotificationService notificationService)
+    public AdminProductsController(ApplicationDbContext context, IWebHostEnvironment environment, IProductService productService, IUnitOfWork unitOfWork, IConfiguration config, ICacheService cache, IOutputCacheStore cacheStore)
     {
         _context = context;
         _environment = environment;
@@ -40,7 +39,6 @@ public class AdminProductsController : ControllerBase
         _config = config;
         _cache = cache;
         _cacheStore = cacheStore;
-        _notificationService = notificationService;
     }
 
     [HttpPost("upload-media")]
@@ -189,9 +187,6 @@ public class AdminProductsController : ControllerBase
             await _cache.RemoveAsync("home_featured_products");
             await _cacheStore.EvictByTagAsync("products", default);
 
-            // Notify clients about new product
-            await _notificationService.NotifyProductUpdateAsync("create", result.Id);
-
             return CreatedAtAction(nameof(GetProductById), new { id = result.Id }, result);
         }
         catch (KeyNotFoundException ex)
@@ -222,9 +217,6 @@ public class AdminProductsController : ControllerBase
             await _cache.RemoveAsync("home_new_arrivals");
             await _cache.RemoveAsync("home_featured_products");
             await _cacheStore.EvictByTagAsync("products", default);
-
-            // Notify clients about product update
-            await _notificationService.NotifyProductUpdateAsync("update", id);
 
             return Ok(result);
         }
@@ -349,9 +341,6 @@ public class AdminProductsController : ControllerBase
              {
                  await _cache.RemoveAsync(key);
              }
-
-             // Notify clients about stock update
-             await _notificationService.NotifyProductUpdateAsync("stock", product.Id);
 
              return Ok(new { message = "Stock updated successfully", newTotal = product.StockQuantity });
         }

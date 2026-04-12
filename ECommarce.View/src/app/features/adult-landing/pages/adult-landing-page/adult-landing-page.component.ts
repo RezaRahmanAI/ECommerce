@@ -1,5 +1,5 @@
-import { Component, DestroyRef, OnInit, inject, PLATFORM_ID } from "@angular/core";
-import { CommonModule, isPlatformBrowser } from "@angular/common";
+import { Component, DestroyRef, OnInit, inject, PLATFORM_ID, ChangeDetectionStrategy } from "@angular/core";
+import { CommonModule, isPlatformBrowser, NgOptimizedImage } from "@angular/common";
 import { FormBuilder, ReactiveFormsModule, Validators } from "@angular/forms";
 import { ActivatedRoute, Router, RouterModule } from "@angular/router";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
@@ -61,9 +61,11 @@ import { PriceDisplayComponent } from "../../../../shared/components/price-displ
     RouterModule,
     PriceDisplayComponent,
     LucideAngularModule,
+    NgOptimizedImage,
   ],
   templateUrl: "./adult-landing-page.component.html",
   styleUrl: "./adult-landing-page.component.css",
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AdultLandingPageComponent implements OnInit {
   // ... (rest of the code remains the same as previously written in Step 54)

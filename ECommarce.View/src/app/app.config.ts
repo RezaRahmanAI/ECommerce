@@ -3,9 +3,9 @@ import {
   provideRouter,
   withInMemoryScrolling,
   withPreloading,
-  PreloadAllModules,
   withComponentInputBinding,
 } from "@angular/router";
+import { SelectivePreloadStrategy } from "./core/strategies/selective-preload.strategy";
 import { provideAnimationsAsync } from "@angular/platform-browser/animations/async";
 import { provideHttpClient, withFetch, withInterceptors } from "@angular/common/http";
 import { provideCharts, withDefaultRegisterables } from "ng2-charts";
@@ -28,7 +28,7 @@ export const appConfig: ApplicationConfig = {
         scrollPositionRestoration: "enabled",
         anchorScrolling: "enabled",
       }),
-      withPreloading(PreloadAllModules),
+      withPreloading(SelectivePreloadStrategy),
       withComponentInputBinding(),
     ),
 

@@ -1,15 +1,16 @@
-import { Injectable, inject } from "@angular/core";
+import { Injectable, inject, PLATFORM_ID } from "@angular/core";
+import { isPlatformBrowser, isPlatformServer } from "@angular/common";
 import { HttpContext } from "@angular/common/http";
 import { Observable, of, shareReplay, BehaviorSubject, switchMap } from "rxjs";
-import { catchError, map } from "rxjs/operators";
+import { catchError, map, tap } from "rxjs/operators";
+import { TransferState, makeStateKey } from "@angular/core";
 import { HomeData } from "../models/home-data";
-
 import { ApiHttpClient } from "../http/http-client";
 import { Product } from "../models/product";
 import { Pagination } from "../models/pagination";
 import { Review } from "../models/review";
-import { environment } from "../../../environments/environment";
-import { SignalrService } from "./signalr.service";
+
+const HOME_DATA_KEY = makeStateKey<HomeData>("homeData");
 
 @Injectable({
   providedIn: "root",
@@ -18,32 +19,24 @@ export class ProductService {
   private readonly api = inject(ApiHttpClient);
   private readonly baseUrl = "/products";
   private readonly adminBaseUrl = "/admin/products";
-  private readonly signalr = inject(SignalrService);
+  private readonly transferState = inject(TransferState);
+  private readonly platformId = inject(PLATFORM_ID);
 
   private readonly refreshSubject = new BehaviorSubject<void>(void 0);
 
-  constructor() {
-    this.signalr.productUpdate$.subscribe(() => {
-      console.log("[ProductService] Real-time product refresh triggered");
-      this.refreshData();
-    });
-  }
-
   // Reactive Data Streams
   readonly homeData$ = this.refreshSubject.pipe(
-    switchMap(() => this.api.get<HomeData>("/home").pipe(
-      catchError(() => of(this.fallbackHomeData))
-    )),
+    switchMap(() => this.fetchHomeData()),
     shareReplay(1)
   );
 
-  readonly featuredProducts$ = this.refreshSubject.pipe(
-    switchMap(() => this.api.get<Pagination<Product>>(this.baseUrl, {
-      params: { isFeatured: true, pageSize: 12 }
-    }).pipe(
-      catchError(() => of({ data: [], count: 0 } as any))
-    )),
-    shareReplay(1)
+  readonly featuredProducts$ = this.homeData$.pipe(
+    map(data => ({
+      data: data.featuredProducts ?? [],
+      count: data.featuredProducts?.length ?? 0,
+      pageIndex: 1,
+      pageSize: data.featuredProducts?.length ?? 0
+    } as Pagination<Product>))
   );
 
   private readonly fallbackHomeData: HomeData = {
@@ -52,6 +45,28 @@ export class ProductService {
     newArrivals: [],
     featuredProducts: []
   };
+
+  private fetchHomeData(): Observable<HomeData> {
+    // BROWSER: Check if SSR already fetched this data
+    if (isPlatformBrowser(this.platformId)) {
+      const ssrData = this.transferState.get(HOME_DATA_KEY, null);
+      if (ssrData) {
+        this.transferState.remove(HOME_DATA_KEY); // Consume it once
+        return of(ssrData);
+      }
+    }
+
+    // SERVER or no cached data: fetch from API
+    return this.api.get<HomeData>("/home").pipe(
+      tap(data => {
+        // SERVER: Store data in TransferState so browser can reuse it
+        if (isPlatformServer(this.platformId)) {
+          this.transferState.set(HOME_DATA_KEY, data);
+        }
+      }),
+      catchError(() => of(this.fallbackHomeData))
+    );
+  }
 
   refreshData(): void {
     this.refreshSubject.next();

@@ -1,5 +1,5 @@
-import { Component, OnDestroy, inject, PLATFORM_ID } from "@angular/core";
-import { CommonModule, isPlatformBrowser } from "@angular/common";
+import { Component, OnDestroy, OnInit, Inject, inject, PLATFORM_ID } from "@angular/core";
+import { CommonModule, isPlatformBrowser, DOCUMENT } from "@angular/common";
 import {
   AbstractControl,
   FormArray,
@@ -59,7 +59,7 @@ interface MediaFormValue {
   ],
   templateUrl: "./admin-product-form.component.html",
 })
-export class AdminProductFormComponent implements OnDestroy {
+export class AdminProductFormComponent implements OnDestroy, OnInit {
   readonly icons = {
     ChevronRight,
     Check,
@@ -83,6 +83,7 @@ export class AdminProductFormComponent implements OnDestroy {
   private route = inject(ActivatedRoute);
   public imageUrlService = inject(ImageUrlService);
   private platformId = inject(PLATFORM_ID);
+  private document = inject(DOCUMENT);
 
   isEditMode = false;
   productId: number | null = null;
@@ -139,6 +140,19 @@ export class AdminProductFormComponent implements OnDestroy {
         this.form.get('slug')?.patchValue(slug, { emitEvent: false });
       }
     });
+  }
+
+  ngOnInit(): void {
+    // Only in browser, only for admin form
+    if (isPlatformBrowser(this.platformId)) {
+      if (!this.document.getElementById("quill-css")) {
+        const link = this.document.createElement("link");
+        link.id = "quill-css";
+        link.rel = "stylesheet";
+        link.href = "/assets/quill.snow.css";
+        this.document.head.appendChild(link);
+      }
+    }
   }
 
   loadCategories(): void {

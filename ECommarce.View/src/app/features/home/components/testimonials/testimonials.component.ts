@@ -1,5 +1,5 @@
-import { Component, OnInit, inject } from "@angular/core";
-import { CommonModule } from "@angular/common";
+import { Component, OnInit, inject, ChangeDetectionStrategy, ChangeDetectorRef } from "@angular/core";
+import { CommonModule, NgOptimizedImage } from "@angular/common";
 import { ReviewService } from "../../../../core/services/review.service";
 import { Review } from "../../../../core/models/review";
 import { ImageUrlService } from "../../../../core/services/image-url.service";
@@ -9,9 +9,10 @@ import { LucideAngularModule, Quote, Star, StarHalf } from "lucide-angular";
 @Component({
   selector: "app-testimonials",
   standalone: true,
-  imports: [CommonModule, LucideAngularModule],
+  imports: [CommonModule, LucideAngularModule, NgOptimizedImage],
   templateUrl: "./testimonials.component.html",
   styleUrl: "./testimonials.component.css",
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TestimonialsComponent implements OnInit {
   readonly icons = {
@@ -23,11 +24,13 @@ export class TestimonialsComponent implements OnInit {
   stars = [1, 2, 3, 4, 5];
 
   private readonly reviewService = inject(ReviewService);
+  private readonly cdr = inject(ChangeDetectorRef);
   readonly imageUrlService = inject(ImageUrlService);
 
   ngOnInit(): void {
     this.reviewService.getFeaturedReviews().subscribe((reviews) => {
       this.reviews = reviews;
+      this.cdr.markForCheck();
     });
   }
 

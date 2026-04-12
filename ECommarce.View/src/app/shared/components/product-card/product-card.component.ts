@@ -1,5 +1,16 @@
-import { Component, Input, ChangeDetectionStrategy, OnInit, inject, PLATFORM_ID } from "@angular/core";
-import { CommonModule, isPlatformBrowser } from "@angular/common";
+import {
+  Component,
+  Input,
+  OnInit,
+  inject,
+  PLATFORM_ID,
+  ChangeDetectionStrategy,
+} from "@angular/core";
+import {
+  CommonModule,
+  isPlatformBrowser,
+  NgOptimizedImage,
+} from "@angular/common";
 import { RouterLink } from "@angular/router";
 
 import {
@@ -24,6 +35,7 @@ import { ProductImage } from "../../../core/models/product";
     PriceDisplayComponent,
     LucideAngularModule,
     QuickAddModalComponent,
+    NgOptimizedImage,
   ],
   templateUrl: "./product-card.component.html",
   styleUrl: "./product-card.component.css",

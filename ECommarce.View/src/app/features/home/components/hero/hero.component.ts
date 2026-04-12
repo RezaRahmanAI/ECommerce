@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy, inject, Input } from "@angular/core";
-import { CommonModule } from "@angular/common"; 
+import { CommonModule, NgOptimizedImage } from "@angular/common"; 
 import { RouterModule } from "@angular/router"; 
 import { trigger, transition, style, animate } from "@angular/animations";
 import { ImageUrlService } from "../../../../core/services/image-url.service";
@@ -17,7 +17,7 @@ interface Slide {
 @Component({
   selector: "app-hero",
   standalone: true,
-  imports: [CommonModule, RouterModule, LucideAngularModule],
+  imports: [CommonModule, RouterModule, LucideAngularModule, NgOptimizedImage],
   templateUrl: "./hero.component.html",
   styleUrl: "./hero.component.css",
   animations: [

@@ -1,4 +1,4 @@
-import { Component, inject, PLATFORM_ID } from "@angular/core";
+import { Component, inject, PLATFORM_ID, ChangeDetectionStrategy } from "@angular/core";
 import { CommonModule, isPlatformBrowser } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { ActivatedRoute, Router, RouterLink } from "@angular/router";
@@ -59,6 +59,7 @@ import {
   ],
   templateUrl: "./product-details-page.component.html",
   styleUrl: "./product-details-page.component.css",
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProductDetailsPageComponent {
   readonly icons = {

@@ -23,8 +23,6 @@
             "tsConfig": "tsconfig.app.json",
             "assets": ["src/favicon.ico", "src/assets", "src/web.config"],
             "styles": [
-              "node_modules/quill/dist/quill.snow.css",
-              "node_modules/quill/dist/quill.bubble.css",
               "src/styles.css"
             ],
             "scripts": []

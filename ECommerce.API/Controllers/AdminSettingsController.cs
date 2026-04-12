@@ -20,15 +20,13 @@ public class AdminSettingsController : ControllerBase
     private readonly IConfiguration _config;
     private readonly IMemoryCache _cache;
     private readonly IOutputCacheStore _cacheStore;
-    private readonly INotificationService _notificationService;
 
-    public AdminSettingsController(ApplicationDbContext context, IWebHostEnvironment environment, IConfiguration config, IMemoryCache cache, INotificationService notificationService, IOutputCacheStore cacheStore)
+    public AdminSettingsController(ApplicationDbContext context, IWebHostEnvironment environment, IConfiguration config, IMemoryCache cache, IOutputCacheStore cacheStore)
     {
         _context = context;
         _environment = environment;
         _config = config;
         _cache = cache;
-        _notificationService = notificationService;
         _cacheStore = cacheStore;
     }
 
@@ -102,9 +100,6 @@ public class AdminSettingsController : ControllerBase
         _cache.Remove("site_settings");
         _cache.Remove("delivery_methods_active");
         await _cacheStore.EvictByTagAsync("settings", default);
-
-        // Notify clients to refresh settings
-        await _notificationService.NotifySettingsUpdateAsync();
 
         return Ok(dto);
     }

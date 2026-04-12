@@ -21,10 +21,12 @@
           class="group relative block aspect-[3/4] overflow-hidden bg-gray-100"
         >
           <!-- Image -->
-          <div
-            class="absolute inset-0 bg-cover bg-center transition-transform duration-[1000ms] ease-out group-hover:scale-105"
-            [style.backgroundImage]="'url(' + imageUrlService.getImageUrl(category.imageUrl) + ')'"
-          ></div>
+          <img
+            [ngSrc]="imageUrlService.getImageUrl(category.imageUrl)"
+            fill
+            class="object-cover transition-transform duration-[1000ms] ease-out group-hover:scale-105"
+            [alt]="category.name"
+          />
 
           <!-- Gradient Overlay -->
           <div

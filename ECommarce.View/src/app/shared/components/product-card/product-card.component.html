@@ -3,11 +3,10 @@
   <a [routerLink]="['/product', product.slug]" class="relative aspect-[3/4] block overflow-hidden bg-supporting border border-border-color rounded sm:rounded-lg">
     <img
       *ngIf="mainImage"
-      [src]="imageUrlService.getImageUrl(mainImage, 400)"
+      [ngSrc]="imageUrlService.getImageUrl(mainImage, 400)"
+      fill
       [alt]="product.headline"
-      loading="lazy"
-      decoding="async"
-      class="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+      class="object-cover transition-transform duration-700 group-hover:scale-105"
     />
     
     <!-- Sophisticated Badge -->

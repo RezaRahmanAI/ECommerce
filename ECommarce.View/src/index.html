@@ -10,6 +10,9 @@
     <base href="/" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="icon" type="image/x-icon" href="favicon.ico" />
+    <link rel="icon" type="image/png" sizes="32x32" href="assets/icons/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="assets/icons/favicon-16x16.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="assets/icons/apple-touch-icon.png" />
 
     <!-- Preconnect for faster font & API loading -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -31,17 +34,7 @@
     />
 
     <!-- Critical CSS inline hint -->
-    <style>
-      body { visibility: hidden; }
-      body.loaded { visibility: visible; }
-    </style>
-    <script>
-      if (typeof document !== 'undefined') {
-        document.addEventListener('DOMContentLoaded', function() {
-          document.body.classList.add('loaded');
-        });
-      }
-    </script>
+
   </head>
   <body>
     <app-root></app-root>

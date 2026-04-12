@@ -71,8 +71,11 @@ try
 
     app.UseAppSecurityMiddleware();
 
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    if (app.Environment.IsDevelopment())
+    {
+        app.UseSwagger();
+        app.UseSwaggerUI();
+    }
     
     if (!app.Environment.IsDevelopment())
     {
@@ -102,7 +105,6 @@ try
 
 
     app.MapControllers();
-    app.MapHub<ECommerce.API.Hubs.NotificationHub>("/hubs/notifications");
 
     // Welcome Message at root /
     app.MapGet("/", () => Results.Ok(new { message = "SheraShopBD API is running", version = "1.0.0", status = "Healthy" }));

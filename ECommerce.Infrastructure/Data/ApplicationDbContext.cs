@@ -222,5 +222,17 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             entity.HasQueryFilter(p => p.IsActive);
             entity.HasIndex(p => p.Slug).IsUnique();
         });
+
+        // Additional Performance Indexes
+        builder.Entity<HeroBanner>(entity =>
+        {
+            entity.HasIndex(h => h.DisplayOrder);
+            entity.HasIndex(h => h.IsActive);
+        });
+
+        builder.Entity<DailyTraffic>(entity =>
+        {
+            entity.HasIndex(t => t.Date).IsUnique();
+        });
     }
 }

@@ -66,5 +66,7 @@ public static class DataSeeder
             }
         }
 
+        // 3. Seed Dummy Data for all entities
+        await DummyDataSeeder.SeedAsync(context);
     }
 }

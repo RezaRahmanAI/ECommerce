@@ -18,15 +18,13 @@ public class OrderService : IOrderService
     private readonly IMapper _mapper;
     private readonly CustomerService _customerService;
     private readonly ISteadfastService _steadfastService;
-    private readonly INotificationService _notificationService;
 
-    public OrderService(IUnitOfWork unitOfWork, IMapper mapper, CustomerService customerService, ISteadfastService steadfastService, INotificationService notificationService)
+    public OrderService(IUnitOfWork unitOfWork, IMapper mapper, CustomerService customerService, ISteadfastService steadfastService)
     {
         _unitOfWork = unitOfWork;
         _mapper = mapper;
         _customerService = customerService;
         _steadfastService = steadfastService;
-        _notificationService = notificationService;
     }
 
     public async Task<OrderDto> CreateOrderAsync(OrderCreateDto orderDto)
@@ -138,16 +136,6 @@ public class OrderService : IOrderService
         try {
             var result = _mapper.Map<Order, OrderDto>(order);
             Console.WriteLine("--- MAPPING SUCCESSFUL ---");
-
-            // Notify admins about new order
-            try 
-            {
-                await _notificationService.NotifyNewOrderAsync(result.Id, result.OrderNumber, result.CustomerName);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"[Notification] Error sending new order notification: {ex.Message}");
-            }
 
             return result;
         } catch (Exception ex) {

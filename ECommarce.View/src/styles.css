@@ -43,27 +43,37 @@
     @apply font-display font-black uppercase tracking-tighter leading-none;
   }
 
-  /* Custom Scrollbar */
-  ::-webkit-scrollbar {
-    width: 10px;
-  }
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+}
 
-  ::-webkit-scrollbar-track {
-    @apply bg-supporting;
-  }
+::-webkit-scrollbar-track {
+  @apply bg-supporting;
+}
 
-  ::-webkit-scrollbar-thumb {
-    @apply bg-primary;
-  }
+::-webkit-scrollbar-thumb {
+  @apply bg-primary;
+}
 
-  ::-webkit-scrollbar-thumb:hover {
-    @apply bg-accent;
-  }
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-accent;
+}
 
-  /* Selection */
-  ::selection {
-    @apply bg-accent text-white;
-  }
+/* Selection */
+::selection {
+  @apply bg-accent text-white;
+}
+
+/* Smooth initial appearance — runs AFTER content is already visible */
+app-root {
+  display: block;
+  animation: sherashop-appear 0.15s ease-out both;
+}
+@keyframes sherashop-appear {
+  from { opacity: 0.85; transform: translateY(2px); }
+  to   { opacity: 1;    transform: translateY(0); }
+}
 }
 
 /* Custom Animations */

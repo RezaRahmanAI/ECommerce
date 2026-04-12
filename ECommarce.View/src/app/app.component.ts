@@ -2,7 +2,6 @@ import { Component, inject, OnInit, Renderer2, PLATFORM_ID } from "@angular/core
 import { DOCUMENT, CommonModule, isPlatformBrowser } from "@angular/common";
 import { Title } from "@angular/platform-browser";
 import { SiteSettingsService } from "./core/services/site-settings.service";
-import { SignalrService } from "./core/services/signalr.service";
 import { NavigationEnd, Router, RouterOutlet } from "@angular/router";
 import { filter, map, startWith } from "rxjs";
 
@@ -37,7 +36,6 @@ export class AppComponent implements OnInit {
   private logger = inject(LoggerService);
   private titleService = inject(Title);
   private analyticsService = inject(AnalyticsService);
-  private signalrService = inject(SignalrService);
   private platformId = inject(PLATFORM_ID);
 
   showPublicLayout$ = this.router.events.pipe(

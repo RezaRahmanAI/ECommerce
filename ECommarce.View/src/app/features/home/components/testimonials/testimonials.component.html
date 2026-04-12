@@ -43,7 +43,9 @@
                 *ngIf="review.customerAvatar"
                 class="h-full w-full object-cover"
                 [alt]="review.customerName"
-                [src]="imageUrlService.getImageUrl(review.customerAvatar)"
+                [ngSrc]="imageUrlService.getImageUrl(review.customerAvatar)"
+                width="48"
+                height="48"
               />
               <div
                 *ngIf="!review.customerAvatar"

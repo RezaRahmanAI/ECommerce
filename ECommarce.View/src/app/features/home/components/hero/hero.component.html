@@ -16,11 +16,14 @@
           class="absolute inset-0 h-full w-full"
         >
           <!-- Background Image -->
-          <div
-            class="absolute inset-0 bg-cover bg-center transition-transform duration-[12000ms] ease-out"
+          <img
+            [ngSrc]="imageUrlService.getImageUrl(slide.image, 1200)"
+            priority
+            fill
+            class="object-cover transition-transform duration-[12000ms] ease-out"
             [ngClass]="{ 'scale-110': i === currentSlide }"
-            [style.background-image]="'url(' + imageUrlService.getImageUrl(slide.image, 1200) + ')'"
-          ></div>
+            [alt]="slide.title"
+          />
 
           <!-- Content Overlay -->
           <div class="relative h-full flex items-center p-4 sm:p-6 md:p-10 lg:p-12 xl:p-16 bg-gradient-to-r from-black/20 via-black/10 to-transparent">

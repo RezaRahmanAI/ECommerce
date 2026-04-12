@@ -37,7 +37,6 @@ import {
   OrdersQueryParams,
 } from "../../models/orders.models";
 import { OrdersService } from "../../services/orders.service";
-import { SignalrService } from "../../../core/services/signalr.service";
 import { PriceDisplayComponent } from "../../../shared/components/price-display/price-display.component";
 
 interface OrderStats {
@@ -80,7 +79,6 @@ export class AdminOrdersComponent implements OnInit, OnDestroy {
     PenLine,
   };
   private ordersService = inject(OrdersService);
-  private signalrService = inject(SignalrService);
   private platformId = inject(PLATFORM_ID);
   private destroy$ = new Subject<void>();
 
@@ -201,21 +199,6 @@ export class AdminOrdersComponent implements OnInit, OnDestroy {
       .subscribe(() => {
         this.page = 1;
         this.loadOrders();
-      });
-
-    // Listen for real-time updates
-    this.signalrService.newOrder$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(() => {
-        console.log("[AdminOrders] New order received, refreshing list...");
-        this.loadOrders(false);
-      });
-
-    this.signalrService.orderStatusUpdate$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(() => {
-        console.log("[AdminOrders] Order status updated, refreshing stats...");
-        this.loadOrders(false);
       });
   }
 

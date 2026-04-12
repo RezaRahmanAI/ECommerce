@@ -4,10 +4,13 @@
       <div
         class="relative overflow-hidden min-h-[300px] sm:min-h-[400px] md:min-h-[500px] flex items-center bg-primary"
       >
-        <div
-          class="absolute inset-0 bg-cover bg-center opacity-40 grayscale"
-          [style.background-image]="'url(' + imageUrlService.getImageUrl(banner.imageUrl) + ')'"
-        ></div>
+        <img
+          [ngSrc]="imageUrlService.getImageUrl(banner.imageUrl)"
+          fill
+          priority
+          class="object-cover opacity-40 grayscale"
+          [alt]="banner.title"
+        />
         <div class="relative z-10 p-6 md:p-10 lg:p-16 xl:p-20 max-w-lg md:max-w-xl text-white">
           <span
             class="text-accent font-bold tracking-[0.3em] text-[10px] uppercase mb-4 md:mb-6 block"

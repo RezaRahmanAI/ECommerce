@@ -491,6 +491,9 @@ namespace ECommerce.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Date")
+                        .IsUnique();
+
                     b.ToTable("DailyTraffics");
                 });
 
@@ -577,6 +580,10 @@ namespace ECommerce.Infrastructure.Migrations
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("DisplayOrder");
+
+                    b.HasIndex("IsActive");
 
                     b.ToTable("HeroBanners");
                 });

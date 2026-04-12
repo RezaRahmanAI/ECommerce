@@ -38,12 +38,15 @@ public static class ServiceExtensions
             options.Providers.Add<GzipCompressionProvider>();
         });
 
-        services.Configure<BrotliCompressionProviderOptions>(options => options.Level = CompressionLevel.Optimal);
-        services.Configure<GzipCompressionProviderOptions>(options => options.Level = CompressionLevel.Optimal);
+        services.Configure<BrotliCompressionProviderOptions>(options => options.Level = CompressionLevel.Fastest);
+        services.Configure<GzipCompressionProviderOptions>(options => options.Level = CompressionLevel.Fastest);
 
         // 3. Caching
-        services.AddMemoryCache();
-        services.AddDistributedMemoryCache();
+        services.AddMemoryCache(options =>
+        {
+            options.SizeLimit = 1000;
+            options.CompactionPercentage = 0.25;
+        });
         services.AddSingleton<ICacheService, CacheService>();
 
         services.AddOutputCache(options =>
@@ -101,8 +104,6 @@ public static class ServiceExtensions
         services.AddScoped<IProductService, ProductService>();
         services.AddScoped<IReviewService, ReviewService>();
         services.AddScoped<IAdultProductService, AdultProductService>();
-        services.AddScoped<INotificationService, ECommerce.API.Services.NotificationService>();
-        services.AddSignalR();
 
         services.Configure<SteadfastSettings>(config.GetSection("Steadfast"));
         services.AddHttpClient<ISteadfastService, SteadfastService>()
@@ -249,8 +250,11 @@ public static class ServiceExtensions
         // Swagger middleware is enabled in Program.cs for all environments.
         // Registering these services unconditionally prevents startup failure
         // in production when `/swagger` is requested.
-        services.AddEndpointsApiExplorer();
-        services.AddSwaggerGen();
+        if (env.IsDevelopment())
+        {
+            services.AddEndpointsApiExplorer();
+            services.AddSwaggerGen();
+        }
 
         return services;
     }
