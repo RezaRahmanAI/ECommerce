@@ -1,4 +1,4 @@
-import { Component, inject, HostListener, PLATFORM_ID, ChangeDetectorRef } from "@angular/core";
+import { Component, inject, HostListener, PLATFORM_ID, ChangeDetectorRef, ChangeDetectionStrategy } from "@angular/core";
 import { CommonModule, isPlatformBrowser } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 
@@ -34,6 +34,7 @@ import { Product } from "../../core/models/product";
   imports: [CommonModule, RouterModule, LucideAngularModule, FormsModule],
   templateUrl: "./navbar.component.html",
   styleUrl: "./navbar.component.css",
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NavbarComponent {
   private readonly authService = inject(AuthService);

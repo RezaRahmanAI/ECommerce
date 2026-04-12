@@ -80,7 +80,7 @@ public class AdminProductsController : ControllerBase
         }
         catch (UnauthorizedAccessException ex)
         {
-             return StatusCode(403, new { message = "Permission denied: The server process does not have write access to the products folder. Error: " + ex.Message });
+            return StatusCode(403, new { message = "Permission denied: The server process does not have write access to the products folder. Error: " + ex.Message });
         }
         catch (Exception ex)
         {

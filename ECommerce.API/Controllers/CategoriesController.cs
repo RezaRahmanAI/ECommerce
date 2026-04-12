@@ -2,6 +2,7 @@ using ECommerce.Core.DTOs;
 using ECommerce.Core.Entities;
 using ECommerce.Core.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace ECommerce.API.Controllers;
 
@@ -10,15 +11,24 @@ namespace ECommerce.API.Controllers;
 public class CategoriesController : ControllerBase
 {
     private readonly IGenericRepository<Category> _categoryRepo;
+    private readonly IMemoryCache _cache;
 
-    public CategoriesController(IGenericRepository<Category> categoryRepo)
+    public CategoriesController(IGenericRepository<Category> categoryRepo, IMemoryCache cache)
     {
         _categoryRepo = categoryRepo;
+        _cache = cache;
     }
 
     [HttpGet]
     public async Task<ActionResult<List<CategoryDto>>> GetCategories()
     {
+        const string cacheKey = "categories_all_active";
+
+        if (_cache.TryGetValue(cacheKey, out List<CategoryDto>? cached) && cached != null)
+        {
+            return Ok(cached);
+        }
+
         var categories = await _categoryRepo.ListAllAsync();
         
         var result = categories
@@ -31,6 +41,12 @@ public class CategoriesController : ControllerBase
                 IsActive = c.IsActive
             })
             .ToList();
+
+        _cache.Set(cacheKey, result, new MemoryCacheEntryOptions 
+        { 
+            Size = 1, 
+            AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(1) 
+        });
             
         return Ok(result);
     }

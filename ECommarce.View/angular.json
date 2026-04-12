@@ -27,16 +27,18 @@
             ],
             "scripts": []
           },
-          "configurations": {
-            "production": {
-              "optimization": {
-                "scripts": true,
-                "styles": {
-                  "minify": true,
-                  "inlineCritical": true
+            "configurations": {
+              "production": {
+                "ssr": false,
+                "prerender": false,
+                "optimization": {
+                  "scripts": true,
+                  "styles": {
+                    "minify": true,
+                    "inlineCritical": true
+                  },
+                  "fonts": true
                 },
-                "fonts": true
-              },
               "extractLicenses": true,
               "sourceMap": false,
               "namedChunks": false,
@@ -44,7 +46,7 @@
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "600kb",
+                  "maximumWarning": "850kb",
                   "maximumError": "1.5mb"
                 },
                 {

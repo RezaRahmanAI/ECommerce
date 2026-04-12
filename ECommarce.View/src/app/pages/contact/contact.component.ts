@@ -56,7 +56,7 @@ export class ContactComponent {
     ChevronDown,
     Store,
   };
-  supportEmail = "support@sherashopbd.com";
+  supportEmail = "support@sherashopbd24.com";
   phone = "+8801XXXXXXXXX";
   phoneDial = "+8801XXXXXXXXX";
   address = "Dhaka, Bangladesh";

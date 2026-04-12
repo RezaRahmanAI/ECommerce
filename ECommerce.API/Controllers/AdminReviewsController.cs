@@ -61,6 +61,10 @@ public class AdminReviewsController : ControllerBase
 
             return Ok(uploadedUrls);
         }
+        catch (UnauthorizedAccessException ex)
+        {
+            return StatusCode(403, new { message = "Permission denied: The server process does not have write access to the reviews folder. Error: " + ex.Message });
+        }
         catch (Exception ex)
         {
             return StatusCode(500, new { message = "An error occurred during avatar upload: " + ex.Message });

@@ -5,33 +5,67 @@ using ECommerce.Core.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
+using Microsoft.Extensions.Caching.Memory;
+
 namespace ECommerce.API.Controllers;
 
 public class ReviewsController : BaseApiController
 {
     private readonly IReviewService _reviewService;
     private readonly IMapper _mapper;
+    private readonly IMemoryCache _cache;
 
-    public ReviewsController(IReviewService reviewService, IMapper mapper)
+    public ReviewsController(IReviewService reviewService, IMapper mapper, IMemoryCache _cache)
     {
         _reviewService = reviewService;
         _mapper = mapper;
+        this._cache = _cache;
     }
 
     [HttpGet("products/{productId}")]
     public async Task<ActionResult<IEnumerable<ReviewDto>>> GetReviews(int productId)
     {
+        var cacheKey = $"reviews_product_{productId}";
+
+        if (_cache.TryGetValue(cacheKey, out IEnumerable<ReviewDto>? cached) && cached != null)
+        {
+            return Ok(cached);
+        }
+
         var reviews = await _reviewService.GetReviewsByProductIdAsync(productId);
-        return Ok(_mapper.Map<IEnumerable<ReviewDto>>(reviews));
+        var result = _mapper.Map<IEnumerable<ReviewDto>>(reviews);
+
+        _cache.Set(cacheKey, result, new MemoryCacheEntryOptions 
+        { 
+            Size = 1, 
+            AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10) 
+        });
+
+        return Ok(result);
     }
 
     [HttpGet("featured")]
     public async Task<ActionResult<IEnumerable<ReviewDto>>> GetFeaturedReviews()
     {
+        const string cacheKey = "reviews_featured";
+
+        if (_cache.TryGetValue(cacheKey, out IEnumerable<ReviewDto>? cached) && cached != null)
+        {
+            return Ok(cached);
+        }
+
         try 
         {
             var reviews = await _reviewService.GetFeaturedReviewsAsync();
-            return Ok(_mapper.Map<IEnumerable<ReviewDto>>(reviews));
+            var result = _mapper.Map<IEnumerable<ReviewDto>>(reviews);
+
+            _cache.Set(cacheKey, result, new MemoryCacheEntryOptions 
+            { 
+                Size = 1, 
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(30) 
+            });
+
+            return Ok(result);
         }
         catch (Exception ex)
         {

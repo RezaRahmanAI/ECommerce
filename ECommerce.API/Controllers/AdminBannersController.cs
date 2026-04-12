@@ -162,22 +162,37 @@ public class AdminBannersController : ControllerBase
     [HttpPost("image")]
     public async Task<ActionResult<object>> UploadImage([FromForm] IFormFile file)
     {
-        if (file == null || file.Length == 0)
-            return BadRequest("No file uploaded");
-
-        var externalPath = FileStorageExtensions.GetExternalMediaPath(_config, _environment);
-        var uploadsFolder = Path.Combine(externalPath, "banners");
-        Directory.CreateDirectory(uploadsFolder);
-
-        var fileExtension = Path.GetExtension(file.FileName);
-        var fileName = $"{Guid.NewGuid()}{fileExtension}";
-        var filePath = Path.Combine(uploadsFolder, fileName);
-
-        using (var stream = new FileStream(filePath, FileMode.Create))
+        try 
         {
-            await file.CopyToAsync(stream);
-        }
+            if (file == null || file.Length == 0)
+                return BadRequest("No file uploaded");
 
-        return Ok(new { url = $"/uploads/banners/{fileName}" });
+            var externalPath = FileStorageExtensions.GetExternalMediaPath(_config, _environment);
+            var uploadsFolder = Path.Combine(externalPath, "banners");
+            
+            if (!Directory.Exists(uploadsFolder))
+            {
+                Directory.CreateDirectory(uploadsFolder);
+            }
+
+            var fileExtension = Path.GetExtension(file.FileName);
+            var fileName = $"{Guid.NewGuid()}{fileExtension}";
+            var filePath = Path.Combine(uploadsFolder, fileName);
+
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await file.CopyToAsync(stream);
+            }
+
+            return Ok(new { url = $"/uploads/banners/{fileName}" });
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return StatusCode(403, new { message = "Permission denied: The server process does not have write access to the banners folder. Error: " + ex.Message });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { message = "An error occurred during banner image upload: " + ex.Message });
+        }
     }
 }

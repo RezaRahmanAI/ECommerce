@@ -15,14 +15,20 @@ public static class FileStorageExtensions
         catch (Exception ex)
         {
             Console.Error.WriteLine($"WARNING: External media path resolution failed: {ex.Message}");
-            externalMediaPath = Path.Combine(Path.GetTempPath(), "SheraShopMedia");
+            externalMediaPath = Path.Combine(env.ContentRootPath, "wwwroot", "uploads");
         }
 
         try
         {
-            Directory.CreateDirectory(externalMediaPath);
+            if (!Directory.Exists(externalMediaPath))
+            {
+                Directory.CreateDirectory(externalMediaPath);
+            }
             EnsureUploadDirectories(externalMediaPath);
 
+            // If the path is outside wwwroot, we still need this. 
+            // If it's inside wwwroot, standard app.UseStaticFiles() will also serve it, 
+            // but this mapping ensures /uploads always works regardless of location.
             app.UseStaticFiles(new StaticFileOptions
             {
                 FileProvider = new PhysicalFileProvider(externalMediaPath),
@@ -35,7 +41,6 @@ public static class FileStorageExtensions
         }
         catch (Exception ex)
         {
-            // Never crash app startup because of directory permissions.
             Console.Error.WriteLine($"WARNING: External media static file host disabled: {ex.Message}");
         }
 
@@ -45,17 +50,18 @@ public static class FileStorageExtensions
     public static string GetExternalMediaPath(IConfiguration config, IWebHostEnvironment env)
     {
         var configuredPath = config["ExternalMediaPath"];
+        
+        // If path is absolute, use it. If relative, combine with ContentRoot.
         if (!string.IsNullOrWhiteSpace(configuredPath))
         {
-            return configuredPath;
+            return Path.IsPathRooted(configuredPath) 
+                ? configuredPath 
+                : Path.Combine(env.ContentRootPath, configuredPath);
         }
 
-        var contentRoot = env.ContentRootPath;
-        var parent = Directory.GetParent(contentRoot);
-
-        return parent != null
-            ? Path.Combine(parent.FullName, "SheraShopMedia")
-            : Path.Combine(contentRoot, "SheraShopMedia");
+        // Default: Use wwwroot/uploads
+        var webRoot = env.WebRootPath ?? Path.Combine(env.ContentRootPath, "wwwroot");
+        return Path.Combine(webRoot, "uploads");
     }
 
     private static void EnsureUploadDirectories(string rootPath)
@@ -66,7 +72,8 @@ public static class FileStorageExtensions
             Path.Combine(rootPath, "products"),
             Path.Combine(rootPath, "banners"),
             Path.Combine(rootPath, "subcategories"),
-            Path.Combine(rootPath, "reviews")
+            Path.Combine(rootPath, "reviews"),
+            Path.Combine(rootPath, "settings")
         };
 
         foreach (var path in uploadPaths)

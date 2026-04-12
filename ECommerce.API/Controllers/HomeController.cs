@@ -38,8 +38,8 @@ public class HomeController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<HomePageDto>> GetHomeData()
     {
-        // Execute tasks sequentially to satisfy DbContext thread-safety (scoped context)
-        var banners = await _cache.GetOrCreateAsync("home_banners", async entry =>
+        // Define cache-wrapped tasks for parallel execution
+        var bannersTask = _cache.GetOrCreateAsync("home_banners", async entry =>
         {
             entry.SlidingExpiration = TimeSpan.FromMinutes(30);
             entry.Size = 1;
@@ -58,7 +58,7 @@ public class HomeController : ControllerBase
             }).ToList();
         });
 
-        var newArrivals = await _cache.GetOrCreateAsync("home_new_arrivals", async entry =>
+        var newArrivalsTask = _cache.GetOrCreateAsync("home_new_arrivals", async entry =>
         {
             entry.SlidingExpiration = TimeSpan.FromMinutes(10);
             entry.Size = 1;
@@ -68,7 +68,7 @@ public class HomeController : ControllerBase
             return _mapper.Map<IReadOnlyList<Product>, IReadOnlyList<ProductListDto>>(items);
         });
 
-        var featuredProducts = await _cache.GetOrCreateAsync("home_featured_products", async entry =>
+        var featuredProductsTask = _cache.GetOrCreateAsync("home_featured_products", async entry =>
         {
             entry.SlidingExpiration = TimeSpan.FromMinutes(10);
             entry.Size = 1;
@@ -78,7 +78,7 @@ public class HomeController : ControllerBase
             return _mapper.Map<IReadOnlyList<Product>, IReadOnlyList<ProductListDto>>(items);
         });
 
-        var categories = await _cache.GetOrCreateAsync("home_categories", async entry =>
+        var categoriesTask = _cache.GetOrCreateAsync("home_categories", async entry =>
         {
             entry.SlidingExpiration = TimeSpan.FromHours(1);
             entry.Size = 1;
@@ -86,12 +86,15 @@ public class HomeController : ControllerBase
             return _mapper.Map<IReadOnlyList<CategoryDto>>(items);
         });
 
+        // Execute all tasks in parallel
+        await Task.WhenAll(bannersTask, newArrivalsTask, featuredProductsTask, categoriesTask);
+
         return Ok(new HomePageDto
         {
-            Banners = banners ?? new List<HeroBannerDto>(),
-            NewArrivals = newArrivals ?? new List<ProductListDto>(),
-            FeaturedProducts = featuredProducts ?? new List<ProductListDto>(),
-            Categories = categories ?? new List<CategoryDto>()
+            Banners = await bannersTask ?? new List<HeroBannerDto>(),
+            NewArrivals = await newArrivalsTask ?? new List<ProductListDto>(),
+            FeaturedProducts = await featuredProductsTask ?? new List<ProductListDto>(),
+            Categories = await categoriesTask ?? new List<CategoryDto>()
         });
     }
 }

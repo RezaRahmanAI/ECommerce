@@ -44,8 +44,8 @@ public static class ServiceExtensions
         // 3. Caching
         services.AddMemoryCache(options =>
         {
-            options.SizeLimit = 1000;
-            options.CompactionPercentage = 0.25;
+            options.SizeLimit = 10000;
+            options.CompactionPercentage = 0.20;
         });
         services.AddSingleton<ICacheService, CacheService>();
 
@@ -56,7 +56,12 @@ public static class ServiceExtensions
             
             options.AddPolicy("Products", builder =>
                 builder.Expire(TimeSpan.FromMinutes(10))
+                       .SetVaryByQuery("slug", "id")
                        .Tag("products"));
+
+            options.AddPolicy("HomeData", builder =>
+                builder.Expire(TimeSpan.FromMinutes(15))
+                       .Tag("home"));
 
             options.AddPolicy("Categories", builder =>
                 builder.Expire(TimeSpan.FromHours(1))
@@ -232,7 +237,7 @@ public static class ServiceExtensions
                 else
                 {
                     // Production Fallback: Hardcoded safe defaults
-                    builder.WithOrigins("https://sherashopbd.com", "https://www.sherashopbd.com", "https://api.sherashopbd.com")
+                    builder.WithOrigins("https://sherashopbd24.com", "https://www.sherashopbd24.com", "https://api.sherashopbd24.com")
                            .WithMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                            .WithHeaders("Content-Type", "Authorization", "X-Session-Id", "X-Requested-With")
                            .AllowCredentials();

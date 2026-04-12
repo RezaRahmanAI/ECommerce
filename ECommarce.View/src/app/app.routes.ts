@@ -106,6 +106,7 @@ export const appRoutes: Routes = [
       import("./features/cart/pages/cart-page/cart-page.component").then(
         (m) => m.CartPageComponent,
       ),
+    data: { preload: true },
   },
   {
     path: "checkout",
@@ -113,6 +114,7 @@ export const appRoutes: Routes = [
       import("./features/checkout/pages/checkout-page/checkout-page.component").then(
         (m) => m.CheckoutPageComponent,
       ),
+    data: { preload: true },
   },
   {
     path: "order-confirmation/:orderId",
@@ -178,176 +180,7 @@ export const appRoutes: Routes = [
         (m) => m.AdminLayoutComponent,
       ),
     canActivate: [AdminGuard],
-    children: [
-      { path: "", redirectTo: "dashboard", pathMatch: "full" },
-      {
-        path: "dashboard",
-        loadComponent: () =>
-          import("./admin/pages/dashboard-overview/dashboard-overview.component").then(
-            (m) => m.DashboardOverviewComponent,
-          ),
-        data: { title: "Dashboard Overview" },
-      },
-      {
-        path: "products",
-        loadComponent: () =>
-          import("./admin/pages/admin-products/admin-products.component").then(
-            (m) => m.AdminProductsComponent,
-          ),
-        data: { title: "Products" },
-      },
-      {
-        path: "products/categories",
-        loadComponent: () =>
-          import("./admin/pages/admin-category-management/admin-category-management.component").then(
-            (m) => m.AdminCategoryManagementComponent,
-          ),
-        data: { title: "Category Management" },
-      },
-      {
-        path: "inventory",
-        loadComponent: () =>
-          import("./admin/pages/admin-inventory/admin-inventory.component").then(
-            (m) => m.AdminInventoryComponent,
-          ),
-        data: { title: "Inventory Management" },
-      },
-      {
-        path: "products/create",
-        loadComponent: () =>
-          import("./admin/pages/admin-product-form/admin-product-form.component").then(
-            (m) => m.AdminProductFormComponent,
-          ),
-        data: { title: "Add Product" },
-      },
-      {
-        path: "products/:id/edit",
-        loadComponent: () =>
-          import("./admin/pages/admin-product-form/admin-product-form.component").then(
-            (m) => m.AdminProductFormComponent,
-          ),
-        data: { title: "Edit Product" },
-      },
-
-      {
-        path: "orders",
-        loadComponent: () =>
-          import("./admin/pages/admin-orders/admin-orders.component").then(
-            (m) => m.AdminOrdersComponent,
-          ),
-        data: { title: "Order Management" },
-      },
-      {
-        path: "orders/:id",
-        loadComponent: () =>
-          import("./admin/pages/admin-order-details/admin-order-details.component").then(
-            (m) => m.AdminOrderDetailsComponent,
-          ),
-        data: { title: "Order Details" },
-      },
-      {
-        path: "customers",
-        loadComponent: () =>
-          import("./admin/pages/admin-customers/admin-customers.component").then(
-            (m) => m.AdminCustomersComponent,
-          ),
-        data: {
-          title: "Customers",
-          description: "Customer management",
-        },
-      },
-      {
-        path: "analytics",
-        loadComponent: () =>
-          import("./admin/pages/admin-analytics/admin-analytics.component").then(
-            (m) => m.AdminAnalyticsComponent,
-          ),
-        data: {
-          title: "Analytics",
-          description: "Performance reports",
-        },
-      },
-      {
-        path: "settings",
-        loadComponent: () =>
-          import("./admin/pages/admin-settings/admin-settings.component").then(
-            (m) => m.AdminSettingsComponent,
-          ),
-        data: { title: "Settings" },
-      },
-      {
-        path: "banners",
-        loadComponent: () =>
-          import("./admin/pages/admin-banners/admin-banners.component").then(
-            (m) => m.AdminBannersComponent,
-          ),
-        data: { title: "Banners" },
-      },
-      {
-        path: "navigation",
-        loadComponent: () =>
-          import("./admin/pages/admin-navigation-management/admin-navigation-management.component").then(
-            (m) => m.AdminNavigationManagementComponent,
-          ),
-        data: { title: "Navigation Management" },
-      },
-      {
-        path: "pages",
-        loadComponent: () =>
-          import("./admin/pages/admin-pages/admin-pages.component").then(
-            (m) => m.AdminPagesComponent,
-          ),
-        data: { title: "Content Pages" },
-      },
-      {
-        path: "reviews",
-        loadComponent: () =>
-          import("./admin/pages/admin-reviews/admin-reviews.component").then(
-            (m) => m.AdminReviewsComponent,
-          ),
-        data: { title: "Reviews Management" },
-      },
-      {
-        path: "adult-products",
-        loadComponent: () =>
-          import("./admin/pages/admin-adult-products/admin-adult-products.component").then(
-            (m) => m.AdminAdultProductsComponent,
-          ),
-        data: { title: "Adult Products" },
-      },
-      {
-        path: "adult-products/new",
-        loadComponent: () =>
-          import("./admin/pages/admin-adult-product-form/admin-adult-product-form.component").then(
-            (m) => m.AdminAdultProductFormComponent,
-          ),
-        data: { title: "Add Adult Product" },
-      },
-      {
-        path: "adult-products/edit/:id",
-        loadComponent: () =>
-          import("./admin/pages/admin-adult-product-form/admin-adult-product-form.component").then(
-            (m) => m.AdminAdultProductFormComponent,
-          ),
-        data: { title: "Edit Adult Product" },
-      },
-      {
-        path: "security",
-        loadComponent: () =>
-          import("./admin/pages/admin-blocked-ips/admin-blocked-ips.component").then(
-            (m) => m.AdminBlockedIpsComponent,
-          ),
-        data: { title: "Security & IP Blocking" },
-      },
-      {
-        path: "logout",
-        loadComponent: () =>
-          import("./admin/pages/admin-logout/admin-logout.component").then(
-            (m) => m.AdminLogoutComponent,
-          ),
-        data: { title: "Logging out" },
-      },
-    ],
+    loadChildren: () => import("./admin/admin.routes"),
   },
   {
     path: "category/:slug",

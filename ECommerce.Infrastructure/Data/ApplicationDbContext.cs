@@ -76,9 +76,13 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             entity.HasIndex(p => p.Price);
             
             // Filtered index for active storefront products
-            entity.HasIndex(p => new { p.IsActive, p.CategoryId })
+            entity.HasIndex(p => new { p.IsActive, p.CategoryId, p.CreatedAt })
                   .HasFilter("[IsActive] = 1")
-                  .HasDatabaseName("IX_Products_Storefront_Active");
+                  .HasDatabaseName("IX_Products_Gallery_Performance");
+
+            entity.HasIndex(p => new { p.IsActive, p.IsNew, p.CreatedAt })
+                  .HasFilter("[IsActive] = 1 AND [IsNew] = 1")
+                  .HasDatabaseName("IX_Products_NewArrivals_Performance");
 
             // Additional indexes for common queries
             entity.HasIndex(p => p.StockQuantity);

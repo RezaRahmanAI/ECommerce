@@ -107,23 +107,38 @@ public class AdminSettingsController : ControllerBase
     [HttpPost("media")]
     public async Task<ActionResult<object>> UploadLogo(IFormFile file)
     {
-        if (file == null || file.Length == 0)
-            return BadRequest("No file uploaded");
-
-        var externalPath = FileStorageExtensions.GetExternalMediaPath(_config, _environment);
-        var uploadsFolder = Path.Combine(externalPath, "settings");
-        Directory.CreateDirectory(uploadsFolder);
-
-        var fileExtension = Path.GetExtension(file.FileName);
-        var fileName = $"logo_{DateTime.UtcNow.Ticks}{fileExtension}";
-        var filePath = Path.Combine(uploadsFolder, fileName);
-
-        using (var stream = new FileStream(filePath, FileMode.Create))
+        try 
         {
-            await file.CopyToAsync(stream);
-        }
+            if (file == null || file.Length == 0)
+                return BadRequest("No file uploaded");
 
-        return Ok(new { url = $"/uploads/settings/{fileName}" });
+            var externalPath = FileStorageExtensions.GetExternalMediaPath(_config, _environment);
+            var uploadsFolder = Path.Combine(externalPath, "settings");
+            
+            if (!Directory.Exists(uploadsFolder))
+            {
+                Directory.CreateDirectory(uploadsFolder);
+            }
+
+            var fileExtension = Path.GetExtension(file.FileName);
+            var fileName = $"logo_{DateTime.UtcNow.Ticks}{fileExtension}";
+            var filePath = Path.Combine(uploadsFolder, fileName);
+
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await file.CopyToAsync(stream);
+            }
+
+            return Ok(new { url = $"/uploads/settings/{fileName}" });
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return StatusCode(403, new { message = "Permission denied: The server process does not have write access to the settings folder. Error: " + ex.Message });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { message = "An error occurred during logo upload: " + ex.Message });
+        }
     }
 
     // Delivery Methods CRUD

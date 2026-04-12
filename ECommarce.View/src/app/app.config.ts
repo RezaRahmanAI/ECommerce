@@ -8,7 +8,7 @@ import {
 import { SelectivePreloadStrategy } from "./core/strategies/selective-preload.strategy";
 import { provideAnimationsAsync } from "@angular/platform-browser/animations/async";
 import { provideHttpClient, withFetch, withInterceptors } from "@angular/common/http";
-import { provideCharts, withDefaultRegisterables } from "ng2-charts";
+import { provideClientHydration } from "@angular/platform-browser";
 
 
 import { appRoutes } from "./app.routes";
@@ -22,6 +22,7 @@ import { httpCacheInterceptor } from "./interceptors/cache.interceptor";
 export const appConfig: ApplicationConfig = {
   providers: [
     provideZoneChangeDetection({ eventCoalescing: true }),
+    provideClientHydration(),
     provideRouter(
       appRoutes,
       withInMemoryScrolling({
@@ -48,6 +49,5 @@ export const appConfig: ApplicationConfig = {
         baseUrl: environment.apiBaseUrl,
       },
     },
-    provideCharts(withDefaultRegisterables()),
   ],
 };

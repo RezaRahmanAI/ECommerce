@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from "@angular/core";
+import { Component, inject, OnInit, ChangeDetectionStrategy } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { SiteSettingsService } from "../../core/services/site-settings.service";
 import { ImageUrlService } from "../../core/services/image-url.service";
@@ -9,6 +9,7 @@ import { ImageUrlService } from "../../core/services/image-url.service";
   imports: [CommonModule],
   templateUrl: "./footer.component.html",
   styleUrl: "./footer.component.css",
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FooterComponent implements OnInit {
   settingsService = inject(SiteSettingsService);
