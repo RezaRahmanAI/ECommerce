@@ -47,10 +47,4 @@
     </div>
   </div>
 
-  <app-quick-add-modal
-    *ngIf="showQuickAdd"
-    [product]="$any(product)"
-    (close)="showQuickAdd = false; isOrdering = false"
-    (added)="onQuickAddConfirm()"
-  ></app-quick-add-modal>
 </div>

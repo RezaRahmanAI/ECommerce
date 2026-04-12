@@ -32,41 +32,52 @@ import {
   ],
   template: `
     <div
-      class="fixed bottom-6 right-6 z-50 flex flex-col gap-2 pointer-events-none"
+      class="fixed bottom-4 left-4 right-4 sm:bottom-6 sm:right-6 sm:left-auto z-[100] flex flex-col gap-3 pointer-events-none sm:max-w-md sm:w-full"
     >
       <div
         *ngFor="let toast of toasts"
         @toastAnimation
-        class="pointer-events-auto min-w-[300px] bg-[#1a1a1a] text-white px-6 py-4 shadow-xl flex items-center justify-between gap-4 border-l-4"
+        class="pointer-events-auto w-full border rounded-xl p-4 shadow-2xl shadow-black/10 flex items-start gap-4 transition-all"
         [ngClass]="{
-          'border-green-500': toast.type === 'SUCCESS',
-          'border-red-500': toast.type === 'ERROR',
-          'border-blue-500': toast.type === 'INFO',
-          'border-yellow-500': toast.type === 'WARNING',
+          'bg-accent text-white border-accent': toast.type === 'SUCCESS',
+          'bg-white/95 text-gray-900 border-gray-100 backdrop-blur-md': toast.type !== 'SUCCESS'
         }"
       >
-        <div class="flex flex-col">
-          <span
-            class="text-[10px] uppercase tracking-widest font-bold opacity-70"
-            >{{ toast.type }}</span
-          >
-          <span class="text-sm font-medium">{{ toast.message }}</span>
+        <!-- Icon -->
+        <div 
+          class="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center"
+          [ngClass]="{
+            'bg-white/20 text-white': toast.type === 'SUCCESS',
+            'bg-red-50 text-red-600': toast.type === 'ERROR',
+            'bg-blue-50 text-blue-600': toast.type === 'INFO',
+            'bg-yellow-50 text-yellow-600': toast.type === 'WARNING'
+          }"
+        >
+          <svg *ngIf="toast.type === 'SUCCESS'" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+          <svg *ngIf="toast.type === 'ERROR'" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <svg *ngIf="toast.type === 'INFO' || toast.type === 'WARNING'" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
         </div>
+
+        <div class="flex-1 min-w-0 pt-1">
+          <p 
+            class="text-sm font-bold leading-tight"
+            [ngClass]="{'text-white': toast.type === 'SUCCESS', 'text-gray-900': toast.type !== 'SUCCESS'}"
+          >
+            {{ toast.type === 'SUCCESS' ? 'Success' : toast.type === 'ERROR' ? 'Alert' : 'Information' }}
+          </p>
+          <p 
+            class="text-sm mt-1 leading-relaxed"
+            [ngClass]="{'text-white/90': toast.type === 'SUCCESS', 'text-gray-500': toast.type !== 'SUCCESS'}"
+          >
+            {{ toast.message }}
+          </p>
+        </div>
+
         <button
           (click)="remove(toast.id)"
-          class="text-white/50 hover:text-white transition-colors"
+          class="flex-shrink-0 p-1 text-gray-400 hover:text-gray-900 transition-colors rounded-lg hover:bg-gray-100"
         >
-          <svg
-            width="14"
-            height="14"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <line x1="18" y1="6" x2="6" y2="18"></line>
-            <line x1="6" y1="6" x2="18" y2="18"></line>
-          </svg>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
         </button>
       </div>
     </div>

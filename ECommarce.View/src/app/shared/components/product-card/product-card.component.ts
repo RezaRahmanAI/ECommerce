@@ -11,7 +11,7 @@ import {
   isPlatformBrowser,
   NgOptimizedImage,
 } from "@angular/common";
-import { RouterLink } from "@angular/router";
+import { Router, RouterLink } from "@angular/router";
 
 import {
   Product,
@@ -22,6 +22,7 @@ import { IconButtonComponent } from "../icon-button/icon-button.component";
 import { PriceDisplayComponent } from "../price-display/price-display.component";
 import { ImageUrlService } from "../../../core/services/image-url.service";
 import { CartService } from "../../../core/services/cart.service";
+import { NotificationService } from "../../../core/services/notification.service";
 import { LucideAngularModule, ShoppingCart } from "lucide-angular";
 import { QuickAddModalComponent } from "../quick-add-modal/quick-add-modal.component";
 import { ProductImage } from "../../../core/models/product";
@@ -45,12 +46,12 @@ export class ProductCardComponent implements OnInit {
   @Input({ required: true }) product!: Product | RelatedProduct;
 
   readonly icons = { ShoppingCart };
-  showQuickAdd = false;
-  isOrdering = false;
 
   public readonly imageUrlService = inject(ImageUrlService);
   private readonly cartService = inject(CartService);
   private readonly platformId = inject(PLATFORM_ID);
+  private readonly router = inject(Router);
+  private readonly notificationService = inject(NotificationService);
 
   constructor() {}
 
@@ -109,31 +110,34 @@ export class ProductCardComponent implements OnInit {
     event.preventDefault();
     event.stopPropagation();
 
-    // Instead of adding directly, show the Quick Add modal
-    this.showQuickAdd = true;
+    if ("id" in this.product) {
+      this.cartService
+        .addItem(
+          this.product as Product,
+          1,
+        )
+        .subscribe();
+        
+      this.notificationService.success(`Added ${this.product.headline} to your bag`);
+    }
   }
 
-  onQuickAddConfirm(): void {
+
+  orderNow(event: Event): void {
+    event.preventDefault();
+    event.stopPropagation();
+
     if ("id" in this.product) {
-      this.showQuickAdd = false;
       this.cartService
         .addItem(
           this.product as Product,
           1,
         )
         .subscribe(() => {
-          if (this.isOrdering && isPlatformBrowser(this.platformId)) {
-            window.location.href = "/checkout";
+          if (isPlatformBrowser(this.platformId)) {
+            this.router.navigate(["/checkout"]);
           }
         });
     }
-  }
-
-  orderNow(event: Event): void {
-    event.preventDefault();
-    event.stopPropagation();
-
-    this.isOrdering = true;
-    this.showQuickAdd = true;
   }
 }
