@@ -1,5 +1,5 @@
 import { Component, DestroyRef, OnInit, inject, PLATFORM_ID, ChangeDetectionStrategy } from "@angular/core";
-import { CommonModule, isPlatformBrowser, NgOptimizedImage } from "@angular/common";
+import { CommonModule, isPlatformBrowser } from "@angular/common";
 import { FormBuilder, ReactiveFormsModule, Validators } from "@angular/forms";
 import { ActivatedRoute, Router, RouterModule } from "@angular/router";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
@@ -37,6 +37,7 @@ import {
   CreditCard,
   MessageSquare,
   X,
+  AlertTriangle,
 } from "lucide-angular";
 import { BANGLADESH_LOCATIONS } from "../../../../core/utils/bangladesh-locations";
 
@@ -61,7 +62,6 @@ import { PriceDisplayComponent } from "../../../../shared/components/price-displ
     RouterModule,
     PriceDisplayComponent,
     LucideAngularModule,
-    NgOptimizedImage,
   ],
   templateUrl: "./landing-page.component.html",
   styleUrl: "./landing-page.component.css",
@@ -90,6 +90,7 @@ export class LandingPageComponent implements OnInit {
     CreditCard,
     MessageSquare,
     X,
+    AlertTriangle,
   };
   private readonly route = inject(ActivatedRoute);
   private readonly productService = inject(ProductService);

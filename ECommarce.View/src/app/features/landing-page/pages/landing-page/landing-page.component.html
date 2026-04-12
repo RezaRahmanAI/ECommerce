@@ -1,6 +1,24 @@
-<div class="font-['Hind_Siliguri',sans-serif] bg-white text-[#333]">
+<div class="font-['Hind_Siliguri',sans-serif] bg-white text-primary min-h-screen">
   
-  <div *ngIf="product && !isLoading">
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="fixed inset-0 z-[200] flex items-center justify-center bg-white animate-fade-in">
+     <div class="flex flex-col items-center gap-4">
+        <lucide-icon [img]="icons.Loader2" class="w-10 h-10 animate-spin text-accent"></lucide-icon>
+        <p class="text-[10px] uppercase tracking-[0.4em] font-black text-primary/40">SheraShopBD</p>
+     </div>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="errorMessage && !isLoading" class="flex flex-col items-center justify-center min-h-screen bg-white px-6 text-center animate-fade-in">
+     <div class="max-w-md">
+        <lucide-icon [img]="icons.AlertTriangle || icons.X" class="w-12 h-12 text-accent mx-auto mb-4"></lucide-icon>
+        <h2 class="text-2xl font-serif italic text-primary mb-2">প্রোডাক্ট পাওয়া যায়নি</h2>
+        <p class="text-sm text-gray-400 mb-8 tracking-wide">{{ errorMessage }}</p>
+        <a routerLink="/" class="inline-block bg-primary text-white px-10 py-4 text-[10px] font-black uppercase tracking-[0.2em] hover:bg-black transition-all">Back to Home</a>
+     </div>
+  </div>
+
+  <div *ngIf="product && !isLoading" class="animate-fade-in">
     
     <!-- FULL HEIGHT HERO (30/70 Professional Split) -->
     <section class="min-h-[100svh] md:h-[100svh] flex flex-col items-center relative overflow-hidden bg-black">
@@ -39,11 +57,9 @@
       <!-- Product Showcase Bottom Part (70% approx) -->
       <div class="relative z-10 w-full max-w-4xl mx-auto flex justify-center items-end pb-8 px-4 md:px-6 md:pb-10 md:basis-[62%] md:flex-none min-h-0">
         <img *ngIf="product.imgUrl" 
-             [ngSrc]="imageUrlService.getImageUrl(product.imgUrl)" 
+             [src]="imageUrlService.getImageUrl(product.imgUrl)" 
              [alt]="product.headline" 
-             priority
-             fill
-             class="object-contain drop-shadow-[0_20px_50px_rgba(0,0,0,0.8)] animate-hero-visual block">
+             class="max-w-full max-h-full object-contain drop-shadow-[0_20px_50px_rgba(0,0,0,0.8)] animate-hero-visual block">
       </div>
     </section>
 
@@ -84,10 +100,9 @@
         </div>
         <div class="flex-1 flex justify-center relative min-h-[320px]">
           <img *ngIf="product.imgUrl" 
-               [ngSrc]="imageUrlService.getImageUrl(product.imgUrl)" 
+               [src]="imageUrlService.getImageUrl(product.imgUrl)" 
                [alt]="product.headline" 
-               fill
-               class="object-contain border border-[#e0e0e0]">
+               class="max-w-full h-auto object-contain border border-[#e0e0e0]">
         </div>
       </div>
     </section>
@@ -129,10 +144,9 @@
         </div>
         <div class="flex-1 flex justify-center relative min-h-[320px]">
           <img *ngIf="product.imgUrl" 
-               [ngSrc]="imageUrlService.getImageUrl(product.imgUrl)" 
+               [src]="imageUrlService.getImageUrl(product.imgUrl)" 
                [alt]="product.headline" 
-               fill
-               class="object-contain border border-[#e0e0e0]">
+               class="max-w-full h-auto object-contain border border-[#e0e0e0]">
         </div>
       </div>
     </section>
@@ -163,9 +177,8 @@
             <div class="bg-white border border-[#e0e0e0] p-6 h-full flex flex-col gap-4 text-left">
               <!-- If review has an image, show it -->
               <div class="w-full aspect-square border border-[#e0e0e0] p-1 bg-[#fafafa] relative" *ngIf="review.reviewImage">
-                <img [ngSrc]="imageUrlService.getImageUrl(review.reviewImage)" [alt]="review.customerName" 
-                     fill
-                     class="object-cover">
+                <img [src]="imageUrlService.getImageUrl(review.reviewImage)" [alt]="review.customerName" 
+                     class="absolute inset-0 w-full h-full object-cover">
               </div>
               
               <!-- Reviewer Info & Stars -->
@@ -219,21 +232,52 @@
         </div>
 
         <!-- Products -->
-        <div class="text-[12px] uppercase tracking-widest font-bold text-[#1a1a1a] mb-6 pb-2 border-gray-200 border-b">Your Products</div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-10" id="productsGrid">
+        <div class="text-[12px] uppercase tracking-widest font-black text-primary mb-6 pb-2 border-gray-100 border-b">Selected Collections</div>
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 lg:gap-5 mb-12" id="productsGrid">
           <div *ngFor="let item of offerItems" 
-               class="bg-white border-2 rounded-lg p-4 text-center transition-all cursor-pointer hover:border-[#1a1a1a] hover:shadow-lg relative" 
-               [class]="item.quantity > 0 ? 'border-[#1a1a1a] shadow-md' : 'border-[#f0f0f0]'">
-            <div (click)="openProductModal(item)" class="mb-2 relative w-24 h-24 mx-auto">
-              <img [ngSrc]="item.imageUrl" [alt]="item.name" fill class="object-contain">
+               class="group relative flex flex-col bg-white overflow-hidden transition-all duration-300">
+            
+            <!-- Professional Product Image (3:4 Ratio like Gallery) -->
+            <div (click)="openProductModal(item)" class="relative transition-all duration-300">
+              <div class="aspect-[3/4] overflow-hidden bg-supporting border border-gray-100 rounded-lg relative">
+                 <img *ngIf="item.imageUrl" [src]="item.imageUrl" [alt]="item.name" class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110">
+                 
+                 <!-- Badge -->
+                 <div class="absolute top-2 left-2" *ngIf="hasDiscount(item)">
+                   <span class="px-2 py-0.5 bg-accent text-white text-[9px] font-black uppercase rounded shadow-lg">
+                     -{{ getDiscountPercentage(item) }}%
+                   </span>
+                 </div>
+
+                 <!-- Selection Overlay -->
+                 <div *ngIf="item.quantity > 0" class="absolute inset-0 bg-accent/10 border-2 border-accent rounded-lg pointer-events-none z-10"></div>
+              </div>
             </div>
-            <div class="text-[11px] uppercase tracking-wider font-semibold text-[#1a1a1a] mt-2 leading-tight h-10 flex items-center justify-center line-clamp-2 px-1">{{ item.name }}</div>
-            <div class="text-base font-bold text-[#c8922a] mb-3">৳ {{ item.price | number:'1.2-2' }}</div>
-            <div class="flex items-center justify-center border border-[#e0e0e0] rounded-lg overflow-hidden h-10 relative z-10">
-              <button (click)="$event.stopPropagation(); changeQty(item, -1)" class="bg-white hover:bg-[#fafafa] w-10 h-full font-bold transition-colors border-r border-[#e0e0e0]">−</button>
-              <input type="number" [value]="item.quantity" min="0" (input)="$event.stopPropagation(); updateQuantity(item, $event)" 
-                     class="w-12 border-none text-center font-bold text-sm py-1 outline-none bg-transparent text-[#1a1a1a]">
-              <button (click)="$event.stopPropagation(); changeQty(item, 1)" class="bg-white hover:bg-[#fafafa] w-10 h-full font-bold transition-colors border-l border-[#e0e0e0]">+</button>
+
+            <!-- Content -->
+            <div class="pt-3 pb-2 flex flex-col gap-1.5 flex-1">
+              <h3 class="text-[11px] sm:text-xs md:text-sm text-primary font-bold uppercase tracking-tight line-clamp-2 min-h-[2.5rem] leading-tight group-hover:text-accent transition-colors">
+                {{ item.name }}
+              </h3>
+              
+              <div class="flex items-center gap-2">
+                <span class="text-base font-black text-accent">৳{{ item.price | number:'1.0-0' }}</span>
+                <span *ngIf="hasDiscount(item)" class="text-[10px] sm:text-xs text-text-sub/40 line-through font-medium italic">৳{{ item.compareAtPrice | number:'1.0-0' }}</span>
+              </div>
+
+              <!-- Refined Quantity Selector -->
+              <div class="mt-auto pt-3">
+                <div class="flex items-center justify-between border border-border-color/60 rounded overflow-hidden h-9 bg-white transition-all shadow-sm"
+                     [class.border-accent]="item.quantity > 0"
+                     [class.ring-1]="item.quantity > 0"
+                     [class.ring-accent]="item.quantity > 0">
+                  <button type="button" (click)="$event.stopPropagation(); changeQty(item, -1)" 
+                          class="w-10 h-full flex items-center justify-center hover:bg-supporting/50 text-primary transition-colors border-r border-border-color/30 font-black">-</button>
+                  <span class="flex-1 text-center font-black text-xs text-primary">{{ item.quantity }}</span>
+                  <button type="button" (click)="$event.stopPropagation(); changeQty(item, 1)" 
+                          class="w-10 h-full flex items-center justify-center hover:bg-supporting/50 text-primary transition-colors border-l border-border-color/30 font-black">+</button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
