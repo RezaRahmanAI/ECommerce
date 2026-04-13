@@ -4,12 +4,9 @@ import { ApiHttpClient } from "../../core/http/http-client";
 
 export interface Banner {
   id: number;
-  title: string;
-  subtitle: string;
   imageUrl: string;
   mobileImageUrl: string;
   linkUrl: string;
-  buttonText: string;
   displayOrder: number;
   isActive: boolean;
   type: "Hero" | "Promo" | "Spotlight";

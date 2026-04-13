@@ -48,12 +48,9 @@ public class HomeController : ControllerBase
             return items.Select(b => new HeroBannerDto
             {
                 Id = b.Id,
-                Title = b.Title ?? "",
-                Subtitle = b.Subtitle ?? "",
                 ImageUrl = b.ImageUrl,
                 MobileImageUrl = b.MobileImageUrl ?? "",
                 LinkUrl = b.LinkUrl ?? "",
-                ButtonText = b.ButtonText ?? "",
                 DisplayOrder = b.DisplayOrder,
                 Type = b.Type
             }).ToList();

@@ -148,21 +148,15 @@ public static class DummyDataSeeder
         {
             new HeroBanner 
             { 
-                Title = "Summer Collection 2024", 
-                Subtitle = "Up to 50% Off on all fashion items",
                 ImageUrl = "https://images.unsplash.com/photo-1523381210434-271e8be1f52b?q=80&w=2000&auto=format&fit=crop",
                 LinkUrl = "/category/fashion",
-                ButtonText = "Shop Now",
                 DisplayOrder = 1,
                 Type = BannerType.Hero
             },
             new HeroBanner 
             { 
-                Title = "Organic Skin Care", 
-                Subtitle = "100% natural products for your skin",
                 ImageUrl = "https://images.unsplash.com/photo-1556228720-195a672e8a03?q=80&w=2000&auto=format&fit=crop",
                 LinkUrl = "/category/skin-care",
-                ButtonText = "Explore",
                 DisplayOrder = 2,
                 Type = BannerType.Hero
             }

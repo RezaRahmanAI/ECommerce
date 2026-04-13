@@ -22,31 +22,18 @@
             fill
             class="object-cover transition-transform duration-[12000ms] ease-out"
             [ngClass]="{ 'scale-110': i === currentSlide }"
-            [alt]="slide.title"
           />
 
-          <!-- Content Overlay -->
-          <div class="relative h-full flex items-center p-4 sm:p-6 md:p-10 lg:p-12 xl:p-16 bg-gradient-to-r from-black/20 via-black/10 to-transparent">
-            <div class="max-w-lg lg:max-w-xl xl:max-w-2xl text-left">
-              <span class="inline-block text-accent font-display font-black text-[10px] sm:text-xs md:text-sm uppercase tracking-[0.3em] md:tracking-[0.4em] mb-2 md:mb-4 drop-shadow-md">
-                Ramadan Collection
-              </span>
-              <h1 class="mb-2 md:mb-4 lg:mb-6 font-display font-black text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl leading-[1.1] text-white tracking-tighter drop-shadow-2xl">
-                {{ slide.title || 'Ramadan Kareem' }}
-              </h1>
-              <p class="mb-4 md:mb-6 lg:mb-10 max-w-sm lg:max-w-lg text-xs sm:text-sm md:text-base font-medium text-white/90 leading-relaxed drop-shadow-lg">
-                {{ slide.subtitle || 'Celebrate this holy month with our curated style collections.' }}
-              </p>
-              <div class="flex">
-                <a
-                  [routerLink]="slide.link"
-                  class="px-6 md:px-8 lg:px-10 py-2 md:py-3 lg:py-4 bg-primary text-white rounded-full text-[10px] sm:text-xs md:text-sm font-display font-black uppercase tracking-widest hover:bg-accent transition-all duration-500 shadow-xl border border-white/10"
-                >
-                  Shop Now
-                </a>
-              </div>
+          <!-- Clickable Background Area -->
+          <a
+            [routerLink]="slide.linkUrl"
+            class="absolute inset-0 h-full w-full z-10 cursor-pointer"
+          >
+            <!-- Content Overlay Removed by User Request -->
+            <div class="relative h-full flex items-center p-4 sm:p-6 md:p-10 lg:p-12 xl:p-16">
+              <!-- Overlay content removed -->
             </div>
-          </div>
+          </a>
         </div>
       </ng-container>
 

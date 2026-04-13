@@ -43,12 +43,9 @@ public class AdminBannersController : ControllerBase
             .Select(b => new HeroBannerDto
             {
                 Id = b.Id,
-                Title = b.Title ?? "",
-                Subtitle = b.Subtitle ?? "",
                 ImageUrl = b.ImageUrl,
                 MobileImageUrl = b.MobileImageUrl ?? "",
                 LinkUrl = b.LinkUrl ?? "",
-                ButtonText = b.ButtonText ?? "",
                 DisplayOrder = b.DisplayOrder,
                 Type = b.Type
             })
@@ -66,12 +63,9 @@ public class AdminBannersController : ControllerBase
         return Ok(new HeroBannerDto
         {
             Id = banner.Id,
-            Title = banner.Title ?? "",
-            Subtitle = banner.Subtitle ?? "",
             ImageUrl = banner.ImageUrl,
             MobileImageUrl = banner.MobileImageUrl ?? "",
             LinkUrl = banner.LinkUrl ?? "",
-            ButtonText = banner.ButtonText ?? "",
             DisplayOrder = banner.DisplayOrder,
             Type = banner.Type
         });
@@ -82,12 +76,9 @@ public class AdminBannersController : ControllerBase
     {
         var banner = new HeroBanner
         {
-            Title = dto.Title,
-            Subtitle = dto.Subtitle,
             ImageUrl = dto.ImageUrl,
             MobileImageUrl = dto.MobileImageUrl,
             LinkUrl = dto.LinkUrl,
-            ButtonText = dto.ButtonText,
             DisplayOrder = dto.DisplayOrder,
             IsActive = dto.IsActive,
             Type = dto.Type
@@ -102,12 +93,9 @@ public class AdminBannersController : ControllerBase
         return CreatedAtAction(nameof(GetBannerById), new { id = banner.Id }, new HeroBannerDto
         {
             Id = banner.Id,
-            Title = banner.Title ?? "",
-            Subtitle = banner.Subtitle ?? "",
             ImageUrl = banner.ImageUrl,
             MobileImageUrl = banner.MobileImageUrl ?? "",
             LinkUrl = banner.LinkUrl ?? "",
-            ButtonText = banner.ButtonText ?? "",
             DisplayOrder = banner.DisplayOrder,
             Type = banner.Type
         });
@@ -119,12 +107,9 @@ public class AdminBannersController : ControllerBase
         var banner = await _context.HeroBanners.FindAsync(id);
         if (banner == null) return NotFound();
 
-        banner.Title = dto.Title;
-        banner.Subtitle = dto.Subtitle;
         banner.ImageUrl = dto.ImageUrl;
         banner.MobileImageUrl = dto.MobileImageUrl;
         banner.LinkUrl = dto.LinkUrl;
-        banner.ButtonText = dto.ButtonText;
         banner.DisplayOrder = dto.DisplayOrder;
         banner.IsActive = dto.IsActive;
         banner.Type = dto.Type;
@@ -137,12 +122,9 @@ public class AdminBannersController : ControllerBase
         return Ok(new HeroBannerDto
         {
             Id = banner.Id,
-            Title = banner.Title ?? "",
-            Subtitle = banner.Subtitle ?? "",
             ImageUrl = banner.ImageUrl,
             MobileImageUrl = banner.MobileImageUrl ?? "",
             LinkUrl = banner.LinkUrl ?? "",
-            ButtonText = banner.ButtonText ?? "",
             DisplayOrder = banner.DisplayOrder,
             Type = banner.Type
         });

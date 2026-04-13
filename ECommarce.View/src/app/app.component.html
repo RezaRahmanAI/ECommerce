@@ -12,5 +12,5 @@
 </div>
 
 <app-toast></app-toast>
-<app-contact-fab></app-contact-fab>
+<app-contact-fab *ngIf="showPublicLayout$ | async"></app-contact-fab>
 <app-loading-spinner></app-loading-spinner>

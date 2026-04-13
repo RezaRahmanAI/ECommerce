@@ -7,10 +7,7 @@ import { LucideAngularModule, ArrowRight, ArrowLeft, Tag } from "lucide-angular"
 
 interface Slide {
   image: string;
-  title: string;
-  subtitle: string;
-  link: string;
-  linkText: string;
+  linkUrl: string;
   type?: string;
 }
 

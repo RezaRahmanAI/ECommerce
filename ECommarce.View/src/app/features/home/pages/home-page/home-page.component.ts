@@ -45,10 +45,7 @@ export class HomePageComponent {
       data.banners
         .map((b) => ({
           image: b.imageUrl, // Pass raw path, HeroComponent uses imageUrlService
-          title: b.title,
-          subtitle: b.subtitle,
-          link: b.linkUrl || "/shop",
-          linkText: b.buttonText || "Shop Now",
+          linkUrl: b.linkUrl || "/shop",
           type: b.type
         })),
     ),

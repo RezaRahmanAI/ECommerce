@@ -55,12 +55,9 @@ export class AdminBannersComponent implements OnInit, OnDestroy {
   isSubmitting = false;
 
   bannerForm = this.fb.group({
-    title: ["", [Validators.required]],
-    subtitle: [""],
     imageUrl: ["", [Validators.required]],
     mobileImageUrl: [""],
     linkUrl: [""],
-    buttonText: [""],
     displayOrder: [0, [Validators.required]],
     isActive: [true],
     type: ["Hero", [Validators.required]],
@@ -88,12 +85,9 @@ export class AdminBannersComponent implements OnInit, OnDestroy {
     this.isEditing = false;
     this.selectedBannerId = null;
     this.bannerForm.reset({
-      title: "",
-      subtitle: "",
       imageUrl: "",
       mobileImageUrl: "",
       linkUrl: "",
-      buttonText: "",
       displayOrder: this.banners.length + 1,
       isActive: true,
       type: "Hero",
@@ -105,12 +99,9 @@ export class AdminBannersComponent implements OnInit, OnDestroy {
     this.isEditing = true;
     this.selectedBannerId = banner.id;
     this.bannerForm.patchValue({
-      title: banner.title,
-      subtitle: banner.subtitle,
       imageUrl: banner.imageUrl,
       mobileImageUrl: banner.mobileImageUrl,
       linkUrl: banner.linkUrl,
-      buttonText: banner.buttonText,
       displayOrder: banner.displayOrder,
       isActive: banner.isActive,
       type: banner.type || "Hero",

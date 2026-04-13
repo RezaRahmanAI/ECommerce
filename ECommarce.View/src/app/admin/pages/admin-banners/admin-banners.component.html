@@ -21,7 +21,6 @@
       <div class="relative h-40 bg-gray-100">
         <img
           [src]="getBannerImageUrl(banner.imageUrl)"
-          [alt]="banner.title"
           class="w-full h-full object-cover"
         />
         <div
@@ -68,12 +67,6 @@
         </div>
       </div>
       <div class="p-4">
-        <h3 class="font-bold text-gray-800 mb-1 line-clamp-1 text-sm">
-          {{ banner.title || "Untitled Banner" }}
-        </h3>
-        <p class="text-gray-500 text-xs line-clamp-1 mb-2">
-          {{ banner.subtitle }}
-        </p>
         <div class="flex items-center gap-2">
           <lucide-icon
             [img]="icons.Link"
@@ -166,31 +159,7 @@
           </div>
         </div>
 
-        <div class="col-span-2">
-          <label
-            class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2"
-            >Title</label
-          >
-          <input
-            type="text"
-            formControlName="title"
-            class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none"
-            placeholder="e.g. Summer Collection 2026"
-          />
-        </div>
 
-        <div class="col-span-2">
-          <label
-            class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2"
-            >Subtitle</label
-          >
-          <input
-            type="text"
-            formControlName="subtitle"
-            class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none"
-            placeholder="e.g. Get up to 50% off on all new arrivals"
-          />
-        </div>
 
         <div>
           <label
@@ -204,18 +173,7 @@
           />
         </div>
 
-        <div>
-          <label
-            class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2"
-            >Button Text</label
-          >
-          <input
-            type="text"
-            formControlName="buttonText"
-            class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none"
-            placeholder="e.g. Shop Now"
-          />
-        </div>
+
 
         <div class="col-span-2">
           <label
