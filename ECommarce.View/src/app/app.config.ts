@@ -22,7 +22,9 @@ import { httpCacheInterceptor } from "./interceptors/cache.interceptor";
 export const appConfig: ApplicationConfig = {
   providers: [
     provideZoneChangeDetection({ eventCoalescing: true }),
-    provideClientHydration(),
+    // Only provide hydration if we are in production or if we specifically want it.
+    // This avoids NG0505 warnings in CSR-only development mode.
+    ...(environment.production ? [provideClientHydration()] : []),
     provideRouter(
       appRoutes,
       withInMemoryScrolling({

@@ -4,8 +4,10 @@ using ECommerce.Infrastructure.Data;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-
+using Microsoft.Extensions.Caching.Memory;
+using ECommerce.Core.Constants;
 using ECommerce.API.Extensions;
+using ECommerce.Core.Interfaces;
 
 namespace ECommerce.API.Controllers;
 
@@ -17,12 +19,14 @@ public class AdminReviewsController : ControllerBase
     private readonly ApplicationDbContext _context;
     private readonly IWebHostEnvironment _environment;
     private readonly IConfiguration _config;
+    private readonly IMemoryCache _cache;
 
-    public AdminReviewsController(ApplicationDbContext context, IWebHostEnvironment environment, IConfiguration config)
+    public AdminReviewsController(ApplicationDbContext context, IWebHostEnvironment environment, IConfiguration config, IMemoryCache cache)
     {
         _context = context;
         _environment = environment;
         _config = config;
+        _cache = cache;
     }
 
     [HttpPost("upload-avatar")]
@@ -116,6 +120,8 @@ public class AdminReviewsController : ControllerBase
 
         _context.Reviews.Add(review);
         await _context.SaveChangesAsync();
+        
+        await InvalidateStorefrontCache(review.ProductId);
 
         return CreatedAtAction(nameof(GetAllReviews), new { id = review.Id }, new ReviewDto
         {
@@ -142,6 +148,8 @@ public class AdminReviewsController : ControllerBase
         _context.Reviews.Remove(review);
         await _context.SaveChangesAsync();
 
+        await InvalidateStorefrontCache(review.ProductId);
+
         return NoContent();
     }
 
@@ -167,6 +175,8 @@ public class AdminReviewsController : ControllerBase
 
         await _context.SaveChangesAsync();
 
+        await InvalidateStorefrontCache(review.ProductId);
+
         return Ok(new ReviewDto
         {
             Id = review.Id,
@@ -178,8 +188,22 @@ public class AdminReviewsController : ControllerBase
             Date = review.Date,
             ProductId = review.ProductId,
             ProductName = product.Headline,
-            IsFeatured = review.IsFeatured,
             Likes = review.Likes
         });
+    }
+
+    private async Task InvalidateStorefrontCache(int productId)
+    {
+        var keysToClear = new[] 
+        { 
+            CacheConstants.FeaturedReviews, 
+            CacheConstants.HomeData,
+            $"{CacheConstants.ProductReviewsPrefix}{productId}"
+        };
+
+        foreach (var key in keysToClear)
+        {
+            _cache.Remove(key);
+        }
     }
 }

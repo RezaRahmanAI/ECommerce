@@ -11,13 +11,18 @@ export const SHOW_LOADING = new HttpContextToken<boolean>(() => false);
 export class LoadingService {
   private activeRequests = 0;
   private readonly loadingSubject = new BehaviorSubject<boolean>(false);
+  private loadingTimeout: any;
 
   readonly loading$: Observable<boolean> = this.loadingSubject.asObservable();
 
   show(): void {
     this.activeRequests++;
     if (this.activeRequests === 1) {
-      this.loadingSubject.next(true);
+      // Smart loading: wait 250ms before showing spinner. 
+      // If request completes before this (cached/fast), spinner never flickers.
+      this.loadingTimeout = setTimeout(() => {
+        this.loadingSubject.next(true);
+      }, 250);
     }
   }
 
@@ -25,6 +30,12 @@ export class LoadingService {
     this.activeRequests--;
     if (this.activeRequests <= 0) {
       this.activeRequests = 0;
+      
+      if (this.loadingTimeout) {
+        clearTimeout(this.loadingTimeout);
+        this.loadingTimeout = null;
+      }
+      
       this.loadingSubject.next(false);
     }
   }

@@ -26,6 +26,8 @@ import { NotificationService } from "../../../core/services/notification.service
 import { LucideAngularModule, ShoppingCart } from "lucide-angular";
 import { QuickAddModalComponent } from "../quick-add-modal/quick-add-modal.component";
 import { ProductImage } from "../../../core/models/product";
+import { LazyComponentDirective } from "../../directives/lazy-component.directive";
+import { PrefetchOnHoverDirective } from "../../directives/prefetch-on-hover.directive";
 
 @Component({
   selector: "app-product-card",
@@ -37,6 +39,8 @@ import { ProductImage } from "../../../core/models/product";
     LucideAngularModule,
     QuickAddModalComponent,
     NgOptimizedImage,
+    LazyComponentDirective,
+    PrefetchOnHoverDirective,
   ],
   templateUrl: "./product-card.component.html",
   styleUrl: "./product-card.component.css",

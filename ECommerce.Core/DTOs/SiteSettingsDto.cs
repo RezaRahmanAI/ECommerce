@@ -30,4 +30,10 @@ public class SiteSettingsDto
 
     public string? SizeGuideImageUrl { get; set; }
     public IEnumerable<DeliveryMethod>? DeliveryMethods { get; set; }
+
+    // Cache Manifest
+    public DateTime ProductsUpdatedAt { get; set; }
+    public DateTime CategoriesUpdatedAt { get; set; }
+    public DateTime BannersUpdatedAt { get; set; }
+    public DateTime PagesUpdatedAt { get; set; }
 }

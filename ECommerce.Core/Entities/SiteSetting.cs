@@ -32,4 +32,10 @@ public class SiteSetting : BaseEntity
     public decimal FreeShippingThreshold { get; set; } = 5000;
     public decimal ShippingCharge { get; set; } = 120;
     public string? SizeGuideImageUrl { get; set; }
+
+    // Cache Manifest Timestamps for Selective Refresh
+    public DateTime ProductsUpdatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime CategoriesUpdatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime BannersUpdatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime PagesUpdatedAt { get; set; } = DateTime.UtcNow;
 }

@@ -7,6 +7,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.AspNetCore.OutputCaching;
 using ECommerce.API.Extensions;
+using ECommerce.Core.Constants;
+using ECommerce.Core.Interfaces;
 
 namespace ECommerce.API.Controllers;
 
@@ -18,14 +20,16 @@ public class AdminBannersController : ControllerBase
     private readonly ApplicationDbContext _context;
     private readonly IWebHostEnvironment _environment;
     private readonly IConfiguration _config;
+    private readonly IImageService _imageService;
     private readonly IMemoryCache _cache;
     private readonly IOutputCacheStore _cacheStore;
 
-    public AdminBannersController(ApplicationDbContext context, IWebHostEnvironment environment, IConfiguration config, IMemoryCache cache, IOutputCacheStore cacheStore)
+    public AdminBannersController(ApplicationDbContext context, IWebHostEnvironment environment, IConfiguration config, IImageService imageService, IMemoryCache cache, IOutputCacheStore cacheStore)
     {
         _context = context;
         _environment = environment;
         _config = config;
+        _imageService = imageService;
         _cache = cache;
         _cacheStore = cacheStore;
     }
@@ -92,7 +96,7 @@ public class AdminBannersController : ControllerBase
         _context.HeroBanners.Add(banner);
         await _context.SaveChangesAsync();
 
-        _cache.Remove("home_banners");
+        await InvalidateStorefrontCache();
         await _cacheStore.EvictByTagAsync("banners", default);
 
         return CreatedAtAction(nameof(GetBannerById), new { id = banner.Id }, new HeroBannerDto
@@ -127,7 +131,7 @@ public class AdminBannersController : ControllerBase
         banner.UpdatedAt = DateTime.UtcNow;
 
         await _context.SaveChangesAsync();
-        _cache.Remove("home_banners");
+        await InvalidateStorefrontCache();
         await _cacheStore.EvictByTagAsync("banners", default);
 
         return Ok(new HeroBannerDto
@@ -153,7 +157,7 @@ public class AdminBannersController : ControllerBase
         _context.HeroBanners.Remove(banner);
         await _context.SaveChangesAsync();
 
-        _cache.Remove("home_banners");
+        await InvalidateStorefrontCache();
         await _cacheStore.EvictByTagAsync("banners", default);
 
         return NoContent();
@@ -167,24 +171,8 @@ public class AdminBannersController : ControllerBase
             if (file == null || file.Length == 0)
                 return BadRequest("No file uploaded");
 
-            var externalPath = FileStorageExtensions.GetExternalMediaPath(_config, _environment);
-            var uploadsFolder = Path.Combine(externalPath, "banners");
-            
-            if (!Directory.Exists(uploadsFolder))
-            {
-                Directory.CreateDirectory(uploadsFolder);
-            }
-
-            var fileExtension = Path.GetExtension(file.FileName);
-            var fileName = $"{Guid.NewGuid()}{fileExtension}";
-            var filePath = Path.Combine(uploadsFolder, fileName);
-
-            using (var stream = new FileStream(filePath, FileMode.Create))
-            {
-                await file.CopyToAsync(stream);
-            }
-
-            return Ok(new { url = $"/uploads/banners/{fileName}" });
+            var url = await _imageService.ProcessAndSaveImageAsync(file.OpenReadStream(), file.FileName, "banners");
+            return Ok(new { url });
         }
         catch (UnauthorizedAccessException ex)
         {
@@ -193,6 +181,29 @@ public class AdminBannersController : ControllerBase
         catch (Exception ex)
         {
             return StatusCode(500, new { message = "An error occurred during banner image upload: " + ex.Message });
+        }
+    }
+
+    private async Task InvalidateStorefrontCache()
+    {
+        var keysToClear = new[] 
+        { 
+            CacheConstants.BannersActive, 
+            CacheConstants.HomeData,
+            "home_banners" // Legacy compatibility
+        };
+
+        foreach (var key in keysToClear)
+        {
+            _cache.Remove(key);
+        }
+
+        // Update Client-Side Manifest Timestamp
+        var settings = await _context.SiteSettings.FirstOrDefaultAsync();
+        if (settings != null)
+        {
+            settings.BannersUpdatedAt = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
         }
     }
 }

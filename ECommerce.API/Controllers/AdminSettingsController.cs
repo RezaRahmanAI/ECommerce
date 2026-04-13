@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
+using ECommerce.Core.Constants;
 using Microsoft.AspNetCore.OutputCaching;
 using ECommerce.API.Extensions;
 using ECommerce.Core.Interfaces;
@@ -62,7 +63,11 @@ public class AdminSettingsController : ControllerBase
             FacebookPixelId = settings.FacebookPixelId,
             GoogleTagId = settings.GoogleTagId,
             SizeGuideImageUrl = settings.SizeGuideImageUrl,
-            DeliveryMethods = await _context.DeliveryMethods.AsNoTracking().ToListAsync()
+            DeliveryMethods = await _context.DeliveryMethods.AsNoTracking().ToListAsync(),
+            ProductsUpdatedAt = settings.ProductsUpdatedAt,
+            CategoriesUpdatedAt = settings.CategoriesUpdatedAt,
+            BannersUpdatedAt = settings.BannersUpdatedAt,
+            PagesUpdatedAt = settings.PagesUpdatedAt
         });
     }
 
@@ -99,6 +104,7 @@ public class AdminSettingsController : ControllerBase
 
         _cache.Remove("site_settings");
         _cache.Remove("delivery_methods_active");
+        _cache.Remove(CacheConstants.HomeData); // Settings can affect home (logo, shipping)
         await _cacheStore.EvictByTagAsync("settings", default);
 
         return Ok(dto);

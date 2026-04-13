@@ -230,6 +230,41 @@
                 ></lucide-icon>
                 Consult on WhatsApp
               </a>
+
+              <!-- Floating WhatsApp CTA (Visible on Mobile) -->
+              <div class="lg:hidden fixed bottom-6 right-6 z-[60]">
+                <a
+                  *ngIf="(settings$ | async)?.whatsAppNumber as whatsApp"
+                  [href]="getWhatsAppUrl(vm.product, whatsApp)"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="w-16 h-16 bg-[#25D366] text-white rounded-full flex items-center justify-center shadow-2xl hover:scale-110 transition-transform animate-pulse"
+                >
+                  <lucide-icon [img]="icons.MessageCircle" class="w-8 h-8"></lucide-icon>
+                </a>
+              </div>
+            </div>
+
+            <!-- Conversion Boosters: Discreet Billing & Shipping -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 py-6 border-y border-[#eee] bg-[#fafafa]/50 px-4 rounded-xl">
+              <div class="flex items-center gap-3">
+                 <div class="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-sm">
+                   <lucide-icon [img]="icons.ShieldCheck" class="w-5 h-5 text-accent"></lucide-icon>
+                 </div>
+                 <div>
+                   <p class="text-[10px] font-bold uppercase tracking-wider text-primary">Discreet Packaging</p>
+                   <p class="text-[9px] text-gray-500">100% Private & Plain Box</p>
+                 </div>
+              </div>
+              <div class="flex items-center gap-3">
+                 <div class="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-sm">
+                   <lucide-icon [img]="icons.Truck" class="w-5 h-5 text-accent"></lucide-icon>
+                 </div>
+                 <div>
+                   <p class="text-[10px] font-bold uppercase tracking-wider text-primary">Express Delivery</p>
+                   <p class="text-[9px] text-gray-500">Fast & Secure Shipping</p>
+                 </div>
+              </div>
             </div>
 
             <!-- Rich Content Sections -->

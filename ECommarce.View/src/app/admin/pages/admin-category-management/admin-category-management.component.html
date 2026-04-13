@@ -10,7 +10,7 @@
       </nav>
       <h2 class="text-3xl font-bold text-primary dark:text-white tracking-tight">Category Management</h2>
     </div>
-    <button class="arza-btn-primary" type="button" (click)="startCreate()">
+    <button class="shera-btn-primary" type="button" (click)="startCreate()">
       <lucide-icon [img]="icons.Plus" class="w-5 h-5"></lucide-icon>
       <span>Add Category</span>
     </button>
@@ -99,7 +99,7 @@
             <input type="checkbox" [formControl]="categoryForm.controls.isActive" />
           </div>
 
-          <button class="arza-btn-primary py-2 px-6" type="button" [disabled]="isUploadingImage" (click)="saveCategory()">
+          <button class="shera-btn-primary py-2 px-6" type="button" [disabled]="isUploadingImage" (click)="saveCategory()">
             <lucide-icon [img]="icons.Save" class="w-4.5 h-4.5"></lucide-icon>
             {{ mode === 'create' ? 'Create' : 'Update' }}
           </button>

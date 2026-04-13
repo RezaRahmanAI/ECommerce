@@ -8,17 +8,10 @@ import { finalize, retry, timer } from "rxjs";
 import { LoadingService } from "../services/loading.service";
 
 export const jwtInterceptor: HttpInterceptorFn = (req, next) => {
-  const loading = inject(LoadingService);
   const platformId = inject(PLATFORM_ID);
-  
-  let token: string | null = null;
-  if (isPlatformBrowser(platformId)) {
-    token = localStorage.getItem("sherashop-token");
-  }
-  
+  const isBrowser = isPlatformBrowser(platformId);
+  const token = isBrowser ? localStorage.getItem("token") : null;
   const isFormData = req.body instanceof FormData;
-
-  loading.show();
 
   const headers: Record<string, string> = {
     Accept: "application/json",
@@ -34,7 +27,6 @@ export const jwtInterceptor: HttpInterceptorFn = (req, next) => {
       count: 2,
       delay: (error, retryCount) => timer(retryCount * 1000),
     }),
-    finalize(() => loading.hide()),
   );
 };
 

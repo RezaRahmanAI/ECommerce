@@ -5,6 +5,7 @@ using ECommerce.Core.Interfaces;
 using ECommerce.Core.Specifications;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
+using ECommerce.Core.Constants;
 using System.Linq;
 
 namespace ECommerce.API.Controllers;
@@ -41,10 +42,11 @@ public class ProductsController : ControllerBase
         [FromQuery] string? searchTerm, 
         [FromQuery] bool? isNew, 
         [FromQuery] int pageIndex = 1,
-        [FromQuery] int pageSize = 12)
+        [FromQuery] int pageSize = 12,
+        [FromQuery] int? lastId = null)
     {
         // Build a deterministic cache key from all query parameters
-        var cacheKey = $"products_{sort}_{categoryId}_{categorySlug}_{searchTerm}_{isNew}_{pageIndex}_{pageSize}";
+        var cacheKey = $"{CacheConstants.ProductListPrefix}_{sort}_{categoryId}_{categorySlug}_{searchTerm}_{isNew}_{pageIndex}_{pageSize}_{lastId}";
 
         if (_cache.TryGetValue(cacheKey, out PaginationDto<ProductDto>? cached) && cached != null)
         {
@@ -54,8 +56,8 @@ public class ProductsController : ControllerBase
         var skip = (pageIndex - 1) * pageSize;
         var take = pageSize;
 
-        var spec = new ProductsWithCategoriesSpecification(sort, categoryId, categorySlug, searchTerm, isNew, skip, take);
-        var countSpec = new ProductsWithCategoriesSpecification(sort, categoryId, categorySlug, searchTerm, isNew);
+        var spec = new ProductsWithCategoriesSpecification(sort, categoryId, categorySlug, searchTerm, isNew, skip, take, lastId);
+        var countSpec = new ProductsWithCategoriesSpecification(sort, categoryId, categorySlug, searchTerm, isNew, null, null, lastId);
 
         var totalItems = await _productsRepo.CountAsync(countSpec);
         var dtos = await _productsRepo.ListAsync<ProductDto>(spec);
@@ -76,7 +78,7 @@ public class ProductsController : ControllerBase
     [HttpGet("{slug}")]
     public async Task<ActionResult<ProductDto>> GetProduct(string slug)
     {
-        var cacheKey = $"product_{slug}";
+        var cacheKey = $"{CacheConstants.ProductDetailPrefix}_slug:{slug}";
 
         if (_cache.TryGetValue(cacheKey, out ProductDto? cached) && cached != null)
         {

@@ -1,17 +1,16 @@
+import { inject, PLATFORM_ID } from "@angular/core";
+import { isPlatformBrowser } from "@angular/common";
 import { HttpInterceptorFn, HttpResponse } from "@angular/common/http";
-import { of, tap } from "rxjs";
+import { of, tap, take } from "rxjs";
+import { SiteSettingsService } from "../core/services/site-settings.service";
 
 interface CacheEntry {
-  response: HttpResponse<unknown>;
+  body: any;
   timestamp: number;
 }
 
-// In-memory cache store
-const cache = new Map<string, CacheEntry>();
-
-// Cache TTL in milliseconds (30 seconds for products, 5 min for static data)
-const DEFAULT_TTL = 60_000;
-const LONG_TTL = 600_000;
+const CACHE_KEY_PREFIX = "sherashop_v2_cache_";
+const DEFAULT_TTL = 3600_000; // 1 hour default if manifest fails
 
 // Endpoints that should never be cached
 const EXCLUDED_PATTERNS = [
@@ -30,31 +29,25 @@ function shouldCache(url: string): boolean {
   return !EXCLUDED_PATTERNS.some((pattern) => url.includes(pattern));
 }
 
-function getTTL(url: string): number {
-  // Static data gets longer cache
-  if (
-    url.includes("/categories") ||
-    url.includes("/banners") ||
-    url.includes("/navigation") ||
-    url.includes("/settings")
-  ) {
-    return LONG_TTL;
-  }
-  return DEFAULT_TTL;
+function getCacheSection(url: string): string {
+  const lowercaseUrl = url.toLowerCase();
+  if (lowercaseUrl.includes("/products") || lowercaseUrl.includes("/home") || lowercaseUrl.includes("/items")) return "products";
+  if (lowercaseUrl.includes("/categories") || lowercaseUrl.includes("/collections") || lowercaseUrl.includes("/navigation")) return "categories";
+  if (lowercaseUrl.includes("/banners")) return "banners";
+  if (lowercaseUrl.includes("/pages")) return "pages";
+  return "general";
 }
 
 /**
- * HTTP Cache Interceptor — Stale-While-Revalidate pattern.
- *
- * For cacheable GET requests:
- * - If a fresh cached response exists (within TTL), return it instantly (0ms network time)
- * - If cache is stale or missing, make the real request and cache the response
- *
- * This dramatically speeds up repeated page loads and navigation.
+ * Professional Persistent Cache Interceptor.
+ * Serves data from LocalStorage and validates against a Server Manifest.
  */
 export const httpCacheInterceptor: HttpInterceptorFn = (req, next) => {
-  // Only cache GET requests
-  if (req.method !== "GET") {
+  const platformId = inject(PLATFORM_ID);
+  const settingsService = inject(SiteSettingsService);
+
+  // Only cache GET requests in the browser
+  if (req.method !== "GET" || !isPlatformBrowser(platformId)) {
     return next(req);
   }
 
@@ -63,45 +56,88 @@ export const httpCacheInterceptor: HttpInterceptorFn = (req, next) => {
     return next(req);
   }
 
-  const cacheKey = req.urlWithParams;
-  const entry = cache.get(cacheKey);
-  const now = Date.now();
-  const ttl = getTTL(cacheKey);
+  const cacheKey = CACHE_KEY_PREFIX + btoa(req.urlWithParams);
+  const cachedStr = localStorage.getItem(cacheKey);
+  
+  if (cachedStr) {
+    try {
+      const entry: CacheEntry = JSON.parse(cachedStr);
+      let isFresh = false;
 
-  // Return cached response if still fresh
-  if (entry && now - entry.timestamp < ttl) {
-    return of(entry.response.clone());
+      // Validate against Settings Manifest
+      // We use take(1) to avoid long subscriptions in interceptor
+      let settings: any = null;
+      settingsService.getSettings().pipe(take(1)).subscribe(s => settings = s);
+
+      if (settings) {
+        const section = getCacheSection(req.urlWithParams);
+        let lastUpdateStr: string | undefined;
+
+        switch (section) {
+          case "products": lastUpdateStr = settings.productsUpdatedAt; break;
+          case "categories": lastUpdateStr = settings.categoriesUpdatedAt; break;
+          case "banners": lastUpdateStr = settings.bannersUpdatedAt; break;
+          case "pages": lastUpdateStr = settings.pagesUpdatedAt; break;
+        }
+
+        if (lastUpdateStr) {
+          const lastUpdate = new Date(lastUpdateStr).getTime();
+          isFresh = entry.timestamp > lastUpdate;
+        } else {
+          // Fallback to TTL if section not in manifest
+          isFresh = Date.now() - entry.timestamp < DEFAULT_TTL;
+        }
+      }
+
+      if (isFresh) {
+        return of(new HttpResponse({ body: entry.body, status: 200, url: req.urlWithParams }));
+      }
+    } catch (e) {
+      localStorage.removeItem(cacheKey);
+    }
   }
 
-  // Otherwise, make the request and cache the response
+  // Otherwise, make the network request and store in persistent cache
   return next(req).pipe(
     tap((event) => {
       if (event instanceof HttpResponse && event.status === 200) {
-        cache.set(cacheKey, {
-          response: event.clone(),
-          timestamp: Date.now(),
-        });
+        const newEntry: CacheEntry = {
+          body: event.body,
+          timestamp: Date.now()
+        };
+        try {
+          localStorage.setItem(cacheKey, JSON.stringify(newEntry));
+        } catch (e) {
+          // LocalStorage might be full
+          if (e instanceof DOMException && e.name === "QuotaExceededError") {
+             clearHttpCache(); // Clear old cache to make room
+          }
+        }
       }
     }),
   );
 };
 
-/**
- * Call this to invalidate all cached entries.
- * Useful after admin updates products/categories/banners.
- */
 export function clearHttpCache(): void {
-  cache.clear();
+  if (typeof localStorage !== "undefined") {
+    Object.keys(localStorage)
+      .filter(key => key.startsWith(CACHE_KEY_PREFIX))
+      .forEach(key => localStorage.removeItem(key));
+  }
 }
 
-/**
- * Invalidate cache entries matching a pattern.
- * Example: invalidateHttpCache('/products') will clear all product caches.
- */
 export function invalidateHttpCache(pattern: string): void {
-  for (const key of cache.keys()) {
-    if (key.includes(pattern)) {
-      cache.delete(key);
-    }
+  if (typeof localStorage !== "undefined") {
+    Object.keys(localStorage)
+      .filter(key => key.startsWith(CACHE_KEY_PREFIX))
+      .forEach(key => {
+        // This is a bit slow as we have to decode keys to check pattern
+        try {
+          const originalUrl = atob(key.replace(CACHE_KEY_PREFIX, ""));
+          if (originalUrl.includes(pattern)) {
+            localStorage.removeItem(key);
+          }
+        } catch {}
+      });
   }
 }

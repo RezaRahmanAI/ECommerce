@@ -5,6 +5,7 @@ using ECommerce.Core.Interfaces;
 using ECommerce.Core.Specifications;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
+using ECommerce.Core.Constants;
 
 namespace ECommerce.API.Controllers;
 
@@ -39,7 +40,7 @@ public class HomeController : ControllerBase
     public async Task<ActionResult<HomePageDto>> GetHomeData()
     {
         // Define cache-wrapped tasks for parallel execution
-        var bannersTask = _cache.GetOrCreateAsync("home_banners", async entry =>
+        var bannersTask = _cache.GetOrCreateAsync(CacheConstants.BannersActive, async entry =>
         {
             entry.SlidingExpiration = TimeSpan.FromMinutes(30);
             entry.Size = 1;
@@ -58,7 +59,7 @@ public class HomeController : ControllerBase
             }).ToList();
         });
 
-        var newArrivalsTask = _cache.GetOrCreateAsync("home_new_arrivals", async entry =>
+        var newArrivalsTask = _cache.GetOrCreateAsync(CacheConstants.NewArrivals, async entry =>
         {
             entry.SlidingExpiration = TimeSpan.FromMinutes(10);
             entry.Size = 1;
@@ -68,7 +69,7 @@ public class HomeController : ControllerBase
             return _mapper.Map<IReadOnlyList<Product>, IReadOnlyList<ProductListDto>>(items);
         });
 
-        var featuredProductsTask = _cache.GetOrCreateAsync("home_featured_products", async entry =>
+        var featuredProductsTask = _cache.GetOrCreateAsync(CacheConstants.FeaturedProducts, async entry =>
         {
             entry.SlidingExpiration = TimeSpan.FromMinutes(10);
             entry.Size = 1;
@@ -78,7 +79,7 @@ public class HomeController : ControllerBase
             return _mapper.Map<IReadOnlyList<Product>, IReadOnlyList<ProductListDto>>(items);
         });
 
-        var categoriesTask = _cache.GetOrCreateAsync("home_categories", async entry =>
+        var categoriesTask = _cache.GetOrCreateAsync(CacheConstants.CategoriesAll, async entry =>
         {
             entry.SlidingExpiration = TimeSpan.FromHours(1);
             entry.Size = 1;

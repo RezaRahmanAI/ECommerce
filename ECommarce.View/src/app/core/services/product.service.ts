@@ -2,7 +2,7 @@ import { Injectable, inject, PLATFORM_ID } from "@angular/core";
 import { isPlatformBrowser, isPlatformServer } from "@angular/common";
 import { HttpContext } from "@angular/common/http";
 import { Observable, of, shareReplay, BehaviorSubject, switchMap } from "rxjs";
-import { catchError, map, tap } from "rxjs/operators";
+import { catchError, map, tap, startWith } from "rxjs/operators";
 import { TransferState, makeStateKey } from "@angular/core";
 import { HomeData } from "../models/home-data";
 import { ApiHttpClient } from "../http/http-client";
@@ -46,26 +46,67 @@ export class ProductService {
     featuredProducts: []
   };
 
+  private readonly HOME_CACHE_KEY = "sherashop_home_cache";
+
   private fetchHomeData(): Observable<HomeData> {
-    // BROWSER: Check if SSR already fetched this data
+    // 1. SSR Check: If server already gave us data, use it (instant)
+    const ssrData = this.transferState.get(HOME_DATA_KEY, null);
+    if (ssrData) {
+      if (isPlatformBrowser(this.platformId)) {
+        this.transferState.remove(HOME_DATA_KEY);
+        this.saveToLocalCache(ssrData);
+      }
+      return of(ssrData);
+    }
+
+    // 2. Browser Local Cache: If we have a previous result, start with it (instant)
+    let initialData$ = of(this.fallbackHomeData);
     if (isPlatformBrowser(this.platformId)) {
-      const ssrData = this.transferState.get(HOME_DATA_KEY, null);
-      if (ssrData) {
-        this.transferState.remove(HOME_DATA_KEY); // Consume it once
-        return of(ssrData);
+      const localCached = this.loadFromLocalCache();
+      if (localCached) {
+        initialData$ = of(localCached);
       }
     }
 
-    // SERVER or no cached data: fetch from API
-    return this.api.get<HomeData>("/home").pipe(
+    // 3. API Fetch: Always fetch fresh data in background
+    const apiData$ = this.api.get<HomeData>("/home").pipe(
       tap(data => {
-        // SERVER: Store data in TransferState so browser can reuse it
         if (isPlatformServer(this.platformId)) {
           this.transferState.set(HOME_DATA_KEY, data);
+        } else {
+          this.saveToLocalCache(data);
         }
       }),
-      catchError(() => of(this.fallbackHomeData))
+      catchError(() => initialData$)
     );
+
+    // Combine: Emit cached first, then API result
+    return apiData$.pipe(
+      startWith(null as HomeData | null), 
+      switchMap(apiData => {
+        if (apiData) return of(apiData);
+        return initialData$;
+      })
+    );
+  }
+
+  private loadFromLocalCache(): HomeData | null {
+    try {
+      const cached = localStorage.getItem(this.HOME_CACHE_KEY);
+      return cached ? JSON.parse(cached) : null;
+    } catch {
+      return null;
+    }
+  }
+
+  private saveToLocalCache(data: HomeData): void {
+    if (isPlatformBrowser(this.platformId)) {
+      try {
+        localStorage.setItem(this.HOME_CACHE_KEY, JSON.stringify(data));
+      } catch (e) {
+        console.warn("Failed to save home cache", e);
+      }
+    }
   }
 
   refreshData(): void {

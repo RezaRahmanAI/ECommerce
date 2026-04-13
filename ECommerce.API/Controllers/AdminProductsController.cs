@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
-
+using ECommerce.Core.Constants;
 using Microsoft.AspNetCore.OutputCaching;
 using ECommerce.API.Extensions;
 
@@ -27,18 +27,28 @@ public class AdminProductsController : ControllerBase
     private readonly IProductService _productService;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IConfiguration _config;
+    private readonly IImageService _imageService;
     private readonly ICacheService _cache;
     private readonly IOutputCacheStore _cacheStore;
 
-    public AdminProductsController(ApplicationDbContext context, IWebHostEnvironment environment, IProductService productService, IUnitOfWork unitOfWork, IConfiguration config, ICacheService cache, IOutputCacheStore cacheStore)
+    public AdminProductsController(
+        ApplicationDbContext context, 
+        IConfiguration config, 
+        IWebHostEnvironment environment,
+        IImageService imageService,
+        ICacheService cache,
+        IOutputCacheStore cacheStore,
+        IProductService productService,
+        IUnitOfWork unitOfWork)
     {
         _context = context;
-        _environment = environment;
-        _productService = productService;
-        _unitOfWork = unitOfWork;
         _config = config;
+        _environment = environment;
+        _imageService = imageService;
         _cache = cache;
         _cacheStore = cacheStore;
+        _productService = productService;
+        _unitOfWork = unitOfWork;
     }
 
     [HttpPost("upload-media")]
@@ -52,27 +62,13 @@ public class AdminProductsController : ControllerBase
                 return BadRequest("No files uploaded");
 
             var uploadedUrls = new List<string>();
-            var externalPath = FileStorageExtensions.GetExternalMediaPath(_config, _environment);
-            var uploadsFolder = Path.Combine(externalPath, "products");
-            if (!Directory.Exists(uploadsFolder))
-            {
-                Directory.CreateDirectory(uploadsFolder);
-            }
 
             foreach (var file in files)
             {
                 if (file.Length > 0)
                 {
-                    var fileExtension = Path.GetExtension(file.FileName);
-                    var fileName = $"{Guid.NewGuid()}{fileExtension}";
-                    var filePath = Path.Combine(uploadsFolder, fileName);
-
-                    using (var stream = new FileStream(filePath, FileMode.Create))
-                    {
-                        await file.CopyToAsync(stream);
-                    }
-
-                    uploadedUrls.Add($"/uploads/products/{fileName}");
+                    var url = await _imageService.ProcessAndSaveImageAsync(file.OpenReadStream(), file.FileName, "products");
+                    uploadedUrls.Add(url);
                 }
             }
 
@@ -183,8 +179,7 @@ public class AdminProductsController : ControllerBase
             var result = await _productService.CreateProductAsync(dto);
             if (result == null) return BadRequest(new { message = "Error creating product" });
 
-            await _cache.RemoveAsync("home_new_arrivals");
-            await _cache.RemoveAsync("home_featured_products");
+            await InvalidateStorefrontCache();
             await _cacheStore.EvictByTagAsync("products", default);
 
             return CreatedAtAction(nameof(GetProductById), new { id = result.Id }, result);
@@ -214,8 +209,7 @@ public class AdminProductsController : ControllerBase
             var result = await _productService.UpdateProductAsync(id, dto);
             if (result == null) return BadRequest(new { message = "Error updating product" });
 
-            await _cache.RemoveAsync("home_new_arrivals");
-            await _cache.RemoveAsync("home_featured_products");
+            await InvalidateStorefrontCache();
             await _cacheStore.EvictByTagAsync("products", default);
 
             return Ok(result);
@@ -249,8 +243,7 @@ public class AdminProductsController : ControllerBase
         _context.Products.Remove(product);
         await _context.SaveChangesAsync();
 
-        await _cache.RemoveAsync("home_new_arrivals");
-        await _cache.RemoveAsync("home_featured_products");
+        await InvalidateStorefrontCache();
         await _cacheStore.EvictByTagAsync("products", default);
 
         return Ok(true);
@@ -331,11 +324,7 @@ public class AdminProductsController : ControllerBase
 
         if (await _unitOfWork.Complete() > 0)
         {
-             // Invalidate cache
-             await _cache.RemoveAsync("home_new_arrivals");
-             await _cache.RemoveAsync("home_featured_products");
-             await _cacheStore.EvictByTagAsync("products", default);
-             
+             await InvalidateStorefrontCache();
              var cacheKeys = new[] { $"product_id:{product.Id}", $"product_slug:{product.Slug}" };
              foreach (var key in cacheKeys)
              {
@@ -346,5 +335,33 @@ public class AdminProductsController : ControllerBase
         }
 
         return BadRequest(new { message = "Failed to update stock" });
+    }
+
+    private async Task InvalidateStorefrontCache()
+    {
+        var keysToClear = new[] 
+        { 
+            CacheConstants.HomeData, 
+            CacheConstants.NewArrivals, 
+            CacheConstants.FeaturedProducts,
+            "home_new_arrivals", // Legacy compatibility
+            "home_featured_products" // Legacy compatibility
+        };
+
+        foreach (var key in keysToClear)
+        {
+            await _cache.RemoveAsync(key);
+        }
+
+        // Generic prefix clear for galleries
+        await _cache.RemoveByPrefixAsync(CacheConstants.ProductListPrefix);
+
+        // Update Client-Side Manifest Timestamp
+        var settings = await _context.SiteSettings.FirstOrDefaultAsync();
+        if (settings != null)
+        {
+            settings.ProductsUpdatedAt = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+        }
     }
 }

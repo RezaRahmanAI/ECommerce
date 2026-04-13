@@ -4,12 +4,13 @@ namespace ECommerce.Core.Specifications;
 
 public class ProductsWithCategoriesSpecification : BaseSpecification<Product>
 {
-    public ProductsWithCategoriesSpecification(string? sort, int? categoryId, string? categorySlug, string? search, bool? isNew = null, int? skip = null, int? take = null)
+    public ProductsWithCategoriesSpecification(string? sort, int? categoryId, string? categorySlug, string? search, bool? isNew = null, int? skip = null, int? take = null, int? lastId = null)
         : base(x => 
             (string.IsNullOrEmpty(search) || x.Headline.ToLower().Contains(search.ToLower()) || (x.Subtitle != null && x.Subtitle.ToLower().Contains(search.ToLower()))) &&
             (!categoryId.HasValue || x.CategoryId == categoryId) &&
             (string.IsNullOrEmpty(categorySlug) || (x.Category != null && x.Category.Slug == categorySlug)) &&
-            (!isNew.HasValue || x.IsNew == isNew.Value)
+            (!isNew.HasValue || x.IsNew == isNew.Value) &&
+            (!lastId.HasValue || x.Id < lastId) // Keyset seek: only get items older than lastId
         )
     {
         AddInclude(x => x.Category!);

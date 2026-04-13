@@ -75,29 +75,50 @@ public static class ServiceExtensions
 
         services.AddResponseCaching();
 
-        // 4. Rate Limiting for DDoS protection
+        // 4. Rate Limiting for DDoS & Spam protection
         services.AddRateLimiter(options =>
         {
+            // Global default policy
             options.AddFixedWindowLimiter("fixed", limiterOptions =>
             {
                 limiterOptions.PermitLimit = 100;
                 limiterOptions.Window = TimeSpan.FromMinutes(1);
-                limiterOptions.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
-                limiterOptions.QueueLimit = 20;
+                limiterOptions.QueueLimit = 0;
             });
-            options.AddSlidingWindowLimiter("sliding", limiterOptions =>
+
+            // STRICT policy for LOGIN/REGISTER (Credential Stuffing protection)
+            options.AddFixedWindowLimiter("strict", limiterOptions =>
             {
-                limiterOptions.PermitLimit = 50;
-                limiterOptions.Window = TimeSpan.FromSeconds(10);
-                limiterOptions.SegmentsPerWindow = 5;
-                limiterOptions.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
-                limiterOptions.QueueLimit = 10;
+                limiterOptions.PermitLimit = 5;
+                limiterOptions.Window = TimeSpan.FromMinutes(5); // 5 attempts per 5 minutes
+                limiterOptions.QueueLimit = 0;
             });
+
+            // CHECKOUT policy (Order spam protection)
+            options.AddFixedWindowLimiter("checkout", limiterOptions =>
+            {
+                limiterOptions.PermitLimit = 3;
+                limiterOptions.Window = TimeSpan.FromMinutes(10); // 3 orders per 10 minutes
+                limiterOptions.QueueLimit = 0;
+            });
+
+            // Custom rejection response
+            options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+            options.OnRejected = async (context, token) =>
+            {
+                context.HttpContext.Response.ContentType = "application/json";
+                var message = context.HttpContext.Request.Path.Value?.Contains("auth", StringComparison.OrdinalIgnoreCase) == true
+                    ? "Too many login attempts. Please wait 5 minutes before trying again."
+                    : "System is busy processing requests. Please wait a moment.";
+                
+                await context.HttpContext.Response.WriteAsJsonAsync(new { success = false, message = message }, token);
+            };
         });
 
         // 5. Infrastructure
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+        services.AddScoped<IImageService, ImageService>();
         services.AddHttpContextAccessor();
         services.AddAutoMapper(cfg => cfg.AddMaps(typeof(MappingProfiles).Assembly, typeof(OrderService).Assembly));
 

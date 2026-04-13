@@ -5,12 +5,14 @@ using ECommerce.Infrastructure.Data;
 using ECommerce.Infrastructure.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.RateLimiting;
 using System.Linq;
 
 namespace ECommerce.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[EnableRateLimiting("checkout")]
 public class OrdersController : ControllerBase
 {
     private readonly IOrderService _orderService;

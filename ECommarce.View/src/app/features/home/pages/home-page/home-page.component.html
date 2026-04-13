@@ -6,7 +6,7 @@
     <app-new-arrivals [products]="data.newArrivals"></app-new-arrivals>
 
     <!-- Dynamic Promo Banner (Offers) -->
-    <app-promo-banner></app-promo-banner>
+    <app-promo-banner *appLazyComponent></app-promo-banner>
 
     <!-- Category Sections — defer until scrolled into view -->
     @defer (on viewport) {
@@ -51,11 +51,7 @@
 
 
 
-    @defer (on viewport; on timer(500ms)) {
-      <app-testimonials></app-testimonials>
-    } @placeholder {
-      <div class="h-64 animate-pulse bg-supporting rounded-lg"></div>
-    }
+    <app-testimonials *appLazyComponent></app-testimonials>
   </div>
 </main>
 

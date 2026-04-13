@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.OutputCaching;
 using ECommerce.API.Extensions;
 using ECommerce.Core.Interfaces;
+using ECommerce.Core.Constants;
 
 namespace ECommerce.API.Controllers;
 
@@ -131,7 +132,7 @@ public class AdminCategoriesController : ControllerBase
         await _context.SaveChangesAsync();
         
         await _cacheStore.EvictByTagAsync("categories", default);
-        await _cache.RemoveAsync("nav:mega-menu");
+        await InvalidateStorefrontCache();
 
         return Ok(new CategoryResponse
         {
@@ -163,7 +164,7 @@ public class AdminCategoriesController : ControllerBase
         await _context.SaveChangesAsync();
         
         await _cacheStore.EvictByTagAsync("categories", default);
-        await _cache.RemoveAsync("nav:mega-menu");
+        await InvalidateStorefrontCache();
 
         return Ok(new CategoryResponse
         {
@@ -192,9 +193,32 @@ public class AdminCategoriesController : ControllerBase
         await _context.SaveChangesAsync();
 
         await _cacheStore.EvictByTagAsync("categories", default);
-        await _cache.RemoveAsync("nav:mega-menu");
+        await InvalidateStorefrontCache();
 
         return NoContent();
+    }
+
+    private async Task InvalidateStorefrontCache()
+    {
+        var keysToClear = new[] 
+        { 
+            CacheConstants.NavigationMenu, 
+            CacheConstants.CategoriesAll,
+            CacheConstants.HomeData 
+        };
+
+        foreach (var key in keysToClear)
+        {
+            await _cache.RemoveAsync(key);
+        }
+
+        // Update Client-Side Manifest Timestamp
+        var settings = await _context.SiteSettings.FirstOrDefaultAsync();
+        if (settings != null)
+        {
+            settings.CategoriesUpdatedAt = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+        }
     }
 
     private string GenerateSlug(string name)

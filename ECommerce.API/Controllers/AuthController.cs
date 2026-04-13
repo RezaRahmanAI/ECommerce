@@ -10,11 +10,13 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace ECommerce.API.Controllers;
 
 [ApiController]
 [Route("api/auth")]
+[EnableRateLimiting("strict")]
 public class AuthController : ControllerBase
 {
     private readonly IConfiguration _configuration;

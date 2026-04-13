@@ -72,6 +72,14 @@ public class AdminPagesController : ControllerBase
         _context.Pages.Add(page);
         await _context.SaveChangesAsync();
 
+        // Update Client-Side Manifest Timestamp
+        var settings = await _context.SiteSettings.FirstOrDefaultAsync();
+        if (settings != null)
+        {
+            settings.PagesUpdatedAt = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+        }
+
         return CreatedAtAction(nameof(GetPageById), new { id = page.Id }, new PageDto
         {
             Id = page.Id,
@@ -100,6 +108,14 @@ public class AdminPagesController : ControllerBase
 
         await _context.SaveChangesAsync();
 
+        // Update Client-Side Manifest Timestamp
+        var settings = await _context.SiteSettings.FirstOrDefaultAsync();
+        if (settings != null)
+        {
+            settings.PagesUpdatedAt = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+        }
+
         return Ok(new PageDto
         {
             Id = page.Id,
@@ -120,6 +136,14 @@ public class AdminPagesController : ControllerBase
 
         _context.Pages.Remove(page);
         await _context.SaveChangesAsync();
+
+        // Update Client-Side Manifest Timestamp
+        var settings = await _context.SiteSettings.FirstOrDefaultAsync();
+        if (settings != null)
+        {
+            settings.PagesUpdatedAt = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+        }
 
         return NoContent();
     }

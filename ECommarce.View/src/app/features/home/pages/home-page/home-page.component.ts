@@ -13,6 +13,7 @@ import { NewsletterComponent } from "../../components/newsletter/newsletter.comp
 
 import { CategorySectionComponent } from "../../components/category-section/category-section.component";
 import { PromoBannerComponent } from "../../components/promo-banner/promo-banner.component";
+import { LazyComponentDirective } from "../../../../shared/directives/lazy-component.directive";
 
 @Component({
   selector: "app-home-page",
@@ -26,7 +27,8 @@ import { PromoBannerComponent } from "../../components/promo-banner/promo-banner
     TestimonialsComponent,
     NewsletterComponent,
     CategorySectionComponent,
-    PromoBannerComponent
+    PromoBannerComponent,
+    LazyComponentDirective
 ],
   templateUrl: "./home-page.component.html",
   styleUrl: "./home-page.component.css",

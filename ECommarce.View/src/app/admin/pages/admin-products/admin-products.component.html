@@ -11,7 +11,7 @@
     </div>
     <div class="flex items-center gap-3">
       <button
-        class="arza-btn-secondary h-10 px-4"
+        class="shera-btn-secondary h-10 px-4"
         type="button"
         (click)="exportProducts()"
       >
@@ -19,7 +19,7 @@
         Export
       </button>
       <a
-        class="arza-btn-primary h-10 px-4"
+        class="shera-btn-primary h-10 px-4"
         routerLink="/admin/products/create"
       >
         <lucide-icon [img]="icons.Plus" class="w-5 h-5"></lucide-icon>
@@ -81,7 +81,7 @@
     >
       <button
         *ngFor="let tab of statusTabs"
-        class="arza-btn h-11 px-6 shadow-sm border border-border-color"
+        class="shera-btn h-11 px-6 shadow-sm border border-border-color"
         type="button"
         (click)="setStatusTab(tab)"
         [ngClass]="

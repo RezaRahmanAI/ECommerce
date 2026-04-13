@@ -12,6 +12,7 @@ using Microsoft.EntityFrameworkCore;
 using ECommerce.Core.Enums;
 using Microsoft.Extensions.Caching.Distributed;
 using System.Text.Json;
+using ECommerce.Core.Constants;
 
 namespace ECommerce.Infrastructure.Services;
 
@@ -30,7 +31,7 @@ public class ProductService : IProductService
 
     public async Task<ProductDto?> GetProductBySlugAsync(string slug)
     {
-        var cacheKey = $"product:details:slug:{slug}";
+        var cacheKey = $"{CacheConstants.ProductDetailPrefix}:slug:{slug}";
         
         return await _cache.GetOrCreateAsync(cacheKey, async () => 
         {
@@ -41,7 +42,7 @@ public class ProductService : IProductService
 
     public async Task<ProductDto?> GetProductByIdAsync(int id)
     {
-        var cacheKey = $"product:details:id:{id}";
+        var cacheKey = $"{CacheConstants.ProductDetailPrefix}:id:{id}";
         
         return await _cache.GetOrCreateAsync(cacheKey, async () => 
         {
@@ -162,20 +163,20 @@ public class ProductService : IProductService
     private async Task InvalidateProductCacheAsync(Product product, string? oldSlug = null)
     {
         // 1. Details Invalidation
-        await _cache.RemoveAsync($"product:details:id:{product.Id}");
-        await _cache.RemoveAsync($"product:details:slug:{product.Slug}");
+        await _cache.RemoveAsync($"{CacheConstants.ProductDetailPrefix}:id:{product.Id}");
+        await _cache.RemoveAsync($"{CacheConstants.ProductDetailPrefix}:slug:{product.Slug}");
         if (!string.IsNullOrEmpty(oldSlug) && oldSlug != product.Slug)
         {
-            await _cache.RemoveAsync($"product:details:slug:{oldSlug}");
+            await _cache.RemoveAsync($"{CacheConstants.ProductDetailPrefix}:slug:{oldSlug}");
         }
 
         // 2. List Invalidation (Wildcard)
-        await _cache.RemoveByPrefixAsync("product:list");
+        await _cache.RemoveByPrefixAsync(CacheConstants.ProductListPrefix);
         
         // 3. Homepage/Section Invalidation
-        await _cache.RemoveAsync("homepage:featured-products");
-        await _cache.RemoveAsync("homepage:new-arrivals");
-        await _cache.RemoveAsync("home_page_data"); // Shared landing page data
+        await _cache.RemoveAsync(CacheConstants.FeaturedProducts);
+        await _cache.RemoveAsync(CacheConstants.NewArrivals);
+        await _cache.RemoveAsync(CacheConstants.HomeData); // Shared landing page data
     }
 
     private string GenerateSlug(string name)
