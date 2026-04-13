@@ -39,8 +39,6 @@ import {
   X,
   AlertTriangle,
 } from "lucide-angular";
-import { BANGLADESH_LOCATIONS } from "../../../../core/utils/bangladesh-locations";
-
 import { ProductService } from "../../../../core/services/product.service";
 import { Product } from "../../../../core/models/product";
 import { CartService } from "../../../../core/services/cart.service";
@@ -144,14 +142,10 @@ export class LandingPageComponent implements OnInit {
   readonly checkoutForm = this.formBuilder.nonNullable.group({
     phone: ["", [Validators.required, Validators.minLength(11)]],
     fullName: ["", [Validators.required, Validators.minLength(2)]],
-    district: ["", Validators.required],
-    area: ["", Validators.required],
+    deliveryZone: ["inside", Validators.required],
     address: ["", [Validators.required, Validators.minLength(5)]],
     deliveryMethodId: [0, Validators.required],
   });
-
-  districts = Object.keys(BANGLADESH_LOCATIONS).sort();
-  availableAreas: string[] = [];
 
   ngOnInit(): void {
     this.loadProductAndSettings();
@@ -245,11 +239,12 @@ export class LandingPageComponent implements OnInit {
       )
       .subscribe((customer) => {
         if (customer) {
+          const isDhaka = (customer.city || "Dhaka").toLowerCase() === "dhaka";
           this.checkoutForm.patchValue(
             {
               fullName: customer.name,
               address: customer.address,
-              district: customer.city || "Dhaka"
+              deliveryZone: isDhaka ? "inside" : "outside"
             },
             { emitEvent: true },
           );
@@ -263,64 +258,40 @@ export class LandingPageComponent implements OnInit {
           this.deliveryMethods.find((m) => m.id === id) || null;
       });
 
-    this.checkoutForm.controls.district.valueChanges
+    // Delivery Zone Listener
+    this.checkoutForm.controls.deliveryZone.valueChanges
       .pipe(
-        filter((city) => !!city),
+        startWith(this.checkoutForm.controls.deliveryZone.value),
         takeUntilDestroyed(this.destroyRef)
       )
-      .subscribe((city) => {
-        this.availableAreas = BANGLADESH_LOCATIONS[city] || [];
-        this.checkoutForm.patchValue({ area: "" }, { emitEvent: false });
+      .subscribe((zone) => {
+        this.applyDeliveryMethodLogic(zone);
       });
 
-    // Robust Delivery Method Listener (Waiting for both district and methods)
-    combineLatest([
-      this.checkoutForm.controls.district.valueChanges.pipe(startWith(this.checkoutForm.controls.district.value)),
-      this.settingsService.getPublicDeliveryMethods().pipe(startWith([]))
-    ])
-    .pipe(
-      debounceTime(100),
-      takeUntilDestroyed(this.destroyRef)
-    )
-    .subscribe(([city, methods]) => {
-      this.applyDeliveryMethodLogic(city as string, methods as DeliveryMethod[]);
-    });
-
-    this.checkoutForm.controls.address.valueChanges
-      .pipe(
-        debounceTime(500),
-        distinctUntilChanged(),
-        takeUntilDestroyed(this.destroyRef)
-      )
-      .subscribe((address) => {
-        if (!address) return;
-        const addrLower = address.toLowerCase();
-        const currentDistrict = this.checkoutForm.controls.district.value.toLowerCase();
-        
-        // If address contains "dhaka" but district is not dhaka, and user hasn't explicitly picked another district
-        if (addrLower.includes("dhaka") && currentDistrict !== "dhaka") {
-          if (!currentDistrict) {
-            this.checkoutForm.patchValue({ district: "Dhaka" });
-          }
-        }
-      });
   }
 
-  private applyDeliveryMethodLogic(city: string, methods: DeliveryMethod[]): void {
-    if (!methods || !methods.length || !city) return;
+  private applyDeliveryMethodLogic(zone: string): void {
+    const methods = this.deliveryMethods;
+    if (!methods || !methods.length) return;
+    
     const active = methods.filter((m) => m.isActive);
     if (!active.length) return;
-    const cityLow = city.toLowerCase().trim();
-    const isDhaka = cityLow === "dhaka";
 
-    const inside = active.filter((m) => m.name.toLowerCase().includes("inside") || m.name.toLowerCase().includes("dhaka"));
-    const outside = active.filter((m) => m.name.toLowerCase().includes("outside"));
+    const isInside = zone === "inside";
+
+    const insideMethods = active.filter((m) => 
+      m.name.toLowerCase().includes("inside") || 
+      m.name.toLowerCase().includes("dhaka")
+    );
+    const outsideMethods = active.filter((m) => 
+      m.name.toLowerCase().includes("outside")
+    );
 
     let method: DeliveryMethod | undefined;
-    if (isDhaka) {
-      method = inside.length ? inside[0] : outside.length ? outside[0] : undefined;
+    if (isInside) {
+      method = insideMethods.length ? insideMethods[0] : outsideMethods[0];
     } else {
-      method = outside.length ? outside[0] : inside.length ? inside[0] : undefined;
+      method = outsideMethods.length ? outsideMethods[0] : insideMethods[0];
     }
 
     if (!method && active.length > 0) {
@@ -330,12 +301,14 @@ export class LandingPageComponent implements OnInit {
     if (method) {
       this.checkoutForm.patchValue({ deliveryMethodId: method.id }, { emitEvent: false });
       this.selectedMethod = method;
+      this.cdr.markForCheck();
     }
   }
 
   private updateDeliveryMethodByCity(city: string): void {
     if (!this.deliveryMethods || !this.deliveryMethods.length) return;
-    this.applyDeliveryMethodLogic(city, this.deliveryMethods);
+    const zone = city.toLowerCase() === "dhaka" ? "inside" : "outside";
+    this.applyDeliveryMethodLogic(zone);
   }
 
   scrollToOrderForm(): void {
@@ -482,8 +455,8 @@ export class LandingPageComponent implements OnInit {
         fullName: form.fullName,
         phone: form.phone,
         address: form.address,
-        city: form.district,
-        area: form.area,
+        city: form.deliveryZone === "inside" ? "Dhaka" : "Outside Dhaka",
+        area: "N/A",
         deliveryMethodId: form.deliveryMethodId
       },
       cartItems,

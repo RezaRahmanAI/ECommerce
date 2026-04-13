@@ -229,8 +229,8 @@
                 <!-- Stars -->
                 <div class="flex gap-1 mb-6">
                   <lucide-icon *ngFor="let s of [1,2,3,4,5]" 
-                              [img]="icons.Star" 
-                              class="w-4 h-4 fill-[#c8922a] text-[#c8922a]"></lucide-icon>
+                               [img]="icons.Star" 
+                               class="w-4 h-4 fill-[#c8922a] text-[#c8922a]"></lucide-icon>
                 </div>
 
                 <!-- Testimonial Text -->
@@ -355,52 +355,53 @@
               <p class="text-[10px] text-red-500" *ngIf="checkoutForm.controls.fullName.touched && checkoutForm.controls.fullName.invalid">নাম আবশ্যক</p>
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div class="space-y-2 text-left">
-                <label class="block text-[10px] uppercase tracking-[0.2em] font-bold text-[#888]">জেলা <span class="text-[#c8922a]">*</span></label>
-                <div class="relative w-full">
-                  <select formControlName="district" 
-                          class="w-full px-4 py-3 border border-[#e0e0e0] rounded-none focus:border-[#1a1a1a] outline-none transition-colors bg-white text-sm appearance-none">
-                    <option value="">জেলা নির্বাচন করুন</option>
-                    <option *ngFor="let district of districts" [value]="district">{{ district }}</option>
-                  </select>
-                  <lucide-icon [img]="icons.ChevronDown" class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"></lucide-icon>
-                </div>
-              </div>
+            <!-- Delivery Zone Selection -->
+            <div class="space-y-3 text-left">
+              <label class="block text-[10px] uppercase tracking-[0.2em] font-bold text-[#888]">ডেলিভারি এলাকা <span class="text-[#c8922a]">*</span></label>
+              <div class="grid grid-cols-2 gap-4">
+                <!-- Inside Dhaka -->
+                <label 
+                  class="flex items-center p-3 border rounded-lg cursor-pointer transition-all duration-200"
+                  [ngClass]="{
+                    'border-[#1a1a1a] bg-gray-50': checkoutForm.get('deliveryZone')?.value === 'inside',
+                    'border-[#e0e0e0] bg-white hover:bg-gray-50': checkoutForm.get('deliveryZone')?.value !== 'inside'
+                  }"
+                >
+                  <input
+                    type="radio"
+                    formControlName="deliveryZone"
+                    value="inside"
+                    class="w-4 h-4 text-[#1a1a1a] focus:ring-[#1a1a1a] border-gray-300"
+                  />
+                  <span class="ml-2 text-sm font-bold text-[#1a1a1a]">Inside Dhaka</span>
+                </label>
 
-              <div class="space-y-2 text-left">
-                <label class="block text-[10px] uppercase tracking-[0.2em] font-bold text-[#888]">এলাকা <span class="text-[#c8922a]">*</span></label>
-                <div class="relative w-full">
-                  <select formControlName="area" 
-                          class="w-full px-4 py-3 border border-[#e0e0e0] rounded-none focus:border-[#1a1a1a] outline-none transition-colors bg-white text-sm appearance-none">
-                    <option value="">এলাকা নির্বাচন করুন</option>
-                    <option *ngFor="let area of availableAreas" [value]="area">{{ area }}</option>
-                  </select>
-                  <lucide-icon [img]="icons.ChevronDown" class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"></lucide-icon>
-                </div>
+                <!-- Outside Dhaka -->
+                <label 
+                  class="flex items-center p-3 border rounded-lg cursor-pointer transition-all duration-200"
+                  [ngClass]="{
+                    'border-[#1a1a1a] bg-gray-50': checkoutForm.get('deliveryZone')?.value === 'outside',
+                    'border-[#e0e0e0] bg-white hover:bg-gray-50': checkoutForm.get('deliveryZone')?.value !== 'outside'
+                  }"
+                >
+                  <input
+                    type="radio"
+                    formControlName="deliveryZone"
+                    value="outside"
+                    class="w-4 h-4 text-[#1a1a1a] focus:ring-[#1a1a1a] border-gray-300"
+                  />
+                  <span class="ml-2 text-sm font-bold text-[#1a1a1a]">Outside Dhaka</span>
+                </label>
               </div>
             </div>
 
             <div class="space-y-2 text-left">
-              <label class="block text-[10px] uppercase tracking-[0.2em] font-bold text-[#888]">আপনার ঠিকানা <span class="text-[#c8922a]">*</span></label>
+              <label class="block text-[10px] uppercase tracking-[0.2em] font-bold text-[#888]">আপনার বিস্তারিত ঠিকানা <span class="text-[#c8922a]">*</span></label>
               <input type="text" formControlName="address" placeholder="বাড়ি নম্বর, রাস্তা, এলাকা, জেলা" 
                      class="w-full px-4 py-3 border border-[#e0e0e0] rounded-lg focus:border-[#1a1a1a] outline-none transition-colors bg-white text-sm">
               <p class="text-[10px] text-red-500" *ngIf="checkoutForm.controls.address.touched && checkoutForm.controls.address.invalid">ঠিকানা আবশ্যক</p>
             </div>
-
             
-          </div>
-
-          <!-- Shipping -->
-          <div class="bg-white border border-[#e0e0e0] rounded-none p-5 md:p-6 text-left">
-            <div class="text-[12px] uppercase tracking-widest font-bold text-[#1a1a1a] mb-4">Shipping</div>
-            <select formControlName="deliveryMethodId" 
-                    class="w-full px-4 py-3 border border-[#e0e0e0] rounded-lg focus:border-[#1a1a1a] outline-none transition-colors bg-white text-sm">
-              <option value="" disabled>Select delivery method</option>
-              <option *ngFor="let method of deliveryMethods" [value]="method.id">
-                {{ method.name }} - ৳ {{ method.cost | number:'1.2-2' }}
-              </option>
-            </select>
           </div>
 
           <!-- Order Summary -->

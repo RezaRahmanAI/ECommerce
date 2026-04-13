@@ -4,7 +4,6 @@ import { FormBuilder, ReactiveFormsModule, Validators } from "@angular/forms";
 import { ActivatedRoute, Router, RouterModule } from "@angular/router";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import { LucideAngularModule, X, Search, ChevronDown, ChevronUp } from "lucide-angular";
-import { BANGLADESH_LOCATIONS } from "../../../../core/utils/bangladesh-locations";
 import { OrderService } from "../../../../core/services/order.service";
 import { OrderItem } from "../../../../core/models/order";
 import { ImageUrlService } from "../../../../core/services/image-url.service";
@@ -38,8 +37,6 @@ const OFFERS: OfferDetails[] = [
     productId: 1, // Placeholder for the Midnight Luxe set in DB
   },
 ];
-
-
 
 @Component({
   selector: "app-offer-details-page",
@@ -80,19 +77,8 @@ export class OfferDetailsPageComponent {
     phone: ["", [Validators.required, Validators.minLength(7)]],
     address: ["", [Validators.required, Validators.minLength(5)]],
     city: ["Dhaka", Validators.required],
-    area: ["", Validators.required],
     quantity: [1, [Validators.required, Validators.min(1), Validators.max(10)]],
   });
-
-  cities = Object.keys(BANGLADESH_LOCATIONS).sort();
-  filteredCities: string[] = [];
-  citySearch = "";
-  isCityDropdownOpen = false;
-
-  areas: string[] = [];
-  filteredAreas: string[] = [];
-  areaSearch = "";
-  isAreaDropdownOpen = false;
 
   constructor() {
     this.route.paramMap
@@ -104,20 +90,6 @@ export class OfferDetailsPageComponent {
           void this.router.navigate(["/"]);
         }
       });
-
-    this.orderForm.controls.city.valueChanges
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((city) => {
-        this.areas = BANGLADESH_LOCATIONS[city] || [];
-        this.filteredAreas = [...this.areas];
-        this.orderForm.patchValue({ area: "" });
-        this.areaSearch = "";
-        this.citySearch = city; // Keep search input synced
-      });
-
-    // Initialize areas for default city
-    this.areas = BANGLADESH_LOCATIONS["Dhaka"] || [];
-    this.filteredAreas = [...this.areas];
   }
 
   get total(): number {
@@ -126,49 +98,6 @@ export class OfferDetailsPageComponent {
     }
     const quantity = this.orderForm.controls.quantity.value ?? 1;
     return this.offer.price * quantity;
-  }
-
-  filterCities(event: Event): void {
-    const query = (event.target as HTMLInputElement).value.toLowerCase();
-    this.citySearch = query;
-    this.filteredCities = this.cities.filter(c => c.toLowerCase().includes(query));
-  }
-
-  selectCity(city: string): void {
-    this.orderForm.patchValue({ city });
-    this.citySearch = city;
-    this.isCityDropdownOpen = false;
-  }
-
-  toggleCityDropdown(): void {
-    this.isCityDropdownOpen = !this.isCityDropdownOpen;
-    if (this.isCityDropdownOpen) {
-      this.isAreaDropdownOpen = false; // Close other
-      this.filteredCities = [...this.cities];
-      this.citySearch = this.orderForm.get('city')?.value || "";
-    }
-  }
-
-  filterAreas(event: Event): void {
-    const query = (event.target as HTMLInputElement).value.toLowerCase();
-    this.areaSearch = query;
-    this.filteredAreas = this.areas.filter(a => a.toLowerCase().includes(query));
-  }
-
-  selectArea(area: string): void {
-    this.orderForm.patchValue({ area });
-    this.areaSearch = area;
-    this.isAreaDropdownOpen = false;
-  }
-
-  toggleAreaDropdown(): void {
-    if (!this.orderForm.get('city')?.value) return;
-    this.isAreaDropdownOpen = !this.isAreaDropdownOpen;
-    if (this.isAreaDropdownOpen) {
-      this.isCityDropdownOpen = false; // Close other
-      this.filteredAreas = [...this.areas];
-      this.areaSearch = this.orderForm.get('area')?.value || "";
-    }
   }
 
   submitOrder(): void {
@@ -189,7 +118,7 @@ export class OfferDetailsPageComponent {
         phone: this.orderForm.controls.phone.value,
         address: this.orderForm.controls.address.value,
         city: this.orderForm.controls.city.value,
-        area: this.orderForm.controls.area.value,
+        area: "N/A", // Default for compatibility
         itemsCount: quantity,
         total: this.total,
         items: [
@@ -206,7 +135,6 @@ export class OfferDetailsPageComponent {
           this.isLoading = false;
           this.profileService.storePhone(this.orderForm.controls.phone.value);
 
-          // Build a virtual OrderItem for consistent confirmation display
           const virtualItem: OrderItem = {
             productId: 0,
             productName: this.offer?.title ?? "Special Offer",
@@ -217,12 +145,11 @@ export class OfferDetailsPageComponent {
             totalPrice: this.total,
           };
 
-          // Save to history so confirmation page can find it
           this.orderService.buildAndSaveOrder(
             response,
             [virtualItem],
             this.total,
-            0,
+            0, // shipping is handled by order API or defaults
             0,
           );
 
@@ -232,6 +159,7 @@ export class OfferDetailsPageComponent {
             fullName: "",
             address: "",
             quantity: 1,
+            city: "Dhaka"
           });
         },
         error: () => {

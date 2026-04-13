@@ -48,6 +48,15 @@ export const globalErrorInterceptor: HttpInterceptorFn = (request, next) => {
               !request.url.includes("auth/logout")
             ) {
               notificationService.error("Session expired. Please login again.");
+              
+              // Clear session and redirect to login
+              localStorage.removeItem("sherashop-user");
+              localStorage.removeItem("sherashop-token");
+              
+              const isAdminPath = router.url.includes('/admin');
+              router.navigate([isAdminPath ? '/admin/login' : '/login'], { 
+                queryParams: { returnUrl: router.url } 
+              });
             }
             break;
 

@@ -13,6 +13,7 @@ import {
   of,
   switchMap,
   tap,
+  startWith,
 } from "rxjs";
 import {
   LucideAngularModule,
@@ -38,8 +39,6 @@ import {
   MessageSquare,
   X,
 } from "lucide-angular";
-import { BANGLADESH_LOCATIONS } from "../../../../core/utils/bangladesh-locations";
-
 import { AdultProductService } from "../../services/adult-product.service";
 import { AdultProduct } from "../../../../admin/models/adult-product.models";
 import { CartService } from "../../../../core/services/cart.service";
@@ -147,14 +146,10 @@ export class AdultLandingPageComponent implements OnInit {
   readonly checkoutForm = this.formBuilder.nonNullable.group({
     phone: ["", [Validators.required, Validators.minLength(11)]],
     fullName: ["", [Validators.required, Validators.minLength(2)]],
-    district: ["", Validators.required],
-    area: ["", Validators.required],
+    deliveryZone: ["inside", Validators.required],
     address: ["", [Validators.required, Validators.minLength(5)]],
     deliveryMethodId: [0, Validators.required],
   });
-
-  districts = Object.keys(BANGLADESH_LOCATIONS).sort();
-  availableAreas: string[] = [];
 
   ngOnInit(): void {
     this.loadProductAndSettings();
@@ -226,11 +221,12 @@ export class AdultLandingPageComponent implements OnInit {
       )
       .subscribe((customer) => {
         if (customer) {
+          const isDhaka = (customer.city || "Dhaka").toLowerCase() === "dhaka";
           this.checkoutForm.patchValue(
             {
               fullName: customer.name,
               address: customer.address,
-              district: customer.city || "Dhaka"
+              deliveryZone: isDhaka ? "inside" : "outside"
             },
             { emitEvent: true },
           );
@@ -244,32 +240,33 @@ export class AdultLandingPageComponent implements OnInit {
           this.deliveryMethods.find((m) => m.id === id) || null;
       });
 
-    this.checkoutForm.controls.district.valueChanges
+    this.checkoutForm.controls.deliveryZone.valueChanges
       .pipe(
-        filter((city) => !!city),
+        startWith(this.checkoutForm.controls.deliveryZone.value),
         takeUntilDestroyed(this.destroyRef)
       )
-      .subscribe((city) => {
-        this.availableAreas = BANGLADESH_LOCATIONS[city] || [];
-        this.checkoutForm.patchValue({ area: "" }, { emitEvent: false });
-        this.updateDeliveryMethodByCity(city);
+      .subscribe((zone) => {
+        this.updateDeliveryMethodByZone(zone as string);
       });
   }
 
-  private updateDeliveryMethodByCity(city: string): void {
+  private updateDeliveryMethodByZone(zone: string): void {
     if (!this.deliveryMethods.length) return;
     const methods = [...this.deliveryMethods].filter((m) => m.isActive);
     if (!methods.length) return;
-    const cityLow = city.toLowerCase().trim();
-    const isDhaka = cityLow === "dhaka";
+    
+    const isInside = zone === "inside";
+    
     const inside = methods.filter((m) => m.name.toLowerCase().includes("inside") || m.name.toLowerCase().includes("dhaka"));
     const outside = methods.filter((m) => m.name.toLowerCase().includes("outside"));
+    
     let method: any;
-    if (isDhaka) {
+    if (isInside) {
       method = inside.length ? inside[0] : outside.length ? outside[0] : methods[0];
     } else {
       method = outside.length ? outside[0] : inside.length ? inside[0] : methods[0];
     }
+    
     if (method) {
       this.checkoutForm.patchValue({ deliveryMethodId: method.id }, { emitEvent: false });
       this.selectedMethod = method;
@@ -402,8 +399,8 @@ export class AdultLandingPageComponent implements OnInit {
         fullName: form.fullName,
         phone: form.phone,
         address: form.address,
-        city: form.district,
-        area: form.area,
+        city: form.deliveryZone === "inside" ? "Dhaka" : "Outside Dhaka",
+        area: "N/A",
         deliveryMethodId: form.deliveryMethodId
       },
       cartItems,

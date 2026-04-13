@@ -10,7 +10,7 @@ import { LoadingService } from "../services/loading.service";
 export const jwtInterceptor: HttpInterceptorFn = (req, next) => {
   const platformId = inject(PLATFORM_ID);
   const isBrowser = isPlatformBrowser(platformId);
-  const token = isBrowser ? localStorage.getItem("token") : null;
+  const token = isBrowser ? localStorage.getItem("sherashop-token") : null;
   const isFormData = req.body instanceof FormData;
 
   const headers: Record<string, string> = {

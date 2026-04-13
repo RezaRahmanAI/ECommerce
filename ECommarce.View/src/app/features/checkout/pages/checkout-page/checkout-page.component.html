@@ -10,6 +10,54 @@
         <form [formGroup]="checkoutForm" class="space-y-8">
           
           <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <!-- Delivery Zone Selection -->
+            <div class="md:col-span-2 space-y-4">
+              <label class="block text-sm font-bold text-text-main dark:text-slate-300">
+                <span class="text-red-500">*</span> Delivery Area
+              </label>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <!-- Inside Dhaka -->
+                <label 
+                  class="relative flex items-center p-4 border rounded-xl cursor-pointer transition-all duration-300"
+                  [ngClass]="{
+                    'border-primary bg-primary/5 ring-1 ring-primary': checkoutForm.get('deliveryZone')?.value === 'inside',
+                    'border-border-color bg-white hover:bg-supporting': checkoutForm.get('deliveryZone')?.value !== 'inside'
+                  }"
+                >
+                  <input
+                    type="radio"
+                    formControlName="deliveryZone"
+                    value="inside"
+                    class="w-4 h-4 text-primary focus:ring-primary border-gray-300"
+                  />
+                  <div class="ml-4">
+                    <span class="block font-bold text-text-main">Inside Dhaka</span>
+                    <span class="block text-[10px] text-text-sub uppercase tracking-wider font-semibold">Delivery within city</span>
+                  </div>
+                </label>
+
+                <!-- Outside Dhaka -->
+                <label 
+                  class="relative flex items-center p-4 border rounded-xl cursor-pointer transition-all duration-300"
+                  [ngClass]="{
+                    'border-primary bg-primary/5 ring-1 ring-primary': checkoutForm.get('deliveryZone')?.value === 'outside',
+                    'border-border-color bg-white hover:bg-supporting': checkoutForm.get('deliveryZone')?.value !== 'outside'
+                  }"
+                >
+                  <input
+                    type="radio"
+                    formControlName="deliveryZone"
+                    value="outside"
+                    class="w-4 h-4 text-primary focus:ring-primary border-gray-300"
+                  />
+                  <div class="ml-4">
+                    <span class="block font-bold text-text-main">Outside Dhaka</span>
+                    <span class="block text-[10px] text-text-sub uppercase tracking-wider font-semibold">All other districts</span>
+                  </div>
+                </label>
+              </div>
+            </div>
+
             <!-- Phone -->
             <div class="space-y-2">
               <label class="block text-sm font-bold text-text-main dark:text-slate-300">
@@ -32,136 +80,16 @@
                 class="block w-full px-4 py-3 bg-white border border-border-color rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all text-sm outline-none"
                 type="text" formControlName="fullName" placeholder="Your Name" />
             </div>
-
-            <!-- City (Searchable Dropdown) -->
-            <div class="space-y-2">
-              <label class="block text-sm font-bold text-text-main dark:text-slate-300">
-                <span class="text-red-500">*</span> City
-              </label>
-              <div class="relative">
-                <div class="relative items-center flex" (click)="toggleCityDropdown()">
-                  <input
-                    class="block w-full px-4 py-3 bg-white border border-border-color rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all text-sm outline-none cursor-pointer pr-10"
-                    type="text"
-                    [value]="checkoutForm.get('city')?.value"
-                    placeholder="Select or search city"
-                    readonly
-                  />
-                  <lucide-icon [img]="isCityDropdownOpen ? icons.ChevronUp : icons.ChevronDown" class="absolute right-3 w-4 h-4 text-text-sub pointer-events-none"></lucide-icon>
-                </div>
-
-                <!-- Dropdown List -->
-                <div *ngIf="isCityDropdownOpen" 
-                  class="absolute z-50 w-full mt-2 bg-white dark:bg-slate-900 border border-border-color dark:border-slate-800 rounded-xl shadow-xl overflow-hidden animate-fade-in-down"
-                  (click)="$event.stopPropagation()">
-                  <div class="p-2 border-b border-slate-100 dark:border-slate-800">
-                    <div class="relative flex items-center">
-                      <lucide-icon [img]="icons.Search" class="absolute left-3 w-3.5 h-3.5 text-text-sub"></lucide-icon>
-                      <input
-                        type="text"
-                        class="w-full pl-9 pr-4 py-2 bg-supporting dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-0 outline-none"
-                        placeholder="Search cities..."
-                        (input)="filterCities($event)"
-                        [value]="citySearch"
-                        autofocus
-                      />
-                    </div>
-                  </div>
-                  <ul class="max-h-60 overflow-y-auto custom-scrollbar py-1">
-                    <li *ngIf="filteredCities.length === 0" class="px-4 py-3 text-sm text-text-sub text-center">No cities found</li>
-                    <li
-                      *ngFor="let city of filteredCities"
-                      (click)="selectCity(city)"
-                      class="px-4 py-2 text-sm text-text-main dark:text-slate-300 hover:bg-supporting dark:hover:bg-slate-800 cursor-pointer transition-colors"
-                      [ngClass]="{'bg-primary/5 text-primary font-bold': checkoutForm.get('city')?.value === city}"
-                    >
-                      {{ city }}
-                    </li>
-                  </ul>
-                </div>
-
-                <!-- Overlay to close dropdown -->
-                <div *ngIf="isCityDropdownOpen" class="fixed inset-0 z-40" (click)="toggleCityDropdown()"></div>
-              </div>
-            </div>
-
-            <!-- Area (Searchable Dropdown) -->
-            <div class="space-y-2">
-              <label class="block text-sm font-bold text-text-main dark:text-slate-300">
-                <span class="text-red-500">*</span> Area
-              </label>
-              <div class="relative">
-                <div class="relative items-center flex" (click)="toggleAreaDropdown()">
-                  <input
-                    class="block w-full px-4 py-3 bg-white border border-border-color rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all text-sm outline-none cursor-pointer pr-10"
-                    type="text"
-                    [value]="checkoutForm.get('area')?.value"
-                    placeholder="Select or search area"
-                    readonly
-                  />
-                  <lucide-icon [img]="isAreaDropdownOpen ? icons.ChevronUp : icons.ChevronDown" class="absolute right-3 w-4 h-4 text-text-sub pointer-events-none"></lucide-icon>
-                </div>
-
-                <!-- Dropdown List -->
-                <div *ngIf="isAreaDropdownOpen" 
-                  class="absolute z-50 w-full mt-2 bg-white dark:bg-slate-900 border border-border-color dark:border-slate-800 rounded-xl shadow-xl overflow-hidden animate-fade-in-down"
-                  (click)="$event.stopPropagation()">
-                  <div class="p-2 border-b border-slate-100 dark:border-slate-800">
-                    <div class="relative flex items-center">
-                      <lucide-icon [img]="icons.Search" class="absolute left-3 w-3.5 h-3.5 text-text-sub"></lucide-icon>
-                      <input
-                        type="text"
-                        class="w-full pl-9 pr-4 py-2 bg-supporting dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-0 outline-none"
-                        placeholder="Search areas..."
-                        (input)="filterAreas($event)"
-                        [value]="areaSearch"
-                        autofocus
-                      />
-                    </div>
-                  </div>
-                  <ul class="max-h-60 overflow-y-auto custom-scrollbar py-1">
-                    <li *ngIf="filteredAreas.length === 0" class="px-4 py-3 text-sm text-text-sub text-center">No areas found</li>
-                    <li
-                      *ngFor="let area of filteredAreas"
-                      (click)="selectArea(area)"
-                      class="px-4 py-2 text-sm text-text-main dark:text-slate-300 hover:bg-supporting dark:hover:bg-slate-800 cursor-pointer transition-colors"
-                      [ngClass]="{'bg-primary/5 text-primary font-bold': checkoutForm.get('area')?.value === area}"
-                    >
-                      {{ area }}
-                    </li>
-                  </ul>
-                </div>
-
-                <!-- Overlay to close dropdown -->
-                <div *ngIf="isAreaDropdownOpen" class="fixed inset-0 z-40" (click)="toggleAreaDropdown()"></div>
-              </div>
-            </div>
           </div>
 
           <!-- Address -->
           <div class="space-y-2">
             <label class="block text-sm font-bold text-text-main dark:text-slate-300">
-              <span class="text-red-500">*</span> Address
+              <span class="text-red-500">*</span> Detailed Address
             </label>
             <textarea
               class="block w-full px-4 py-3 bg-white border border-border-color rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all text-sm outline-none resize-none"
-              rows="3" formControlName="address" placeholder="Enter your address"></textarea>
-          </div>
-
-          <!-- Delivery Method -->
-          <div class="space-y-6" *ngIf="vm.deliveryMethods.length > 0">
-            <label class="block text-sm font-bold text-text-main dark:text-slate-300">
-              <span class="text-red-500">*</span> Delivery method
-            </label>
-            
-            <select formControlName="deliveryMethodId"
-                    class="w-full px-4 py-3 border border-border-color bg-white dark:bg-slate-900 rounded-xl focus:border-primary outline-none transition-colors">
-              <option value="" disabled>Select delivery method</option>
-              <option *ngFor="let method of vm.deliveryMethods" [value]="method.id">
-                {{ method.name }} - {{ method.cost === 0 ? 'Free' : ('৳' + (method.cost | number:'1.2-2')) }}
-                {{ method.estimatedDays ? ' (' + method.estimatedDays + ')' : '' }}
-              </option>
-            </select>
+              rows="3" formControlName="address" placeholder="Enter house no, road no, area name..."></textarea>
           </div>
         </form>
       </div>
