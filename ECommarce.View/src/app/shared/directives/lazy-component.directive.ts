@@ -1,13 +1,15 @@
-import { Directive, ElementRef, TemplateRef, ViewContainerRef, OnInit, OnDestroy, Input } from '@angular/core';
+import { Directive, ElementRef, TemplateRef, ViewContainerRef, OnInit, OnDestroy, Input, Output, EventEmitter } from '@angular/core';
 
 @Directive({
   selector: '[appLazyComponent]',
-  standalone: true
+  standalone: true,
+  exportAs: 'appLazyComponent'
 })
 export class LazyComponentDirective implements OnInit, OnDestroy {
   @Input('appLazyComponent') condition: any = true;
+  @Output() rendered = new EventEmitter<void>();
   private observer?: IntersectionObserver;
-  private hasRendered = false;
+  public hasRendered = false;
 
   constructor(
     private element: ElementRef,
@@ -47,6 +49,9 @@ export class LazyComponentDirective implements OnInit, OnDestroy {
     });
 
     this.hasRendered = true;
+    setTimeout(() => {
+      this.rendered.emit();
+    }, 0);
     this.observer?.disconnect();
   }
 

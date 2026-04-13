@@ -5,6 +5,7 @@ import {
   inject,
   PLATFORM_ID,
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
 } from "@angular/core";
 import {
   CommonModule,
@@ -49,6 +50,7 @@ import { PrefetchOnHoverDirective } from "../../directives/prefetch-on-hover.dir
 export class ProductCardComponent implements OnInit {
   @Input({ required: true }) product!: Product | RelatedProduct;
 
+  isLoaded = false;
   readonly icons = { ShoppingCart };
 
   public readonly imageUrlService = inject(ImageUrlService);
@@ -56,10 +58,16 @@ export class ProductCardComponent implements OnInit {
   private readonly platformId = inject(PLATFORM_ID);
   private readonly router = inject(Router);
   private readonly notificationService = inject(NotificationService);
+  private readonly cdr = inject(ChangeDetectorRef);
 
   constructor() {}
 
   ngOnInit() {
+  }
+
+  onRendered(): void {
+    this.isLoaded = true;
+    this.cdr.detectChanges();
   }
 
   get mainImage(): string | null {
