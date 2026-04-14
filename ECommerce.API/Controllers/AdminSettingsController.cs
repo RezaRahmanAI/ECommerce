@@ -99,13 +99,17 @@ public class AdminSettingsController : ControllerBase
         settings.GoogleTagId = dto.GoogleTagId;
         settings.SizeGuideImageUrl = dto.SizeGuideImageUrl;
         settings.UpdatedAt = DateTime.UtcNow;
+        
+        // Trigger manifest refresh by updating a timestamp that the frontend monitors
+        settings.PagesUpdatedAt = DateTime.UtcNow; 
 
         await _context.SaveChangesAsync();
-
-        _cache.Remove("site_settings");
-        _cache.Remove("delivery_methods_active");
-        _cache.Remove(CacheConstants.HomeData); // Settings can affect home (logo, shipping)
+        
+        _cache.Remove(CacheConstants.SiteSettings);
+        _cache.Remove(CacheConstants.DeliveryMethodsActive);
+        _cache.Remove(CacheConstants.HomeData);
         await _cacheStore.EvictByTagAsync("settings", default);
+        await _cacheStore.EvictByTagAsync("homepage", default);
 
         return Ok(dto);
     }
@@ -169,7 +173,7 @@ public class AdminSettingsController : ControllerBase
         _context.DeliveryMethods.Add(method);
         await _context.SaveChangesAsync();
 
-        _cache.Remove("delivery_methods_active");
+        _cache.Remove(CacheConstants.DeliveryMethodsActive);
         await _cacheStore.EvictByTagAsync("settings", default);
 
         return CreatedAtAction(nameof(GetDeliveryMethods), new { id = method.Id }, method);
@@ -189,7 +193,7 @@ public class AdminSettingsController : ControllerBase
 
         await _context.SaveChangesAsync();
         
-        _cache.Remove("delivery_methods_active");
+        _cache.Remove(CacheConstants.DeliveryMethodsActive);
         await _cacheStore.EvictByTagAsync("settings", default);
         return NoContent();
     }
@@ -203,7 +207,7 @@ public class AdminSettingsController : ControllerBase
         _context.DeliveryMethods.Remove(method);
         await _context.SaveChangesAsync();
 
-        _cache.Remove("delivery_methods_active");
+        _cache.Remove(CacheConstants.DeliveryMethodsActive);
         await _cacheStore.EvictByTagAsync("settings", default);
         return NoContent();
     }

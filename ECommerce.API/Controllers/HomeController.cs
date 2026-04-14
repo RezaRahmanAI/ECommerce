@@ -5,6 +5,7 @@ using ECommerce.Core.Interfaces;
 using ECommerce.Core.Specifications;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.AspNetCore.OutputCaching;
 using ECommerce.Core.Constants;
 
 namespace ECommerce.API.Controllers;
@@ -37,6 +38,7 @@ public class HomeController : ControllerBase
     }
 
     [HttpGet]
+    [OutputCache(Tags = new[] { "homepage", "products", "categories", "banners" })]
     public async Task<ActionResult<HomePageDto>> GetHomeData()
     {
         // Define cache-wrapped tasks for parallel execution

@@ -4,6 +4,8 @@ using ECommerce.Core.Interfaces;
 using ECommerce.Core.Specifications;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.AspNetCore.OutputCaching;
+using ECommerce.Core.Constants;
 
 namespace ECommerce.API.Controllers;
 
@@ -22,9 +24,10 @@ public class BannersController : ControllerBase
 
     [HttpGet]
     [ResponseCache(Duration = 300)]
+    [OutputCache(Tags = new[] { "banners" })]
     public async Task<ActionResult<List<HeroBannerDto>>> GetActiveBanners()
     {
-        const string cacheKey = "banners_active";
+        string cacheKey = CacheConstants.BannersActive;
 
         if (_cache.TryGetValue(cacheKey, out List<HeroBannerDto>? cached) && cached != null)
         {

@@ -1,6 +1,8 @@
 using ECommerce.Core.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.AspNetCore.OutputCaching;
+using ECommerce.Core.Constants;
 
 namespace ECommerce.API.Controllers;
 
@@ -17,9 +19,10 @@ public class NavigationController : BaseApiController
 
     [HttpGet("mega-menu")]
     [ResponseCache(Duration = 600)]
+    [OutputCache(Tags = new[] { "navigation", "categories" })]
     public async Task<IActionResult> GetMegaMenu()
     {
-        const string cacheKey = "navigation_mega_menu";
+        string cacheKey = CacheConstants.NavigationMenu;
 
         if (_cache.TryGetValue(cacheKey, out object? cached) && cached != null)
         {

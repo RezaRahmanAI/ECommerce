@@ -7,6 +7,8 @@ using ECommerce.Infrastructure.Data;
 using ECommerce.Core.Entities;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
+using Microsoft.AspNetCore.OutputCaching;
+using ECommerce.Core.Constants;
 
 namespace ECommerce.API.Controllers
 {
@@ -24,11 +26,10 @@ namespace ECommerce.API.Controllers
         }
 
         [HttpGet]
+        [OutputCache(Tags = new[] { "settings" })]
         public async Task<ActionResult<SiteSetting>> GetSettings()
         {
-            const string cacheKey = "site_settings";
-
-            // var cached = ... (Cache logic below)
+            string cacheKey = CacheConstants.SiteSettings;
 
             if (_cache.TryGetValue(cacheKey, out SiteSetting? cached) && cached != null)
             {
@@ -47,9 +48,10 @@ namespace ECommerce.API.Controllers
         }
 
         [HttpGet("delivery-methods")]
+        [OutputCache(Tags = new[] { "settings" })]
         public async Task<ActionResult<IEnumerable<DeliveryMethod>>> GetDeliveryMethods()
         {
-            const string cacheKey = "delivery_methods_active";
+            string cacheKey = CacheConstants.DeliveryMethodsActive;
 
             if (_cache.TryGetValue(cacheKey, out IEnumerable<DeliveryMethod>? cached) && cached != null)
             {

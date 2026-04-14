@@ -4,6 +4,9 @@ using ECommerce.Infrastructure.Data;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.AspNetCore.OutputCaching;
+using ECommerce.Core.Constants;
 
 namespace ECommerce.API.Controllers;
 
@@ -13,10 +16,14 @@ namespace ECommerce.API.Controllers;
 public class AdminNavigationController : ControllerBase
 {
     private readonly ApplicationDbContext _context;
+    private readonly IMemoryCache _cache;
+    private readonly IOutputCacheStore _cacheStore;
 
-    public AdminNavigationController(ApplicationDbContext context)
+    public AdminNavigationController(ApplicationDbContext context, IMemoryCache cache, IOutputCacheStore cacheStore)
     {
         _context = context;
+        _cache = cache;
+        _cacheStore = cacheStore;
     }
 
     [HttpGet]
@@ -60,6 +67,8 @@ public class AdminNavigationController : ControllerBase
         _context.NavigationMenus.Add(menu);
         await _context.SaveChangesAsync();
 
+        await InvalidateCache();
+
         return CreatedAtAction(nameof(GetMenuById), new { id = menu.Id }, MapToDto(menu));
     }
 
@@ -78,6 +87,8 @@ public class AdminNavigationController : ControllerBase
 
         await _context.SaveChangesAsync();
 
+        await InvalidateCache();
+
         return Ok(MapToDto(menu));
     }
 
@@ -90,7 +101,26 @@ public class AdminNavigationController : ControllerBase
         _context.NavigationMenus.Remove(menu);
         await _context.SaveChangesAsync();
 
+        await InvalidateCache();
+
         return NoContent();
+    }
+
+    private async Task InvalidateCache()
+    {
+        _cache.Remove(CacheConstants.NavigationMenu);
+        _cache.Remove(CacheConstants.HomeData);
+        
+        await _cacheStore.EvictByTagAsync("navigation", default);
+        await _cacheStore.EvictByTagAsync("homepage", default);
+
+        // Update Manifest
+        var settings = await _context.SiteSettings.FirstOrDefaultAsync();
+        if (settings != null)
+        {
+            settings.CategoriesUpdatedAt = DateTime.UtcNow; // Navigation usually depends on categories or affects category visibility
+            await _context.SaveChangesAsync();
+        }
     }
 
     private List<NavigationMenuDto> MapToDto(IEnumerable<NavigationMenu> menus)

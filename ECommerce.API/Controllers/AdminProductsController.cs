@@ -2,10 +2,6 @@ using ECommerce.Core.DTOs;
 using ECommerce.Core.Interfaces;
 using ECommerce.Core.Entities;
 using ECommerce.Core.Specifications;
-using ECommerce.Core.DTOs;
-using ECommerce.Core.Interfaces;
-using ECommerce.Core.Entities;
-using ECommerce.Core.Specifications;
 using ECommerce.Infrastructure.Data;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -100,6 +96,7 @@ public class AdminProductsController : ControllerBase
         [FromQuery] int pageSize = 10)
     {
         var query = _context.Products
+            .IgnoreQueryFilters()
             .AsNoTracking()
             .AsQueryable();
 
@@ -297,8 +294,11 @@ public class AdminProductsController : ControllerBase
     [HttpGet("inventory")]
     public async Task<ActionResult<List<ProductInventoryDto>>> GetInventory()
     {
-        var spec = new BaseSpecification<Product>();
-        var products = await _unitOfWork.Repository<Product>().ListAsync(spec);
+        var products = await _context.Products
+            .IgnoreQueryFilters()
+            .AsNoTracking()
+            .Include(p => p.Images)
+            .ToListAsync();
 
         var inventory = products.Select(p => new ProductInventoryDto
         {
@@ -355,6 +355,11 @@ public class AdminProductsController : ControllerBase
 
         // Generic prefix clear for galleries
         await _cache.RemoveByPrefixAsync(CacheConstants.ProductListPrefix);
+
+        // Evict Output Cache
+        await _cacheStore.EvictByTagAsync("products", default);
+        await _cacheStore.EvictByTagAsync("inventory", default);
+        await _cacheStore.EvictByTagAsync("homepage", default);
 
         // Update Client-Side Manifest Timestamp
         var settings = await _context.SiteSettings.FirstOrDefaultAsync();

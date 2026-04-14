@@ -180,6 +180,10 @@ public class AdminBannersController : ControllerBase
             _cache.Remove(key);
         }
 
+        // Evict Output Cache
+        await _cacheStore.EvictByTagAsync("banners", default);
+        await _cacheStore.EvictByTagAsync("homepage", default);
+
         // Update Client-Side Manifest Timestamp
         var settings = await _context.SiteSettings.FirstOrDefaultAsync();
         if (settings != null)

@@ -39,6 +39,7 @@ public class AdminCategoriesController : ControllerBase
     public async Task<ActionResult<List<CategoryResponse>>> GetAll()
     {
         var categories = await _context.Categories
+            .IgnoreQueryFilters()
             .AsNoTracking()
             .Select(c => new CategoryResponse
             {
@@ -57,6 +58,7 @@ public class AdminCategoriesController : ControllerBase
     public async Task<ActionResult<CategoryResponse>> GetById(int id)
     {
         var category = await _context.Categories
+            .IgnoreQueryFilters()
             .AsNoTracking()
             .FirstOrDefaultAsync(c => c.Id == id);
 
@@ -144,7 +146,7 @@ public class AdminCategoriesController : ControllerBase
         });
     }
 
-    [HttpPost("{id:int}")]
+    [HttpPut("{id:int}")]
     public async Task<ActionResult<CategoryResponse>> Update(int id, [FromBody] CategoryRequest request)
     {
         var category = await _context.Categories.FindAsync(id);
@@ -204,6 +206,7 @@ public class AdminCategoriesController : ControllerBase
         { 
             CacheConstants.NavigationMenu, 
             CacheConstants.CategoriesAll,
+            CacheConstants.CategoriesActive,
             CacheConstants.HomeData 
         };
 
@@ -211,6 +214,11 @@ public class AdminCategoriesController : ControllerBase
         {
             await _cache.RemoveAsync(key);
         }
+
+        // Evict Output Cache
+        await _cacheStore.EvictByTagAsync("categories", default);
+        await _cacheStore.EvictByTagAsync("navigation", default);
+        await _cacheStore.EvictByTagAsync("homepage", default);
 
         // Update Client-Side Manifest Timestamp
         var settings = await _context.SiteSettings.FirstOrDefaultAsync();

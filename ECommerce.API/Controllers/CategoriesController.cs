@@ -3,6 +3,8 @@ using ECommerce.Core.Entities;
 using ECommerce.Core.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.AspNetCore.OutputCaching;
+using ECommerce.Core.Constants;
 
 namespace ECommerce.API.Controllers;
 
@@ -20,9 +22,10 @@ public class CategoriesController : ControllerBase
     }
 
     [HttpGet]
+    [OutputCache(Tags = new[] { "categories" })]
     public async Task<ActionResult<List<CategoryDto>>> GetCategories()
     {
-        const string cacheKey = "categories_all_active";
+        string cacheKey = CacheConstants.CategoriesActive;
 
         if (_cache.TryGetValue(cacheKey, out List<CategoryDto>? cached) && cached != null)
         {

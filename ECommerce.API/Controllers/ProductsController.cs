@@ -5,6 +5,7 @@ using ECommerce.Core.Interfaces;
 using ECommerce.Core.Specifications;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.AspNetCore.OutputCaching;
 using ECommerce.Core.Constants;
 using System.Linq;
 
@@ -12,6 +13,7 @@ namespace ECommerce.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[OutputCache(Tags = new[] { "products", "inventory" })]
 public class ProductsController : ControllerBase
 {
     private readonly IGenericRepository<Product> _productsRepo;
