@@ -13,6 +13,7 @@ using ECommerce.Core.Enums;
 using Microsoft.Extensions.Caching.Distributed;
 using System.Text.Json;
 using ECommerce.Core.Constants;
+using ECommerce.Core.Caching;
 
 namespace ECommerce.Infrastructure.Services;
 
@@ -31,24 +32,34 @@ public class ProductService : IProductService
 
     public async Task<ProductDto?> GetProductBySlugAsync(string slug)
     {
-        var cacheKey = $"{CacheConstants.ProductDetailPrefix}:slug:{slug}";
+        var version = await _cache.GetModuleVersionAsync(CacheModules.Products);
+        var cacheKey = CacheKeyHelper.ProductDetail(slug.GetHashCode(), version); // Using hashcode as ID fallback, or just append slug
         
         return await _cache.GetOrCreateAsync(cacheKey, async () => 
         {
             var spec = new ProductsWithCategoriesSpecification(slug);
             return await _unitOfWork.Repository<Product>().GetEntityWithSpec<ProductDto>(spec);
-        }, TimeSpan.FromMinutes(60));
+        }, new CacheEntryOptions { 
+            AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(60),
+            SlidingExpiration = TimeSpan.FromMinutes(30),
+            Size = 1 
+        });
     }
 
     public async Task<ProductDto?> GetProductByIdAsync(int id)
     {
-        var cacheKey = $"{CacheConstants.ProductDetailPrefix}:id:{id}";
+        var version = await _cache.GetModuleVersionAsync(CacheModules.Products);
+        var cacheKey = CacheKeyHelper.ProductDetail(id, version);
         
         return await _cache.GetOrCreateAsync(cacheKey, async () => 
         {
             var spec = new ProductsWithCategoriesSpecification(id);
             return await _unitOfWork.Repository<Product>().GetEntityWithSpec<ProductDto>(spec);
-        }, TimeSpan.FromMinutes(60));
+        }, new CacheEntryOptions { 
+            AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(60),
+            SlidingExpiration = TimeSpan.FromMinutes(30),
+            Size = 1 
+        });
     }
 
     public async Task<ProductDto?> CreateProductAsync(ProductCreateDto dto)
@@ -162,21 +173,27 @@ public class ProductService : IProductService
 
     private async Task InvalidateProductCacheAsync(Product product, string? oldSlug = null)
     {
-        // 1. Details Invalidation
-        await _cache.RemoveAsync($"{CacheConstants.ProductDetailPrefix}:id:{product.Id}");
-        await _cache.RemoveAsync($"{CacheConstants.ProductDetailPrefix}:slug:{product.Slug}");
+        // Increment the main product version
+        await _cache.IncrementModuleVersionAsync(CacheModules.Products);
+        
+        // Remove individual components using the new CacheKeyHelper rules
+        // (Even though version bump already invalidates old ones, explicit remove helps memory limits)
+        int version = await _cache.GetModuleVersionAsync(CacheModules.Products);
+        
+        await _cache.RemoveAsync(CacheKeyHelper.ProductDetail(product.Id, version));
+        await _cache.RemoveAsync(CacheKeyHelper.ProductDetail(product.Slug.GetHashCode(), version));
+        
         if (!string.IsNullOrEmpty(oldSlug) && oldSlug != product.Slug)
         {
-            await _cache.RemoveAsync($"{CacheConstants.ProductDetailPrefix}:slug:{oldSlug}");
+            await _cache.RemoveAsync(CacheKeyHelper.ProductDetail(oldSlug.GetHashCode(), version));
         }
 
-        // 2. List Invalidation (Wildcard)
-        await _cache.RemoveByPrefixAsync(CacheConstants.ProductListPrefix);
+        // Wildcard removal for product list caches as belt-and-suspenders
+        await _cache.RemoveByPrefixAsync("products_");
         
-        // 3. Homepage/Section Invalidation
-        await _cache.RemoveAsync(CacheConstants.FeaturedProducts);
-        await _cache.RemoveAsync(CacheConstants.NewArrivals);
-        await _cache.RemoveAsync(CacheConstants.HomeData); // Shared landing page data
+        // Invalidate Home/Landing caches
+        await _cache.IncrementModuleVersionAsync(CacheModules.Landing);
+        await _cache.RemoveByPrefixAsync("landing_");
     }
 
     private string GenerateSlug(string name)

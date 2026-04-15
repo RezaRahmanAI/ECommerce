@@ -4,30 +4,28 @@ using ECommerce.Core.Entities;
 using ECommerce.Core.Interfaces;
 using ECommerce.Core.Specifications;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Caching.Memory;
-using Microsoft.AspNetCore.OutputCaching;
 using ECommerce.Core.Constants;
+using ECommerce.Core.Caching;
 using System.Linq;
 
 namespace ECommerce.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[OutputCache(Tags = new[] { "products", "inventory" })]
 public class ProductsController : ControllerBase
 {
     private readonly IGenericRepository<Product> _productsRepo;
     private readonly IGenericRepository<Category> _categoryRepo;
     private readonly IMapper _mapper;
     private readonly IProductService _productService;
-    private readonly IMemoryCache _cache;
+    private readonly ICacheService _cache;
 
     public ProductsController(
         IGenericRepository<Product> productsRepo, 
         IGenericRepository<Category> categoryRepo, 
         IMapper mapper,
         IProductService productService,
-        IMemoryCache cache)
+        ICacheService cache)
     {
         _productsRepo = productsRepo;
         _categoryRepo = categoryRepo;
@@ -37,6 +35,7 @@ public class ProductsController : ControllerBase
     }
 
     [HttpGet]
+    [ResponseCache(Duration = 60, VaryByQueryKeys = new[] { "*" })]
     public async Task<ActionResult<PaginationDto<ProductDto>>> GetProducts(
         [FromQuery] string? sort, 
         [FromQuery] int? categoryId, 
@@ -47,55 +46,39 @@ public class ProductsController : ControllerBase
         [FromQuery] int pageSize = 12,
         [FromQuery] int? lastId = null)
     {
-        // Build a deterministic cache key from all query parameters
-        var cacheKey = $"{CacheConstants.ProductListPrefix}_{sort}_{categoryId}_{categorySlug}_{searchTerm}_{isNew}_{pageIndex}_{pageSize}_{lastId}";
+        var version = await _cache.GetModuleVersionAsync(CacheModules.Products);
+        // Clean cache key helper
+        var keyParts = $"sort_{sort}_cat_{categoryId}_{categorySlug}_search_{searchTerm}_new_{isNew}_p_{pageIndex}_size_{pageSize}_last_{lastId}";
+        var cacheKey = CacheKeyHelper.ProductListing(categoryId ?? 0, pageIndex, keyParts, version);
 
-        if (_cache.TryGetValue(cacheKey, out PaginationDto<ProductDto>? cached) && cached != null)
+        var result = await _cache.GetOrCreateAsync(cacheKey, async () => 
         {
-            return Ok(cached);
-        }
+            var skip = (pageIndex - 1) * pageSize;
+            var take = pageSize;
 
-        var skip = (pageIndex - 1) * pageSize;
-        var take = pageSize;
+            var spec = new ProductsWithCategoriesSpecification(sort, categoryId, categorySlug, searchTerm, isNew, skip, take, lastId);
+            var countSpec = new ProductsWithCategoriesSpecification(sort, categoryId, categorySlug, searchTerm, isNew, null, null, lastId);
 
-        var spec = new ProductsWithCategoriesSpecification(sort, categoryId, categorySlug, searchTerm, isNew, skip, take, lastId);
-        var countSpec = new ProductsWithCategoriesSpecification(sort, categoryId, categorySlug, searchTerm, isNew, null, null, lastId);
-
-        var totalItems = await _productsRepo.CountAsync(countSpec);
-        var dtos = await _productsRepo.ListAsync<ProductDto>(spec);
-        
-
-
-        var result = new PaginationDto<ProductDto>(pageIndex, pageSize, totalItems, dtos);
-        
-        var cacheOptions = new MemoryCacheEntryOptions()
-            .SetSize(1)
-            .SetAbsoluteExpiration(TimeSpan.FromMinutes(5));
-
-        _cache.Set(cacheKey, result, cacheOptions);
+            var totalItems = await _productsRepo.CountAsync(countSpec);
+            var dtos = await _productsRepo.ListAsync<ProductDto>(spec);
+            
+            return new PaginationDto<ProductDto>(pageIndex, pageSize, totalItems, dtos);
+        }, new CacheEntryOptions {
+            AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10),
+            Size = 1
+        });
         
         return Ok(result);
     }
 
     [HttpGet("{slug}")]
+    [ResponseCache(Duration = 60, VaryByQueryKeys = new[] { "*" })]
     public async Task<ActionResult<ProductDto>> GetProduct(string slug)
     {
-        var cacheKey = $"{CacheConstants.ProductDetailPrefix}_slug:{slug}";
-
-        if (_cache.TryGetValue(cacheKey, out ProductDto? cached) && cached != null)
-        {
-            return Ok(cached);
-        }
-
+        // Service already handles memory caching with GetProductBySlugAsync natively
         var product = await _productService.GetProductBySlugAsync(slug);
-        if (product == null) return NotFound();
         
-        var cacheOptions = new MemoryCacheEntryOptions()
-            .SetSize(1)
-            .SetAbsoluteExpiration(TimeSpan.FromMinutes(5));
-
-        _cache.Set(cacheKey, product, cacheOptions);
+        if (product == null) return NotFound();
         return Ok(product);
     }
-
 }

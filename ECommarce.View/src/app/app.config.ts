@@ -7,7 +7,7 @@ import {
 } from "@angular/router";
 import { SelectivePreloadStrategy } from "./core/strategies/selective-preload.strategy";
 import { provideAnimationsAsync } from "@angular/platform-browser/animations/async";
-import { provideHttpClient, withFetch, withInterceptors } from "@angular/common/http";
+import { provideHttpClient, withFetch, withInterceptors, withInterceptorsFromDi, HTTP_INTERCEPTORS } from "@angular/common/http";
 import { provideClientHydration } from "@angular/platform-browser";
 
 
@@ -17,13 +17,11 @@ import { environment } from "../environments/environment";
 import { globalErrorInterceptor } from "./core/http/global-error.interceptor";
 import { jwtInterceptor } from "./core/interceptors/jwt.interceptor";
 import { loadingInterceptor } from "./core/interceptors/loading.interceptor";
-import { httpCacheInterceptor } from "./interceptors/cache.interceptor";
+import { CacheInterceptor } from "./core/interceptors/cache.interceptor";
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideZoneChangeDetection({ eventCoalescing: true }),
-    // Only provide hydration if we are in production or if we specifically want it.
-    // This avoids NG0505 warnings in CSR-only development mode.
     ...(environment.production ? [provideClientHydration()] : []),
     provideRouter(
       appRoutes,
@@ -39,12 +37,13 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(
       withFetch(),
       withInterceptors([
-        httpCacheInterceptor,
         jwtInterceptor,
         loadingInterceptor,
         globalErrorInterceptor,
       ]),
+      withInterceptorsFromDi()
     ),
+    { provide: HTTP_INTERCEPTORS, useClass: CacheInterceptor, multi: true },
     {
       provide: API_CONFIG,
       useValue: {

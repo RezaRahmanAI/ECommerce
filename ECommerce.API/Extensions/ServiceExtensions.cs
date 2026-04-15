@@ -44,10 +44,21 @@ public static class ServiceExtensions
         // 3. Caching
         services.AddMemoryCache(options =>
         {
-            options.SizeLimit = 10000;
+            options.SizeLimit = config.GetValue<int>("Cache:SizeLimit", 10000);
             options.CompactionPercentage = 0.20;
         });
         services.AddSingleton<ICacheService, CacheService>();
+
+        // Configure Distributed Cache (SQL backend)
+        services.AddDistributedSqlServerCache(options =>
+        {
+            options.ConnectionString = ResolveConnectionString(config);
+            options.SchemaName = "dbo";
+            options.TableName = "SqlCache";
+        });
+        
+        // Add caching warmup service
+        services.AddHostedService<CacheWarmupService>();
 
         services.AddOutputCache(options =>
         {
@@ -71,7 +82,6 @@ public static class ServiceExtensions
                 builder.Expire(TimeSpan.FromDays(1))
                        .SetVaryByQuery("w", "h", "q"));
         });
-
 
         services.AddResponseCaching();
 

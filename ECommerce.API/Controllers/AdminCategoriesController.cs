@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.OutputCaching;
 using ECommerce.API.Extensions;
 using ECommerce.Core.Interfaces;
 using ECommerce.Core.Constants;
+using ECommerce.Core.Caching;
 
 namespace ECommerce.API.Controllers;
 
@@ -202,8 +203,10 @@ public class AdminCategoriesController : ControllerBase
 
     private async Task InvalidateStorefrontCache()
     {
+        // 1. Invalidating specific named keys
         var keysToClear = new[] 
         { 
+            CacheKeyHelper.Navbar(),
             CacheConstants.NavigationMenu, 
             CacheConstants.CategoriesAll,
             CacheConstants.CategoriesActive,
@@ -214,6 +217,10 @@ public class AdminCategoriesController : ControllerBase
         {
             await _cache.RemoveAsync(key);
         }
+
+        // 2. Invalidate Product module since category changes affect product filters/listings
+        await _cache.IncrementModuleVersionAsync(CacheModules.Products);
+        await _cache.RemoveByPrefixAsync("products_");
 
         // Evict Output Cache
         await _cacheStore.EvictByTagAsync("categories", default);
