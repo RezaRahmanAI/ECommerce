@@ -14,11 +14,6 @@
             "outputPath": "dist/ecommarce",
             "index": "src/index.html",
             "browser": "src/main.ts",
-            "server": "src/main.server.ts",
-            "prerender": false,
-            "ssr": {
-              "entry": "src/server.ts"
-            },
             "polyfills": ["zone.js"],
             "tsConfig": "tsconfig.app.json",
             "assets": ["src/favicon.ico", "src/assets", "src/web.config"],
@@ -27,18 +22,16 @@
             ],
             "scripts": []
           },
-            "configurations": {
-              "production": {
-                "ssr": true,
-                "prerender": false,
-                "optimization": {
-                  "scripts": true,
-                  "styles": {
-                    "minify": true,
-                    "inlineCritical": true
-                  },
-                  "fonts": true
+          "configurations": {
+            "production": {
+              "optimization": {
+                "scripts": true,
+                "styles": {
+                  "minify": true,
+                  "inlineCritical": false
                 },
+                "fonts": true
+              },
               "extractLicenses": true,
               "sourceMap": false,
               "namedChunks": false,
@@ -67,8 +60,7 @@
               "optimization": false,
               "extractLicenses": false,
               "sourceMap": true,
-              "namedChunks": true,
-              "ssr": false
+              "namedChunks": true
             }
           },
           "defaultConfiguration": "development"

@@ -8,7 +8,6 @@ import {
 import { SelectivePreloadStrategy } from "./core/strategies/selective-preload.strategy";
 import { provideAnimationsAsync } from "@angular/platform-browser/animations/async";
 import { provideHttpClient, withFetch, withInterceptors, withInterceptorsFromDi, HTTP_INTERCEPTORS } from "@angular/common/http";
-import { provideClientHydration } from "@angular/platform-browser";
 
 
 import { appRoutes } from "./app.routes";
@@ -23,7 +22,6 @@ import { adminCacheInterceptor } from "./core/interceptors/admin-cache.intercept
 export const appConfig: ApplicationConfig = {
   providers: [
     provideZoneChangeDetection({ eventCoalescing: true }),
-    ...(environment.production ? [provideClientHydration()] : []),
     provideRouter(
       appRoutes,
       withInMemoryScrolling({
