@@ -1,52 +1,35 @@
 import { Component, OnDestroy, OnInit, inject, PLATFORM_ID } from "@angular/core";
-import { CommonModule, isPlatformBrowser } from "@angular/common";
+import { isPlatformBrowser, NgIf, NgFor, AsyncPipe, NgClass, DatePipe } from "@angular/common";
 import { FormBuilder, ReactiveFormsModule, Validators } from "@angular/forms";
 import { Subject, takeUntil } from "rxjs";
 import { AdminReview } from "../../models/reviews.models";
 import { AdminReviewsService } from "../../services/admin-reviews.service";
 import { ProductsService } from "../../services/products.service";
 import { AdminProduct } from "../../models/products.models";
-import {
-  LucideAngularModule,
-  Star,
-  User,
-  CheckCircle2,
-  ShoppingBag,
-  ThumbsUp,
-  Edit,
-  Trash2,
-  X,
-  MessageSquare,
-  Plus,
-  Camera,
-  Upload,
-} from "lucide-angular";
+import { AppIconComponent } from "../../../shared/components/app-icon/app-icon.component";
+import { ImageUrlService } from "../../../core/services/image-url.service";
 
 @Component({
   selector: "app-admin-reviews",
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, LucideAngularModule],
+  imports: [
+    NgIf,
+    NgFor,
+    AsyncPipe,
+    NgClass,
+    DatePipe,
+    ReactiveFormsModule,
+    AppIconComponent,
+  ],
   templateUrl: "./admin-reviews.component.html",
 })
 export class AdminReviewsComponent implements OnInit, OnDestroy {
-  readonly icons = {
-    Star,
-    User,
-    CheckCircle2,
-    ShoppingBag,
-    ThumbsUp,
-    Edit,
-    Trash2,
-    X,
-    MessageSquare,
-    Plus,
-    Camera,
-    Upload,
-  };
+  // icons removed
   private reviewsService = inject(AdminReviewsService);
   private productsService = inject(ProductsService);
   private fb = inject(FormBuilder);
   private platformId = inject(PLATFORM_ID);
+  public imageUrlService = inject(ImageUrlService);
   private destroy$ = new Subject<void>();
 
   reviews: AdminReview[] = [];
@@ -55,16 +38,14 @@ export class AdminReviewsComponent implements OnInit, OnDestroy {
   isEditMode = false;
   selectedReviewId: number | null = null;
   isSubmitting = false;
-  isUploadingAvatar = false;
+  isUploadingScreenshot = false;
 
   reviewForm = this.fb.group({
     productId: [0, [Validators.required, Validators.min(1)]],
     customerName: ["", [Validators.required]],
-    customerAvatar: [""],
+    reviewImage: [""],
     rating: [5, [Validators.required, Validators.min(1), Validators.max(5)]],
-    comment: ["", [Validators.required]],
-    isVerifiedPurchase: [true],
-    isFeatured: [false],
+    comment: [""],
   });
 
   ngOnInit(): void {
@@ -101,19 +82,21 @@ export class AdminReviewsComponent implements OnInit, OnDestroy {
       });
   }
 
-  onFileSelected(event: any): void {
+
+
+  onScreenshotSelected(event: any): void {
     const file = event.target.files[0];
     if (!file) return;
 
-    this.isUploadingAvatar = true;
-    this.reviewsService.uploadAvatar(file).subscribe({
+    this.isUploadingScreenshot = true;
+    this.reviewsService.uploadImage(file).subscribe({
       next: (urls) => {
         if (urls && urls.length > 0) {
-          this.reviewForm.patchValue({ customerAvatar: urls[0] });
+          this.reviewForm.patchValue({ reviewImage: urls[0] });
         }
-        this.isUploadingAvatar = false;
+        this.isUploadingScreenshot = false;
       },
-      error: () => (this.isUploadingAvatar = false),
+      error: () => (this.isUploadingScreenshot = false),
     });
   }
 
@@ -123,11 +106,9 @@ export class AdminReviewsComponent implements OnInit, OnDestroy {
     this.reviewForm.reset({
       productId: 0,
       customerName: "",
-      customerAvatar: "",
+      reviewImage: "",
       rating: 5,
       comment: "",
-      isVerifiedPurchase: true,
-      isFeatured: false,
     });
     this.isModalOpen = true;
   }
@@ -138,11 +119,9 @@ export class AdminReviewsComponent implements OnInit, OnDestroy {
     this.reviewForm.patchValue({
       productId: review.productId,
       customerName: review.customerName,
-      customerAvatar: review.customerAvatar,
+      reviewImage: review.reviewImage,
       rating: review.rating,
       comment: review.comment,
-      isVerifiedPurchase: review.isVerifiedPurchase,
-      isFeatured: review.isFeatured,
     });
     this.isModalOpen = true;
   }

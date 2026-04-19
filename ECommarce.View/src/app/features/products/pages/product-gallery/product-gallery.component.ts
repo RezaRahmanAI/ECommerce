@@ -9,7 +9,7 @@ import { ProductCardComponent } from "../../../../shared/components/product-card
 import { ChangeDetectionStrategy, ChangeDetectorRef } from "@angular/core";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 
-import { LucideAngularModule, Package, ChevronRight } from "lucide-angular";
+import { AppIconComponent } from "../../../../shared/components/app-icon/app-icon.component";
 import { CategoryService } from "../../../../core/services/category.service";
 import { Category } from "../../../../core/models/category";
 import { Router } from "@angular/router";
@@ -17,15 +17,12 @@ import { Router } from "@angular/router";
 @Component({
   selector: "app-product-gallery",
   standalone: true,
-  imports: [CommonModule, ProductCardComponent, LucideAngularModule, ScrollingModule],
+  imports: [CommonModule, ProductCardComponent, AppIconComponent, ScrollingModule],
   templateUrl: "./product-gallery.component.html",
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ProductGalleryComponent implements OnInit {
-  readonly icons = {
-    Package,
-    ChevronRight,
-  };
+  // icons removed
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly productService = inject(ProductService);

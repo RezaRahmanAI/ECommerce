@@ -6,17 +6,7 @@ import { debounceTime, distinctUntilChanged, Subject, takeUntil } from "rxjs";
 import { AdultProduct } from "../../models/adult-product.models";
 import { AdultProductService } from "../../../features/adult-landing/services/adult-product.service";
 import { ImageUrlService } from "../../../core/services/image-url.service";
-import {
-  LucideAngularModule,
-  Plus,
-  Search,
-  Edit,
-  Trash2,
-  ChevronLeft,
-  ChevronRight,
-  Package,
-  Eye,
-} from "lucide-angular";
+import { AppIconComponent } from "../../../shared/components/app-icon/app-icon.component";
 
 @Component({
   selector: "app-admin-adult-products",
@@ -25,21 +15,12 @@ import {
     CommonModule,
     ReactiveFormsModule,
     RouterModule,
-    LucideAngularModule,
+    AppIconComponent,
   ],
   templateUrl: "./admin-adult-products.component.html",
 })
 export class AdminAdultProductsComponent implements OnInit, OnDestroy {
-  readonly icons = {
-    Plus,
-    Search,
-    Edit,
-    Trash2,
-    ChevronLeft,
-    ChevronRight,
-    Package,
-    Eye,
-  };
+  // icons removed
   
   private adultProductService = inject(AdultProductService);
   readonly imageUrlService = inject(ImageUrlService);

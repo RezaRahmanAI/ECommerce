@@ -19,7 +19,7 @@
         type="button"
         (click)="printOrders()"
       >
-        <lucide-icon [img]="icons.Printer" class="w-5 h-5"></lucide-icon>
+        <app-icon name="Printer" className="w-5 h-5"></app-icon>
         <span>Print List</span>
       </button>
       <button
@@ -27,7 +27,7 @@
         type="button"
         (click)="exportOrders()"
       >
-        <lucide-icon [img]="icons.Download" class="w-5 h-5"></lucide-icon>
+        <app-icon name="Download" className="w-5 h-5"></app-icon>
         <span>Export CSV</span>
       </button>
     </div>
@@ -60,7 +60,7 @@
       <div
         class="absolute bottom-4 right-4 text-blue-500/10 dark:text-blue-500/20"
       >
-        <lucide-icon [img]="icons.ShoppingBag" class="w-12 h-12"></lucide-icon>
+          <app-icon name="ShoppingBag" className="w-6 h-6 text-orange-600"></app-icon>
       </div>
     </div>
 
@@ -86,7 +86,7 @@
       <div
         class="absolute bottom-4 right-4 text-yellow-500/10 dark:text-yellow-500/20"
       >
-        <lucide-icon [img]="icons.Package" class="w-12 h-12"></lucide-icon>
+        <app-icon name="Package" className="w-12 h-12 text-yellow-500/20"></app-icon>
       </div>
     </div>
 
@@ -114,7 +114,7 @@
       <div
         class="absolute bottom-4 right-4 text-green-500/10 dark:text-green-500/20"
       >
-        <lucide-icon [img]="icons.CreditCard" class="w-12 h-12"></lucide-icon>
+          <app-icon name="CreditCard" className="w-6 h-6 text-emerald-600"></app-icon>
       </div>
     </div>
 
@@ -140,7 +140,7 @@
       <div
         class="absolute bottom-4 right-4 text-red-500/10 dark:text-red-500/20"
       >
-        <lucide-icon [img]="icons.RotateCcw" class="w-12 h-12"></lucide-icon>
+          <app-icon name="RotateCcw" className="w-6 h-6 text-blue-600"></app-icon>
       </div>
     </div>
   </div>
@@ -168,10 +168,10 @@
         <div
           class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none transition-colors group-focus-within:text-primary"
         >
-          <lucide-icon
-            [img]="icons.Search"
-            class="w-4 h-4 text-gray-400 group-focus-within:text-primary"
-          ></lucide-icon>
+          <app-icon
+            name="Search"
+            className="w-4 h-4 text-gray-400 group-focus-within:text-primary"
+          ></app-icon>
         </div>
         <input
           class="block w-full pl-11 pr-4 py-3 border-gray-200 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-background-dark text-primary dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm font-medium"
@@ -196,11 +196,11 @@
               >Status:</span
             >
             <span>{{ selectedStatus }}</span>
-            <lucide-icon
-              [img]="icons.ChevronDown"
-              class="w-4 h-4 ml-1 transition-transform"
+            <app-icon
+              name="ChevronDown"
+              className="w-4 h-4 ml-1 transition-transform"
               [class.rotate-180]="statusMenuOpen"
-            ></lucide-icon>
+            ></app-icon>
           </button>
 
           <div
@@ -219,11 +219,11 @@
               (click)="setStatusFilter(status, $event)"
             >
               {{ status }}
-              <lucide-icon
-                [img]="icons.Check"
+              <app-icon
+                name="Check"
                 *ngIf="selectedStatus === status"
-                class="w-4 h-4 text-primary"
-              ></lucide-icon>
+                className="w-4 h-4 text-primary"
+              ></app-icon>
             </button>
           </div>
         </div>
@@ -241,11 +241,11 @@
               >Period:</span
             >
             <span>{{ selectedDateRange }}</span>
-            <lucide-icon
-              [img]="icons.ChevronDown"
-              class="w-4 h-4 ml-1 transition-transform"
+            <app-icon
+              name="ChevronDown"
+              className="w-4 h-4 ml-1 transition-transform"
               [class.rotate-180]="dateMenuOpen"
-            ></lucide-icon>
+            ></app-icon>
           </button>
 
           <div
@@ -264,11 +264,11 @@
               (click)="setDateRange(range, $event)"
             >
               {{ range }}
-              <lucide-icon
-                [img]="icons.Check"
+              <app-icon
+                name="Check"
                 *ngIf="selectedDateRange === range"
-                class="w-4 h-4 text-primary"
-              ></lucide-icon>
+                className="w-4 h-4 text-primary"
+              ></app-icon>
             </button>
           </div>
         </div>
@@ -323,7 +323,7 @@
                     #{{ order.orderNumber }}
                   </span>
                   <div class="flex items-center gap-1.5 text-[10px] text-gray-400 font-bold uppercase tracking-widest">
-                    <lucide-icon [img]="icons.Calendar" class="w-3 h-3"></lucide-icon>
+                    <app-icon name="Calendar" className="w-4.5 h-4.5 text-slate-400"></app-icon>
                     {{ order.createdAt | date: "MMM d, yyyy h:mm a" }}
                   </div>
                 </div>
@@ -380,7 +380,7 @@
                     </option>
                   </select>
                   <div class="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-current opacity-50 group-hover/status:opacity-100 transition-opacity">
-                    <lucide-icon [img]="icons.ChevronDown" class="w-3.5 h-3.5"></lucide-icon>
+                    <app-icon name="ChevronDown" className="w-4.5 h-4.5 text-slate-400"></app-icon>
                   </div>
                 </div>
               </td>
@@ -394,7 +394,7 @@
                     class="w-9 h-9 flex items-center justify-center text-gray-400 bg-gray-50 dark:bg-gray-800 rounded-lg hover:bg-primary-light hover:text-white transition-all shadow-sm group/btn"
                     title="View Details"
                   >
-                    <lucide-icon [img]="icons.Eye" class="w-4.5 h-4.5 group-hover/btn:scale-110 transition-transform"></lucide-icon>
+                    <app-icon name="Eye" className="w-4.5 h-4.5 group-hover/btn:scale-110 transition-transform"></app-icon>
                   </a>
 
                   <!-- Edit Order -->
@@ -403,7 +403,7 @@
                     class="w-9 h-9 flex items-center justify-center text-gray-400 bg-gray-50 dark:bg-gray-800 rounded-lg hover:bg-indigo-500 hover:text-white transition-all shadow-sm group/btn"
                     title="Edit Order (View Details)"
                   >
-                    <lucide-icon [img]="icons.PenLine" class="w-4.5 h-4.5 group-hover/btn:scale-110 transition-transform"></lucide-icon>
+                    <app-icon name="PenLine" className="w-4.5 h-4.5 group-hover/btn:scale-110 transition-transform"></app-icon>
                   </a>
 
                   <button
@@ -411,7 +411,7 @@
                     type="button"
                     (click)="toggleRowActions(order.id, $event)"
                   >
-                    <lucide-icon [img]="icons.MoreVertical" class="w-4.5 h-4.5"></lucide-icon>
+                    <app-icon name="MoreVertical" className="w-4.5 h-4.5"></app-icon>
                   </button>
 
                   <!-- Row Dropdown Menu (Secondary Actions) -->
@@ -429,7 +429,7 @@
                       type="button"
                       (click)="cancelOrder(order, $event)"
                     >
-                      <lucide-icon [img]="icons.XCircle" class="w-4 h-4"></lucide-icon>
+                      <app-icon name="XCircle" className="w-6 h-6 text-red-600"></app-icon>
                       Cancel Order
                     </button>
                   </div>
@@ -465,7 +465,7 @@
           [disabled]="page === 1"
           (click)="goToPreviousPage()"
         >
-          <lucide-icon [img]="icons.ChevronLeft" class="w-4 h-4"></lucide-icon>
+          <app-icon name="ChevronLeft" className="w-5 h-5"></app-icon>
         </button>
 
         <div class="flex items-center gap-1">
@@ -483,7 +483,7 @@
           [disabled]="page >= totalPages"
           (click)="goToNextPage()"
         >
-          <lucide-icon [img]="icons.ChevronRight" class="w-4 h-4"></lucide-icon>
+          <app-icon name="ChevronRight" className="w-5 h-5"></app-icon>
         </button>
       </div>
     </div>

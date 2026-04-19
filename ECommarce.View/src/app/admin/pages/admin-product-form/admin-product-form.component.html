@@ -8,9 +8,9 @@
     <div>
       <div class="flex items-center gap-2 text-sm text-text-secondary-light dark:text-text-secondary-dark mb-1">
         <span>Admin</span>
-        <lucide-icon [img]="icons.ChevronRight" class="w-3.5 h-3.5"></lucide-icon>
+        <app-icon name="ChevronRight" className="w-3.5 h-3.5"></app-icon>
         <span>Products</span>
-        <lucide-icon [img]="icons.ChevronRight" class="w-3.5 h-3.5"></lucide-icon>
+        <app-icon name="ChevronRight" className="w-3.5 h-3.5"></app-icon>
         <span class="font-medium text-text-main-light dark:text-text-main-dark">{{ isEditMode ? "Edit" : "New" }}</span>
       </div>
       <h1 class="text-3xl font-bold text-text-main-light dark:text-text-main-dark">
@@ -30,7 +30,7 @@
         type="submit"
         [disabled]="isSaving"
       >
-        <lucide-icon *ngIf="!isSaving" [img]="icons.Check" class="w-5 h-5"></lucide-icon>
+        <app-icon *ngIf="!isSaving" name="Check" className="w-5 h-5"></app-icon>
         <span *ngIf="isSaving" class="animate-spin border-2 border-white/30 border-t-white rounded-full w-4 h-4 mr-2"></span>
         {{ isEditMode ? "Update Product" : "Save Product" }}
       </button>
@@ -45,7 +45,7 @@
       <section class="rounded-xl border border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark p-6 shadow-sm">
         <div class="flex items-center gap-2 mb-6">
           <div class="p-2 rounded-lg bg-primary/10 text-primary">
-            <lucide-icon [img]="icons.Type" class="w-5 h-5"></lucide-icon>
+            <app-icon name="Type" className="w-5 h-5"></app-icon>
           </div>
           <h2 class="text-xl font-bold text-text-main-light dark:text-text-main-dark">Basic Information</h2>
         </div>
@@ -77,11 +77,11 @@
             <div class="overflow-hidden rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark focus-within:ring-2 focus-within:ring-primary/20 transition-all">
               <!-- Toolbar -->
               <div class="flex items-center gap-1 border-b border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark px-2 py-1.5">
-                <button type="button" (click)="applyFormatting('bold', 'subtitle', subtitleArea)" class="p-1.5 text-text-secondary-light hover:text-primary transition-colors hover:bg-primary/10 rounded" title="Bold"><lucide-icon [img]="icons.Bold" class="w-4 h-4"></lucide-icon></button>
-                <button type="button" (click)="applyFormatting('italic', 'subtitle', subtitleArea)" class="p-1.5 text-text-secondary-light hover:text-primary transition-colors hover:bg-primary/10 rounded" title="Italic"><lucide-icon [img]="icons.Italic" class="w-4 h-4"></lucide-icon></button>
-                <button type="button" (click)="applyFormatting('underline', 'subtitle', subtitleArea)" class="p-1.5 text-text-secondary-light hover:text-primary transition-colors hover:bg-primary/10 rounded" title="Underline"><lucide-icon [img]="icons.Underline" class="w-4 h-4"></lucide-icon></button>
+                <button type="button" (click)="applyFormatting('bold', 'subtitle', subtitleArea)" class="p-1.5 text-text-secondary-light hover:text-primary transition-colors hover:bg-primary/10 rounded" title="Bold"><app-icon name="Bold" className="w-4 h-4"></app-icon></button>
+                <button type="button" (click)="applyFormatting('italic', 'subtitle', subtitleArea)" class="p-1.5 text-text-secondary-light hover:text-primary transition-colors hover:bg-primary/10 rounded" title="Italic"><app-icon name="Italic" className="w-4 h-4"></app-icon></button>
+                <button type="button" (click)="applyFormatting('underline', 'subtitle', subtitleArea)" class="p-1.5 text-text-secondary-light hover:text-primary transition-colors hover:bg-primary/10 rounded" title="Underline"><app-icon name="Underline" className="w-4 h-4"></app-icon></button>
                 <div class="mx-1 h-4 w-px bg-border-light dark:bg-border-dark"></div>
-                <button type="button" (click)="applyFormatting('list', 'subtitle', subtitleArea)" class="p-1.5 text-text-secondary-light hover:text-primary transition-colors hover:bg-primary/10 rounded" title="List"><lucide-icon [img]="icons.List" class="w-4 h-4"></lucide-icon></button>
+                <button type="button" (click)="applyFormatting('list', 'subtitle', subtitleArea)" class="p-1.5 text-text-secondary-light hover:text-primary transition-colors hover:bg-primary/10 rounded" title="List"><app-icon name="List" className="w-4 h-4"></app-icon></button>
               </div>
               <textarea
                 #subtitleArea
@@ -99,7 +99,7 @@
       <section class="rounded-xl border border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark p-6 shadow-sm">
         <div class="flex items-center gap-2 mb-6">
           <div class="p-2 rounded-lg bg-blue-500/10 text-blue-500">
-            <lucide-icon [img]="icons.FileText" class="w-5 h-5"></lucide-icon>
+            <app-icon name="FileText" className="w-5 h-5"></app-icon>
           </div>
           <h2 class="text-xl font-bold text-text-main-light dark:text-text-main-dark">Product Details</h2>
         </div>
@@ -113,8 +113,8 @@
             </label>
             <div class="overflow-hidden rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark transition-all">
               <div class="flex items-center gap-1 border-b border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark px-2 py-1.5">
-                <button type="button" (click)="applyFormatting('bold', 'benefitsContent', bArea)" class="p-1.5 text-text-secondary-light hover:text-primary transition-colors hover:bg-primary/10 rounded"><lucide-icon [img]="icons.Bold" class="w-4 h-4"></lucide-icon></button>
-                <button type="button" (click)="applyFormatting('list', 'benefitsContent', bArea)" class="p-1.5 text-text-secondary-light hover:text-primary transition-colors hover:bg-primary/10 rounded"><lucide-icon [img]="icons.List" class="w-4 h-4"></lucide-icon></button>
+                <button type="button" (click)="applyFormatting('bold', 'benefitsContent', bArea)" class="p-1.5 text-text-secondary-light hover:text-primary transition-colors hover:bg-primary/10 rounded"><app-icon name="Bold" className="w-4 h-4"></app-icon></button>
+                <button type="button" (click)="applyFormatting('list', 'benefitsContent', bArea)" class="p-1.5 text-text-secondary-light hover:text-primary transition-colors hover:bg-primary/10 rounded"><app-icon name="List" className="w-4 h-4"></app-icon></button>
               </div>
               <textarea #bArea formControlName="benefitsContent" class="w-full resize-y border-none bg-transparent p-4 text-text-main-light dark:text-text-main-dark focus:ring-0" rows="5" placeholder="List the benefits..."></textarea>
             </div>
@@ -128,8 +128,8 @@
             </label>
             <div class="overflow-hidden rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark transition-all">
               <div class="flex items-center gap-1 border-b border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark px-2 py-1.5">
-                <button type="button" (click)="applyFormatting('bold', 'usageContent', uArea)" class="p-1.5 text-text-secondary-light hover:text-primary transition-colors hover:bg-primary/10 rounded"><lucide-icon [img]="icons.Bold" class="w-4 h-4"></lucide-icon></button>
-                <button type="button" (click)="applyFormatting('list', 'usageContent', uArea)" class="p-1.5 text-text-secondary-light hover:text-primary transition-colors hover:bg-primary/10 rounded"><lucide-icon [img]="icons.List" class="w-4 h-4"></lucide-icon></button>
+                <button type="button" (click)="applyFormatting('bold', 'usageContent', uArea)" class="p-1.5 text-text-secondary-light hover:text-primary transition-colors hover:bg-primary/10 rounded"><app-icon name="Bold" className="w-4 h-4"></app-icon></button>
+                <button type="button" (click)="applyFormatting('list', 'usageContent', uArea)" class="p-1.5 text-text-secondary-light hover:text-primary transition-colors hover:bg-primary/10 rounded"><app-icon name="List" className="w-4 h-4"></app-icon></button>
               </div>
               <textarea #uArea formControlName="usageContent" class="w-full resize-y border-none bg-transparent p-4 text-text-main-light dark:text-text-main-dark focus:ring-0" rows="5" placeholder="Explain how to use..."></textarea>
             </div>
@@ -143,8 +143,8 @@
             </label>
             <div class="overflow-hidden rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark transition-all">
               <div class="flex items-center gap-1 border-b border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark px-2 py-1.5">
-                <button type="button" (click)="applyFormatting('bold', 'sideEffectsContent', seArea)" class="p-1.5 text-text-secondary-light hover:text-primary transition-colors hover:bg-primary/10 rounded"><lucide-icon [img]="icons.Bold" class="w-4 h-4"></lucide-icon></button>
-                <button type="button" (click)="applyFormatting('list', 'sideEffectsContent', seArea)" class="p-1.5 text-text-secondary-light hover:text-primary transition-colors hover:bg-primary/10 rounded"><lucide-icon [img]="icons.List" class="w-4 h-4"></lucide-icon></button>
+                <button type="button" (click)="applyFormatting('bold', 'sideEffectsContent', seArea)" class="p-1.5 text-text-secondary-light hover:text-primary transition-colors hover:bg-primary/10 rounded"><app-icon name="Bold" className="w-4 h-4"></app-icon></button>
+                <button type="button" (click)="applyFormatting('list', 'sideEffectsContent', seArea)" class="p-1.5 text-text-secondary-light hover:text-primary transition-colors hover:bg-primary/10 rounded"><app-icon name="List" className="w-4 h-4"></app-icon></button>
               </div>
               <textarea #seArea formControlName="sideEffectsContent" class="w-full resize-y border-none bg-transparent p-4 text-text-main-light dark:text-text-main-dark focus:ring-0" rows="5" placeholder="Mention any side effects or precautions..."></textarea>
             </div>
@@ -157,7 +157,7 @@
         <div class="flex items-center justify-between mb-6">
           <div class="flex items-center gap-2">
             <div class="p-2 rounded-lg bg-orange-500/10 text-orange-500">
-              <lucide-icon [img]="icons.Upload" class="w-5 h-5"></lucide-icon>
+              <app-icon name="Upload" className="w-5 h-5"></app-icon>
             </div>
             <h2 class="text-xl font-bold text-text-main-light dark:text-text-main-dark">Media</h2>
           </div>
@@ -173,7 +173,7 @@
           (click)="fileInput.click()"
         >
           <div class="p-4 rounded-full bg-surface-light dark:bg-surface-dark shadow-sm mb-4 group-hover:scale-110 transition-transform">
-            <lucide-icon [img]="icons.Upload" class="w-8 h-8 text-primary"></lucide-icon>
+            <app-icon name="Upload" className="w-8 h-8 text-primary"></app-icon>
           </div>
           <p class="text-base font-semibold text-text-main-light dark:text-text-main-dark">Drag and drop images here</p>
           <p class="text-sm text-text-secondary-light mt-1">or click to browse from files</p>
@@ -181,7 +181,7 @@
         </div>
 
         <p *ngIf="mediaError" class="mt-4 flex items-center gap-2 text-sm text-red-500 font-medium bg-red-500/10 p-3 rounded-lg">
-          <lucide-icon [img]="icons.AlertCircle" class="w-4 h-4"></lucide-icon>
+          <app-icon name="AlertCircle" className="w-4 h-4"></app-icon>
           {{ mediaError }}
         </p>
 
@@ -244,7 +244,7 @@
 
         <div class="mt-6 p-3 rounded-lg bg-primary/5 border border-primary/10">
           <p class="text-xs text-text-secondary-light flex gap-2">
-            <lucide-icon [img]="icons.Eye" class="w-4 h-4 text-primary mt-0.5 shrink-0"></lucide-icon>
+            <app-icon name="Eye" className="w-4 h-4 text-primary mt-0.5 shrink-0"></app-icon>
             When active, this product will be visible in the catalog and searchable by customers.
           </p>
         </div>

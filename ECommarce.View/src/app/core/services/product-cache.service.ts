@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { shareReplay } from 'rxjs/operators';
-import { CacheInterceptor } from '../interceptors/cache.interceptor'; 
+import { invalidateHttpCache } from '../interceptors/cache.interceptor'; 
 import { environment } from '../../../environments/environment';
 import { Product } from '../models/product';
 
@@ -15,8 +15,7 @@ export class ProductCacheService {
   private inFlightRequests = new Map<string, Observable<any>>();
 
   constructor(
-    private http: HttpClient,
-    private cacheInterceptor: CacheInterceptor
+    private http: HttpClient
   ) { }
 
   /**
@@ -55,6 +54,6 @@ export class ProductCacheService {
    */
   adminInvalidateProductCache(): void {
     // Bust client side angular cache
-    this.cacheInterceptor.bust('/api/products');
+    invalidateHttpCache('/api/products');
   }
 }

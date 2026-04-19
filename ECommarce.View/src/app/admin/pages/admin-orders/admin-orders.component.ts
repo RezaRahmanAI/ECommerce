@@ -1,4 +1,4 @@
-import { CommonModule, isPlatformBrowser } from "@angular/common";
+import { isPlatformBrowser, NgIf, NgFor, AsyncPipe, NgClass, NgStyle, DatePipe, DecimalPipe } from "@angular/common";
 import {
   Component,
   HostListener,
@@ -10,26 +10,7 @@ import {
 import { FormControl, ReactiveFormsModule } from "@angular/forms";
 import { RouterModule } from "@angular/router";
 import { debounceTime, distinctUntilChanged, Subject, takeUntil } from "rxjs";
-import {
-  LucideAngularModule,
-  Printer,
-  Download,
-  ShoppingBag,
-  Package,
-  CreditCard,
-  RotateCcw,
-  Search,
-  ChevronDown,
-  Check,
-  MoreVertical,
-  Eye,
-  Forward,
-  XCircle,
-  ChevronLeft,
-  ChevronRight,
-  Calendar,
-  PenLine,
-} from "lucide-angular";
+import { AppIconComponent } from "../../../shared/components/app-icon/app-icon.component";
 
 import {
   Order,
@@ -50,34 +31,22 @@ interface OrderStats {
   selector: "app-admin-orders",
   standalone: true,
   imports: [
-    CommonModule,
+    NgIf,
+    NgFor,
+    AsyncPipe,
+    NgClass,
+    NgStyle,
+    DatePipe,
+    DecimalPipe,
     ReactiveFormsModule,
     RouterModule,
     PriceDisplayComponent,
-    LucideAngularModule,
+    AppIconComponent,
   ],
   templateUrl: "./admin-orders.component.html",
 })
 export class AdminOrdersComponent implements OnInit, OnDestroy {
-  readonly icons = {
-    Printer,
-    Download,
-    ShoppingBag,
-    Package,
-    CreditCard,
-    RotateCcw,
-    Search,
-    ChevronDown,
-    Check,
-    MoreVertical,
-    Eye,
-    Forward,
-    XCircle,
-    ChevronLeft,
-    ChevronRight,
-    Calendar,
-    PenLine,
-  };
+  // icons removed
   private ordersService = inject(OrdersService);
   private platformId = inject(PLATFORM_ID);
   private destroy$ = new Subject<void>();
@@ -95,11 +64,6 @@ export class AdminOrdersComponent implements OnInit, OnDestroy {
     "All",
     "Pending",
     "Confirmed",
-    "Processing",
-    "Packed",
-    "Shipped",
-    "Delivered",
-    "Cancelled",
   ];
 
   // ... (existing code)
@@ -143,21 +107,13 @@ export class AdminOrdersComponent implements OnInit, OnDestroy {
 
   getNextStatus(status: string): OrderStatus | null {
     if (status === "Pending") return "Confirmed";
-    if (status === "Confirmed") return "Processing";
-    if (status === "Processing") return "Packed";
-    if (status === "Packed") return "Shipped";
-    if (status === "Shipped") return "Delivered";
     return null;
   }
 
   nextStatusLabel(order: Order): string | null {
     const nextStatus = this.getNextStatus(order.status);
     if (!nextStatus) return null;
-    if (nextStatus === "Confirmed") return "Confirm Order";
-    if (nextStatus === "Processing") return "Mark as Processing";
-    if (nextStatus === "Packed") return "Mark as Packed";
-    if (nextStatus === "Shipped") return "Mark as Shipped";
-    return "Mark as Delivered";
+    return "Confirm Order";
   }
   dateRanges: OrdersQueryParams["dateRange"][] = [
     "Last 7 Days",
@@ -251,7 +207,9 @@ export class AdminOrdersComponent implements OnInit, OnDestroy {
 
   showMoreFilters(event: Event): void {
     event.stopPropagation();
-    window.alert("More filters coming soon.");
+    if (isPlatformBrowser(this.platformId)) {
+      window.alert("More filters coming soon.");
+    }
   }
 
   toggleSelectAll(event: Event): void {
@@ -305,7 +263,10 @@ export class AdminOrdersComponent implements OnInit, OnDestroy {
 
   cancelOrder(order: Order, event: Event): void {
     event.stopPropagation();
-    const shouldCancel = window.confirm("Cancel this order?");
+    let shouldCancel = false;
+    if (isPlatformBrowser(this.platformId)) {
+      shouldCancel = window.confirm("Cancel this order?");
+    }
     if (shouldCancel) {
       this.ordersService.updateStatus(order.id, "Cancelled").subscribe(() => {
         this.loadOrders(false);
@@ -316,15 +277,15 @@ export class AdminOrdersComponent implements OnInit, OnDestroy {
 
   exportOrders(): void {
     this.ordersService.exportOrders(this.buildParams()).subscribe((csv) => {
-      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-      const url = URL.createObjectURL(blob);
       if (isPlatformBrowser(this.platformId)) {
+        const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+        const url = URL.createObjectURL(blob);
         const link = document.createElement("a");
         link.href = url;
         link.download = "orders-export.csv";
         link.click();
+        URL.revokeObjectURL(url);
       }
-      URL.revokeObjectURL(url);
     });
   }
 
@@ -444,7 +405,7 @@ export class AdminOrdersComponent implements OnInit, OnDestroy {
 
   private updateStats(orders: Order[]): void {
     const processing = orders.filter(
-      (order) => order.status === "Processing" || order.status === "Pending",
+      (order) => order.status === "Pending" || order.status === "Confirmed",
     ).length;
     const refunds = orders.filter((order) => order.status === "Refund").length;
     const revenue = orders.reduce((total, order) => total + order.total, 0);

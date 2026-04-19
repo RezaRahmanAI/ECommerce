@@ -3,7 +3,7 @@ import { Component, DestroyRef, inject } from "@angular/core";
 import { FormBuilder, ReactiveFormsModule, Validators } from "@angular/forms";
 import { ActivatedRoute, Router, RouterModule } from "@angular/router";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
-import { LucideAngularModule, X, Search, ChevronDown, ChevronUp } from "lucide-angular";
+import { AppIconComponent } from "../../../../shared/components/app-icon/app-icon.component";
 import { OrderService } from "../../../../core/services/order.service";
 import { OrderItem } from "../../../../core/models/order";
 import { ImageUrlService } from "../../../../core/services/image-url.service";
@@ -46,18 +46,13 @@ const OFFERS: OfferDetails[] = [
     ReactiveFormsModule,
     RouterModule,
     PriceDisplayComponent,
-    LucideAngularModule,
+    AppIconComponent,
   ],
   templateUrl: "./offer-details-page.component.html",
   styleUrl: "./offer-details-page.component.css",
 })
 export class OfferDetailsPageComponent {
-  readonly icons = {
-    X: X,
-    Search: Search,
-    ChevronDown: ChevronDown,
-    ChevronUp: ChevronUp,
-  };
+  // icons removed
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly formBuilder = inject(FormBuilder);

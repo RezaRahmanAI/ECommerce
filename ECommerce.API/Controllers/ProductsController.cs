@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using ECommerce.Core.Constants;
 using ECommerce.Core.Caching;
 using System.Linq;
+using Microsoft.AspNetCore.OutputCaching;
 
 namespace ECommerce.API.Controllers;
 
@@ -35,6 +36,7 @@ public class ProductsController : ControllerBase
     }
 
     [HttpGet]
+    [OutputCache(PolicyName = "Products")]
     [ResponseCache(Duration = 60, VaryByQueryKeys = new[] { "*" })]
     public async Task<ActionResult<PaginationDto<ProductDto>>> GetProducts(
         [FromQuery] string? sort, 
@@ -72,6 +74,7 @@ public class ProductsController : ControllerBase
     }
 
     [HttpGet("{slug}")]
+    [OutputCache(PolicyName = "Products")]
     [ResponseCache(Duration = 60, VaryByQueryKeys = new[] { "*" })]
     public async Task<ActionResult<ProductDto>> GetProduct(string slug)
     {

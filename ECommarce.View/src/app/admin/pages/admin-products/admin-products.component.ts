@@ -1,4 +1,4 @@
-import { CommonModule, isPlatformBrowser } from "@angular/common";
+import { isPlatformBrowser, NgIf, NgFor, AsyncPipe, NgClass } from "@angular/common";
 import { Component, OnDestroy, OnInit, inject, PLATFORM_ID } from "@angular/core";
 import { FormControl, ReactiveFormsModule } from "@angular/forms";
 import { ActivatedRoute, RouterModule } from "@angular/router";
@@ -12,51 +12,24 @@ import {
 import { ProductsService } from "../../services/products.service";
 import { PriceDisplayComponent } from "../../../shared/components/price-display/price-display.component";
 import { ImageUrlService } from "../../../core/services/image-url.service";
-import {
-  LucideAngularModule,
-  Plus,
-  Search,
-  Filter,
-  Download,
-  Edit,
-  Trash2,
-  ChevronLeft,
-  ChevronRight,
-  FileUp,
-  ChevronDown,
-  AlertTriangle,
-  Rocket,
-  Package,
-} from "lucide-angular";
+import { AppIconComponent } from "../../../shared/components/app-icon/app-icon.component";
 
 @Component({
   selector: "app-admin-products",
   standalone: true,
   imports: [
-    CommonModule,
+    NgIf,
+    NgFor,
+    AsyncPipe,
+    NgClass,
     ReactiveFormsModule,
     RouterModule,
     PriceDisplayComponent,
-    LucideAngularModule,
+    AppIconComponent,
   ],
   templateUrl: "./admin-products.component.html",
 })
 export class AdminProductsComponent implements OnInit, OnDestroy {
-  readonly icons = {
-    Plus,
-    Search,
-    Filter,
-    Download,
-    Edit,
-    Trash2,
-    ChevronLeft,
-    ChevronRight,
-    FileUp,
-    ChevronDown,
-    AlertTriangle,
-    Rocket,
-    Package,
-  };
   private productsService = inject(ProductsService);
   private route = inject(ActivatedRoute);
   readonly imageUrlService = inject(ImageUrlService);
@@ -143,7 +116,10 @@ export class AdminProductsComponent implements OnInit, OnDestroy {
   }
 
   deleteProduct(product: AdminProduct): void {
-    const confirmed = window.confirm(`Delete ${product.headline}?`);
+    let confirmed = false;
+    if (isPlatformBrowser(this.platformId)) {
+      confirmed = window.confirm(`Delete ${product.headline}?`);
+    }
     if (!confirmed) {
       return;
     }

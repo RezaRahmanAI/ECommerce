@@ -1,80 +1,90 @@
-import { Injectable } from '@angular/core';
-import {
-  HttpRequest,
-  HttpHandler,
-  HttpEvent,
-  HttpInterceptor,
-  HttpResponse
-} from '@angular/common/http';
-import { Observable, of } from 'rxjs';
-import { tap } from 'rxjs/operators';
+import { HttpInterceptorFn, HttpResponse } from "@angular/common/http";
+import { of, tap } from "rxjs";
 
 interface CacheEntry {
-  data: HttpResponse<any>;
-  expiresAt: number;
+  response: HttpResponse<unknown>;
+  timestamp: number;
 }
 
-@Injectable({
-  providedIn: 'root'
-})
-export class CacheInterceptor implements HttpInterceptor {
-  private cache = new Map<string, CacheEntry>();
+// In-memory cache store
+const cache = new Map<string, CacheEntry>();
 
-  // TTL config in seconds
-  private ttlConfig: { pattern: RegExp, ttl: number }[] = [
-    { pattern: /^\/api\/categories/i, ttl: 300 },
-    { pattern: /^\/api\/hero/i, ttl: 600 },
-    { pattern: /^\/api\/products\/[a-zA-Z0-9-]+$/i, ttl: 180 }, // Detail
-    { pattern: /^\/api\/products\?/i, ttl: 120 } // Listing
-  ];
+// Cache TTL in milliseconds
+const TTL_CONFIG = 24 * 60 * 60 * 1000; // 24 hours
+const TTL_CATALOG = 60 * 60 * 1000;      // 1 hour
+const TTL_CONTENT = 30 * 60 * 1000;      // 30 minutes
+const TTL_HOME = 15 * 60 * 1000;         // 15 minutes
+const DEFAULT_TTL = 60_000;
 
-  intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
-    // Only intercept GET requests
-    if (request.method !== 'GET') {
-      return next.handle(request);
-    }
+// Endpoints that should never be cached
+const EXCLUDED_PATTERNS = [
+  "/auth/",
+  "/admin/",
+  "/cart",
+  "/orders",
+  "/checkout",
+  "/customers",
+  "/analytics",
+];
 
-    const urlWithParams = request.urlWithParams;
+function shouldCache(url: string): boolean {
+  if (!url.includes("/api/")) return false;
+  return !EXCLUDED_PATTERNS.some((pattern) => url.includes(pattern));
+}
 
-    // Check if we have a valid cached response
-    const cachedItem = this.cache.get(urlWithParams);
-    if (cachedItem && cachedItem.expiresAt > Date.now()) {
-      return of(cachedItem.data);
-    }
+function getTTL(url: string): number {
+  if (url.includes("/sitesettings") || url.includes("/navigation")) return TTL_CONFIG;
+  if (url.includes("/products") || url.includes("/categories")) return TTL_CATALOG;
+  if (url.includes("/pages") || url.includes("/banners")) return TTL_CONTENT;
+  if (url.includes("/home")) return TTL_HOME;
+  return DEFAULT_TTL;
+}
 
-    // Determine TTL based on URL pattern
-    const matchedConfig = this.ttlConfig.find(c => c.pattern.test(urlWithParams));
-    const ttlSeconds = matchedConfig ? matchedConfig.ttl : 0;
-
-    // Proceed with real request and conditionally cache it
-    return next.handle(request).pipe(
-      tap(event => {
-        if (event instanceof HttpResponse && ttlSeconds > 0) {
-          try {
-            this.cache.set(urlWithParams, {
-              data: event,
-              expiresAt: Date.now() + (ttlSeconds * 1000)
-            });
-          } catch (e) {
-            // Failsafe (e.g. storage limit)
-            console.warn('Interceptor Cache Write Failed', e);
-          }
-        }
-      })
-    );
+/**
+ * HTTP Cache Interceptor — Stale-While-Revalidate pattern.
+ */
+export const httpCacheInterceptor: HttpInterceptorFn = (req, next) => {
+  // Only cache GET requests
+  if (req.method !== "GET") {
+    return next(req);
   }
 
-  /**
-   * Cleans up keys matching a URL pattern (e.g., after an admin update)
-   */
-  public bust(urlPattern: string): void {
-    const keysToRemove: string[] = [];
-    this.cache.forEach((_, key) => {
-      if (key.includes(urlPattern)) {
-        keysToRemove.push(key);
-      }
-    });
+  // Skip non-API or excluded URLs
+  if (!shouldCache(req.urlWithParams)) {
+    return next(req);
+  }
 
-    keysToRemove.forEach(key => this.cache.delete(key));
+  const cacheKey = req.urlWithParams;
+  const entry = cache.get(cacheKey);
+  const now = Date.now();
+  const ttl = getTTL(cacheKey);
+
+  // Return cached response if still fresh
+  if (entry && now - entry.timestamp < ttl) {
+    return of(entry.response.clone());
+  }
+
+  // Otherwise, make the request and cache the response
+  return next(req).pipe(
+    tap((event) => {
+      if (event instanceof HttpResponse && event.status === 200) {
+        cache.set(cacheKey, {
+          response: event.clone(),
+          timestamp: Date.now(),
+        });
+      }
+    }),
+  );
+};
+
+export function clearHttpCache(): void {
+  cache.clear();
+}
+
+export function invalidateHttpCache(pattern: string): void {
+  for (const key of cache.keys()) {
+    if (key.includes(pattern)) {
+      cache.delete(key);
+    }
   }
 }

@@ -6,6 +6,7 @@ export interface AdminReview {
   id: number;
   customerName: string;
   customerAvatar: string;
+  reviewImage?: string;
   rating: number;
   comment: string;
   isVerifiedPurchase: boolean;
@@ -36,13 +37,12 @@ export class AdminReviewsService {
   }
 
   update(id: number, payload: any): Observable<AdminReview> {
-    return this.api.post<AdminReview>(`${this.baseUrl}/${id}`, payload);
+    return this.api.put<AdminReview>(`${this.baseUrl}/${id}`, payload);
   }
 
-  uploadAvatar(file: File): Observable<string[]> {
-    if (!file) return of([]);
+  uploadImage(file: File): Observable<string[]> {
     const formData = new FormData();
     formData.append("files", file);
-    return this.api.post<string[]>(`${this.baseUrl}/upload-avatar`, formData);
+    return this.api.post<string[]>(`${this.baseUrl}/upload-image`, formData);
   }
 }

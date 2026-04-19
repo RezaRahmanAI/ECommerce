@@ -11,66 +11,48 @@
         </h2>
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12 lg:gap-16">
+      <div class="flex flex-wrap justify-center gap-8 md:gap-12 lg:gap-16">
         <div
           *ngIf="reviews.length === 0"
           class="col-span-3 text-center text-gray-400 text-sm tracking-widest uppercase"
         >
-          No featured reviews yet.
+          No reviews yet.
         </div>
         <div
           *ngFor="let review of reviews"
-          class="flex flex-col items-center text-center group"
+          class="flex flex-col items-center text-center group w-full md:w-[calc(33.333%-2rem)] lg:w-[calc(33.333%-4rem)] max-w-[400px]"
         >
-          <div class="mb-8 text-accent">
-            <lucide-icon
-              [img]="icons.Quote"
-              class="w-10 h-10 opacity-40 group-hover:opacity-100 transition-opacity duration-500 stroke-[1.5]"
-            ></lucide-icon>
+
+
+          <!-- Review Screenshot -->
+          <div *ngIf="review.reviewImage" class="mb-8 relative max-w-[240px]">
+            <div class="absolute -inset-4 bg-primary/5 rounded-[2rem] blur-xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
+            <img 
+              [src]="imageUrlService.getImageUrl(review.reviewImage)" 
+              class="w-full h-auto rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-500 relative z-10"
+              alt="Review Proof">
           </div>
 
-          <p
-            class="text-text-main font-serif italic text-lg leading-relaxed mb-8 px-4 opacity-80 min-h-[4rem]"
-          >
-            "{{ review.comment }}"
-          </p>
-
-          <div class="flex flex-col items-center gap-3">
-            <div
-              class="h-12 w-12 rounded-full overflow-hidden grayscale group-hover:grayscale-0 transition-all duration-500 bg-gray-100"
-            >
-              <img
-                *ngIf="review.customerAvatar"
-                class="h-full w-full object-cover"
-                [alt]="review.customerName"
-                [ngSrc]="imageUrlService.getImageUrl(review.customerAvatar)"
-                width="48"
-                height="48"
-              />
-              <div
-                *ngIf="!review.customerAvatar"
-                class="h-full w-full flex items-center justify-center bg-gray-200 text-gray-400 text-xs font-bold uppercase"
-              >
-                {{ review.customerName.charAt(0) }}
-              </div>
-            </div>
-            <div class="mt-2">
-              <p
-                class="text-[10px] uppercase tracking-[0.3em] font-bold text-primary"
-              >
+          <div class="flex flex-col items-center gap-2">
+            <div>
+              <p class="text-[10px] uppercase tracking-[0.3em] font-black text-primary mb-2">
                 {{ review.customerName }}
               </p>
-              <div class="flex text-accent scale-75 mt-1 gap-1">
-                <lucide-icon
-                  *ngFor="let star of stars"
-                  [img]="getStarIcon(review.rating, star)"
-                  class="w-3.5 h-3.5 stroke-[1.5]"
-                  [ngClass]="{
-                    'fill-accent': review.rating >= star,
-                    'fill-accent/50':
-                      review.rating + 0.5 >= star && review.rating < star,
-                  }"
-                ></lucide-icon>
+
+              <p class="text-text-main font-serif italic text-sm leading-relaxed mb-4 px-4 opacity-80">
+                "{{ review.comment }}"
+              </p>
+
+              <div class="flex items-center justify-center gap-2 mt-2">
+                <div class="flex text-yellow-400 gap-0.5 scale-90">
+                  <app-icon
+                    *ngFor="let star of stars"
+                    name="Star"
+                    className="w-3.5 h-3.5"
+                    [ngClass]="{ 'fill-yellow-400': review.rating >= star }"
+                  ></app-icon>
+                </div>
+                <span class="text-[9px] text-gray-400 font-bold uppercase tracking-widest">{{ review.date | date: 'mediumDate' }}</span>
               </div>
             </div>
           </div>

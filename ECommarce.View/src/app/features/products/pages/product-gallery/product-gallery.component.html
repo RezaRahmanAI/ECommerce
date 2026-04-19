@@ -33,7 +33,7 @@
                   <div class="w-1.5 h-1.5 bg-accent rounded-full opacity-0 group-hover:opacity-100 transition-all"></div>
                   {{ sub.name }}
                 </div>
-                <lucide-icon [name]="icons.ChevronRight" class="w-4 h-4 opacity-20"></lucide-icon>
+                <app-icon name="ChevronRight" className="w-4 h-4"></app-icon>
               </button>
             </nav>
 
@@ -54,7 +54,7 @@
                       <div class="w-1 h-1 bg-accent rounded-full opacity-30 group-hover:opacity-100 transition-all"></div>
                       {{ sub.name }}
                     </div>
-                    <lucide-icon [name]="icons.ChevronRight" class="w-3.5 h-3.5 opacity-20"></lucide-icon>
+                    <app-icon name="ChevronRight" className="w-3.5 h-3.5 opacity-20"></app-icon>
                   </button>
                 </nav>
               </div>
@@ -88,7 +88,7 @@
 
           <!-- No Products Found -->
           <div *ngIf="!loading && filteredProducts.length === 0" class="flex flex-col items-center justify-center py-20 text-center bg-white border border-gray-100 rounded-xl">
-            <lucide-icon [name]="icons.Package" class="w-12 h-12 text-gray-200 mb-4"></lucide-icon>
+            <app-icon name="Package" className="w-12 h-12 text-gray-200 mb-4"></app-icon>
             <h3 class="text-lg font-black text-primary mb-2">No products found for this category</h3>
             <p class="text-gray-400 text-xs max-w-xs mx-auto">Please check back later or explore other categories.</p>
           </div>

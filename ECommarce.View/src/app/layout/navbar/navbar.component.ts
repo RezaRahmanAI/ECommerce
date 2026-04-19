@@ -4,20 +4,7 @@ import { FormsModule } from "@angular/forms";
 
 import { RouterModule, Router, NavigationEnd } from "@angular/router";
 import { combineLatest, map, startWith, filter, Subject, debounceTime, distinctUntilChanged, switchMap, tap, of, catchError } from "rxjs";
-import {
-  LucideAngularModule,
-  Search,
-  User,
-  ShoppingBag,
-  Menu,
-  X,
-  ChevronDown,
-  Facebook,
-  Instagram,
-  Twitter,
-  Tag,
-  Search as SearchIcon,
-} from "lucide-angular";
+import { AppIconComponent } from "../../shared/components/app-icon/app-icon.component";
 
 import { AuthService } from "../../core/services/auth.service";
 import { CartService } from "../../core/services/cart.service";
@@ -31,7 +18,7 @@ import { Product } from "../../core/models/product";
 @Component({
   selector: "app-navbar",
   standalone: true,
-  imports: [CommonModule, RouterModule, LucideAngularModule, FormsModule],
+  imports: [CommonModule, RouterModule, AppIconComponent, FormsModule],
   templateUrl: "./navbar.component.html",
   styleUrl: "./navbar.component.css",
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -48,18 +35,7 @@ export class NavbarComponent {
   private readonly productService = inject(ProductService);
   private readonly cdr = inject(ChangeDetectorRef);
 
-  readonly icons = {
-    Search,
-    User,
-    ShoppingBag,
-    Menu,
-    X,
-    ChevronDown,
-    Facebook,
-    Instagram,
-    Twitter,
-    Tag,
-  };
+  // icons removed
 
   isMenuOpen = false;
   isSearchOpen = false;

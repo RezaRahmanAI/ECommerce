@@ -88,10 +88,7 @@
                 class="absolute right-0 top-0 h-full w-12 flex items-center justify-center text-[#4d8799] cursor-pointer hover:text-primary transition-colors"
                 (click)="togglePasswordVisibility()"
               >
-                <lucide-icon
-                  [img]="isPasswordVisible ? icons.Eye : icons.EyeOff"
-                  class="w-6 h-6"
-                ></lucide-icon>
+                <app-icon [name]="isPasswordVisible ? 'Eye' : 'EyeOff'" className="w-6 h-6"></app-icon>
               </div>
             </div>
             <span

@@ -7,20 +7,13 @@ import {
   trigger,
   state,
 } from "@angular/animations";
-import {
-  LucideAngularModule,
-  Phone,
-  MessageSquare,
-  MessageCircle,
-  Plus,
-  X,
-} from "lucide-angular";
+import { AppIconComponent } from "../app-icon/app-icon.component";
 import { SiteSettingsService } from "../../../core/services/site-settings.service";
 
 @Component({
   selector: "app-contact-fab",
   standalone: true,
-  imports: [CommonModule, LucideAngularModule],
+  imports: [CommonModule, AppIconComponent],
   animations: [
     trigger("famTrigger", [
       state("void", style({ transform: "scale(0)", opacity: 0 })),
@@ -86,10 +79,7 @@ import { SiteSettingsService } from "../../../core/services/site-settings.servic
           class="w-12 h-12 flex items-center justify-center rounded-full bg-[#0084FF] shadow-lg hover:scale-110 transition-transform text-white border border-white/20"
           title="Messenger"
         >
-          <lucide-icon
-            [img]="icons.MessageCircle"
-            class="w-5 h-5"
-          ></lucide-icon>
+          <app-icon name="MessageCircle" className="w-5 h-5"></app-icon>
         </a>
 
         <!-- WhatsApp Option -->
@@ -101,10 +91,7 @@ import { SiteSettingsService } from "../../../core/services/site-settings.servic
           class="w-12 h-12 flex items-center justify-center rounded-full bg-[#25D366] shadow-lg hover:scale-110 transition-transform text-white border border-white/20"
           title="WhatsApp Us"
         >
-          <lucide-icon
-            [img]="icons.MessageSquare"
-            class="w-5 h-5"
-          ></lucide-icon>
+          <app-icon name="MessageSquare" className="w-5 h-5"></app-icon>
         </a>
 
         <!-- Phone Option -->
@@ -115,7 +102,7 @@ import { SiteSettingsService } from "../../../core/services/site-settings.servic
           class="w-12 h-12 flex items-center justify-center rounded-full bg-white/80 backdrop-blur-md shadow-lg hover:scale-110 transition-transform text-[#0e181b] border border-white/20"
           title="Call Us"
         >
-          <lucide-icon [img]="icons.Phone" class="w-5 h-5"></lucide-icon>
+          <app-icon name="Phone" className="w-5 h-5"></app-icon>
         </a>
       </div>
 
@@ -127,11 +114,7 @@ import { SiteSettingsService } from "../../../core/services/site-settings.servic
         [class.bg-gray-100]="isOpen"
       >
         <!-- Close / Add Icon -->
-        <lucide-icon
-          *ngIf="isOpen"
-          [img]="icons.Plus"
-          class="w-7 h-7 text-[#0e181b] rotate-45"
-        ></lucide-icon>
+        <app-icon name="Plus" className="w-7 h-7 text-[#0e181b] rotate-45" *ngIf="isOpen"></app-icon>
 
         <!-- Animated Dots -->
         <div *ngIf="!isOpen" class="flex items-center gap-1">
@@ -150,13 +133,7 @@ import { SiteSettingsService } from "../../../core/services/site-settings.servic
   `,
 })
 export class ContactFabComponent implements OnInit {
-  readonly icons = {
-    Phone,
-    MessageSquare,
-    MessageCircle,
-    Plus,
-    X,
-  };
+  // icons removed
 
   private settingsService = inject(SiteSettingsService);
 

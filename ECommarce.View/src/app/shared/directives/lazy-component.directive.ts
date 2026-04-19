@@ -1,4 +1,5 @@
-import { Directive, ElementRef, TemplateRef, ViewContainerRef, OnInit, OnDestroy, Input, Output, EventEmitter } from '@angular/core';
+import { Directive, ElementRef, TemplateRef, ViewContainerRef, OnInit, OnDestroy, Input, Output, EventEmitter, inject, Renderer2, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 
 @Directive({
   selector: '[appLazyComponent]',
@@ -10,6 +11,8 @@ export class LazyComponentDirective implements OnInit, OnDestroy {
   @Output() rendered = new EventEmitter<void>();
   private observer?: IntersectionObserver;
   public hasRendered = false;
+  private readonly renderer = inject(Renderer2);
+  private readonly platformId = inject(PLATFORM_ID);
 
   constructor(
     private element: ElementRef,
@@ -24,7 +27,7 @@ export class LazyComponentDirective implements OnInit, OnDestroy {
       return;
     }
 
-    if (typeof window !== 'undefined' && 'IntersectionObserver' in window) {
+    if (isPlatformBrowser(this.platformId) && 'IntersectionObserver' in window) {
       this.observer = new IntersectionObserver(entries => {
         if (entries[0].isIntersecting && !this.hasRendered) {
           this.render();
@@ -43,8 +46,9 @@ export class LazyComponentDirective implements OnInit, OnDestroy {
     
     // Add animation to the root elements of the rendered view
     viewRef.rootNodes.forEach(node => {
-      if (node instanceof HTMLElement) {
-        node.classList.add('animate-slide-up');
+      // Use renderer for safe class adding even on server
+      if (node.nodeType === 1) { // 1 is ELEMENT_NODE
+        this.renderer.addClass(node, 'animate-slide-up');
       }
     });
 

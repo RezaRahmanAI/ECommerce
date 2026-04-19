@@ -25,7 +25,7 @@ public class ReviewService : IReviewService
 
     public async Task<IEnumerable<Review>> GetFeaturedReviewsAsync()
     {
-        var spec = new ReviewSpecification(isFeatured: true);
+        var spec = new ReviewSpecification();
         return await _unitOfWork.Repository<Review>().ListAsync(spec);
     }
 

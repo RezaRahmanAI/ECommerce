@@ -41,8 +41,9 @@ public class HomeController : ControllerBase
     [OutputCache(Tags = new[] { "homepage", "products", "categories", "banners" })]
     public async Task<ActionResult<HomePageDto>> GetHomeData()
     {
-        // Define cache-wrapped tasks for parallel execution
-        var bannersTask = _cache.GetOrCreateAsync(CacheConstants.BannersActive, async entry =>
+        // Execute tasks strictly sequentially. Do not create the Tasks before awaiting them, 
+        // as doing so will trigger concurrent scoped DbContext executions during cache misses.
+        var banners = await _cache.GetOrCreateAsync(CacheConstants.BannersActive, async entry =>
         {
             entry.SlidingExpiration = TimeSpan.FromMinutes(30);
             entry.Size = 1;
@@ -56,9 +57,9 @@ public class HomeController : ControllerBase
                 DisplayOrder = b.DisplayOrder,
                 Type = b.Type
             }).ToList();
-        });
+        }) ?? new List<HeroBannerDto>();
 
-        var newArrivalsTask = _cache.GetOrCreateAsync(CacheConstants.NewArrivals, async entry =>
+        var newArrivals = await _cache.GetOrCreateAsync(CacheConstants.NewArrivals, async entry =>
         {
             entry.SlidingExpiration = TimeSpan.FromMinutes(10);
             entry.Size = 1;
@@ -66,9 +67,9 @@ public class HomeController : ControllerBase
                 sort: "id_desc", categoryId: null, categorySlug: null, search: null,
                 isNew: true, skip: 0, take: 10));
             return _mapper.Map<IReadOnlyList<Product>, IReadOnlyList<ProductListDto>>(items);
-        });
+        }) ?? new List<ProductListDto>();
 
-        var featuredProductsTask = _cache.GetOrCreateAsync(CacheConstants.FeaturedProducts, async entry =>
+        var featuredProducts = await _cache.GetOrCreateAsync(CacheConstants.FeaturedProducts, async entry =>
         {
             entry.SlidingExpiration = TimeSpan.FromMinutes(10);
             entry.Size = 1;
@@ -76,25 +77,22 @@ public class HomeController : ControllerBase
                 sort: "id_desc", categoryId: null, categorySlug: null, search: null,
                 isNew: null, skip: 0, take: 10));
             return _mapper.Map<IReadOnlyList<Product>, IReadOnlyList<ProductListDto>>(items);
-        });
+        }) ?? new List<ProductListDto>();
 
-        var categoriesTask = _cache.GetOrCreateAsync(CacheConstants.CategoriesAll, async entry =>
+        var categories = await _cache.GetOrCreateAsync(CacheConstants.CategoriesAll, async entry =>
         {
             entry.SlidingExpiration = TimeSpan.FromHours(1);
             entry.Size = 1;
             var items = await _categoryRepo.ListAsync(new CategoriesWithSubCategoriesSpec());
             return _mapper.Map<IReadOnlyList<CategoryDto>>(items);
-        });
-
-        // Execute all tasks in parallel
-        await Task.WhenAll(bannersTask, newArrivalsTask, featuredProductsTask, categoriesTask);
+        }) ?? new List<CategoryDto>();
 
         return Ok(new HomePageDto
         {
-            Banners = await bannersTask ?? new List<HeroBannerDto>(),
-            NewArrivals = await newArrivalsTask ?? new List<ProductListDto>(),
-            FeaturedProducts = await featuredProductsTask ?? new List<ProductListDto>(),
-            Categories = await categoriesTask ?? new List<CategoryDto>()
+            Banners = banners,
+            NewArrivals = newArrivals,
+            FeaturedProducts = featuredProducts,
+            Categories = categories
         });
     }
 }

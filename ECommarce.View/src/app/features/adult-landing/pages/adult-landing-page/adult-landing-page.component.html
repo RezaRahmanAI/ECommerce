@@ -3,7 +3,7 @@
   <!-- Loading State -->
   <div *ngIf="isLoading" class="fixed inset-0 z-[200] flex items-center justify-center bg-white">
      <div class="flex flex-col items-center gap-4">
-        <lucide-icon [img]="icons.Loader2" class="w-10 h-10 animate-spin text-accent"></lucide-icon>
+        <app-icon name="Loader2" className="w-10 h-10 animate-spin text-accent"></app-icon>
         <p class="text-[10px] uppercase tracking-[0.4em] font-black text-primary/40">SheraShopBD</p>
      </div>
   </div>
@@ -38,7 +38,7 @@
         <div class="flex flex-col sm:flex-row gap-5">
           <button (click)="scrollToOrderForm()" 
                   class="bg-accent text-white px-12 h-16 text-xs font-black uppercase tracking-[0.2em] flex items-center justify-center gap-3 hover:bg-accent-dark transition-all shadow-[0_20px_40px_-10px_rgba(var(--accent-rgb),0.5)] active:scale-95">
-            <lucide-icon [img]="icons.ShoppingCart" class="w-4 h-4"></lucide-icon>
+            <app-icon name="ShoppingCart" className="w-4 h-4"></app-icon>
             Order Now — ৳{{ product.price }}
           </button>
         </div>
@@ -85,14 +85,14 @@
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div class="p-5 border border-gray-100 bg-gray-50 flex items-start gap-4">
-                 <lucide-icon [img]="icons.ShieldCheck" class="w-6 h-6 text-accent flex-shrink-0"></lucide-icon>
+                 <app-icon name="ShieldCheck" className="w-5 h-5 text-accent"></app-icon>
                  <div>
                     <h4 class="text-sm font-bold uppercase mb-1">Secure & Private</h4>
                     <p class="text-xs text-gray-500">Your privacy is our number one priority.</p>
                  </div>
               </div>
               <div class="p-5 border border-gray-100 bg-gray-50 flex items-start gap-4">
-                 <lucide-icon [img]="icons.Truck" class="w-6 h-6 text-accent flex-shrink-0"></lucide-icon>
+                 <app-icon name="Truck" className="w-5 h-5 text-accent"></app-icon>
                  <div>
                     <h4 class="text-sm font-bold uppercase mb-1">Fast Delivery</h4>
                     <p class="text-xs text-gray-500">24-48 hours delivery across Bangladesh.</p>
@@ -120,7 +120,7 @@
         <button (click)="scrollToOrderForm()" 
                 class="inline-flex items-center gap-4 text-accent font-black uppercase tracking-widest text-xs group">
           <span>Ready to Order</span>
-          <lucide-icon [img]="icons.ArrowRight" class="w-4 h-4 group-hover:translate-x-2 transition-transform"></lucide-icon>
+          <app-icon name="ArrowRight" className="w-5 h-5 transition-transform group-hover:translate-x-1"></app-icon>
         </button>
       </div>
     </section>
@@ -141,10 +141,9 @@
            <div class="flex-grow h-px bg-gray-100"></div>
         </div>
         
-        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6 mb-16" id="productsGrid">
-          <div *ngFor="let item of offerItems" 
-               class="group relative flex flex-col bg-white transition-all duration-300">
-            
+        <!-- Product Card Template -->
+        <ng-template #productCard let-item="item">
+          <div class="group relative flex flex-col bg-white transition-all duration-300">
             <div (click)="openProductModal(item)" class="relative cursor-pointer mb-4">
               <div class="aspect-[1/1] overflow-hidden bg-gray-50 border border-gray-100 rounded-2xl relative">
                  <img [src]="item.imageUrl" class="absolute inset-0 w-full h-full object-contain p-4 transition-transform duration-700 group-hover:scale-110">
@@ -168,6 +167,13 @@
               </div>
             </div>
           </div>
+        </ng-template>
+
+        <!-- Main Product -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6 mb-16">
+          <ng-container *ngIf="mainItem">
+            <ng-container *ngTemplateOutlet="productCard; context: { item: mainItem }"></ng-container>
+          </ng-container>
         </div>
 
         <!-- Checkout Form -->
@@ -193,7 +199,7 @@
           </div>
 
           <div class="space-y-4">
-            <label class="block text-[10px] uppercase tracking-[0.2em] font-black text-gray-400">ডেলিভারি এলাকা <span class="text-accent">*</span></label>
+            <label class="block text-[10px] uppercase tracking-[0.2em] font-black text-gray-400">ডেলিভারি এলাকা </label>
             <div class="grid grid-cols-2 gap-4">
               <!-- Inside Dhaka -->
               <label 
@@ -261,18 +267,31 @@
           </div>
 
           <div class="flex items-center gap-3 p-4 bg-gray-100 rounded-xl">
-            <lucide-icon [img]="icons.CheckCircle2" class="w-5 h-5 text-accent flex-shrink-0"></lucide-icon>
+            <app-icon name="CheckCircle2" className="w-4 h-4 text-accent"></app-icon>
             <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Cash on delivery — Pay with cash upon delivery.</p>
           </div>
 
           <button type="submit" [disabled]="isOrdering || subtotal === 0"
                   class="w-full bg-accent text-white h-16 rounded-xl text-xs uppercase tracking-[0.2em] font-black transition-all hover:bg-accent-dark disabled:bg-gray-200 disabled:text-gray-400 flex items-center justify-center gap-4 active:scale-95">
-            <lucide-icon *ngIf="isOrdering" [img]="icons.Loader2" class="w-5 h-5 animate-spin"></lucide-icon>
+            <app-icon name="Loader2" className="w-5 h-5 animate-spin"></app-icon>
             {{ isOrdering ? 'Processing...' : 'অর্ডার সম্পন্ন করুন' }}
           </button>
           
           <p *ngIf="errorMessage" class="text-sm text-red-500 text-center font-bold mt-4 animate-bounce">{{ errorMessage }}</p>
         </form>
+
+        <!-- Other Products -->
+        <ng-container *ngIf="otherItems.length > 0">
+          <div class="mt-20 text-[11px] uppercase tracking-[0.2em] font-black text-primary/40 mb-8 flex items-center gap-4">
+             <span>You Might Also Like</span>
+             <div class="flex-grow h-px bg-gray-100"></div>
+          </div>
+          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
+            <ng-container *ngFor="let item of otherItems">
+              <ng-container *ngTemplateOutlet="productCard; context: { item: item }"></ng-container>
+            </ng-container>
+          </div>
+        </ng-container>
       </div>
     </div>
 
@@ -294,7 +313,7 @@
        (click)="$event.stopPropagation()">
     
     <button (click)="closeProductModal()" class="absolute top-6 right-6 p-2 text-gray-400 hover:text-black z-10 transition-colors">
-      <lucide-icon [img]="icons.X" class="w-6 h-6"></lucide-icon>
+      <app-icon name="X" className="w-6 h-6"></app-icon>
     </button>
 
     <div class="p-8">
@@ -312,11 +331,11 @@
           <span class="text-[10px] uppercase tracking-widest font-black text-gray-400">Order Quantity</span>
           <div class="flex items-center bg-gray-50 rounded-full p-2 w-fit border border-gray-100">
             <button (click)="updateModalQuantity(-1)" class="w-12 h-12 rounded-full bg-white shadow-sm flex items-center justify-center hover:bg-gray-50 transition-colors">
-              <lucide-icon [img]="icons.Minus" class="w-4 h-4"></lucide-icon>
+              <app-icon name="Minus" className="w-4 h-4"></app-icon>
             </button>
             <span class="px-8 font-black text-xl min-w-[60px] text-center">{{ modalQuantity }}</span>
             <button (click)="updateModalQuantity(1)" class="w-12 h-12 rounded-full bg-white shadow-sm flex items-center justify-center hover:bg-gray-50 transition-colors">
-              <lucide-icon [img]="icons.Plus" class="w-4 h-4"></lucide-icon>
+              <app-icon name="Plus" className="w-4 h-4"></app-icon>
             </button>
           </div>
         </div>

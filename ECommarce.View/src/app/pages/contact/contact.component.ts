@@ -24,16 +24,7 @@ type InquiryTopic = {
   label: string;
 };
 
-import {
-  LucideAngularModule,
-  Mail,
-  Phone,
-  MapPin,
-  HelpCircle,
-  ArrowRight,
-  ChevronDown,
-  Store,
-} from "lucide-angular";
+import { AppIconComponent } from "../../shared/components/app-icon/app-icon.component";
 
 @Component({
   selector: "app-contact",
@@ -42,20 +33,12 @@ import {
     CommonModule,
     ReactiveFormsModule,
     RouterModule,
-    LucideAngularModule,
+    AppIconComponent,
   ],
   templateUrl: "./contact.component.html",
 })
 export class ContactComponent {
-  readonly icons = {
-    Mail,
-    Phone,
-    MapPin,
-    HelpCircle,
-    ArrowRight,
-    ChevronDown,
-    Store,
-  };
+  // icons removed
   supportEmail = "support@sherashopbd24.com";
   phone = "+8801XXXXXXXXX";
   phoneDial = "+8801XXXXXXXXX";

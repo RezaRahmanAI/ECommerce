@@ -3,15 +3,15 @@
     <div class="flex flex-col gap-2">
       <nav class="flex items-center text-sm text-text-sub">
         <a class="hover:text-primary transition-colors font-medium" routerLink="/admin/dashboard">Dashboard</a>
-        <lucide-icon [img]="icons.ChevronRight" class="w-4 h-4 mx-1"></lucide-icon>
+        <app-icon name="ChevronRight" className="w-4 h-4 mx-1"></app-icon>
         <a class="hover:text-primary transition-colors" routerLink="/admin/products">Products</a>
-        <lucide-icon [img]="icons.ChevronRight" class="w-4 h-4 mx-1"></lucide-icon>
+        <app-icon name="ChevronRight" className="w-4 h-4 mx-1"></app-icon>
         <span class="font-medium text-primary dark:text-white">Categories</span>
       </nav>
       <h2 class="text-3xl font-bold text-primary dark:text-white tracking-tight">Category Management</h2>
     </div>
     <button class="shera-btn-primary" type="button" (click)="startCreate()">
-      <lucide-icon [img]="icons.Plus" class="w-5 h-5"></lucide-icon>
+      <app-icon name="Plus" className="w-5 h-5"></app-icon>
       <span>Add Category</span>
     </button>
   </div>
@@ -19,7 +19,7 @@
   <div class="flex flex-col lg:flex-row gap-6 items-start h-full">
     <div class="w-full lg:w-2/3 flex flex-col gap-4">
       <div class="relative flex-1 max-w-sm">
-        <lucide-icon [img]="icons.Search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-text-sub/50"></lucide-icon>
+        <app-icon name="Search" className="absolute left-3 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-text-sub/50"></app-icon>
         <input
           class="w-full pl-9 pr-4 py-2 bg-white dark:bg-background-dark border border-border-color rounded-xl text-sm"
           placeholder="Filter categories..."
@@ -54,10 +54,10 @@
               </div>
               <div class="col-span-2 flex justify-end gap-1">
                 <button class="p-1.5 rounded" type="button" (click)="$event.stopPropagation(); selectCategory(category)">
-                  <lucide-icon [img]="icons.Edit" class="w-4.5 h-4.5 text-slate-400 hover:text-primary"></lucide-icon>
+                  <app-icon name="Edit" className="w-4.5 h-4.5 text-slate-400 hover:text-primary"></app-icon>
                 </button>
                 <button class="p-1.5 rounded" type="button" (click)="$event.stopPropagation(); deleteCategory(category)">
-                  <lucide-icon [img]="icons.Trash2" class="w-4.5 h-4.5 text-slate-400 hover:text-red-500"></lucide-icon>
+                  <app-icon name="Trash2" className="w-4.5 h-4.5 text-slate-400 hover:text-red-500"></app-icon>
                 </button>
               </div>
             </div>
@@ -82,11 +82,11 @@
             <label class="block text-sm font-medium mb-2">Category Image</label>
             <div class="flex items-center gap-4">
               <div class="size-16 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center overflow-hidden bg-cover bg-center relative" [ngStyle]="{ 'background-image': getPreviewUrl() ? 'url(' + getPreviewUrl() + ')' : 'none' }">
-                <lucide-icon *ngIf="!getPreviewUrl()" [img]="icons.Image" class="w-8 h-8 text-slate-300"></lucide-icon>
+                <app-icon *ngIf="!getPreviewUrl()" name="Image" className="w-8 h-8 text-slate-300"></app-icon>
               </div>
               <label class="flex justify-center w-full h-16 px-4 transition bg-white border-2 border-slate-300 border-dashed rounded-md cursor-pointer">
                 <span class="flex items-center space-x-2">
-                  <lucide-icon [img]="icons.Upload" class="w-5 h-5 text-slate-400"></lucide-icon>
+                  <app-icon name="Upload" className="w-5 h-5 text-slate-400"></app-icon>
                   <span class="font-medium text-slate-600 text-xs">{{ selectedImageFile ? selectedImageFile.name : 'Drop files or click to upload' }}</span>
                 </span>
                 <input class="hidden" type="file" accept="image/*" [disabled]="isUploadingImage" (change)="handleImageUpload($event)" />
@@ -100,7 +100,7 @@
           </div>
 
           <button class="shera-btn-primary py-2 px-6" type="button" [disabled]="isUploadingImage" (click)="saveCategory()">
-            <lucide-icon [img]="icons.Save" class="w-4.5 h-4.5"></lucide-icon>
+            <app-icon name="Save" className="w-4.5 h-4.5"></app-icon>
             {{ mode === 'create' ? 'Create' : 'Update' }}
           </button>
         </form>

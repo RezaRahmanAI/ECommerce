@@ -167,7 +167,8 @@ public class CacheService : ICacheService
         
         var options = new MemoryCacheEntryOptions
         {
-            Priority = CacheItemPriority.NeverRemove
+            Priority = CacheItemPriority.NeverRemove,
+            Size = 1
         };
         
         _memoryCache.Set(versionKey, newVersion, options);

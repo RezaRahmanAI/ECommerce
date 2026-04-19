@@ -33,6 +33,7 @@ public class AdminCustomersController : ControllerBase
                 c.Name,
                 c.Phone,
                 c.Address,
+                c.IsSuspicious,
                 c.CreatedAt,
                 c.UpdatedAt
             }),

@@ -15,14 +15,14 @@
         type="button"
         (click)="exportProducts()"
       >
-        <lucide-icon [img]="icons.FileUp" class="w-5 h-5"></lucide-icon>
+        <app-icon name="FileUp" className="w-5 h-5"></app-icon>
         Export
       </button>
       <a
         class="shera-btn-primary h-10 px-4"
         routerLink="/admin/products/create"
       >
-        <lucide-icon [img]="icons.Plus" class="w-5 h-5"></lucide-icon>
+        <app-icon name="Plus" className="w-5 h-5"></app-icon>
         Add New Product
       </a>
     </div>
@@ -35,10 +35,10 @@
         <div
           class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"
         >
-          <lucide-icon
-            [img]="icons.Search"
-            class="w-5 h-5 text-slate-400"
-          ></lucide-icon>
+          <app-icon
+            name="Search"
+            className="w-5 h-5 text-slate-400"
+          ></app-icon>
         </div>
         <input
           class="block w-full h-full pl-10 pr-4 rounded-xl border border-border-color bg-white text-sm text-primary placeholder:text-text-sub/40 focus:ring-2 focus:ring-primary/20 transition-all outline-none"
@@ -54,10 +54,10 @@
         <div
           class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"
         >
-          <lucide-icon
-            [img]="icons.Filter"
-            class="w-5 h-5 text-slate-400"
-          ></lucide-icon>
+          <app-icon
+            name="Filter"
+            className="w-5 h-5 text-slate-400"
+          ></app-icon>
         </div>
         <select
           class="block w-full h-full pl-10 pr-10 py-2 text-xs font-bold uppercase tracking-widest border border-border-color rounded-xl focus:ring-2 focus:ring-primary/20 bg-white text-primary appearance-none cursor-pointer outline-none"
@@ -68,10 +68,10 @@
         <div
           class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"
         >
-          <lucide-icon
-            [img]="icons.ChevronDown"
-            class="w-4 h-4 text-text-sub/30"
-          ></lucide-icon>
+          <app-icon
+            name="ChevronDown"
+            className="w-4 h-4 text-text-sub/30"
+          ></app-icon>
         </div>
       </div>
     </div>
@@ -196,14 +196,14 @@
               target="_blank"
               title="View Landing Page"
             >
-              <lucide-icon [img]="icons.Rocket" class="w-4.5 h-4.5 transition-transform group-hover/btn:-translate-y-0.5 group-hover/btn:translate-x-0.5"></lucide-icon>
+              <app-icon name="Rocket" className="w-4.5 h-4.5 transition-transform group-hover/btn:-translate-y-0.5 group-hover/btn:translate-x-0.5"></app-icon>
             </a>
             <a
               class="w-9 h-9 flex items-center justify-center text-slate-400 hover:text-primary dark:hover:text-white transition-all rounded-xl hover:bg-white dark:hover:bg-slate-700 shadow-sm hover:shadow"
               [routerLink]="['/admin/products', product.id, 'edit']"
               title="Edit Product"
             >
-              <lucide-icon [img]="icons.Edit" class="w-4.5 h-4.5"></lucide-icon>
+              <app-icon name="Edit" className="w-4.5 h-4.5"></app-icon>
             </a>
           </div>
           <button
@@ -212,7 +212,7 @@
             (click)="deleteProduct(product)"
             title="Delete Product"
           >
-            <lucide-icon [img]="icons.Trash2" class="w-4.5 h-4.5 group-hover/del:scale-110"></lucide-icon>
+            <app-icon name="Trash2" className="w-4.5 h-4.5 group-hover/del:scale-110"></app-icon>
           </button>
         </div>
       </div>
@@ -224,7 +224,7 @@
       class="bg-white dark:bg-surface-dark rounded-2xl border border-slate-100 dark:border-slate-800 p-20 text-center flex flex-col items-center gap-4"
     >
       <div class="w-20 h-20 bg-slate-50 dark:bg-slate-800 rounded-full flex items-center justify-center text-slate-200">
-        <lucide-icon [img]="icons.Package" class="w-10 h-10"></lucide-icon>
+        <app-icon name="Package" className="w-10 h-10"></app-icon>
       </div>
       <div>
         <h3 class="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tighter">No products found</h3>
@@ -284,10 +284,10 @@
               [disabled]="page === 1"
             >
               <span class="sr-only">Previous</span>
-              <lucide-icon
-                [img]="icons.ChevronLeft"
-                class="w-5 h-5"
-              ></lucide-icon>
+              <app-icon
+                name="ChevronLeft"
+                className="w-5 h-5"
+              ></app-icon>
             </button>
             <ng-container *ngFor="let item of paginationItems">
               <button
@@ -319,10 +319,10 @@
               [disabled]="page >= totalPages"
             >
               <span class="sr-only">Next</span>
-              <lucide-icon
-                [img]="icons.ChevronRight"
-                class="w-5 h-5"
-              ></lucide-icon>
+              <app-icon
+                name="ChevronRight"
+                className="w-5 h-5"
+              ></app-icon>
             </button>
           </nav>
         </div>

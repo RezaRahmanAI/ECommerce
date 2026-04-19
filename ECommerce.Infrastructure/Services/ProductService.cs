@@ -62,6 +62,19 @@ public class ProductService : IProductService
         });
     }
 
+    public async Task<ProductDto?> GetProductByIdForAdminAsync(int id)
+    {
+        var product = await _unitOfWork.Repository<Product>().GetQueryable()
+            .IgnoreQueryFilters()
+            .Include(p => p.Images)
+            .Include(p => p.Category)
+            .FirstOrDefaultAsync(p => p.Id == id);
+            
+        if (product == null) return null;
+        
+        return _mapper.Map<Product, ProductDto>(product);
+    }
+
     public async Task<ProductDto?> CreateProductAsync(ProductCreateDto dto)
     {
         var categorySpec = new CategoriesWithSubCategoriesSpec(dto.Category);
@@ -118,8 +131,10 @@ public class ProductService : IProductService
 
     public async Task<ProductDto?> UpdateProductAsync(int id, ProductUpdateDto dto)
     {
-        var spec = new ProductsWithCategoriesSpecification(id);
-        var product = await _unitOfWork.Repository<Product>().GetEntityWithSpec(spec);
+        var product = await _unitOfWork.Repository<Product>().GetQueryable()
+            .IgnoreQueryFilters()
+            .Include(p => p.Images)
+            .FirstOrDefaultAsync(p => p.Id == id);
 
         if (product == null) throw new KeyNotFoundException("Product not found");
 

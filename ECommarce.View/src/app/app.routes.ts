@@ -180,7 +180,7 @@ export const appRoutes: Routes = [
         (m) => m.AdminLayoutComponent,
       ),
     canActivate: [AdminGuard],
-    loadChildren: () => import("./admin/admin.routes"),
+    loadChildren: () => import("./admin/admin.routes").then((m) => m.routes),
   },
   {
     path: "category/:slug",
@@ -206,5 +206,3 @@ export const appRoutes: Routes = [
   },
   { path: "**", redirectTo: "" },
 ];
-
-export default appRoutes;

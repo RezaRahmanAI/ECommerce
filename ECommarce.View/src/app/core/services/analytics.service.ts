@@ -1,5 +1,5 @@
-import { Injectable, inject } from "@angular/core";
-import { DOCUMENT } from "@angular/common";
+import { Injectable, inject, PLATFORM_ID } from "@angular/core";
+import { isPlatformBrowser } from "@angular/common";
 
 declare const fbq: any;
 declare const gtag: any;
@@ -8,9 +8,11 @@ declare const gtag: any;
   providedIn: "root",
 })
 export class AnalyticsService {
-  private readonly document = inject(DOCUMENT, { optional: true });
+  private readonly platformId = inject(PLATFORM_ID);
 
   trackPageView(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+
     if (typeof fbq === "function") {
       fbq("track", "PageView");
     }
@@ -22,6 +24,8 @@ export class AnalyticsService {
   }
 
   trackViewContent(product: any): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+
     if (typeof fbq === "function") {
       fbq("track", "ViewContent", {
         content_name: product.headline,
@@ -47,6 +51,8 @@ export class AnalyticsService {
   }
 
   trackInitiateCheckout(items: any[], total: number): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+
     if (typeof fbq === "function") {
       fbq("track", "InitiateCheckout", {
         content_ids: items.map((i) => i.productId),
@@ -71,6 +77,8 @@ export class AnalyticsService {
   }
 
   trackAddToCart(item: any): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+
     if (typeof fbq === "function") {
       fbq("track", "AddToCart", {
         content_name: item.headline,
@@ -97,6 +105,8 @@ export class AnalyticsService {
   }
 
   trackPurchase(order: any): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+
     if (typeof fbq === "function") {
       fbq("track", "Purchase", {
         value: order.total,

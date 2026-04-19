@@ -6,21 +6,7 @@ import { OrderDetail, OrderStatus } from "../../models/orders.models";
 import { OrdersService } from "../../services/orders.service";
 import { PriceDisplayComponent } from "../../../shared/components/price-display/price-display.component";
 import { ImageUrlService } from "../../../core/services/image-url.service";
-import {
-  LucideAngularModule,
-  ChevronLeft,
-  Printer,
-  Clock,
-  ArrowRight,
-  MapPin,
-  CreditCard,
-  Package,
-  History,
-  User,
-  Mail,
-  Phone,
-  ChevronDown,
-} from "lucide-angular";
+import { AppIconComponent } from "../../../shared/components/app-icon/app-icon.component";
 
 @Component({
   selector: "app-admin-order-details",
@@ -29,25 +15,12 @@ import {
     CommonModule,
     RouterModule,
     PriceDisplayComponent,
-    LucideAngularModule,
+    AppIconComponent,
   ],
   templateUrl: "./admin-order-details.component.html",
 })
 export class AdminOrderDetailsComponent implements OnInit {
-  readonly icons = {
-    ChevronLeft,
-    Printer,
-    Clock,
-    ArrowRight,
-    MapPin,
-    CreditCard,
-    Package,
-    History,
-    User,
-    Mail,
-    Phone,
-    ChevronDown,
-  };
+  // icons removed
   private route = inject(ActivatedRoute);
   private ordersService = inject(OrdersService);
   readonly imageUrlService = inject(ImageUrlService);
@@ -58,11 +31,6 @@ export class AdminOrderDetailsComponent implements OnInit {
   statusOptions: OrderStatus[] = [
     "Pending",
     "Confirmed",
-    "Processing",
-    "Packed",
-    "Shipped",
-    "Delivered",
-    "Cancelled",
   ];
 
   ngOnInit(): void {

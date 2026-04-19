@@ -10,15 +10,7 @@ import { Product } from "../../../../core/models/product";
 import { PriceDisplayComponent } from "../../../../shared/components/price-display/price-display.component";
 import { ImageUrlService } from "../../../../core/services/image-url.service";
 
-import {
-  LucideAngularModule,
-  Trash2,
-  Minus,
-  Plus,
-  Lock,
-  Tag,
-  ChevronDown,
-} from "lucide-angular";
+import { AppIconComponent } from "../../../../shared/components/app-icon/app-icon.component";
 
 @Component({
   selector: "app-cart-page",
@@ -27,20 +19,13 @@ import {
     CommonModule,
     RouterModule,
     PriceDisplayComponent,
-    LucideAngularModule,
+    AppIconComponent,
   ],
   templateUrl: "./cart-page.component.html",
   styleUrl: "./cart-page.component.css",
 })
 export class CartPageComponent {
-  readonly icons = {
-    Trash2,
-    Minus,
-    Plus,
-    Lock,
-    Tag,
-    ChevronDown,
-  };
+  // icons removed
   private readonly cartService = inject(CartService);
   private readonly productService = inject(ProductService);
   readonly imageUrlService = inject(ImageUrlService);

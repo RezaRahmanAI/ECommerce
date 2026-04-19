@@ -17,7 +17,8 @@ import { environment } from "../environments/environment";
 import { globalErrorInterceptor } from "./core/http/global-error.interceptor";
 import { jwtInterceptor } from "./core/interceptors/jwt.interceptor";
 import { loadingInterceptor } from "./core/interceptors/loading.interceptor";
-import { CacheInterceptor } from "./core/interceptors/cache.interceptor";
+import { httpCacheInterceptor } from "./core/interceptors/cache.interceptor";
+import { adminCacheInterceptor } from "./core/interceptors/admin-cache.interceptor";
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -40,10 +41,11 @@ export const appConfig: ApplicationConfig = {
         jwtInterceptor,
         loadingInterceptor,
         globalErrorInterceptor,
+        httpCacheInterceptor,
+        adminCacheInterceptor,
       ]),
       withInterceptorsFromDi()
     ),
-    { provide: HTTP_INTERCEPTORS, useClass: CacheInterceptor, multi: true },
     {
       provide: API_CONFIG,
       useValue: {

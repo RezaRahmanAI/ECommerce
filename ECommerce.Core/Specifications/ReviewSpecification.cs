@@ -12,11 +12,11 @@ public class ReviewSpecification : BaseSpecification<Review>
         AddOrderByDescending(r => r.Date);
     }
 
-    public ReviewSpecification(bool isFeatured) 
-        : base(r => r.IsFeatured && r.IsApproved)
+    public ReviewSpecification() 
+        : base(r => r.IsApproved)
     {
         AddInclude(r => r.Product!);
         AddOrderByDescending(r => r.Date);
-        ApplyPaging(0, 6); // Top 6 featured reviews
+        ApplyPaging(0, 12); // Show top 12 reviews
     }
 }

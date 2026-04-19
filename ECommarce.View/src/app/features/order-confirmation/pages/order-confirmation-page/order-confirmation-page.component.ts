@@ -11,16 +11,7 @@ import { ImageUrlService } from "../../../../core/services/image-url.service";
 import { AnalyticsService } from "../../../../core/services/analytics.service";
 import { tap } from "rxjs/operators";
 
-import {
-  LucideAngularModule,
-  CheckCircle2,
-  Truck,
-  Package,
-  Home,
-  Headphones,
-  FileText,
-  Printer,
-} from "lucide-angular";
+import { AppIconComponent } from "../../../../shared/components/app-icon/app-icon.component";
 
 @Component({
   selector: "app-order-confirmation-page",
@@ -29,21 +20,13 @@ import {
     CommonModule,
     RouterModule,
     PriceDisplayComponent,
-    LucideAngularModule,
+    AppIconComponent,
   ],
   templateUrl: "./order-confirmation-page.component.html",
   styleUrl: "./order-confirmation-page.component.css",
 })
 export class OrderConfirmationPageComponent {
-  readonly icons = {
-    CheckCircle2,
-    Truck,
-    Package,
-    Home,
-    Headphones,
-    FileText,
-    Printer,
-  };
+  // icons removed
   private readonly route = inject(ActivatedRoute);
   private readonly orderService = inject(OrderService);
   private readonly analyticsService = inject(AnalyticsService);

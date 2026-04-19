@@ -3,11 +3,10 @@ export interface Review {
   productId: number;
   customerName: string;
   customerAvatar?: string;
+  reviewImage?: string;
   rating: number;
   comment: string;
   date: string;
-  isVerifiedPurchase: boolean;
-  isFeatured: boolean;
   likes: number;
 }
 
@@ -16,4 +15,5 @@ export interface CreateReview {
   customerName: string;
   rating: number;
   comment: string;
+  reviewImage?: string;
 }

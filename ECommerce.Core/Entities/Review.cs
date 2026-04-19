@@ -11,22 +11,17 @@ public class Review : BaseEntity
     [Required]
     public string CustomerName { get; set; } = string.Empty;
 
-    public string? CustomerAvatar { get; set; } // Renamed from UserAvatar
-
     [Range(1, 5)]
     public int Rating { get; set; }
 
-    [Required]
     [MaxLength(1000)]
-    public string Comment { get; set; } = string.Empty;
+    public string? Comment { get; set; } = string.Empty;
 
     public DateTime Date { get; set; } = DateTime.UtcNow;
 
-    public bool IsVerifiedPurchase { get; set; } = false;
-
-    public bool IsFeatured { get; set; } = false;
-    
     public bool IsApproved { get; set; } = false;
     
+    public string? ReviewImage { get; set; }
+
     public int Likes { get; set; } = 0;
 }

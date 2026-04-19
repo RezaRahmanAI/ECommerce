@@ -1,9 +1,9 @@
-import { Component, OnInit, OnDestroy, inject, Input, ChangeDetectionStrategy, ChangeDetectorRef } from "@angular/core";
-import { CommonModule, NgOptimizedImage } from "@angular/common"; 
+import { Component, OnInit, OnDestroy, inject, Input, ChangeDetectionStrategy, ChangeDetectorRef, PLATFORM_ID } from "@angular/core";
+import { NgOptimizedImage, isPlatformBrowser, NgIf, NgFor, AsyncPipe, NgClass, NgStyle } from "@angular/common"; 
 import { RouterModule } from "@angular/router"; 
 import { trigger, transition, style, animate } from "@angular/animations";
 import { ImageUrlService } from "../../../../core/services/image-url.service";
-import { LucideAngularModule, ArrowRight, ArrowLeft, Tag } from "lucide-angular";
+import { AppIconComponent } from "../../../../shared/components/app-icon/app-icon.component";
 
 interface Slide {
   image: string;
@@ -14,7 +14,7 @@ interface Slide {
 @Component({
   selector: "app-hero",
   standalone: true,
-  imports: [CommonModule, RouterModule, LucideAngularModule, NgOptimizedImage],
+  imports: [NgIf, NgFor, AsyncPipe, NgClass, NgStyle, RouterModule, AppIconComponent, NgOptimizedImage],
   templateUrl: "./hero.component.html",
   styleUrl: "./hero.component.css",
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -38,12 +38,8 @@ interface Slide {
 })
 export class HeroComponent implements OnInit, OnDestroy {
   private readonly cdr = inject(ChangeDetectorRef);
-  readonly icons = {
-    ArrowRight,
-    ArrowLeft,
-    Tag,
-  };
   public imageUrlService = inject(ImageUrlService);
+  private readonly platformId = inject(PLATFORM_ID);
 
   @Input() slides: Slide[] = [];
   spotlightSlide: Slide | null = null;
@@ -68,13 +64,15 @@ export class HeroComponent implements OnInit, OnDestroy {
   }
 
   startTimer() {
-    this.timer = setInterval(() => {
-      this.next();
-    }, 5000);
+    if (isPlatformBrowser(this.platformId)) {
+      this.timer = setInterval(() => {
+        this.next();
+      }, 5000);
+    }
   }
 
   stopTimer() {
-    if (this.timer) {
+    if (this.timer && isPlatformBrowser(this.platformId)) {
       clearInterval(this.timer);
     }
   }

@@ -1,5 +1,5 @@
 import { Component, OnDestroy, OnInit, Inject, inject, PLATFORM_ID } from "@angular/core";
-import { CommonModule, isPlatformBrowser, DOCUMENT } from "@angular/common";
+import { isPlatformBrowser, DOCUMENT, NgIf, NgFor, AsyncPipe, CurrencyPipe, DatePipe } from "@angular/common";
 import {
   AbstractControl,
   FormArray,
@@ -21,22 +21,7 @@ import { ProductsService } from "../../services/products.service";
 import { CategoriesService } from "../../services/categories.service";
 import { Category } from "../../models/categories.models";
 import { ImageUrlService } from "../../../core/services/image-url.service";
-import {
-  LucideAngularModule,
-  ChevronRight,
-  Check,
-  Bold,
-  Italic,
-  Underline,
-  List,
-  Link,
-  Upload,
-  PlusCircle,
-  Eye,
-  Type,
-  FileText,
-  AlertCircle
-} from "lucide-angular";
+import { AppIconComponent } from "../../../shared/components/app-icon/app-icon.component";
 
 interface MediaFormValue {
   id: string;
@@ -52,29 +37,19 @@ interface MediaFormValue {
   selector: "app-admin-product-form",
   standalone: true,
   imports: [
-    CommonModule,
+    NgIf,
+    NgFor,
+    AsyncPipe,
+    CurrencyPipe,
+    DatePipe,
     ReactiveFormsModule,
     RouterModule,
-    LucideAngularModule,
+    AppIconComponent,
   ],
   templateUrl: "./admin-product-form.component.html",
 })
 export class AdminProductFormComponent implements OnDestroy, OnInit {
-  readonly icons = {
-    ChevronRight,
-    Check,
-    Bold,
-    Italic,
-    Underline,
-    List,
-    Link,
-    Upload,
-    PlusCircle,
-    Eye,
-    Type,
-    FileText,
-    AlertCircle
-  };
+  // icons removed
 
   private formBuilder = inject(FormBuilder);
   private productsService = inject(ProductsService);
@@ -164,7 +139,7 @@ export class AdminProductFormComponent implements OnDestroy, OnInit {
   ngOnDestroy(): void {
     this.mediaItemsArray.controls.forEach((control) => {
       const value = control.value as MediaFormValue;
-      if (value.source === "file") {
+      if (value.source === "file" && isPlatformBrowser(this.platformId)) {
         URL.revokeObjectURL(value.url);
       }
     });
@@ -250,7 +225,9 @@ export class AdminProductFormComponent implements OnDestroy, OnInit {
     }
     const value = control.value as MediaFormValue;
     if (value.source === "file") {
-      URL.revokeObjectURL(value.url);
+      if (isPlatformBrowser(this.platformId)) {
+        URL.revokeObjectURL(value.url);
+      }
       this.mediaFileMap.delete(value.id);
     }
     this.mediaItemsArray.removeAt(index);
@@ -412,7 +389,10 @@ export class AdminProductFormComponent implements OnDestroy, OnInit {
   private addFiles(files: File[]): void {
     files.forEach((file) => {
       const id = this.generateId("media");
-      const url = URL.createObjectURL(file);
+      let url = "";
+      if (isPlatformBrowser(this.platformId)) {
+        url = URL.createObjectURL(file);
+      }
       this.mediaFileMap.set(id, file);
       this.addMediaItem({
         id,

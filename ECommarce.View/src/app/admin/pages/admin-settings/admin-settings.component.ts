@@ -1,4 +1,4 @@
-import { CommonModule } from "@angular/common";
+import { isPlatformBrowser, NgIf, NgFor, AsyncPipe, NgClass, NgStyle } from "@angular/common";
 import {
   Component,
   ElementRef,
@@ -7,7 +7,6 @@ import {
   inject,
   PLATFORM_ID,
 } from "@angular/core";
-import { isPlatformBrowser } from "@angular/common";
 import {
   NonNullableFormBuilder,
   ReactiveFormsModule,
@@ -22,41 +21,26 @@ import {
 } from "../../models/settings.models";
 import { SettingsService } from "../../services/settings.service";
 import { ImageUrlService } from "../../../core/services/image-url.service";
-import {
-  LucideAngularModule,
-  Save,
-  Image,
-  Edit,
-  Upload,
-  Copy,
-  Plus,
-  Trash2,
-  X,
-} from "lucide-angular";
+import { AppIconComponent } from "../../../shared/components/app-icon/app-icon.component";
 
 @Component({
   selector: "app-admin-settings",
   standalone: true,
   imports: [
-    CommonModule,
+    NgIf,
+    NgFor,
+    AsyncPipe,
+    NgClass,
+    NgStyle,
     ReactiveFormsModule,
     RouterModule,
-    LucideAngularModule,
+    AppIconComponent,
   ],
   templateUrl: "./admin-settings.component.html",
   styleUrl: "./admin-settings.component.css",
 })
 export class AdminSettingsComponent implements OnInit {
-  readonly icons = {
-    Save,
-    Image,
-    Edit,
-    Upload,
-    Copy,
-    Plus,
-    Trash2,
-    X,
-  };
+  // icons removed
   private formBuilder = inject(NonNullableFormBuilder);
   private settingsService = inject(SettingsService);
   private platformId = inject(PLATFORM_ID);

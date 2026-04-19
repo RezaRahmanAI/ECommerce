@@ -1,47 +1,27 @@
-import { CommonModule, isPlatformBrowser } from "@angular/common";
+import { isPlatformBrowser, NgIf, NgFor, AsyncPipe, NgClass } from "@angular/common";
 import { Component, OnDestroy, OnInit, inject, PLATFORM_ID } from "@angular/core";
 import { FormBuilder, ReactiveFormsModule, Validators } from "@angular/forms";
 import { Subject, takeUntil } from "rxjs";
 import { AdminBanner } from "../../models/banners.models";
 import { AdminBannersService } from "../../services/admin-banners.service";
 import { ImageUrlService } from "../../../core/services/image-url.service";
-import {
-  LucideAngularModule,
-  Plus,
-  Edit,
-  Trash2,
-  Image,
-  Monitor,
-  Smartphone,
-  Link,
-  Type,
-  ArrowUpDown,
-  X,
-  Upload,
-  Loader2,
-} from "lucide-angular";
+import { AppIconComponent } from "../../../shared/components/app-icon/app-icon.component";
 
 @Component({
   selector: "app-admin-banners",
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, LucideAngularModule],
+  imports: [
+    NgIf,
+    NgFor,
+    AsyncPipe,
+    NgClass,
+    ReactiveFormsModule,
+    AppIconComponent,
+  ],
   templateUrl: "./admin-banners.component.html",
 })
 export class AdminBannersComponent implements OnInit, OnDestroy {
-  readonly icons = {
-    Plus,
-    Edit,
-    Trash2,
-    Image,
-    Monitor,
-    Smartphone,
-    Link,
-    Type,
-    ArrowUpDown,
-    X,
-    Upload,
-    Loader2,
-  };
+  // icons removed
   private bannersService = inject(AdminBannersService);
   private fb = inject(FormBuilder);
   readonly imageUrlService = inject(ImageUrlService);

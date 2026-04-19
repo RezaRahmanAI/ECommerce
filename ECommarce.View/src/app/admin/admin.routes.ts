@@ -1,7 +1,6 @@
 import { Routes } from "@angular/router";
-import { provideCharts, withDefaultRegisterables } from "ng2-charts";
 
-export const adminRoutes: Routes = [
+export const routes: Routes = [
   { path: "", redirectTo: "dashboard", pathMatch: "full" },
   {
     path: "dashboard",
@@ -170,5 +169,3 @@ export const adminRoutes: Routes = [
     data: { title: "Logging out" },
   },
 ];
-
-export default adminRoutes;

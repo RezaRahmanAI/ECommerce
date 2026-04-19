@@ -4,7 +4,7 @@ using ECommerce.Core.Entities;
 using ECommerce.Core.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-
+using ECommerce.Core.Constants;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace ECommerce.API.Controllers;
@@ -47,7 +47,7 @@ public class ReviewsController : BaseApiController
     [HttpGet("featured")]
     public async Task<ActionResult<IEnumerable<ReviewDto>>> GetFeaturedReviews()
     {
-        const string cacheKey = "reviews_featured";
+        string cacheKey = CacheConstants.FeaturedReviews;
 
         if (_cache.TryGetValue(cacheKey, out IEnumerable<ReviewDto>? cached) && cached != null)
         {

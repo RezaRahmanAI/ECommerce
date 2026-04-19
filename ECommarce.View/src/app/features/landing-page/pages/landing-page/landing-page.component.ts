@@ -14,31 +14,8 @@ import {
   switchMap,
   startWith,
 } from "rxjs";
-import {
-  LucideAngularModule,
-  Loader2,
-  ChevronLeft,
-  ChevronRight,
-  CheckCircle2,
-  Truck,
-  Lock,
-  ArrowRight,
-  Plus,
-  Minus,
-  ShoppingCart,
-  User,
-  Search,
-  ChevronDown,
-  ChevronUp,
-  Star,
-  Maximize2,
-  ShieldCheck,
-  ShoppingBag,
-  CreditCard,
-  MessageSquare,
-  X,
-  AlertTriangle,
-} from "lucide-angular";
+import { TestimonialsComponent } from "../../../home/components/testimonials/testimonials.component";
+import { AppIconComponent } from "../../../../shared/components/app-icon/app-icon.component";
 import { ProductService } from "../../../../core/services/product.service";
 import { Product } from "../../../../core/models/product";
 import { CartService } from "../../../../core/services/cart.service";
@@ -59,37 +36,15 @@ import { PriceDisplayComponent } from "../../../../shared/components/price-displ
     ReactiveFormsModule,
     RouterModule,
     PriceDisplayComponent,
-    LucideAngularModule,
+    AppIconComponent,
+    TestimonialsComponent,
   ],
   templateUrl: "./landing-page.component.html",
   styleUrl: "./landing-page.component.css",
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LandingPageComponent implements OnInit {
-  readonly icons = {
-    Loader2,
-    ChevronLeft,
-    ChevronRight,
-    CheckCircle2,
-    Truck,
-    Lock,
-    ArrowRight,
-    Plus,
-    Minus,
-    ShoppingCart,
-    User,
-    Search,
-    ChevronDown,
-    ChevronUp,
-    Star,
-    Maximize2,
-    ShieldCheck,
-    ShoppingBag,
-    CreditCard,
-    MessageSquare,
-    X,
-    AlertTriangle,
-  };
+  // icons removed
   private readonly route = inject(ActivatedRoute);
   private readonly productService = inject(ProductService);
   private readonly cartService = inject(CartService);
@@ -114,24 +69,7 @@ export class LandingPageComponent implements OnInit {
   deliveryMethods: DeliveryMethod[] = [];
   selectedMethod: DeliveryMethod | null = null;
 
-  reviews: any[] = [
-    {
-      customerName: "Rahim Ahmed",
-      comment: "অসাধারণ প্রোডাক্ট! আমি অনেকদিন ধরে এমন কিছু খুঁজছিলাম। প্যাকেজিং খুবই ডিসক্রিট ছিল।",
-      reviewImage: null
-    },
-    {
-      customerName: "Karim Uddin",
-      comment: "খুবই দ্রুত ডেলিভারি পেয়েছি। প্রোডাক্টের মান অনেক ভালো। ধন্যবাদ অর্জামার্টকে।",
-      reviewImage: null
-    },
-    {
-      customerName: "Siddique Ullah",
-      comment: "প্রথমে একটু দ্বিধায় ছিলাম, কিন্তু ব্যবহারের পর বুঝলাম এটা আসলেই কার্যকরী।",
-      reviewImage: null
-    }
-  ];
-  currentReviewIndex = 0;
+
 
   offerItems: any[] = [];
   
@@ -139,10 +77,18 @@ export class LandingPageComponent implements OnInit {
   selectedPopupItem: any = null;
   modalQuantity = 1;
 
+  get mainItem(): any {
+    return this.product ? this.offerItems.find(i => i.id === this.product!.id) : null;
+  }
+
+  get otherItems(): any[] {
+    return this.product ? this.offerItems.filter(i => i.id !== this.product!.id) : [];
+  }
+
   readonly checkoutForm = this.formBuilder.nonNullable.group({
     phone: ["", [Validators.required, Validators.minLength(11)]],
     fullName: ["", [Validators.required, Validators.minLength(2)]],
-    deliveryZone: ["inside", Validators.required],
+    deliveryZone: ["inside"],
     address: ["", [Validators.required, Validators.minLength(5)]],
     deliveryMethodId: [0, Validators.required],
   });
@@ -318,36 +264,7 @@ export class LandingPageComponent implements OnInit {
     }
   }
 
-  nextReview(): void {
-    const jump = 3;
-    if (this.currentReviewIndex + jump < this.reviews.length) {
-      this.currentReviewIndex += jump;
-    } else {
-      this.currentReviewIndex = 0;
-    }
-    this.cdr.markForCheck();
-  }
 
-  prevReview(): void {
-    const jump = 3;
-    if (this.currentReviewIndex - jump >= 0) {
-      this.currentReviewIndex -= jump;
-    } else {
-      // Go to last possible start index
-      this.currentReviewIndex = Math.floor((this.reviews.length - 1) / jump) * jump;
-    }
-    this.cdr.markForCheck();
-  }
-
-  goToReview(index: number): void {
-    this.currentReviewIndex = index;
-    this.cdr.markForCheck();
-  }
-
-  get totalPages(): number[] {
-    const pagesCount = Math.ceil(this.reviews.length / 3);
-    return Array(pagesCount).fill(0).map((_, i) => i * 3);
-  }
 
   changeQty(item: any, delta: number): void {
     const newQty = (item.quantity || 0) + delta;

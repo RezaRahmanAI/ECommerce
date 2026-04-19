@@ -150,7 +150,7 @@ public class AdminCategoriesController : ControllerBase
     [HttpPut("{id:int}")]
     public async Task<ActionResult<CategoryResponse>> Update(int id, [FromBody] CategoryRequest request)
     {
-        var category = await _context.Categories.FindAsync(id);
+        var category = await _context.Categories.IgnoreQueryFilters().FirstOrDefaultAsync(c => c.Id == id);
         if (category == null)
             return NotFound();
 
@@ -183,6 +183,7 @@ public class AdminCategoriesController : ControllerBase
     public async Task<ActionResult> Delete(int id)
     {
         var category = await _context.Categories
+            .IgnoreQueryFilters()
             .Include(c => c.Products)
             .FirstOrDefaultAsync(c => c.Id == id);
 

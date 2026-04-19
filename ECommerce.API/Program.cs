@@ -112,21 +112,28 @@ try
     // ── 5. Database Seeding (Manual Migrations Required) ──────────────
     using (var scope = app.Services.CreateScope())
     {
-        var services = scope.ServiceProvider;
-        var config = services.GetRequiredService<IConfiguration>();
+        var sp = scope.ServiceProvider;
+        var config = sp.GetRequiredService<IConfiguration>();
         var skipInit = config.GetValue<bool>("SkipDbInit");
+        
+        // In production, we should default to skipping migrations for performance 
+        // unless explicitly requested via config.
+        if (app.Environment.IsProduction() && !config.GetSection("RunMigrations").Exists())
+        {
+            skipInit = true;
+        }
 
         if (skipInit)
         {
-            Log.Information(">>> Skipping Database Migration and Seeding due to SkipDbInit=true");
+            Log.Information(">>> Skipping Database Migration and Seeding to optimize startup time.");
         }
         else
         {
             try
             {
-                var context = services.GetRequiredService<ApplicationDbContext>();
-                var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
-                var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+                var context = sp.GetRequiredService<ApplicationDbContext>();
+                var userManager = sp.GetRequiredService<UserManager<ApplicationUser>>();
+                var roleManager = sp.GetRequiredService<RoleManager<IdentityRole>>();
 
                 Log.Information(">>> Checking Database Migrations and Seeding...");
                 // Auto-apply migrations on startup to synchronize schema

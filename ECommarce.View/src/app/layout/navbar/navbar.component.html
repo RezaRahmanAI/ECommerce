@@ -38,13 +38,13 @@
         <div class="flex items-center gap-3 md:gap-6 flex-shrink-0">
           <!-- Mobile Search Toggle -->
           <button (click)="toggleMobileSearch()" class="lg:hidden p-1 text-text-sub hover:text-primary transition-colors">
-            <lucide-icon [img]="icons.Search" class="w-5 h-5"></lucide-icon>
+            <app-icon name="Search" className="w-5 h-5"></app-icon>
           </button>
           
 
           
           <a routerLink="/cart" class="relative group p-1 text-primary hover:text-accent transition-all duration-300 cursor-pointer">
-            <lucide-icon [img]="icons.ShoppingBag" class="w-5 h-5 stroke-[2]"></lucide-icon>
+            <app-icon name="ShoppingBag" className="w-5 h-5"></app-icon>
             <span
               *ngIf="vm.cartCount > 0"
               class="absolute -top-1 -right-1 h-4 w-4 bg-accent text-white text-[9px] font-black rounded-full flex items-center justify-center shadow-lg transform group-hover:scale-110 transition-transform"
@@ -54,12 +54,12 @@
           </a>
 
           <a routerLink="/profile" class="text-primary hover:text-accent transition-all duration-300 cursor-pointer p-1">
-            <lucide-icon [img]="icons.User" class="w-5 h-5 stroke-[2]"></lucide-icon>
+            <app-icon name="User" className="w-5 h-5"></app-icon>
           </a>
 
           <!-- Mobile Toggle -->
           <button (click)="toggleMenu()" class="lg:hidden p-1 text-text-sub hover:text-primary transition-colors">
-            <lucide-icon [img]="isMenuOpen ? icons.X : icons.Menu" class="w-6 h-6"></lucide-icon>
+            <app-icon [name]="isMenuOpen ? 'X' : 'Menu'" className="w-6 h-6"></app-icon>
           </button>
         </div>
       </div>
@@ -73,10 +73,10 @@
             class="w-full flex items-center justify-between gap-3 px-4 py-2 bg-supporting/40 hover:bg-supporting/60 border border-border-color rounded-lg text-[10px] font-bold text-text-main transition-all duration-300 group"
           >
             <div class="flex items-center gap-2 md:gap-3">
-              <lucide-icon [img]="icons.Menu" class="w-4 h-4 text-primary group-hover:rotate-180 transition-transform duration-500"></lucide-icon>
+              <app-icon name="Menu" className="w-4 h-4 text-primary group-hover:rotate-180 transition-transform duration-500"></app-icon>
               <span class="uppercase tracking-[0.1em]">All Categories</span>
             </div>
-            <lucide-icon [img]="icons.ChevronDown" class="w-4 h-4 opacity-40 transition-transform duration-300" [class.rotate-180]="isCategoriesMenuOpen"></lucide-icon>
+            <app-icon name="ChevronDown" className="w-4 h-4 opacity-40 transition-transform duration-300" [class.rotate-180]="isCategoriesMenuOpen"></app-icon>
           </button>
 
           <!-- Categories Dropdown (Simplified layout for flat categories) -->
@@ -159,7 +159,7 @@
               (click)="onSearch()"
               class="absolute right-2 px-4 py-2 bg-white text-gray-400 hover:text-primary transition-all duration-300"
             >
-              <lucide-icon [img]="icons.Search" class="w-5 h-5 stroke-[2.5]"></lucide-icon>
+              <app-icon name="Search" className="w-5 h-5"></app-icon>
             </button>
           </div>
         </div>
@@ -180,7 +180,7 @@
     <div class="flex justify-between items-center mb-8">
       <h2 class="text-lg font-black uppercase tracking-widest text-primary">Search Products</h2>
       <button (click)="isSearchOpen = false" class="p-2 bg-supporting/30 rounded-full hover:bg-supporting/50 transition-colors">
-        <lucide-icon [img]="icons.X" class="w-5 h-5 text-text-main"></lucide-icon>
+        <app-icon name="X" className="w-5 h-5 text-text-main"></app-icon>
       </button>
     </div>
 
@@ -197,9 +197,9 @@
         placeholder="Enter product name..."
         class="w-full h-14 pl-12 pr-12 bg-supporting/40 border border-border-color rounded-2xl text-base text-text-main placeholder:text-gray-400 focus:ring-2 focus:ring-primary/10 transition-all duration-300"
       />
-      <lucide-icon [img]="icons.Search" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"></lucide-icon>
+      <app-icon name="Search" className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"></app-icon>
       <button (click)="searchQuery = ''; showResults = false" *ngIf="searchQuery" class="absolute right-4 top-1/2 -translate-y-1/2 p-2 text-gray-400 hover:text-primary">
-        <lucide-icon [img]="icons.X" class="w-4 h-4"></lucide-icon>
+        <app-icon name="X" className="w-4 h-4"></app-icon>
       </button>
 
       <!-- Mobile Search Results Container -->
@@ -246,7 +246,7 @@
          [alt]="vm.settings.websiteName || 'Logo'" 
        />
        <button (click)="closeMenu()" class="p-2 bg-supporting/30 rounded-full hover:bg-supporting/50 transition-colors">
-         <lucide-icon [img]="icons.X" class="w-5 h-5 text-text-main"></lucide-icon>
+         <app-icon name="X" className="w-5 h-5 text-text-main"></app-icon>
        </button>
     </div>
 
@@ -261,7 +261,7 @@
             class="flex items-center justify-between py-4 px-4 bg-supporting/10 rounded-2xl text-xs font-bold uppercase tracking-wider text-text-main active:bg-supporting/30 transition-colors"
         >
             <span>{{ item.name }}</span>
-            <lucide-icon [img]="icons.ChevronDown" class="w-4 h-4 -rotate-90 opacity-20"></lucide-icon>
+            <app-icon name="ChevronDown" className="w-4 h-4 -rotate-90 opacity-20"></app-icon>
         </a>
       </nav>
     </div>
@@ -272,13 +272,13 @@
       <div class="grid grid-cols-2 gap-3">
         <a routerLink="/cart" (click)="closeMenu()" class="flex flex-col gap-3 py-6 px-4 bg-supporting/10 rounded-2xl items-start active:bg-supporting/30 transition-colors">
           <div class="p-2 bg-white rounded-xl shadow-sm">
-            <lucide-icon [img]="icons.ShoppingBag" class="w-5 h-5 text-primary"></lucide-icon>
+            <app-icon name="ShoppingBag" className="w-5 h-5 text-primary"></app-icon>
           </div>
           <span class="text-[10px] font-black uppercase tracking-wider">Cart</span>
         </a>
         <a routerLink="/profile" (click)="closeMenu()" class="flex flex-col gap-3 py-6 px-4 bg-supporting/10 rounded-2xl items-start active:bg-supporting/30 transition-colors">
           <div class="p-2 bg-white rounded-xl shadow-sm">
-            <lucide-icon [img]="icons.User" class="w-5 h-5 text-primary"></lucide-icon>
+            <app-icon name="User" className="w-5 h-5 text-primary"></app-icon>
           </div>
           <span class="text-[10px] font-black uppercase tracking-wider">Profile</span>
         </a>

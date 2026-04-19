@@ -1,25 +1,22 @@
-import { Component, OnInit, inject, ChangeDetectionStrategy, ChangeDetectorRef } from "@angular/core";
+import { Component, OnInit, inject, ChangeDetectionStrategy, ChangeDetectorRef, Input } from "@angular/core";
 import { CommonModule, NgOptimizedImage } from "@angular/common";
 import { ReviewService } from "../../../../core/services/review.service";
 import { Review } from "../../../../core/models/review";
 import { ImageUrlService } from "../../../../core/services/image-url.service";
 
-import { LucideAngularModule, Quote, Star, StarHalf } from "lucide-angular";
+import { AppIconComponent } from "../../../../shared/components/app-icon/app-icon.component";
 
 @Component({
   selector: "app-testimonials",
   standalone: true,
-  imports: [CommonModule, LucideAngularModule, NgOptimizedImage],
+  imports: [CommonModule, AppIconComponent, NgOptimizedImage],
   templateUrl: "./testimonials.component.html",
   styleUrl: "./testimonials.component.css",
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TestimonialsComponent implements OnInit {
-  readonly icons = {
-    Quote,
-    Star,
-    StarHalf,
-  };
+  // icons removed
+  @Input() productId?: number;
   reviews: Review[] = [];
   stars = [1, 2, 3, 4, 5];
 
@@ -28,21 +25,25 @@ export class TestimonialsComponent implements OnInit {
   readonly imageUrlService = inject(ImageUrlService);
 
   ngOnInit(): void {
-    this.reviewService.getFeaturedReviews().subscribe((reviews) => {
+    const obs = this.productId 
+      ? this.reviewService.getReviewsByProductId(this.productId)
+      : this.reviewService.getFeaturedReviews();
+
+    obs.subscribe((reviews: Review[]) => {
       this.reviews = reviews;
       this.cdr.markForCheck();
     });
   }
 
-  getStarIcon(rating: number, star: number): any {
+  getStarIcon(rating: number, star: number): string {
     if (rating >= star) {
-      return this.icons.Star;
+      return "Star";
     }
 
     if (rating + 0.5 >= star) {
-      return this.icons.StarHalf;
+      return "StarHalf";
     }
 
-    return this.icons.Star;
+    return "Star";
   }
 }

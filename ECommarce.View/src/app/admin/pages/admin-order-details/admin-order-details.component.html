@@ -10,7 +10,7 @@
           routerLink="/admin/orders"
           class="text-sm text-gray-500 hover:text-primary flex items-center gap-1"
         >
-          <lucide-icon [img]="icons.ChevronLeft" class="w-4 h-4"></lucide-icon>
+          <app-icon name="ChevronLeft" className="w-4 h-4"></app-icon>
           Back to Orders
         </a>
       </div>
@@ -35,10 +35,10 @@
           <div
             class="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-current opacity-50 group-hover/status:opacity-100 transition-opacity"
           >
-            <lucide-icon
-              [img]="icons.ChevronDown"
-              class="w-3.5 h-3.5"
-            ></lucide-icon>
+            <app-icon
+              name="ChevronDown"
+              className="w-3.5 h-3.5"
+            ></app-icon>
           </div>
         </div>
       </h2>
@@ -51,7 +51,7 @@
         class="bg-white dark:bg-surface-dark border border-gray-200 dark:border-gray-700 text-primary dark:text-white px-4 py-2 rounded-lg font-bold hover:bg-gray-50 dark:hover:bg-gray-800 transition flex items-center gap-2 shadow-sm shadow-black/5"
         (click)="printInvoice()"
       >
-        <lucide-icon [img]="icons.Printer" class="w-4 h-4"></lucide-icon>
+        <app-icon name="Printer" className="w-4 h-4"></app-icon>
         Print Invoice
       </button>
     </div>

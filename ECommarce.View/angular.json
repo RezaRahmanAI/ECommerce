@@ -29,7 +29,7 @@
           },
             "configurations": {
               "production": {
-                "ssr": false,
+                "ssr": true,
                 "prerender": false,
                 "optimization": {
                   "scripts": true,

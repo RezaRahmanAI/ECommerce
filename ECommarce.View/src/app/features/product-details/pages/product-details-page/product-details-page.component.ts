@@ -1,4 +1,4 @@
-import { Component, inject, PLATFORM_ID, ChangeDetectionStrategy } from "@angular/core";
+import { Component, inject, PLATFORM_ID, ChangeDetectionStrategy, ChangeDetectorRef } from "@angular/core";
 import { CommonModule, isPlatformBrowser } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { ActivatedRoute, Router, RouterLink } from "@angular/router";
@@ -26,24 +26,10 @@ import { NotificationService } from "../../../../core/services/notification.serv
 import { AnalyticsService } from "../../../../core/services/analytics.service";
 import { SiteSettingsService } from "../../../../core/services/site-settings.service";
 import { SHOW_LOADING } from "../../../../core/services/loading.service";
+import { AppIconComponent } from "../../../../shared/components/app-icon/app-icon.component";
 
 import { ProductCardComponent } from "../../../../shared/components/product-card/product-card.component";
 import { SafeHtmlPipe } from "../../../../shared/pipes/safe-html.pipe";
-import {
-  LucideAngularModule,
-  ChevronLeft,
-  ChevronRight,
-  ShoppingBag,
-  CreditCard,
-  Star,
-  Plus,
-  Minus,
-  Maximize2,
-  Loader2,
-  MessageCircle,
-  Truck,
-  ShieldCheck,
-} from "lucide-angular";
 
 @Component({
   selector: "app-product-details-page",
@@ -54,7 +40,7 @@ import {
     FormsModule,
     PriceDisplayComponent,
     ProductCardComponent,
-    LucideAngularModule,
+    AppIconComponent,
     SafeHtmlPipe,
   ],
   templateUrl: "./product-details-page.component.html",
@@ -62,31 +48,18 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProductDetailsPageComponent {
-  readonly icons = {
-    ChevronLeft,
-    ChevronRight,
-    ShoppingBag,
-    CreditCard,
-    Star,
-    Plus,
-    Minus,
-    Maximize2,
-    Loader2,
-    MessageCircle,
-    Truck,
-    ShieldCheck,
-  };
+  private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly productService = inject(ProductService);
+  public readonly imageUrlService = inject(ImageUrlService);
   private readonly cartService = inject(CartService);
-  private readonly reviewService = inject(ReviewService);
   private readonly notificationService = inject(NotificationService);
-  private readonly router = inject(Router);
-  readonly imageUrlService = inject(ImageUrlService);
-  private readonly analyticsService = inject(AnalyticsService);
-  private readonly siteSettingsService = inject(SiteSettingsService);
+  private readonly reviewService = inject(ReviewService);
+  private readonly cdr = inject(ChangeDetectorRef);
+  private readonly analytics = inject(AnalyticsService);
+  private readonly settingsService = inject(SiteSettingsService);
   private readonly platformId = inject(PLATFORM_ID);
-  readonly settings$ = this.siteSettingsService.getSettings();
+  readonly settings$ = this.settingsService.getSettings();
 
   currentImageIndex = 0;
 
@@ -111,7 +84,7 @@ export class ProductDetailsPageComponent {
       this.quantitySubject.next(1);
       this.selectedMediaSubject.next(null);
       this.currentImageIndex = 0;
-      this.analyticsService.trackViewContent(product);
+      this.analytics.trackViewContent(product);
     }),
     shareReplay(1),
   );
@@ -280,17 +253,21 @@ export class ProductDetailsPageComponent {
   }
 
   private buildGallery(product: Product): string[] {
-    const images = product.images?.map((i) => i.imageUrl) ?? [];
-    let gallery = [];
-    if (product.imgUrl) {
-      gallery.push(product.imgUrl);
+    const primaryImg = product.images?.find(i => i.isPrimary)?.imageUrl || product.imgUrl;
+    const allImages = product.images?.map((i) => i.imageUrl) ?? [];
+    
+    let gallery: string[] = [];
+    if (primaryImg) {
+      gallery.push(primaryImg);
     }
+    
     // Add other images, avoiding duplicates
-    images.forEach((img) => {
-      if (img !== product.imgUrl) {
+    allImages.forEach((img) => {
+      if (img !== primaryImg) {
         gallery.push(img);
       }
     });
+    
     return gallery;
   }
 
@@ -298,7 +275,8 @@ export class ProductDetailsPageComponent {
     product: Product,
     selectedMedia: string | null,
   ): string | null {
-    return selectedMedia ?? product.imgUrl ?? null;
+    const primaryImg = product.images?.find(i => i.isPrimary)?.imageUrl || product.imgUrl;
+    return selectedMedia ?? primaryImg ?? null;
   }
   // Review Logic
   isReviewFormOpen = false;

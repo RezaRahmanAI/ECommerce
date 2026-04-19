@@ -31,19 +31,7 @@ import {
   AdminSettings,
 } from "../../../../admin/models/settings.models";
 
-import {
-  LucideAngularModule,
-  CheckCircle2,
-  ArrowLeft,
-  User,
-  Phone,
-  MapPin,
-  Truck,
-  Info,
-  Search,
-  ChevronDown,
-  ChevronUp,
-} from "lucide-angular";
+import { AppIconComponent } from "../../../../shared/components/app-icon/app-icon.component";
 
 @Component({
   selector: "app-checkout-page",
@@ -53,24 +41,13 @@ import {
     ReactiveFormsModule,
     RouterModule,
     PriceDisplayComponent,
-    LucideAngularModule,
+    AppIconComponent,
   ],
   templateUrl: "./checkout-page.component.html",
   styleUrl: "./checkout-page.component.css",
 })
 export class CheckoutPageComponent {
-  readonly icons = {
-    CheckCircle2,
-    ArrowLeft,
-    User,
-    Phone,
-    MapPin,
-    Truck,
-    Info,
-    Search,
-    ChevronDown,
-    ChevronUp,
-  };
+  // icons removed
   private readonly cartService = inject(CartService);
   private readonly checkoutService = inject(CheckoutService);
   private readonly authService = inject(AuthService);
@@ -85,7 +62,7 @@ export class CheckoutPageComponent {
     fullName: ["", [Validators.required, Validators.minLength(2)]],
     phone: ["", [Validators.required, Validators.minLength(7)]],
     address: ["", [Validators.required, Validators.minLength(5)]],
-    deliveryZone: ["", Validators.required],
+    deliveryZone: [""],
     deliveryMethodId: [0, Validators.required],
     paymentMethod: ["cod", Validators.required],
   });

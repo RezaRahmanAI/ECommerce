@@ -10,7 +10,7 @@
       (click)="openAddModal()"
       class="flex items-center justify-center gap-2 bg-primary text-white px-6 py-3 rounded-2xl font-bold hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 active:scale-95"
     >
-      <lucide-icon [img]="icons.Plus" class="w-5 h-5"></lucide-icon>
+      <app-icon name="Plus" className="w-5 h-5"></app-icon>
       Add Manual Review
     </button>
   </div>
@@ -20,74 +20,44 @@
       *ngFor="let review of reviews"
       class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 flex flex-col md:flex-row gap-6 hover:shadow-md transition-shadow relative overflow-hidden"
     >
-      <!-- Featured Badge -->
-      <div *ngIf="review.isFeatured" class="absolute top-0 right-0">
-        <div class="bg-accent text-white text-[10px] font-black px-4 py-1 rotate-45 transform translate-x-3 -translate-y-1 shadow-sm uppercase tracking-tighter">
-          Featured
-        </div>
-      </div>
+
 
       <div class="flex-shrink-0 flex items-start gap-4">
-        <div
-          class="size-14 rounded-full bg-gray-100 flex items-center justify-center overflow-hidden border-2 border-white shadow-sm"
-        >
-          <img
-            *ngIf="review.customerAvatar"
-            [src]="review.customerAvatar"
-            class="w-full h-full object-cover"
-          />
-          <lucide-icon
-            *ngIf="!review.customerAvatar"
-            [img]="icons.User"
-            class="w-8 h-8 text-gray-400"
-          ></lucide-icon>
-        </div>
         <div>
           <h3 class="font-black text-gray-800 text-lg leading-tight">{{ review.customerName }}</h3>
           <div class="flex items-center gap-1.5 text-[11px] text-gray-400 mt-1 uppercase tracking-widest font-bold">
             <span>{{ review.date | date: "mediumDate" }}</span>
-            <span
-              *ngIf="review.isVerifiedPurchase"
-              class="text-accent flex items-center gap-0.5"
-            >
-              <lucide-icon
-                [img]="icons.CheckCircle2"
-                class="w-3.5 h-3.5"
-              ></lucide-icon>
-              Verified
-            </span>
           </div>
         </div>
       </div>
 
       <div class="flex-grow">
         <div class="flex items-center gap-0.5 mb-3">
-          <lucide-icon
+          <app-icon
             *ngFor="let s of getStars(review.rating)"
-            [img]="icons.Star"
+            name="Star"
             class="w-4 h-4 text-yellow-400 fill-yellow-400"
-          ></lucide-icon>
-          <lucide-icon
+          ></app-icon>
+          <app-icon
             *ngFor="let s of [1, 2, 3, 4, 5].slice(review.rating)"
-            [img]="icons.Star"
+            name="Star"
             class="w-4 h-4 text-gray-200"
-          ></lucide-icon>
+          ></app-icon>
         </div>
-        <p class="text-gray-600 text-sm leading-relaxed mb-5 font-medium">
+        <p class="text-gray-600 text-sm leading-relaxed mb-4 font-medium">
           "{{ review.comment }}"
         </p>
+        <div *ngIf="review.reviewImage" class="mb-5">
+            <img [src]="imageUrlService.getImageUrl(review.reviewImage)" class="max-w-xs h-auto rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow cursor-zoom-in">
+        </div>
         <div
           class="flex flex-wrap items-center gap-4 text-[10px] uppercase tracking-widest font-black text-gray-400 border-t border-gray-50 pt-4"
         >
-          <span class="flex items-center gap-1.5 bg-supporting/50 px-3 py-1.5 rounded-full"
-            ><lucide-icon
-              [img]="icons.ShoppingBag"
-              class="w-3.5 h-3.5 opacity-50"
-            ></lucide-icon>
-            {{ review.productName }}</span
-          >
+          <div class="flex items-center gap-4">
+            <span class="text-primary font-black">{{ review.productName }}</span>
+          </div>
           <span class="flex items-center gap-1.5 px-3 py-1.5"
-            ><lucide-icon [img]="icons.ThumbsUp" class="w-3.5 h-3.5 opacity-50"></lucide-icon>
+            ><app-icon name="ThumbsUp" class="w-3.5 h-3.5 opacity-50"></app-icon>
             {{ review.likes }} Likes</span
           >
         </div>
@@ -100,20 +70,20 @@
           (click)="openEditModal(review)"
           class="flex items-center gap-2 px-5 py-2.5 rounded-2xl text-gray-600 hover:bg-gray-50 transition-colors text-xs font-black uppercase tracking-widest"
         >
-          <lucide-icon
-            [img]="icons.Edit"
+          <app-icon
+            name="Edit"
             class="w-4 h-4"
-          ></lucide-icon>
+          ></app-icon>
           Edit
         </button>
         <button
           (click)="deleteReview(review.id)"
           class="flex items-center gap-2 px-5 py-2.5 rounded-2xl text-red-500 hover:bg-red-50 transition-colors text-xs font-black uppercase tracking-widest"
         >
-          <lucide-icon
-            [img]="icons.Trash2"
+          <app-icon
+            name="Trash2"
             class="w-4 h-4"
-          ></lucide-icon>
+          ></app-icon>
           Delete
         </button>
       </div>
@@ -125,10 +95,10 @@
     *ngIf="reviews.length === 0"
     class="py-20 text-center bg-gray-50 rounded-[2.5rem] border-2 border-dashed border-gray-100"
   >
-    <lucide-icon
-      [img]="icons.MessageSquare"
+    <app-icon
+      name="MessageSquare"
       class="w-20 h-20 text-gray-200 mb-6 mx-auto"
-    ></lucide-icon>
+    ></app-icon>
     <h3 class="text-xl font-black text-gray-800 uppercase tracking-widest">No reviews found</h3>
     <p class="text-gray-500 max-w-sm mx-auto mt-2">Start by adding manual reviews or moderate those submitted by customers.</p>
     <button (click)="openAddModal()" class="mt-8 bg-white border border-gray-200 px-8 py-3 rounded-2xl font-bold text-primary hover:bg-gray-50 transition-all shadow-sm">
@@ -153,10 +123,10 @@
         (click)="closeModal()"
         class="p-3 bg-white hover:bg-gray-100 rounded-full transition-colors shadow-sm"
       >
-        <lucide-icon
-          [img]="icons.X"
+        <app-icon
+          name="X"
           class="w-6 h-6 text-gray-500"
-        ></lucide-icon>
+        ></app-icon>
       </button>
     </div>
 
@@ -165,52 +135,47 @@
         <!-- Customer Info Section -->
         <div>
             <h3 class="text-[10px] font-black text-primary/40 uppercase tracking-[0.3em] mb-6">1. Customer Information</h3>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-8">
-                <!-- Avatar Upload -->
-                <div class="flex flex-col items-center sm:items-start">
-                    <label class="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-4 px-1">Customer Photo</label>
-                    <div class="relative group">
-                        <div class="size-32 rounded-3xl bg-gray-50 border-2 border-dashed border-gray-200 flex flex-col items-center justify-center overflow-hidden transition-all group-hover:border-primary/50 group-hover:bg-primary/5">
-                            <img *ngIf="reviewForm.get('customerAvatar')?.value" 
-                                 [src]="reviewForm.get('customerAvatar')?.value" 
-                                 class="w-full h-full object-cover">
-                            
-                            <div *ngIf="!reviewForm.get('customerAvatar')?.value && !isUploadingAvatar" 
-                                 class="flex flex-col items-center text-gray-400">
-                                <lucide-icon [img]="icons.Camera" class="w-8 h-8 mb-2"></lucide-icon>
-                                <span class="text-[10px] font-bold uppercase tracking-tighter">No Photo</span>
-                            </div>
-
-                            <!-- Upload Overlay -->
-                            <div *ngIf="isUploadingAvatar" class="absolute inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center">
-                                <div class="size-6 border-2 border-primary/30 border-t-primary rounded-full animate-spin"></div>
-                            </div>
-                        </div>
-
-                        <!-- Upload Trigger -->
-                        <button type="button" 
-                                (click)="fileInput.click()"
-                                class="absolute -bottom-2 -right-2 size-10 bg-white rounded-2xl shadow-lg border border-gray-100 flex items-center justify-center text-primary hover:bg-primary hover:text-white transition-all transform hover:scale-110 active:scale-90">
-                            <lucide-icon [img]="icons.Upload" class="w-5 h-5"></lucide-icon>
-                        </button>
-                        <input #fileInput type="file" (change)="onFileSelected($event)" accept="image/*" class="hidden">
-                    </div>
-                </div>
-
-                <div class="space-y-6 flex flex-col justify-center">
+            <div class="grid grid-cols-1 gap-8">
                     <div>
                         <label class="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2 px-1">Customer Name *</label>
                         <input type="text" formControlName="customerName" placeholder="e.g. John Doe" 
                                class="w-full px-5 py-4 rounded-2xl bg-gray-50 border border-gray-100 focus:bg-white focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all outline-none font-bold text-sm">
                     </div>
-                    <div>
-                        <label class="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2 px-1 text-gray-400">Manual URL (Optional)</label>
-                        <input type="text" formControlName="customerAvatar" placeholder="https://..." 
-                               class="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-50 text-xs text-gray-400 outline-none">
-                    </div>
                 </div>
             </div>
-        </div>
+
+            <!-- Review Screenshot Upload -->
+            <div class="mt-8">
+                <label class="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-4 px-1">Review Screenshot (WhatsApp/Chat)</label>
+                <div class="relative group w-full">
+                    <div class="w-full h-48 rounded-3xl bg-gray-50 border-2 border-dashed border-gray-200 flex flex-col items-center justify-center overflow-hidden transition-all group-hover:border-primary/50 group-hover:bg-primary/5">
+                        <img *ngIf="reviewForm.get('reviewImage')?.value" 
+                             [src]="imageUrlService.getImageUrl(reviewForm.get('reviewImage')?.value!)" 
+                             class="w-full h-full object-contain p-2">
+                        
+                        <div *ngIf="!reviewForm.get('reviewImage')?.value && !isUploadingScreenshot" 
+                             class="flex flex-col items-center text-gray-400">
+                            <app-icon name="Image" class="w-10 h-10 mb-2"></app-icon>
+                            <span class="text-xs font-bold uppercase tracking-widest">Upload Screenshot</span>
+                            <p class="text-[10px] opacity-50 mt-1">Chat screenshots, Messenger, etc.</p>
+                        </div>
+
+                        <!-- Upload Overlay -->
+                        <div *ngIf="isUploadingScreenshot" class="absolute inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center">
+                            <div class="size-6 border-2 border-primary/30 border-t-primary rounded-full animate-spin"></div>
+                        </div>
+                    </div>
+
+                    <!-- Upload Trigger -->
+                    <button type="button" 
+                            (click)="screenshotInput.click()"
+                            class="absolute bottom-4 right-4 bg-white px-4 py-2 rounded-xl shadow-lg border border-gray-100 flex items-center gap-2 text-primary hover:bg-primary hover:text-white transition-all text-[10px] font-black uppercase tracking-widest">
+                        <app-icon name="Upload" class="w-4 h-4"></app-icon>
+                        Choose File
+                    </button>
+                    <input #screenshotInput type="file" (change)="onScreenshotSelected($event)" accept="image/*" class="hidden">
+                </div>
+            </div>
 
         <!-- Review Content Section -->
         <div>
@@ -235,17 +200,17 @@
                           class="transition-all hover:scale-110 active:scale-90"
                           [ngClass]="reviewForm.get('rating')?.value! >= r ? 'text-yellow-400' : 'text-gray-200'"
                         >
-                          <lucide-icon
-                            [img]="icons.Star"
-                            class="w-10 h-10"
+                          <app-icon
+                            name="Star"
+                            className="w-10 h-10"
                             [ngClass]="{ 'fill-yellow-400': reviewForm.get('rating')?.value! >= r }"
-                          ></lucide-icon>
+                          ></app-icon>
                         </button>
                     </div>
                 </div>
 
                 <div>
-                    <label class="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2 px-1">Comment *</label>
+                    <label class="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2 px-1">Comment (Optional)</label>
                     <textarea
                       formControlName="comment"
                       rows="4"
@@ -253,21 +218,6 @@
                       class="w-full px-5 py-4 rounded-2xl bg-gray-50 border border-gray-100 focus:bg-white focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all outline-none font-medium text-sm resize-none"
                     ></textarea>
                 </div>
-            </div>
-        </div>
-
-        <!-- Settings Section -->
-        <div>
-            <h3 class="text-[10px] font-black text-primary/40 uppercase tracking-[0.3em] mb-6 border-t border-gray-50 pt-8">3. Display Settings</h3>
-            <div class="flex flex-wrap gap-4">
-                <label class="flex items-center gap-3 p-4 bg-gray-50 rounded-2xl cursor-pointer hover:bg-gray-100 transition-colors flex-1 min-w-[200px]">
-                    <input type="checkbox" formControlName="isVerifiedPurchase" class="size-5 rounded border-gray-200 text-primary focus:ring-primary/20">
-                    <span class="text-xs font-black uppercase tracking-widest text-gray-600">Verified Purchase</span>
-                </label>
-                <label class="flex items-center gap-3 p-4 bg-gray-50 rounded-2xl cursor-pointer hover:bg-gray-100 transition-colors flex-1 min-w-[200px]">
-                    <input type="checkbox" formControlName="isFeatured" class="size-5 rounded border-gray-200 text-primary focus:ring-primary/20">
-                    <span class="text-xs font-black uppercase tracking-widest text-gray-600">Featured Review</span>
-                </label>
             </div>
         </div>
       </div>

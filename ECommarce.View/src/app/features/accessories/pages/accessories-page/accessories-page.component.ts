@@ -10,20 +10,7 @@ import { SHOW_LOADING } from "../../../../core/services/loading.service";
 
 import { ImageUrlService } from "../../../../core/services/image-url.service";
 
-import {
-  LucideAngularModule,
-  LayoutGrid,
-  Filter,
-  Shirt,
-  Trophy,
-  Gem,
-  ShoppingBag,
-  Sliders,
-  ChevronDown,
-  Package,
-  Heart,
-  ShoppingCart,
-} from "lucide-angular";
+import { AppIconComponent } from "../../../../shared/components/app-icon/app-icon.component";
 
 @Component({
   selector: "app-accessories-page",
@@ -32,25 +19,13 @@ import {
     CommonModule,
     RouterLink,
     PriceDisplayComponent,
-    LucideAngularModule,
+    AppIconComponent,
   ],
   templateUrl: "./accessories-page.component.html",
   styleUrl: "./accessories-page.component.css",
 })
 export class AccessoriesPageComponent implements OnInit {
-  readonly icons: any = {
-    LayoutGrid,
-    Filter,
-    Shirt,
-    Trophy,
-    Gem,
-    ShoppingBag,
-    Sliders,
-    ChevronDown,
-    Package,
-    Heart,
-    ShoppingCart,
-  };
+  // icons removed
   products: Product[] = [];
 
   constructor(

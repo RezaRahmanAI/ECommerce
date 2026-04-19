@@ -1,5 +1,5 @@
 import { Component, OnDestroy, OnInit, inject, PLATFORM_ID } from "@angular/core";
-import { CommonModule, isPlatformBrowser } from "@angular/common";
+import { isPlatformBrowser, NgIf, NgFor, AsyncPipe, NgClass, NgStyle } from "@angular/common";
 import { FormBuilder, ReactiveFormsModule, Validators } from "@angular/forms";
 import { RouterModule } from "@angular/router";
 import { Subject, takeUntil } from "rxjs";
@@ -7,40 +7,25 @@ import { Subject, takeUntil } from "rxjs";
 import { Category } from "../../models/categories.models";
 import { CategoriesService } from "../../services/categories.service";
 import { environment } from "../../../../environments/environment";
-import {
-  LucideAngularModule,
-  Search,
-  Plus,
-  ChevronRight,
-  Edit,
-  Trash2,
-  Save,
-  Image,
-  Upload,
-} from "lucide-angular";
+import { AppIconComponent } from "../../../shared/components/app-icon/app-icon.component";
 
 @Component({
   selector: "app-admin-category-management",
   standalone: true,
   imports: [
-    CommonModule,
+    NgIf,
+    NgFor,
+    AsyncPipe,
+    NgClass,
+    NgStyle,
     ReactiveFormsModule,
     RouterModule,
-    LucideAngularModule,
+    AppIconComponent,
   ],
   templateUrl: "./admin-category-management.component.html",
 })
 export class AdminCategoryManagementComponent implements OnInit, OnDestroy {
-  readonly icons = {
-    Search,
-    Plus,
-    ChevronRight,
-    Edit,
-    Trash2,
-    Save,
-    Image,
-    Upload,
-  };
+  // icons removed
 
   private categoriesService = inject(CategoriesService);
   private formBuilder = inject(FormBuilder);
@@ -118,7 +103,9 @@ export class AdminCategoryManagementComponent implements OnInit, OnDestroy {
         },
         error: () => {
           this.isUploadingImage = false;
-          window.alert("Failed to upload image. Please try again.");
+          if (isPlatformBrowser(this.platformId)) {
+            window.alert("Failed to upload image. Please try again.");
+          }
         },
       });
       return;
@@ -144,7 +131,9 @@ export class AdminCategoryManagementComponent implements OnInit, OnDestroy {
         },
         error: (err) => {
           const errorMsg = err.error?.message || "Failed to delete category.";
-          window.alert(errorMsg);
+          if (isPlatformBrowser(this.platformId)) {
+            window.alert(errorMsg);
+          }
         },
       });
     }
@@ -158,7 +147,9 @@ export class AdminCategoryManagementComponent implements OnInit, OnDestroy {
 
     const file = input.files[0];
     if (!file.type.startsWith("image/")) {
-      window.alert("Please select a valid image file.");
+      if (isPlatformBrowser(this.platformId)) {
+        window.alert("Please select a valid image file.");
+      }
       return;
     }
 
@@ -225,7 +216,9 @@ export class AdminCategoryManagementComponent implements OnInit, OnDestroy {
       },
       error: (error) => {
         const msg = error?.error?.message || "Failed to update category";
-        window.alert(msg);
+        if (isPlatformBrowser(this.platformId)) {
+          window.alert(msg);
+        }
       },
     });
   }

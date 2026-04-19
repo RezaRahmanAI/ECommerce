@@ -190,25 +190,9 @@ public class OrderService : IOrderService
 
             order.Status = newStatus;
             
-            if (newStatus == OrderStatus.Confirmed && order.SteadfastConsignmentId == null)
+            if (newStatus == OrderStatus.Confirmed)
             {
-                try
-                {
-                    var (consignmentId, trackingCode) = await _steadfastService.CreateOrderAsync(order);
-                    if (!string.IsNullOrEmpty(consignmentId))
-                    {
-                        if (long.TryParse(consignmentId, out var cid))
-                        {
-                            order.SteadfastConsignmentId = cid;
-                        }
-                        order.SteadfastTrackingCode = trackingCode;
-                        order.SteadfastStatus = "in_review";
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Error sending order {order.Id} to Steadfast: {ex.Message}");
-                }
+                await SendToSteadfastAsync(order);
             }
             
             _unitOfWork.Repository<Order>().Update(order);
@@ -300,10 +284,37 @@ public class OrderService : IOrderService
             if (Enum.TryParse<OrderStatus>(orderUpdateDto.Status, true, out var newStatus))
             {
                 order.Status = newStatus;
+                if (newStatus == OrderStatus.Confirmed)
+                {
+                    await SendToSteadfastAsync(order);
+                }
             }
         }
 
         _unitOfWork.Repository<Order>().Update(order);
         return await _unitOfWork.Complete() > 0;
+    }
+
+    private async Task SendToSteadfastAsync(Order order)
+    {
+        if (order.SteadfastConsignmentId != null) return;
+
+        try
+        {
+            var (consignmentId, trackingCode) = await _steadfastService.CreateOrderAsync(order);
+            if (!string.IsNullOrEmpty(consignmentId))
+            {
+                if (long.TryParse(consignmentId, out var cid))
+                {
+                    order.SteadfastConsignmentId = cid;
+                }
+                order.SteadfastTrackingCode = trackingCode;
+                order.SteadfastStatus = "in_review";
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error sending order {order.Id} to Steadfast: {ex.Message}");
+        }
     }
 }

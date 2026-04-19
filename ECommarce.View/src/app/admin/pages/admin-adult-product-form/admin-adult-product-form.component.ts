@@ -1,5 +1,5 @@
-import { CommonModule } from "@angular/common";
-import { Component, OnInit, inject } from "@angular/core";
+import { Component, OnInit, inject, PLATFORM_ID } from "@angular/core";
+import { isPlatformBrowser, NgIf, NgFor, AsyncPipe } from "@angular/common";
 import {
   FormBuilder,
   ReactiveFormsModule,
@@ -12,54 +12,23 @@ import { ProductsService } from "../../services/products.service";
 import { CategoriesService } from "../../services/categories.service";
 import { Category } from "../../models/categories.models";
 import { ImageUrlService } from "../../../core/services/image-url.service";
-import {
-  LucideAngularModule,
-  ChevronLeft,
-  Check,
-  Upload,
-  X,
-  Type,
-  PlusCircle,
-  FileText,
-  AlertCircle,
-  Bold,
-  Italic,
-  Underline,
-  List,
-  ListOrdered,
-  Eraser,
-  Link
-} from "lucide-angular";
+import { AppIconComponent } from "../../../shared/components/app-icon/app-icon.component";
 
 @Component({
   selector: "app-admin-adult-product-form",
   standalone: true,
   imports: [
-    CommonModule,
+    NgIf,
+    NgFor,
+    AsyncPipe,
     ReactiveFormsModule,
     RouterModule,
-    LucideAngularModule,
+    AppIconComponent,
   ],
   templateUrl: "./admin-adult-product-form.component.html",
 })
 export class AdminAdultProductFormComponent implements OnInit {
-  readonly icons = {
-    ChevronLeft,
-    Check,
-    Upload,
-    X,
-    Type,
-    PlusCircle,
-    FileText,
-    AlertCircle,
-    Bold,
-    Italic,
-    Underline,
-    List,
-    ListOrdered,
-    Eraser,
-    Link
-  };
+  // icons removed
 
   private fb = inject(FormBuilder);
   private adultProductService = inject(AdultProductService);
@@ -67,6 +36,7 @@ export class AdminAdultProductFormComponent implements OnInit {
   private categoriesService = inject(CategoriesService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
+  private readonly platformId = inject(PLATFORM_ID);
   readonly imageUrlService = inject(ImageUrlService);
 
   isEditMode = false;
@@ -176,7 +146,9 @@ export class AdminAdultProductFormComponent implements OnInit {
         error: (err: any) => {
           console.error("Upload error:", err);
           this.isSaving = false;
-          alert("Failed to upload image. Please try again.");
+          if (isPlatformBrowser(this.platformId)) {
+            alert("Failed to upload image. Please try again.");
+          }
         }
       });
     } else {
@@ -270,6 +242,8 @@ export class AdminAdultProductFormComponent implements OnInit {
   private handleError(err: any): void {
     console.error("Save error:", err);
     this.isSaving = false;
-    alert("Failed to save product details.");
+    if (isPlatformBrowser(this.platformId)) {
+      alert("Failed to save product details.");
+    }
   }
 }

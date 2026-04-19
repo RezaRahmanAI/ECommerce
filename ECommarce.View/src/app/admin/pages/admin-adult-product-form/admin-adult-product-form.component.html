@@ -5,7 +5,7 @@
       <div class="flex items-center gap-4">
         <a routerLink="/admin/adult-products" 
            class="p-2 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:text-primary transition-colors">
-          <lucide-icon [name]="icons.ChevronLeft" class="w-6 h-6"></lucide-icon>
+          <app-icon name="ChevronLeft" className="w-6 h-6"></app-icon>
         </a>
         <div>
           <h1 class="text-2xl font-bold text-slate-900 dark:text-white">
@@ -20,7 +20,7 @@
       <button (click)="save()"
               [disabled]="form.invalid || isSaving"
               class="inline-flex items-center gap-2 bg-primary hover:bg-primary/90 text-white px-6 py-2.5 rounded-xl font-semibold transition-all shadow-lg shadow-primary/20 hover:shadow-primary/40 active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none">
-        <lucide-icon *ngIf="!isSaving" [name]="icons.Check" class="w-5 h-5"></lucide-icon>
+        <app-icon *ngIf="!isSaving" name="Check" className="w-5 h-5"></app-icon>
         <div *ngIf="isSaving" class="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
         {{ isSaving ? 'Saving...' : (isEditMode ? 'Update Product' : 'Create Product') }}
       </button>
@@ -116,13 +116,13 @@
               <div class="border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden">
                 <!-- Toolbar -->
                 <div class="flex items-center gap-1 p-2 bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-700">
-                  <button type="button" (click)="applyFormatting('bold', 'subtitle', subtitleField)" class="p-2 hover:bg-white dark:hover:bg-slate-800 rounded-lg transition-colors text-slate-600 dark:text-slate-400" title="Bold"><lucide-icon [name]="icons.Bold" class="w-4 h-4"></lucide-icon></button>
-                  <button type="button" (click)="applyFormatting('italic', 'subtitle', subtitleField)" class="p-2 hover:bg-white dark:hover:bg-slate-800 rounded-lg transition-colors text-slate-600 dark:text-slate-400" title="Italic"><lucide-icon [name]="icons.Italic" class="w-4 h-4"></lucide-icon></button>
-                  <button type="button" (click)="applyFormatting('underline', 'subtitle', subtitleField)" class="p-2 hover:bg-white dark:hover:bg-slate-800 rounded-lg transition-colors text-slate-600 dark:text-slate-400" title="Underline"><lucide-icon [name]="icons.Underline" class="w-4 h-4"></lucide-icon></button>
+                  <button type="button" (click)="applyFormatting('bold', 'subtitle', subtitleField)" class="p-2 hover:bg-white dark:hover:bg-slate-800 rounded-lg transition-colors text-slate-600 dark:text-slate-400" title="Bold"><app-icon name="Bold" className="w-4 h-4"></app-icon></button>
+                  <button type="button" (click)="applyFormatting('italic', 'subtitle', subtitleField)" class="p-2 hover:bg-white dark:hover:bg-slate-800 rounded-lg transition-colors text-slate-600 dark:text-slate-400" title="Italic"><app-icon name="Italic" className="w-4 h-4"></app-icon></button>
+                  <button type="button" (click)="applyFormatting('underline', 'subtitle', subtitleField)" class="p-2 hover:bg-white dark:hover:bg-slate-800 rounded-lg transition-colors text-slate-600 dark:text-slate-400" title="Underline"><app-icon name="Underline" className="w-4 h-4"></app-icon></button>
                   <div class="w-px h-4 bg-slate-300 dark:bg-slate-600 mx-1"></div>
-                  <button type="button" (click)="applyFormatting('list', 'subtitle', subtitleField)" class="p-2 hover:bg-white dark:hover:bg-slate-800 rounded-lg transition-colors text-slate-600 dark:text-slate-400" title="Bullet List"><lucide-icon [name]="icons.List" class="w-4 h-4"></lucide-icon></button>
-                  <button type="button" (click)="applyFormatting('ordered-list', 'subtitle', subtitleField)" class="p-2 hover:bg-white dark:hover:bg-slate-800 rounded-lg transition-colors text-slate-600 dark:text-slate-400" title="Numbered List"><lucide-icon [name]="icons.ListOrdered" class="w-4 h-4"></lucide-icon></button>
-                  <button type="button" (click)="applyFormatting('clear', 'subtitle', subtitleField)" class="p-2 hover:bg-white dark:hover:bg-slate-800 rounded-lg transition-colors text-slate-600 dark:text-slate-400 ml-auto" title="Clear Formatting"><lucide-icon [name]="icons.Eraser" class="w-4 h-4"></lucide-icon></button>
+                  <button type="button" (click)="applyFormatting('list', 'subtitle', subtitleField)" class="p-2 hover:bg-white dark:hover:bg-slate-800 rounded-lg transition-colors text-slate-600 dark:text-slate-400" title="Bullet List"><app-icon name="List" className="w-4 h-4"></app-icon></button>
+                  <button type="button" (click)="applyFormatting('ordered-list', 'subtitle', subtitleField)" class="p-2 hover:bg-white dark:hover:bg-slate-800 rounded-lg transition-colors text-slate-600 dark:text-slate-400" title="Numbered List"><app-icon name="ListOrdered" className="w-4 h-4"></app-icon></button>
+                  <button type="button" (click)="applyFormatting('clear', 'subtitle', subtitleField)" class="p-2 hover:bg-white dark:hover:bg-slate-800 rounded-lg transition-colors text-slate-600 dark:text-slate-400 ml-auto" title="Clear Formatting"><app-icon name="Eraser" className="w-4 h-4"></app-icon></button>
                 </div>
                 <textarea #subtitleField
                           formControlName="subtitle"
@@ -149,9 +149,9 @@
 
             <div class="border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden mt-4">
               <div class="flex items-center gap-1 p-2 bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-700">
-                <button type="button" (click)="applyFormatting('bold', 'benefitsContent', benefitsContentField)" class="p-2 hover:bg-white dark:hover:bg-slate-800 rounded-lg transition-colors text-slate-600 dark:text-slate-400"><lucide-icon [name]="icons.Bold" class="w-4 h-4"></lucide-icon></button>
-                <button type="button" (click)="applyFormatting('italic', 'benefitsContent', benefitsContentField)" class="p-2 hover:bg-white dark:hover:bg-slate-800 rounded-lg transition-colors text-slate-600 dark:text-slate-400"><lucide-icon [name]="icons.Italic" class="w-4 h-4"></lucide-icon></button>
-                <button type="button" (click)="applyFormatting('list', 'benefitsContent', benefitsContentField)" class="p-2 hover:bg-white dark:hover:bg-slate-800 rounded-lg transition-colors text-slate-600 dark:text-slate-400"><lucide-icon [name]="icons.List" class="w-4 h-4"></lucide-icon></button>
+                <button type="button" (click)="applyFormatting('bold', 'benefitsContent', benefitsContentField)" class="p-2 hover:bg-white dark:hover:bg-slate-800 rounded-lg transition-colors text-slate-600 dark:text-slate-400"><app-icon name="Bold" className="w-4 h-4"></app-icon></button>
+                <button type="button" (click)="applyFormatting('italic', 'benefitsContent', benefitsContentField)" class="p-2 hover:bg-white dark:hover:bg-slate-800 rounded-lg transition-colors text-slate-600 dark:text-slate-400"><app-icon name="Italic" className="w-4 h-4"></app-icon></button>
+                <button type="button" (click)="applyFormatting('list', 'benefitsContent', benefitsContentField)" class="p-2 hover:bg-white dark:hover:bg-slate-800 rounded-lg transition-colors text-slate-600 dark:text-slate-400"><app-icon name="List" className="w-4 h-4"></app-icon></button>
               </div>
               <textarea #benefitsContentField
                         formControlName="benefitsContent"
@@ -174,9 +174,9 @@
 
             <div class="border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden mt-4">
               <div class="flex items-center gap-1 p-2 bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-700">
-                <button type="button" (click)="applyFormatting('bold', 'usageContent', usageContentField)" class="p-2 hover:bg-white dark:hover:bg-slate-800 rounded-lg transition-colors text-slate-600 dark:text-slate-400"><lucide-icon [name]="icons.Bold" class="w-4 h-4"></lucide-icon></button>
-                <button type="button" (click)="applyFormatting('italic', 'usageContent', usageContentField)" class="p-2 hover:bg-white dark:hover:bg-slate-800 rounded-lg transition-colors text-slate-600 dark:text-slate-400"><lucide-icon [name]="icons.Italic" class="w-4 h-4"></lucide-icon></button>
-                <button type="button" (click)="applyFormatting('list', 'usageContent', usageContentField)" class="p-2 hover:bg-white dark:hover:bg-slate-800 rounded-lg transition-colors text-slate-600 dark:text-slate-400"><lucide-icon [name]="icons.List" class="w-4 h-4"></lucide-icon></button>
+                <button type="button" (click)="applyFormatting('bold', 'usageContent', usageContentField)" class="p-2 hover:bg-white dark:hover:bg-slate-800 rounded-lg transition-colors text-slate-600 dark:text-slate-400"><app-icon name="Bold" className="w-4 h-4"></app-icon></button>
+                <button type="button" (click)="applyFormatting('italic', 'usageContent', usageContentField)" class="p-2 hover:bg-white dark:hover:bg-slate-800 rounded-lg transition-colors text-slate-600 dark:text-slate-400"><app-icon name="Italic" className="w-4 h-4"></app-icon></button>
+                <button type="button" (click)="applyFormatting('list', 'usageContent', usageContentField)" class="p-2 hover:bg-white dark:hover:bg-slate-800 rounded-lg transition-colors text-slate-600 dark:text-slate-400"><app-icon name="List" className="w-4 h-4"></app-icon></button>
               </div>
               <textarea #usageContentField
                         formControlName="usageContent"
@@ -199,9 +199,9 @@
 
             <div class="border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden mt-4">
               <div class="flex items-center gap-1 p-2 bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-700">
-                <button type="button" (click)="applyFormatting('bold', 'sideEffectsContent', sideEffectsContentField)" class="p-2 hover:bg-white dark:hover:bg-slate-800 rounded-lg transition-colors text-slate-600 dark:text-slate-400"><lucide-icon [name]="icons.Bold" class="w-4 h-4"></lucide-icon></button>
-                <button type="button" (click)="applyFormatting('italic', 'sideEffectsContent', sideEffectsContentField)" class="p-2 hover:bg-white dark:hover:bg-slate-800 rounded-lg transition-colors text-slate-600 dark:text-slate-400"><lucide-icon [name]="icons.Italic" class="w-4 h-4"></lucide-icon></button>
-                <button type="button" (click)="applyFormatting('list', 'sideEffectsContent', sideEffectsContentField)" class="p-2 hover:bg-white dark:hover:bg-slate-800 rounded-lg transition-colors text-slate-600 dark:text-slate-400"><lucide-icon [name]="icons.List" class="w-4 h-4"></lucide-icon></button>
+                <button type="button" (click)="applyFormatting('bold', 'sideEffectsContent', sideEffectsContentField)" class="p-2 hover:bg-white dark:hover:bg-slate-800 rounded-lg transition-colors text-slate-600 dark:text-slate-400"><app-icon name="Bold" className="w-4 h-4"></app-icon></button>
+                <button type="button" (click)="applyFormatting('italic', 'sideEffectsContent', sideEffectsContentField)" class="p-2 hover:bg-white dark:hover:bg-slate-800 rounded-lg transition-colors text-slate-600 dark:text-slate-400"><app-icon name="Italic" className="w-4 h-4"></app-icon></button>
+                <button type="button" (click)="applyFormatting('list', 'sideEffectsContent', sideEffectsContentField)" class="p-2 hover:bg-white dark:hover:bg-slate-800 rounded-lg transition-colors text-slate-600 dark:text-slate-400"><app-icon name="List" className="w-4 h-4"></app-icon></button>
               </div>
               <textarea #sideEffectsContentField
                         formControlName="sideEffectsContent"
@@ -224,7 +224,7 @@
                   Change Image
                 </button>
                 <button (click)="removeImage()" type="button" class="p-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-all">
-                  <lucide-icon [name]="icons.X" class="w-5 h-5"></lucide-icon>
+                  <app-icon name="X" className="w-5 h-5"></app-icon>
                 </button>
               </div>
             </ng-container>
@@ -232,7 +232,7 @@
             <ng-template #noImage>
               <div (click)="fileInput.click()" class="text-center cursor-pointer">
                 <div class="w-16 h-16 bg-white dark:bg-slate-800 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-slate-200 dark:border-slate-700 shadow-sm">
-                  <lucide-icon [name]="icons.Upload" class="w-8 h-8 text-slate-400"></lucide-icon>
+                  <app-icon name="Upload" className="w-8 h-8 text-slate-400"></app-icon>
                 </div>
                 <p class="text-slate-500 font-medium">Upload image</p>
               </div>

@@ -15,30 +15,7 @@ import {
   tap,
   startWith,
 } from "rxjs";
-import {
-  LucideAngularModule,
-  Loader2,
-  ChevronLeft,
-  ChevronRight,
-  CheckCircle2,
-  Truck,
-  Lock,
-  ArrowRight,
-  Plus,
-  Minus,
-  ShoppingCart,
-  User,
-  Search,
-  ChevronDown,
-  ChevronUp,
-  Star,
-  Maximize2,
-  ShieldCheck,
-  ShoppingBag,
-  CreditCard,
-  MessageSquare,
-  X,
-} from "lucide-angular";
+import { AppIconComponent } from "../../../../shared/components/app-icon/app-icon.component";
 import { AdultProductService } from "../../services/adult-product.service";
 import { AdultProduct } from "../../../../admin/models/adult-product.models";
 import { CartService } from "../../../../core/services/cart.service";
@@ -59,7 +36,7 @@ import { PriceDisplayComponent } from "../../../../shared/components/price-displ
     ReactiveFormsModule,
     RouterModule,
     PriceDisplayComponent,
-    LucideAngularModule,
+    AppIconComponent,
     NgOptimizedImage,
   ],
   templateUrl: "./adult-landing-page.component.html",
@@ -68,29 +45,7 @@ import { PriceDisplayComponent } from "../../../../shared/components/price-displ
 })
 export class AdultLandingPageComponent implements OnInit {
   // ... (rest of the code remains the same as previously written in Step 54)
-  readonly icons = {
-    Loader2,
-    ChevronLeft,
-    ChevronRight,
-    CheckCircle2,
-    Truck,
-    Lock,
-    ArrowRight,
-    Plus,
-    Minus,
-    ShoppingCart,
-    User,
-    Search,
-    ChevronDown,
-    ChevronUp,
-    Star,
-    Maximize2,
-    ShieldCheck,
-    ShoppingBag,
-    CreditCard,
-    MessageSquare,
-    X,
-  };
+  // icons removed
   private readonly route = inject(ActivatedRoute);
   private readonly adultProductService = inject(AdultProductService);
   private readonly cartService = inject(CartService);
@@ -143,10 +98,18 @@ export class AdultLandingPageComponent implements OnInit {
   selectedPopupItem: any = null;
   modalQuantity = 1;
 
+  get mainItem(): any {
+    return this.product ? this.offerItems.find(i => i.id === this.product!.id) : null;
+  }
+
+  get otherItems(): any[] {
+    return this.product ? this.offerItems.filter(i => i.id !== this.product!.id) : [];
+  }
+
   readonly checkoutForm = this.formBuilder.nonNullable.group({
     phone: ["", [Validators.required, Validators.minLength(11)]],
     fullName: ["", [Validators.required, Validators.minLength(2)]],
-    deliveryZone: ["inside", Validators.required],
+    deliveryZone: ["inside"],
     address: ["", [Validators.required, Validators.minLength(5)]],
     deliveryMethodId: [0, Validators.required],
   });

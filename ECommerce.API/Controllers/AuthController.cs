@@ -16,7 +16,7 @@ namespace ECommerce.API.Controllers;
 
 [ApiController]
 [Route("api/auth")]
-[EnableRateLimiting("strict")]
+[EnableRateLimiting("fixed")]
 public class AuthController : ControllerBase
 {
     private readonly IConfiguration _configuration;
@@ -29,6 +29,7 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("login")]
+    [EnableRateLimiting("strict")]
     public async Task<ActionResult<AuthResponse>> Login(LoginRequest request, CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(request.Identifier) || string.IsNullOrWhiteSpace(request.Password))

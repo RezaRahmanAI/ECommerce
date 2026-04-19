@@ -2,13 +2,13 @@ import { Component, EventEmitter, Input, Output, inject } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { Product, ProductImage } from "../../../core/models/product";
 import { ImageUrlService } from "../../../core/services/image-url.service";
-import { LucideAngularModule, X, ShoppingBag } from "lucide-angular";
+import { AppIconComponent } from "../app-icon/app-icon.component";
 import { PriceDisplayComponent } from "../price-display/price-display.component";
 
 @Component({
   selector: "app-quick-add-modal",
   standalone: true,
-  imports: [CommonModule, LucideAngularModule, PriceDisplayComponent],
+  imports: [CommonModule, AppIconComponent, PriceDisplayComponent],
   template: `
     <div
       class="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6"
@@ -30,7 +30,7 @@ import { PriceDisplayComponent } from "../price-display/price-display.component"
           (click)="close.emit()"
           class="absolute top-4 right-4 z-10 p-2 text-gray-400 hover:text-black transition-colors"
         >
-          <lucide-icon [img]="icons.X" class="w-5 h-5"></lucide-icon>
+          <app-icon name="X" className="w-5 h-5"></app-icon>
         </button>
 
         <div class="flex flex-col sm:flex-row h-full">
@@ -68,7 +68,7 @@ import { PriceDisplayComponent } from "../price-display/price-display.component"
               (click)="confirm()"
               class="w-full py-4 bg-black text-white text-[11px] uppercase tracking-[0.3em] font-bold transition-all duration-300 hover:bg-black/90 flex items-center justify-center gap-2"
             >
-              <lucide-icon [img]="icons.ShoppingBag" class="w-4 h-4"></lucide-icon>
+              <app-icon name="ShoppingBag" className="w-4 h-4"></app-icon>
               Confirm Selection
             </button>
           </div>
@@ -82,7 +82,7 @@ export class QuickAddModalComponent {
   @Output() close = new EventEmitter<void>();
   @Output() added = new EventEmitter<void>();
 
-  readonly icons = { X, ShoppingBag };
+  // icons removed
   readonly imageUrlService = inject(ImageUrlService);
 
   confirm(): void {

@@ -91,12 +91,15 @@ export class ProductService {
   }
 
   private loadFromLocalCache(): HomeData | null {
-    try {
-      const cached = localStorage.getItem(this.HOME_CACHE_KEY);
-      return cached ? JSON.parse(cached) : null;
-    } catch {
-      return null;
+    if (isPlatformBrowser(this.platformId)) {
+      try {
+        const cached = localStorage.getItem(this.HOME_CACHE_KEY);
+        return cached ? JSON.parse(cached) : null;
+      } catch {
+        return null;
+      }
     }
+    return null;
   }
 
   private saveToLocalCache(data: HomeData): void {

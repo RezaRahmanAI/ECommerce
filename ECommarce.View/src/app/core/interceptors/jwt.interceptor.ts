@@ -11,7 +11,7 @@ export const jwtInterceptor: HttpInterceptorFn = (req, next) => {
   const platformId = inject(PLATFORM_ID);
   const isBrowser = isPlatformBrowser(platformId);
   const token = isBrowser ? localStorage.getItem("sherashop-token") : null;
-  const isFormData = req.body instanceof FormData;
+  const isFormData = typeof FormData !== 'undefined' && req.body instanceof FormData;
 
   const headers: Record<string, string> = {
     Accept: "application/json",

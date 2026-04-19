@@ -6,14 +6,7 @@ import { finalize, take } from "rxjs";
 
 import { AuthService } from "../../../../core/services/auth.service";
 
-import {
-  LucideAngularModule,
-  Mail,
-  Lock,
-  Eye,
-  EyeOff,
-  ArrowRight,
-} from "lucide-angular";
+import { AppIconComponent } from "../../../../shared/components/app-icon/app-icon.component";
 
 @Component({
   selector: "app-login-page",
@@ -22,18 +15,12 @@ import {
     CommonModule,
     ReactiveFormsModule,
     RouterModule,
-    LucideAngularModule,
+    AppIconComponent,
   ],
   templateUrl: "./login.page.html",
 })
 export class LoginPageComponent implements OnInit {
-  readonly icons = {
-    Mail,
-    Lock,
-    Eye,
-    EyeOff,
-    ArrowRight,
-  };
+  // icons removed
   private readonly formBuilder = inject(FormBuilder);
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);

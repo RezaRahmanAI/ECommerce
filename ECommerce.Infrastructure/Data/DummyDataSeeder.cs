@@ -77,7 +77,7 @@ public static class DummyDataSeeder
 
         foreach (var cat in categories)
         {
-            if (!await context.Categories.AnyAsync(c => c.Slug == cat.Slug))
+            if (!await context.Categories.IgnoreQueryFilters().AnyAsync(c => c.Slug == cat.Slug))
             {
                 context.Categories.Add(cat);
             }
@@ -219,6 +219,8 @@ public static class DummyDataSeeder
 
     private static async Task SeedProductsAsync(ApplicationDbContext context)
     {
+        if (await context.Products.AnyAsync()) return;
+
         var categories = await context.Categories.ToListAsync();
         var skinCare = categories.FirstOrDefault(c => c.Slug == "skin-care");
         var health = categories.FirstOrDefault(c => c.Slug == "health-wellness");

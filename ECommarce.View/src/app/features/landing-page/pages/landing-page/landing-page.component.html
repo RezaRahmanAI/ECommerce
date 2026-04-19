@@ -3,7 +3,7 @@
   <!-- Loading State -->
   <div *ngIf="isLoading" class="fixed inset-0 z-[200] flex items-center justify-center bg-white animate-fade-in">
      <div class="flex flex-col items-center gap-4">
-        <lucide-icon [img]="icons.Loader2" class="w-10 h-10 animate-spin text-accent"></lucide-icon>
+        <app-icon name="Loader2" className="w-10 h-10 animate-spin text-accent"></app-icon>
         <p class="text-[10px] uppercase tracking-[0.4em] font-black text-primary/40">SheraShopBD</p>
      </div>
   </div>
@@ -11,7 +11,7 @@
   <!-- Error State -->
   <div *ngIf="errorMessage && !isLoading" class="flex flex-col items-center justify-center min-h-screen bg-white px-6 text-center animate-fade-in">
      <div class="max-w-md">
-        <lucide-icon [img]="icons.AlertTriangle || icons.X" class="w-12 h-12 text-accent mx-auto mb-4"></lucide-icon>
+        <app-icon name="AlertTriangle" className="w-12 h-12 text-accent mx-auto mb-4"></app-icon>
         <h2 class="text-2xl font-serif italic text-primary mb-2">প্রোডাক্ট পাওয়া যায়নি</h2>
         <p class="text-sm text-gray-400 mb-8 tracking-wide">{{ errorMessage }}</p>
         <a routerLink="/" class="inline-block bg-primary text-white px-10 py-4 text-[10px] font-black uppercase tracking-[0.2em] hover:bg-black transition-all">Back to Home</a>
@@ -54,7 +54,7 @@
           <button (click)="scrollToOrderForm()" 
                   class="group relative bg-transparent border border-[#c8922a]/50 text-white px-8 h-14 text-[10px] font-black uppercase tracking-[0.2em] flex items-center justify-center gap-3 hover:bg-[#c8922a] hover:border-[#c8922a] transition-all duration-500 overflow-hidden">
             <span class="relative z-10 flex items-center gap-2">
-              <lucide-icon [img]="icons.ShoppingCart" class="w-4 h-4"></lucide-icon>
+              <app-icon name="ShoppingCart" className="w-4 h-4"></app-icon>
               Order Now — ৳{{ product.price || 0 }}
             </span>
           </button>
@@ -118,7 +118,7 @@
                target="_blank"
                rel="noopener noreferrer"
                class="bg-[#0084FF] text-white px-8 h-12 text-sm font-semibold flex items-center justify-center gap-2 hover:bg-[#0077e6] transition-all duration-300">
-              <lucide-icon [img]="icons.MessageSquare" class="w-4 h-4"></lucide-icon>
+              <app-icon name="MessageSquare" className="w-4 h-4"></app-icon>
               Chat with us
             </a>
             <a *ngIf="siteSettings?.whatsAppNumber"
@@ -126,12 +126,12 @@
                target="_blank"
                rel="noopener noreferrer"
                class="bg-[#25D366] text-white px-8 h-12 text-sm font-semibold flex items-center justify-center gap-2 hover:bg-[#20bd5a] transition-all duration-300">
-              <lucide-icon [img]="icons.MessageSquare" class="w-4 h-4"></lucide-icon>
+              <app-icon name="MessageSquare" className="w-4 h-4"></app-icon>
               WhatsApp Us
             </a>
             <button (click)="scrollToOrderForm()" 
                     class="bg-[#1a1a1a] text-white px-8 h-12 text-xs font-semibold uppercase tracking-[0.15em] flex items-center justify-center gap-2 mx-auto lg:mx-0 hover:bg-[#333] transition-all duration-300 w-full">
-              <lucide-icon [img]="icons.ShoppingCart" class="w-4 h-4"></lucide-icon>
+              <app-icon name="ShoppingCart" className="w-4 h-4"></app-icon>
               অর্ডার করুন
             </button>
           </div>
@@ -162,7 +162,7 @@
                target="_blank"
                rel="noopener noreferrer"
                class="bg-[#0084FF] text-white px-8 h-12 text-sm font-semibold flex items-center justify-center gap-2 hover:bg-[#0077e6] transition-all duration-300">
-              <lucide-icon [img]="icons.MessageSquare" class="w-4 h-4"></lucide-icon>
+              <app-icon name="MessageSquare" className="w-4 h-4"></app-icon>
               Chat with us
             </a>
             <a *ngIf="siteSettings?.whatsAppNumber"
@@ -170,12 +170,12 @@
                target="_blank"
                rel="noopener noreferrer"
                class="bg-[#25D366] text-white px-8 h-12 text-sm font-semibold flex items-center justify-center gap-2 hover:bg-[#20bd5a] transition-all duration-300">
-              <lucide-icon [img]="icons.MessageSquare" class="w-4 h-4"></lucide-icon>
+              <app-icon name="MessageSquare" className="w-4 h-4"></app-icon>
               WhatsApp Us
             </a>
             <button (click)="scrollToOrderForm()" 
                     class="bg-[#1a1a1a] text-white px-8 h-12 text-xs font-semibold uppercase tracking-[0.15em] flex items-center justify-center gap-2 mx-auto lg:mx-0 hover:bg-[#333] transition-all duration-300 w-full">
-              <lucide-icon [img]="icons.ShoppingCart" class="w-4 h-4"></lucide-icon>
+              <app-icon name="ShoppingCart" className="w-4 h-4"></app-icon>
               অর্ডার করুন
             </button>
           </div>
@@ -185,81 +185,6 @@
                [src]="imageUrlService.getImageUrl(product.imgUrl)" 
                [alt]="product.headline" 
                class="max-w-full h-auto object-contain border border-[#e0e0e0]">
-        </div>
-      </div>
-    </section>
-
-    <!-- MODERN REVIEWS SECTION -->
-    <section class="py-24 px-4 md:px-8 overflow-hidden bg-white" *ngIf="false">
-      <!-- Section Header -->
-      <div class="max-w-7xl mx-auto text-center mb-16">
-        <span class="font-label text-[#c8922a] text-[0.75rem] uppercase tracking-[0.2em] block mb-4">REFINED EXPERIENCE</span>
-        <h2 class="font-display text-4xl md:text-5xl font-extrabold text-[#1a1a1a] tracking-tight uppercase">
-          {{ product?.reviewsTitle || 'Customer Testimonies' }}
-        </h2>
-        <div class="mt-6 w-24 h-1 bg-[#c8922a] mx-auto opacity-20"></div>
-      </div>
-
-      <!-- Tonal Background for Contrast -->
-      <div class="bg-gray-50 rounded-[2rem] py-16 relative max-w-[1400px] mx-auto overflow-hidden">
-        
-        <!-- Floating Nav Controls -->
-        <div class="absolute inset-y-0 left-4 md:left-12 flex items-center z-10" *ngIf="reviews.length > 1">
-          <button (click)="prevReview()" 
-                  class="w-12 h-12 rounded-full bg-white/70 backdrop-blur-xl flex items-center justify-center text-gray-800 shadow-sm hover:bg-white transition-all">
-            <lucide-icon [img]="icons.ChevronLeft" class="w-5 h-5"></lucide-icon>
-          </button>
-        </div>
-        <div class="absolute inset-y-0 right-4 md:right-12 flex items-center z-10" *ngIf="reviews.length > 1">
-          <button (click)="nextReview()" 
-                  class="w-12 h-12 rounded-full bg-white/70 backdrop-blur-xl flex items-center justify-center text-gray-800 shadow-sm hover:bg-white transition-all">
-            <lucide-icon [img]="icons.ChevronRight" class="w-5 h-5"></lucide-icon>
-          </button>
-        </div>
-
-        <!-- Slider Container -->
-        <div class="relative px-8 md:px-24">
-          <div class="flex transition-transform duration-500 ease-out gap-8"
-               [style.transform]="'translateX(-' + (currentReviewIndex * (100 / 3)) + '%)'">
-            
-            <div *ngFor="let review of reviews; let i = index" 
-                 class="w-full md:w-[calc(33.333%-1.33rem)] flex-shrink-0">
-              <div class="bg-white p-10 md:p-12 rounded-xl shadow-[0_24px_48px_-12px_rgba(0,0,0,0.04)] h-full flex flex-col luxury-card">
-                
-                <!-- Stars -->
-                <div class="flex gap-1 mb-6">
-                  <lucide-icon *ngFor="let s of [1,2,3,4,5]" 
-                               [img]="icons.Star" 
-                               class="w-4 h-4 fill-[#c8922a] text-[#c8922a]"></lucide-icon>
-                </div>
-
-                <!-- Testimonial Text -->
-                <div class="font-body text-lg leading-relaxed text-gray-600 mb-8 flex-grow ql-editor !p-0" 
-                   [innerHTML]="review.comment">
-                </div>
-
-                <!-- Customer Info -->
-                <div class="flex items-center gap-4 border-t border-gray-100 pt-6">
-                  <img [src]="imageUrlService.getImageUrl(review.reviewImage || 'assets/default-avatar.png')" 
-                       [alt]="review.customerName" 
-                       class="w-12 h-12 rounded-full object-cover grayscale">
-                  <div>
-                    <h4 class="font-display font-bold text-[#1a1a1a]">{{ review.customerName }}</h4>
-                    <span class="text-[10px] text-[#c8922a] uppercase tracking-widest font-bold">Verified Purchase</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Pagination Dots -->
-        <div class="flex justify-center items-center gap-3 mt-12" *ngIf="totalPages.length > 1">
-          <span *ngFor="let startIndex of totalPages" 
-                (click)="goToReview(startIndex)"
-                class="cursor-pointer transition-all duration-300"
-                [class]="currentReviewIndex === startIndex ? 'w-6 h-2 rounded-full bg-[#c8922a]' : 'w-2 h-2 rounded-full bg-gray-200 hover:bg-gray-300'">
-          </span>
         </div>
       </div>
     </section>
@@ -275,6 +200,9 @@
       <div class="bg-[#fafafa] border border-[#e0e0e0] p-6 md:p-8 text-[#555] text-sm md:text-base ql-editor !text-center" [innerHTML]="product.sideEffectsContent"></div>
     </section>
 
+    <!-- TESTIMONIALS -->
+    <app-testimonials [productId]="product.id"></app-testimonials>
+
     <!-- ORDER FORM -->
     <div id="order" class="bg-white py-10 md:py-16 px-4 md:px-10 border-t border-[#e0e0e0]">
       <div class="max-w-4xl mx-auto">
@@ -285,14 +213,11 @@
           </h2>
         </div>
 
-        <!-- Products -->
-        <div class="text-[12px] uppercase tracking-widest font-black text-primary mb-6 pb-2 border-gray-100 border-b">Selected Collections</div>
-        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 lg:gap-5 mb-12" id="productsGrid">
-          <div *ngFor="let item of offerItems" 
-               class="group relative flex flex-col bg-white overflow-hidden transition-all duration-300">
-            
+        <!-- Product Card Template -->
+        <ng-template #productCard let-item="item">
+          <div class="group relative flex flex-col bg-white overflow-hidden transition-all duration-300">
             <!-- Professional Product Image (3:4 Ratio like Gallery) -->
-            <div (click)="openProductModal(item)" class="relative transition-all duration-300">
+            <div (click)="openProductModal(item)" class="relative transition-all duration-300 cursor-pointer">
               <div class="aspect-[3/4] overflow-hidden bg-supporting border border-gray-100 rounded-lg relative">
                  <img *ngIf="item.imageUrl" [src]="item.imageUrl" [alt]="item.name" class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110">
                  
@@ -309,8 +234,9 @@
             </div>
 
             <!-- Content -->
-            <div class="pt-3 pb-2 flex flex-col gap-1.5 flex-1">
-              <h3 class="text-[11px] sm:text-xs md:text-sm text-primary font-bold uppercase tracking-tight line-clamp-2 min-h-[2.5rem] leading-tight group-hover:text-accent transition-colors">
+            <div class="pt-3 pb-2 flex flex-col gap-1.5 flex-1 cursor-default">
+              <h3 class="text-[11px] sm:text-xs md:text-sm text-primary font-bold uppercase tracking-tight line-clamp-2 min-h-[2.5rem] leading-tight group-hover:text-accent transition-colors"
+                  (click)="openProductModal(item)">
                 {{ item.name }}
               </h3>
               
@@ -326,14 +252,22 @@
                      [class.ring-1]="item.quantity > 0"
                      [class.ring-accent]="item.quantity > 0">
                   <button type="button" (click)="$event.stopPropagation(); changeQty(item, -1)" 
-                          class="w-10 h-full flex items-center justify-center hover:bg-supporting/50 text-primary transition-colors border-r border-border-color/30 font-black">-</button>
+                          class="w-10 h-full flex items-center justify-center hover:bg-supporting/50 text-primary transition-colors border-r border-border-color/30 font-black cursor-pointer">-</button>
                   <span class="flex-1 text-center font-black text-xs text-primary">{{ item.quantity }}</span>
                   <button type="button" (click)="$event.stopPropagation(); changeQty(item, 1)" 
-                          class="w-10 h-full flex items-center justify-center hover:bg-supporting/50 text-primary transition-colors border-l border-border-color/30 font-black">+</button>
+                          class="w-10 h-full flex items-center justify-center hover:bg-supporting/50 text-primary transition-colors border-l border-border-color/30 font-black cursor-pointer">+</button>
                 </div>
               </div>
             </div>
           </div>
+        </ng-template>
+
+        <!-- Main Product -->
+        <div class="text-[12px] uppercase tracking-widest font-black text-primary mb-6 pb-2 border-gray-100 border-b">Selected Collection</div>
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 lg:gap-5 mb-12">
+          <ng-container *ngIf="mainItem">
+            <ng-container *ngTemplateOutlet="productCard; context: { item: mainItem }"></ng-container>
+          </ng-container>
         </div>
 
         <!-- Billing Details -->
@@ -465,12 +399,24 @@
 
           <button type="submit" [disabled]="isOrdering || subtotal === 0"
                   class="w-full bg-[#1a1a1a] text-white py-4 px-6 text-sm uppercase tracking-[0.15em] font-bold transition-colors hover:bg-[#333] active:bg-black disabled:bg-[#ddd] disabled:text-[#888] flex items-center justify-center">
-            <lucide-icon *ngIf="isOrdering" [img]="icons.Loader2" class="w-5 h-5 animate-spin mr-3"></lucide-icon>
+            <app-icon *ngIf="isOrdering" name="Loader2" className="w-5 h-5 animate-spin mr-3"></app-icon>
             {{ isOrdering ? 'Processing...' : 'অর্ডার করুন' }} &nbsp; <span class="ml-2 px-3 py-1 bg-white/20">৳ {{ total | number:'1.2-2' }}</span>
           </button>
           
           <p *ngIf="errorMessage" class="text-sm text-red-500 text-center font-bold mt-4 animate-bounce">{{ errorMessage }}</p>
         </form>
+
+        <!-- Other Products -->
+        <ng-container *ngIf="otherItems.length > 0">
+          <div class="mt-16 text-[12px] uppercase tracking-widest font-black text-primary mb-6 pb-2 border-gray-100 border-b">
+            You Might Also Like
+          </div>
+          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 lg:gap-5 mb-12">
+            <ng-container *ngFor="let item of otherItems">
+              <ng-container *ngTemplateOutlet="productCard; context: { item: item }"></ng-container>
+            </ng-container>
+          </div>
+        </ng-container>
       </div>
     </div>
 
@@ -494,7 +440,7 @@
     <!-- Close Button -->
     <button (click)="closeProductModal()" 
             class="absolute top-4 right-4 p-2 text-gray-400 hover:text-black transition-colors z-10 rounded-none">
-      <lucide-icon [img]="icons.X" class="w-6 h-6"></lucide-icon>
+      <app-icon name="X" className="w-6 h-6"></app-icon>
     </button>
 
     <div class="grid grid-cols-1 md:grid-cols-2">
@@ -547,19 +493,19 @@
             <div class="flex items-center border border-[#e0e0e0] w-fit">
               <button (click)="updateModalQuantity(-1)" 
                       class="px-5 py-3 hover:bg-gray-50 transition-colors border-r border-[#e0e0e0]">
-                <lucide-icon [img]="icons.Minus" class="w-4 h-4"></lucide-icon>
+                <app-icon name="Minus" className="w-4 h-4"></app-icon>
               </button>
               <span class="px-8 py-3 font-bold text-lg min-w-[60px] text-center">{{ modalQuantity }}</span>
               <button (click)="updateModalQuantity(1)" 
                       class="px-5 py-3 hover:bg-gray-50 transition-colors border-l border-[#e0e0e0]">
-                <lucide-icon [img]="icons.Plus" class="w-4 h-4"></lucide-icon>
+                <app-icon name="Plus" className="w-4 h-4"></app-icon>
               </button>
             </div>
           </div>
 
           <button (click)="confirmModalAdd()" 
                   class="w-full bg-[#1a1a1a] text-white py-4 px-6 text-sm uppercase tracking-[0.2em] font-bold transition-all hover:bg-[#333] flex items-center justify-center gap-3 active:scale-[0.98]">
-            <lucide-icon [img]="icons.ShoppingCart" class="w-5 h-5"></lucide-icon>
+            <app-icon name="ShoppingBag" className="w-5 h-5"></app-icon>
             অর্ডারে যোগ করুন
           </button>
         </div>

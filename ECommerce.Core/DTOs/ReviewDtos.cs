@@ -8,12 +8,11 @@ public class ReviewDto
     public int ProductId { get; set; }
     public string ProductName { get; set; } = string.Empty;
     public string CustomerName { get; set; } = string.Empty;
-    public string? CustomerAvatar { get; set; }
+    public string? ReviewImage { get; set; }
     public int Rating { get; set; }
-    public string Comment { get; set; } = string.Empty;
+    public string? Comment { get; set; } = string.Empty;
     public DateTime Date { get; set; }
-    public bool IsVerifiedPurchase { get; set; }
-    public bool IsFeatured { get; set; }
+    public bool IsApproved { get; set; }
     public int Likes { get; set; }
 }
 
@@ -25,26 +24,20 @@ public class CreateReviewDto
     [Required]
     public string CustomerName { get; set; } = string.Empty;
 
-    public string? CustomerAvatar { get; set; }
+    public string? ReviewImage { get; set; }
 
     [Range(1, 5)]
     public int Rating { get; set; }
 
-    [Required]
     [MaxLength(1000)]
-    public string Comment { get; set; } = string.Empty;
-
-    public bool IsVerifiedPurchase { get; set; } = true;
-    public bool IsFeatured { get; set; } = false;
+    public string? Comment { get; set; } = string.Empty;
 }
 
 public class ReviewUpdateDto
 {
     public int ProductId { get; set; }
     public string CustomerName { get; set; } = string.Empty;
-    public string? CustomerAvatar { get; set; }
+    public string? ReviewImage { get; set; }
     public int Rating { get; set; }
-    public string Comment { get; set; } = string.Empty;
-    public bool IsVerifiedPurchase { get; set; }
-    public bool IsFeatured { get; set; }
+    public string? Comment { get; set; } = string.Empty;
 }

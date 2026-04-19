@@ -1,5 +1,5 @@
-import { CommonModule } from "@angular/common";
-import { Component, DestroyRef, inject } from "@angular/core";
+import { isPlatformBrowser, NgIf, NgFor, AsyncPipe, CurrencyPipe, DecimalPipe } from "@angular/common";
+import { Component, DestroyRef, inject, PLATFORM_ID } from "@angular/core";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import { RouterModule } from "@angular/router";
 import {
@@ -19,44 +19,30 @@ import { AdminDashboardService } from "../../services/admin-dashboard.service";
 import { PriceDisplayComponent } from "../../../shared/components/price-display/price-display.component";
 import { ImageUrlService } from "../../../core/services/image-url.service";
 import { SiteSettingsService } from "../../../core/services/site-settings.service";
-import {
-  LucideAngularModule,
-  Receipt,
-  Eye,
-  CreditCard,
-  Truck,
-  Clock,
-  Package,
-  Users,
-  RotateCcw,
-} from "lucide-angular";
+import { AppIconComponent } from "../../../shared/components/app-icon/app-icon.component";
 
 @Component({
   selector: "app-dashboard-overview",
   standalone: true,
   imports: [
-    CommonModule,
+    NgIf,
+    NgFor,
+    AsyncPipe,
+    CurrencyPipe,
+    DecimalPipe,
     RouterModule,
     PriceDisplayComponent,
-    LucideAngularModule,
+    AppIconComponent,
   ],
   templateUrl: "./dashboard-overview.component.html",
 })
 export class DashboardOverviewComponent {
-  readonly icons = {
-    Receipt,
-    Eye,
-    CreditCard,
-    Truck,
-    Clock,
-    Package,
-    Users,
-    RotateCcw,
-  };
+  // icons removed
   private adminDashboardService = inject(AdminDashboardService);
   private settingsService = inject(SiteSettingsService);
   readonly imageUrlService = inject(ImageUrlService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly platformId = inject(PLATFORM_ID);
 
   settings$ = this.settingsService.getSettings();
 
@@ -73,7 +59,12 @@ export class DashboardOverviewComponent {
   );
 
   private createLiveStream<T>(source: () => Observable<T>): Observable<T> {
-    return timer(0, this.refreshIntervalMs).pipe(
+    const isBrowser = isPlatformBrowser(this.platformId);
+    const stream$ = isBrowser 
+      ? timer(0, this.refreshIntervalMs) 
+      : timer(0);
+
+    return stream$.pipe(
       switchMap(() => source()),
       takeUntilDestroyed(this.destroyRef),
       shareReplay({ bufferSize: 1, refCount: true }),

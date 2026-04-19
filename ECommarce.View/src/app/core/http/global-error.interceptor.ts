@@ -1,5 +1,6 @@
 import { HttpInterceptorFn, HttpErrorResponse } from "@angular/common/http";
-import { inject } from "@angular/core";
+import { inject, PLATFORM_ID } from "@angular/core";
+import { isPlatformBrowser } from "@angular/common";
 import { throwError, EMPTY } from "rxjs";
 import { catchError } from "rxjs/operators";
 import { BYPASS_LOGGING } from "./tokens";
@@ -15,6 +16,7 @@ export const globalErrorInterceptor: HttpInterceptorFn = (request, next) => {
   const notificationService = inject(NotificationService);
 
   const router = inject(Router);
+  const platformId = inject(PLATFORM_ID);
 
   return next(request).pipe(
     catchError((error: HttpErrorResponse) => {
@@ -50,8 +52,10 @@ export const globalErrorInterceptor: HttpInterceptorFn = (request, next) => {
               notificationService.error("Session expired. Please login again.");
               
               // Clear session and redirect to login
-              localStorage.removeItem("sherashop-user");
-              localStorage.removeItem("sherashop-token");
+              if (isPlatformBrowser(platformId)) {
+                localStorage.removeItem("sherashop-user");
+                localStorage.removeItem("sherashop-token");
+              }
               
               const isAdminPath = router.url.includes('/admin');
               router.navigate([isAdminPath ? '/admin/login' : '/login'], { 

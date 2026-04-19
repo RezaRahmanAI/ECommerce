@@ -29,8 +29,8 @@ public class AdminReviewsController : ControllerBase
         _cache = cache;
     }
 
-    [HttpPost("upload-avatar")]
-    public async Task<ActionResult<List<string>>> UploadReviewAvatar([FromForm] List<IFormFile> files)
+    [HttpPost("upload-image")]
+    public async Task<ActionResult<List<string>>> UploadReviewImage([FromForm] List<IFormFile> files)
     {
         try
         {
@@ -85,13 +85,11 @@ public class AdminReviewsController : ControllerBase
             {
                 Id = r.Id,
                 CustomerName = r.CustomerName,
-                CustomerAvatar = r.CustomerAvatar,
                 Rating = r.Rating,
                 Comment = r.Comment,
-                IsVerifiedPurchase = r.IsVerifiedPurchase,
                 Date = r.Date,
                 ProductId = r.ProductId,
-                IsFeatured = r.IsFeatured,
+                ReviewImage = r.ReviewImage,
                 Likes = r.Likes
             })
             .ToListAsync();
@@ -109,11 +107,9 @@ public class AdminReviewsController : ControllerBase
         {
             ProductId = dto.ProductId,
             CustomerName = dto.CustomerName,
-            CustomerAvatar = dto.CustomerAvatar,
+            ReviewImage = dto.ReviewImage,
             Rating = dto.Rating,
             Comment = dto.Comment,
-            IsVerifiedPurchase = dto.IsVerifiedPurchase,
-            IsFeatured = dto.IsFeatured,
             Date = DateTime.UtcNow,
             IsApproved = true
         };
@@ -127,14 +123,12 @@ public class AdminReviewsController : ControllerBase
         {
             Id = review.Id,
             CustomerName = review.CustomerName,
-            CustomerAvatar = review.CustomerAvatar,
             Rating = review.Rating,
             Comment = review.Comment,
-            IsVerifiedPurchase = review.IsVerifiedPurchase,
             Date = review.Date,
             ProductId = review.ProductId,
             ProductName = product.Headline,
-            IsFeatured = review.IsFeatured,
+            ReviewImage = review.ReviewImage,
             Likes = review.Likes
         });
     }
@@ -167,27 +161,23 @@ public class AdminReviewsController : ControllerBase
 
         review.ProductId = dto.ProductId;
         review.CustomerName = dto.CustomerName;
-        review.CustomerAvatar = dto.CustomerAvatar;
+        review.ReviewImage = dto.ReviewImage;
         review.Rating = dto.Rating;
         review.Comment = dto.Comment;
-        review.IsVerifiedPurchase = dto.IsVerifiedPurchase;
-        review.IsFeatured = dto.IsFeatured;
-
         await _context.SaveChangesAsync();
 
-        await InvalidateStorefrontCache(review.ProductId);
+        _cache.Remove("storefront_products");
+        _cache.Remove($"product_{review.ProductId}");
 
         return Ok(new ReviewDto
         {
             Id = review.Id,
             CustomerName = review.CustomerName,
-            CustomerAvatar = review.CustomerAvatar,
             Rating = review.Rating,
             Comment = review.Comment,
-            IsVerifiedPurchase = review.IsVerifiedPurchase,
             Date = review.Date,
             ProductId = review.ProductId,
-            ProductName = product.Headline,
+            ReviewImage = review.ReviewImage,
             Likes = review.Likes
         });
     }

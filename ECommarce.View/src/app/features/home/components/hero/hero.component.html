@@ -42,13 +42,13 @@
         (click)="prev()"
         class="absolute left-2 sm:left-4 md:left-6 top-1/2 -translate-y-1/2 p-2 sm:p-3 rounded-full bg-white/20 backdrop-blur-md text-white border border-white/30 opacity-0 group-hover:opacity-100 transition-all duration-500 hover:bg-white hover:text-primary"
       >
-        <lucide-icon [img]="icons.ArrowLeft" class="w-4 sm:w-5 md:w-6 h-4 sm:h-5 md:h-6"></lucide-icon>
+        <app-icon name="ArrowLeft" className="w-5 h-5 text-primary"></app-icon>
       </button>
       <button
         (click)="next()"
         class="absolute right-2 sm:right-4 md:right-6 top-1/2 -translate-y-1/2 p-2 sm:p-3 rounded-full bg-white/20 backdrop-blur-md text-white border border-white/30 opacity-0 group-hover:opacity-100 transition-all duration-500 hover:bg-white hover:text-primary"
       >
-        <lucide-icon [img]="icons.ArrowRight" class="w-4 sm:w-5 md:w-6 h-4 sm:h-5 md:h-6"></lucide-icon>
+        <app-icon name="ArrowRight" className="w-5 h-5 text-primary"></app-icon>
       </button>
 
       <!-- Pagination Dots -->
@@ -80,16 +80,11 @@
 
              <a [routerLink]="spotlightSlide?.link || '/shop'" class="flex items-center gap-2 md:gap-3 w-fit px-4 md:px-6 py-2 md:py-3 bg-white text-primary rounded-lg md:rounded-xl text-[9px] sm:text-[10px] md:text-[10px] font-display font-black uppercase tracking-widest hover:bg-accent hover:text-white transition-all duration-300 group/btn">
                 <span>{{ spotlightSlide?.linkText || 'Shop Now' }}</span>
-                <lucide-icon [img]="icons.ArrowRight" class="w-3 md:w-4 h-3 md:h-4 group-hover/btn:translate-x-1 transition-transform"></lucide-icon>
+                <app-icon name="ArrowRight" className="w-3.5 h-3.5 ml-2"></app-icon>
              </a>
           </div> -->
          
-         <!-- Floating Badge -->
-          <!-- <div class="absolute top-3 sm:top-4 md:top-6 right-3 sm:right-4 md:right-6 p-1 bg-white/10 backdrop-blur-sm rounded-full border border-white/20">
-             <div class="bg-accent p-1.5 sm:p-2 md:p-3 rounded-full shadow-lg">
-                <lucide-icon [img]="icons.Tag" class="w-3 sm:w-4 md:w-5 h-3 sm:h-4 md:h-5 text-white"></lucide-icon>
-             </div>
-          </div> -->
+
       
     
   </div>

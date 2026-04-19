@@ -24,7 +24,6 @@ import { PriceDisplayComponent } from "../price-display/price-display.component"
 import { ImageUrlService } from "../../../core/services/image-url.service";
 import { CartService } from "../../../core/services/cart.service";
 import { NotificationService } from "../../../core/services/notification.service";
-import { LucideAngularModule, ShoppingCart } from "lucide-angular";
 import { QuickAddModalComponent } from "../quick-add-modal/quick-add-modal.component";
 import { ProductImage } from "../../../core/models/product";
 import { LazyComponentDirective } from "../../directives/lazy-component.directive";
@@ -37,7 +36,6 @@ import { PrefetchOnHoverDirective } from "../../directives/prefetch-on-hover.dir
     CommonModule,
     RouterLink,
     PriceDisplayComponent,
-    LucideAngularModule,
     QuickAddModalComponent,
     NgOptimizedImage,
     LazyComponentDirective,
@@ -51,7 +49,6 @@ export class ProductCardComponent implements OnInit {
   @Input({ required: true }) product!: Product | RelatedProduct;
 
   isLoaded = false;
-  readonly icons = { ShoppingCart };
 
   public readonly imageUrlService = inject(ImageUrlService);
   private readonly cartService = inject(CartService);
