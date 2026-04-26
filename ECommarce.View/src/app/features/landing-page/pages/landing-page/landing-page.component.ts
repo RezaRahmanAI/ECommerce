@@ -60,6 +60,7 @@ export class LandingPageComponent implements OnInit {
   private readonly cdr = inject(ChangeDetectorRef);
 
   product: Product | null = null;
+  videoUrl: string | null = null;
   siteSettings: any = null;
   isLoading = false;
   isOrdering = false;
@@ -83,6 +84,18 @@ export class LandingPageComponent implements OnInit {
 
   get otherItems(): any[] {
     return this.product ? this.offerItems.filter(i => i.id !== this.product!.id) : [];
+  }
+
+  get benefitsImage(): string | null {
+    if (!this.product) return null;
+    const secondaryImages = this.product.images?.filter(i => i.type !== 'video' && i.imageUrl !== this.product?.imgUrl) || [];
+    return secondaryImages.length > 0 ? this.imageUrlService.getImageUrl(secondaryImages[0].imageUrl) : this.imageUrlService.getImageUrl(this.product.imgUrl);
+  }
+
+  get usageImage(): string | null {
+    if (!this.product) return null;
+    const secondaryImages = this.product.images?.filter(i => i.type !== 'video' && i.imageUrl !== this.product?.imgUrl) || [];
+    return secondaryImages.length > 1 ? this.imageUrlService.getImageUrl(secondaryImages[1].imageUrl) : (secondaryImages.length > 0 ? this.imageUrlService.getImageUrl(secondaryImages[0].imageUrl) : this.imageUrlService.getImageUrl(this.product.imgUrl));
   }
 
   readonly checkoutForm = this.formBuilder.nonNullable.group({
@@ -118,6 +131,7 @@ export class LandingPageComponent implements OnInit {
       takeUntilDestroyed(this.destroyRef)
     ).subscribe((product) => {
       this.product = product;
+      this.videoUrl = product?.images?.find(i => i.type === 'video')?.imageUrl || null;
       this.isLoading = false;
       this.cdr.markForCheck();
 

@@ -115,7 +115,7 @@ public class ProductService : IProductService
                     Url = img.ImageUrl ?? string.Empty,
                     AltText = img.AltText,
                     IsMain = img.IsPrimary,
-                    MediaType = "image"
+                    MediaType = img.Type ?? "image"
                 });
             }
         }
@@ -172,7 +172,7 @@ public class ProductService : IProductService
                     Url = img.ImageUrl ?? string.Empty,
                     AltText = img.AltText,
                     IsMain = img.IsPrimary,
-                    MediaType = "image"
+                    MediaType = img.Type ?? "image"
                 });
             }
         }
@@ -206,7 +206,11 @@ public class ProductService : IProductService
         // Wildcard removal for product list caches as belt-and-suspenders
         await _cache.RemoveByPrefixAsync("products_");
         
-        // Invalidate Home/Landing caches
+        // Invalidate Home/Landing micro-modules
+        await _cache.RemoveAsync(CacheConstants.FeaturedProducts);
+        await _cache.RemoveAsync(CacheConstants.NewArrivals);
+        await _cache.RemoveAsync(CacheConstants.HomeData);
+        
         await _cache.IncrementModuleVersionAsync(CacheModules.Landing);
         await _cache.RemoveByPrefixAsync("landing_");
     }

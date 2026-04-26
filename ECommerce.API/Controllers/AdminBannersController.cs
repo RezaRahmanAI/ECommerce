@@ -4,7 +4,7 @@ using ECommerce.Infrastructure.Data;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Memory;
+using ECommerce.Core.Caching;
 using Microsoft.AspNetCore.OutputCaching;
 using ECommerce.API.Extensions;
 using ECommerce.Core.Constants;
@@ -21,10 +21,10 @@ public class AdminBannersController : ControllerBase
     private readonly IWebHostEnvironment _environment;
     private readonly IConfiguration _config;
     private readonly IImageService _imageService;
-    private readonly IMemoryCache _cache;
+    private readonly ICacheService _cache;
     private readonly IOutputCacheStore _cacheStore;
 
-    public AdminBannersController(ApplicationDbContext context, IWebHostEnvironment environment, IConfiguration config, IImageService imageService, IMemoryCache cache, IOutputCacheStore cacheStore)
+    public AdminBannersController(ApplicationDbContext context, IWebHostEnvironment environment, IConfiguration config, IImageService imageService, ICacheService cache, IOutputCacheStore cacheStore)
     {
         _context = context;
         _environment = environment;
@@ -177,7 +177,7 @@ public class AdminBannersController : ControllerBase
 
         foreach (var key in keysToClear)
         {
-            _cache.Remove(key);
+            await _cache.RemoveAsync(key);
         }
 
         // Evict Output Cache

@@ -11,7 +11,8 @@ public enum OrderStatus
     Packed,
     Shipped,
     Delivered,
-    Cancelled
+    Cancelled,
+    Refund
 }
 
 public class Order : BaseEntity

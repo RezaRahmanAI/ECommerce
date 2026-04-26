@@ -7,12 +7,21 @@
     <!-- Image Container -->
     <a [routerLink]="['/product', product.slug]" [appPrefetchOnHover]="product.slug" class="relative aspect-[3/4] block overflow-hidden bg-supporting border border-border-color rounded sm:rounded-lg">
       <img
-        *ngIf="mainImage"
+        *ngIf="primaryMedia?.type !== 'video' && mainImage"
         [ngSrc]="imageUrlService.getImageUrl(mainImage, 400)"
         fill
         [alt]="product.headline"
         class="object-cover transition-transform duration-700 group-hover:scale-105"
       />
+      <video
+        *ngIf="primaryMedia?.type === 'video' && mainImage"
+        [src]="imageUrlService.getImageUrl(mainImage)"
+        class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+        autoplay
+        muted
+        loop
+        playsinline
+      ></video>
       
       <!-- Sophisticated Badge -->
       <div class="absolute top-1 sm:top-1.5 left-1 sm:left-1.5">

@@ -49,13 +49,8 @@ public static class ServiceExtensions
         });
         services.AddSingleton<ICacheService, CacheService>();
 
-        // Configure Distributed Cache (SQL backend)
-        services.AddDistributedSqlServerCache(options =>
-        {
-            options.ConnectionString = ResolveConnectionString(config);
-            options.SchemaName = "dbo";
-            options.TableName = "SqlCache";
-        });
+        // Configure Distributed Cache (In-memory for stability)
+        services.AddDistributedMemoryCache();
         
         // Add caching warmup service
         services.AddHostedService<CacheWarmupService>();
@@ -139,7 +134,6 @@ public static class ServiceExtensions
         services.AddScoped<INavigationService, NavigationService>();
         services.AddScoped<IProductService, ProductService>();
         services.AddScoped<IReviewService, ReviewService>();
-        services.AddScoped<IAdultProductService, AdultProductService>();
 
         services.Configure<SteadfastSettings>(config.GetSection("Steadfast"));
         services.AddHttpClient<ISteadfastService, SteadfastService>()

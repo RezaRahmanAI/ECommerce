@@ -180,7 +180,7 @@ export class AdminProductFormComponent implements OnDestroy, OnInit {
             source: "url",
             label: `Image ${index + 1}`,
             alt: img.altText || product.headline,
-            type: "image",
+            type: (img.type || "image") as "image" | "video",
             isMain: img.isPrimary,
           });
         });
@@ -336,18 +336,19 @@ export class AdminProductFormComponent implements OnDestroy, OnInit {
     });
   }
 
-  private buildPayload(uploadedUrls: string[]): ProductCreatePayload | ProductUpdatePayload {
+  private buildPayload(uploadedResults: { url: string, type: string }[]): ProductCreatePayload | ProductUpdatePayload {
     const raw = this.form.getRawValue();
     
     // Process media
-    const allMediaItems = this.buildMediaItems(uploadedUrls);
+    const allMediaItems = this.buildMediaItems(uploadedResults);
     const mainMedia = allMediaItems.find(i => i.isMain) || allMediaItems[0];
     
     const images: ProductImage[] = allMediaItems.map((item, idx) => ({
       id: 0,
       imageUrl: item.url,
       altText: item.alt || raw.headline || undefined,
-      isPrimary: item.isMain
+      isPrimary: item.isMain,
+      type: item.type
     }));
 
     return {
@@ -373,14 +374,18 @@ export class AdminProductFormComponent implements OnDestroy, OnInit {
     };
   }
 
-  private buildMediaItems(uploadedUrls: string[]): MediaFormValue[] {
+  private buildMediaItems(uploadedResults: { url: string, type: string }[]): MediaFormValue[] {
     let fileIndex = 0;
     return this.mediaItemsArray.controls.map((control) => {
       const value = control.getRawValue() as MediaFormValue;
       if (value.source === "file") {
-        const url = uploadedUrls[fileIndex] ?? value.url;
+        const result = uploadedResults[fileIndex];
         fileIndex += 1;
-        return { ...value, url };
+        return { 
+          ...value, 
+          url: result?.url || value.url,
+          type: (result?.type || value.type) as "image" | "video"
+        };
       }
       return value;
     });
@@ -399,7 +404,7 @@ export class AdminProductFormComponent implements OnDestroy, OnInit {
         url,
         label: this.titleize(file.name.replace(/\.[^.]+$/, "")) || "Gallery image",
         alt: this.form.get("headline")?.value || "Product image",
-        type: "image",
+        type: file.type.startsWith("video/") ? "video" : "image",
         isMain: this.mediaItemsArray.length === 0,
         source: "file",
       });

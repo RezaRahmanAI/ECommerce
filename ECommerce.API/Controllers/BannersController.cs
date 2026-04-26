@@ -2,8 +2,8 @@ using ECommerce.Core.DTOs;
 using ECommerce.Core.Entities;
 using ECommerce.Core.Interfaces;
 using ECommerce.Core.Specifications;
+using ECommerce.Core.Caching;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Caching.Memory;
 using Microsoft.AspNetCore.OutputCaching;
 using ECommerce.Core.Constants;
 
@@ -14,9 +14,9 @@ namespace ECommerce.API.Controllers;
 public class BannersController : ControllerBase
 {
     private readonly IGenericRepository<HeroBanner> _bannerRepo;
-    private readonly IMemoryCache _cache;
+    private readonly ICacheService _cache;
 
-    public BannersController(IGenericRepository<HeroBanner> bannerRepo, IMemoryCache cache)
+    public BannersController(IGenericRepository<HeroBanner> bannerRepo, ICacheService cache)
     {
         _bannerRepo = bannerRepo;
         _cache = cache;
@@ -29,7 +29,8 @@ public class BannersController : ControllerBase
     {
         string cacheKey = CacheConstants.BannersActive;
 
-        if (_cache.TryGetValue(cacheKey, out List<HeroBannerDto>? cached) && cached != null)
+        var cached = await _cache.GetAsync<List<HeroBannerDto>>(cacheKey);
+        if (cached != null)
         {
             return Ok(cached);
         }
@@ -47,7 +48,7 @@ public class BannersController : ControllerBase
             Type = b.Type
         }).ToList();
 
-        _cache.Set(cacheKey, bannerDtos, new MemoryCacheEntryOptions { Size = 1, AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10) });
+        await _cache.SetAsync(cacheKey, bannerDtos, TimeSpan.FromMinutes(10));
         return Ok(bannerDtos);
     }
 }

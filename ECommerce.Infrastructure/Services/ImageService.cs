@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 using ECommerce.Core.Interfaces;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using SixLabors.ImageSharp;
@@ -13,10 +14,10 @@ namespace ECommerce.Infrastructure.Services;
 public class ImageService : IImageService
 {
     private readonly IConfiguration _config;
-    private readonly IHostEnvironment _env;
+    private readonly IWebHostEnvironment _env;
     private readonly string _rootPath;
 
-    public ImageService(IConfiguration config, IHostEnvironment env)
+    public ImageService(IConfiguration config, IWebHostEnvironment env)
     {
         _config = config;
         _env = env;
@@ -58,6 +59,36 @@ public class ImageService : IImageService
         return $"/uploads/{folderName}/{savedFileName}";
     }
 
+    public async Task<string> SaveMediaAsync(Stream mediaStream, string fileName, string folderName)
+    {
+        if (mediaStream == null)
+            throw new ArgumentNullException(nameof(mediaStream));
+
+        var extension = Path.GetExtension(fileName).ToLower();
+        var isVideo = extension == ".mp4" || extension == ".mov" || extension == ".webm" || extension == ".avi" || extension == ".mkv";
+
+        if (!isVideo)
+        {
+            return await ProcessAndSaveImageAsync(mediaStream, fileName, folderName);
+        }
+
+        var uploadsFolder = Path.Combine(_rootPath, folderName);
+        if (!Directory.Exists(uploadsFolder))
+        {
+            Directory.CreateDirectory(uploadsFolder);
+        }
+
+        var savedFileName = $"{Guid.NewGuid()}{extension}";
+        var filePath = Path.Combine(uploadsFolder, savedFileName);
+
+        using (var fileStream = new FileStream(filePath, FileMode.Create))
+        {
+            await mediaStream.CopyToAsync(fileStream);
+        }
+
+        return $"/uploads/{folderName}/{savedFileName}";
+    }
+
     public Task DeleteImageAsync(string imageUrl)
     {
         try
@@ -90,7 +121,9 @@ public class ImageService : IImageService
                 : Path.Combine(_env.ContentRootPath, configuredPath);
         }
 
-        // Default to wwwroot/uploads
-        return Path.Combine(_env.ContentRootPath, "wwwroot", "uploads");
+        // Default: Use WebRootPath/uploads (Plesk compatible)
+        // In Plesk, WebRootPath is usually 'httpdocs'
+        var webRoot = _env.WebRootPath ?? Path.Combine(_env.ContentRootPath, "wwwroot");
+        return Path.Combine(webRoot, "uploads");
     }
 }

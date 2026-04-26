@@ -87,4 +87,5 @@ public class ProductImageInputDto
     public string ImageUrl { get; set; } = string.Empty;
     public string? AltText { get; set; }
     public bool IsPrimary { get; set; }
+    public string? Type { get; set; }
 }

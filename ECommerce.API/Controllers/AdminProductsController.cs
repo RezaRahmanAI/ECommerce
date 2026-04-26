@@ -50,25 +50,28 @@ public class AdminProductsController : ControllerBase
     [HttpPost("upload-media")]
     [DisableRequestSizeLimit]
     [RequestFormLimits(MultipartBodyLengthLimit = 104857600)]
-    public async Task<ActionResult<List<string>>> UploadProductMedia([FromForm] List<IFormFile> files)
+    public async Task<ActionResult<List<object>>> UploadProductMedia([FromForm] List<IFormFile> files)
     {
         try 
         {
             if (files == null || files.Count == 0)
                 return BadRequest("No files uploaded");
 
-            var uploadedUrls = new List<string>();
+            var uploadedFiles = new List<object>();
 
             foreach (var file in files)
             {
                 if (file.Length > 0)
                 {
-                    var url = await _imageService.ProcessAndSaveImageAsync(file.OpenReadStream(), file.FileName, "products");
-                    uploadedUrls.Add(url);
+                    var url = await _imageService.SaveMediaAsync(file.OpenReadStream(), file.FileName, "products");
+                    var extension = Path.GetExtension(file.FileName).ToLower();
+                    var type = (extension == ".mp4" || extension == ".mov" || extension == ".webm" || extension == ".avi" || extension == ".mkv") ? "video" : "image";
+                    
+                    uploadedFiles.Add(new { url, type });
                 }
             }
 
-            return Ok(uploadedUrls);
+            return Ok(uploadedFiles);
         }
         catch (UnauthorizedAccessException ex)
         {

@@ -34,7 +34,6 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<BlockedIp> BlockedIps { get; set; }
     public DbSet<DeliveryMethod> DeliveryMethods { get; set; }
     public DbSet<AppRefreshToken> RefreshTokens { get; set; }
-    public DbSet<AdultProduct> AdultProducts { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -218,14 +217,6 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             entity.Property(u => u.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
         });
 
-        // Adult Product Configuration
-        builder.Entity<AdultProduct>(entity =>
-        {
-            entity.Property(p => p.Price).HasColumnType("decimal(18,2)");
-            entity.Property(p => p.CompareAtPrice).HasColumnType("decimal(18,2)");
-            entity.HasQueryFilter(p => p.IsActive);
-            entity.HasIndex(p => p.Slug).IsUnique();
-        });
 
         // Additional Performance Indexes
         builder.Entity<HeroBanner>(entity =>

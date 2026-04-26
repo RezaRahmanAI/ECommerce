@@ -67,13 +67,26 @@ export class ProductCardComponent implements OnInit {
     this.cdr.detectChanges();
   }
 
+  get primaryMedia(): ProductImage | null {
+    if ("images" in this.product && this.product.images && this.product.images.length > 0) {
+      const primary = this.product.images.find((img) => img.isPrimary) || this.product.images[0];
+      return primary;
+    }
+    
+    if (this.product.imgUrl) {
+      return {
+        id: 0,
+        imageUrl: this.product.imgUrl,
+        isPrimary: true,
+        type: "image"
+      };
+    }
+    
+    return null;
+  }
+
   get mainImage(): string | null {
-    return (
-      this.product.imgUrl ||
-      ("images" in this.product && this.product.images.length > 0
-        ? this.product.images[0].imageUrl
-        : null)
-    );
+    return this.primaryMedia?.imageUrl || null;
   }
 
   get fallbackImageUrl(): string {

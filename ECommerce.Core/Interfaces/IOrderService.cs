@@ -6,7 +6,7 @@ public interface IOrderService
 {
     Task<OrderDto> CreateOrderAsync(OrderCreateDto orderDto);
     Task<IReadOnlyList<OrderDto>> GetOrdersAsync();
-    Task<(IReadOnlyList<OrderDto> Items, int Total)> GetOrdersForAdminAsync(string? searchTerm, string? status, string? dateRange, int page, int pageSize);
+    Task<(IReadOnlyList<OrderDto> Items, int Total)> GetOrdersForAdminAsync(string? searchTerm, string? status, string? dateRange, DateTime? fromDate, DateTime? toDate, int page, int pageSize);
     Task<OrderDto?> GetOrderByIdAsync(int id);
     Task<bool> UpdateOrderStatusAsync(int id, string status);
     Task<bool> UpdateOrderAsync(int id, OrderUpdateDto orderUpdateDto);

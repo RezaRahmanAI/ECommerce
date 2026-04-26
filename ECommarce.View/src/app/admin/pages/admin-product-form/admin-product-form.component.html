@@ -175,7 +175,7 @@
           <div class="p-4 rounded-full bg-surface-light dark:bg-surface-dark shadow-sm mb-4 group-hover:scale-110 transition-transform">
             <app-icon name="Upload" className="w-8 h-8 text-primary"></app-icon>
           </div>
-          <p class="text-base font-semibold text-text-main-light dark:text-text-main-dark">Drag and drop images here</p>
+          <p class="text-base font-semibold text-text-main-light dark:text-text-main-dark">Drag and drop images or videos here</p>
           <p class="text-sm text-text-secondary-light mt-1">or click to browse from files</p>
           <input #fileInput class="hidden" type="file" multiple (change)="handleFilesSelected($event)" />
         </div>
@@ -193,7 +193,13 @@
           >
             <!-- Preview -->
             <div class="relative aspect-video w-full overflow-hidden bg-gray-100">
-              <img [src]="imageUrlService.getImageUrl(media.get('url')?.value)" class="h-full w-full object-cover transition-transform group-hover:scale-105" />
+              <img *ngIf="media.get('type')?.value !== 'video'" [src]="imageUrlService.getImageUrl(media.get('url')?.value)" class="h-full w-full object-cover transition-transform group-hover:scale-105" />
+              <div *ngIf="media.get('type')?.value === 'video'" class="relative h-full w-full">
+                <video [src]="imageUrlService.getImageUrl(media.get('url')?.value)" class="h-full w-full object-cover"></video>
+                <div class="absolute inset-0 flex items-center justify-center bg-black/20">
+                  <app-icon name="Play" className="w-8 h-8 text-white opacity-80"></app-icon>
+                </div>
+              </div>
               <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-3">
                 <button type="button" (click)="removeMediaItem(i)" class="text-xs font-bold text-white bg-red-600 px-3 py-1.5 rounded-lg hover:bg-red-700 transition-colors">
                   Remove

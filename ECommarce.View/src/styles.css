@@ -272,6 +272,73 @@ quill-editor {
   width: 100%;
 }
 
+/* --- Quill Content Rendering (Public Site) --- */
+/* This restores formatting removed by Tailwind's reset */
+.ql-editor {
+  word-wrap: break-word;
+}
+
+.ql-editor strong, 
+.ql-editor b {
+  font-weight: 700 !important;
+}
+
+.ql-editor i, 
+.ql-editor em {
+  font-style: italic !important;
+}
+
+.ql-editor u {
+  text-decoration: underline !important;
+}
+
+.ql-editor ul, 
+.ql-editor ol {
+  margin-top: 0.5rem !important;
+  margin-bottom: 1rem !important;
+  padding-left: 1.5rem !important;
+}
+
+.ql-editor ul {
+  list-style-type: disc !important;
+}
+
+.ql-editor ol {
+  list-style-type: decimal !important;
+}
+
+.ql-editor li {
+  display: list-item !important;
+  margin-bottom: 0.25rem !important;
+}
+
+.ql-editor p {
+  margin-bottom: 0.5rem !important;
+}
+
+.ql-editor h1, .ql-editor h2, .ql-editor h3, .ql-editor h4 {
+  margin-top: 1.5rem !important;
+  margin-bottom: 0.75rem !important;
+  font-weight: 700 !important;
+  text-transform: none !important;
+  line-height: 1.2 !important;
+}
+
+/* Alignment Classes */
+.ql-editor .ql-align-center { text-align: center !important; }
+.ql-editor .ql-align-right { text-align: right !important; }
+.ql-editor .ql-align-justify { text-align: justify !important; }
+
+/* Size Classes */
+.ql-editor .ql-size-small { font-size: 0.75em !important; }
+.ql-editor .ql-size-large { font-size: 1.5em !important; }
+.ql-editor .ql-size-huge { font-size: 2.5em !important; }
+
+/* Indentation Classes */
+.ql-editor .ql-indent-1 { padding-left: 3em !important; }
+.ql-editor .ql-indent-2 { padding-left: 6em !important; }
+.ql-editor .ql-indent-3 { padding-left: 9em !important; }
+
 /* Premium Animations */
 @keyframes slideUp {
   from {

@@ -39,6 +39,7 @@ public class SteadfastWorker : BackgroundService
                 var spec = new BaseSpecification<Order>(o => 
                     o.Status == OrderStatus.Confirmed && 
                     o.SteadfastConsignmentId == null);
+                spec.AddInclude(x => x.Items);
                 
                 var orders = await unitOfWork.Repository<Order>().ListAsync(spec);
 

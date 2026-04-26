@@ -147,7 +147,7 @@ public class AdminCategoriesController : ControllerBase
         });
     }
 
-    [HttpPut("{id:int}")]
+    [HttpPost("{id:int}")]
     public async Task<ActionResult<CategoryResponse>> Update(int id, [FromBody] CategoryRequest request)
     {
         var category = await _context.Categories.IgnoreQueryFilters().FirstOrDefaultAsync(c => c.Id == id);

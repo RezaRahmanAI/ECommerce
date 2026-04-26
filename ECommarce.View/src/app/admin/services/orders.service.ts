@@ -30,6 +30,8 @@ export class OrdersService {
         searchTerm: params.searchTerm,
         status: params.status,
         dateRange: params.dateRange,
+        fromDate: params.fromDate || "",
+        toDate: params.toDate || "",
         page: params.page,
         pageSize: params.pageSize,
       },
@@ -46,6 +48,8 @@ export class OrdersService {
         searchTerm: params.searchTerm,
         status: params.status,
         dateRange: params.dateRange,
+        fromDate: params.fromDate || "",
+        toDate: params.toDate || "",
       },
     });
 

@@ -4,7 +4,8 @@ using ECommerce.Infrastructure.Data;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Memory;
+using ECommerce.Core.Interfaces;
+using ECommerce.Core.Caching;
 using Microsoft.AspNetCore.OutputCaching;
 using ECommerce.Core.Constants;
 
@@ -16,10 +17,10 @@ namespace ECommerce.API.Controllers;
 public class AdminNavigationController : ControllerBase
 {
     private readonly ApplicationDbContext _context;
-    private readonly IMemoryCache _cache;
+    private readonly ICacheService _cache;
     private readonly IOutputCacheStore _cacheStore;
 
-    public AdminNavigationController(ApplicationDbContext context, IMemoryCache cache, IOutputCacheStore cacheStore)
+    public AdminNavigationController(ApplicationDbContext context, ICacheService cache, IOutputCacheStore cacheStore)
     {
         _context = context;
         _cache = cache;
@@ -108,8 +109,8 @@ public class AdminNavigationController : ControllerBase
 
     private async Task InvalidateCache()
     {
-        _cache.Remove(CacheConstants.NavigationMenu);
-        _cache.Remove(CacheConstants.HomeData);
+        await _cache.RemoveAsync(CacheConstants.NavigationMenu);
+        await _cache.RemoveAsync(CacheConstants.HomeData);
         
         await _cacheStore.EvictByTagAsync("navigation", default);
         await _cacheStore.EvictByTagAsync("homepage", default);

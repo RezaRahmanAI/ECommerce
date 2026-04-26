@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text.Json;
@@ -39,15 +40,20 @@ public class SteadfastService : ISteadfastService
     {
         try
         {
+            var fullAddress = string.Join(", ", new[] { order.ShippingAddress, order.Area, order.City }.Where(s => !string.IsNullOrEmpty(s)));
+            var itemsList = order.Items != null && order.Items.Any() 
+                ? string.Join(", ", order.Items.Select(i => $"{i.ProductName} ({i.Quantity})"))
+                : $"Order {order.OrderNumber}";
+
             var payload = new
             {
                 invoice = order.OrderNumber,
                 recipient_name = order.CustomerName,
                 recipient_phone = order.CustomerPhone,
-                recipient_address = order.ShippingAddress,
+                recipient_address = fullAddress,
                 cod_amount = order.Total,
-                note = "Order from SheraShopBD",
-                item_description = $"Order {order.OrderNumber}"
+                note = "Delivery from SheraShopBD",
+                item_description = itemsList
             };
             
             var response = await _httpClient.PostAsJsonAsync("create_order", payload);
@@ -66,7 +72,8 @@ public class SteadfastService : ISteadfastService
 
                     if (consignment.TryGetProperty("consignment_id", out var cidElem))
                     {
-                        cid = cidElem.GetRawText();
+                        // Handle both numeric and string values, stripping quotes if necessary
+                        cid = cidElem.GetRawText().Trim('"');
                     }
                     
                     if (consignment.TryGetProperty("tracking_code", out var trackElem))

@@ -79,13 +79,6 @@ export const appRoutes: Routes = [
       ).then((m) => m.LandingPageComponent),
   },
   {
-    path: "adult-lp/:slug",
-    loadComponent: () =>
-      import(
-        "./features/adult-landing/pages/adult-landing-page/adult-landing-page.component"
-      ).then((m) => m.AdultLandingPageComponent),
-  },
-  {
     path: "product/:slug",
     loadComponent: () =>
       import("./features/product-details/pages/product-details-page/product-details-page.component").then(

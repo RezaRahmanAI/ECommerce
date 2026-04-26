@@ -129,30 +129,6 @@ export const routes: Routes = [
     data: { title: "Reviews Management" },
   },
   {
-    path: "adult-products",
-    loadComponent: () =>
-      import("./pages/admin-adult-products/admin-adult-products.component").then(
-        (m) => m.AdminAdultProductsComponent,
-      ),
-    data: { title: "Adult Products" },
-  },
-  {
-    path: "adult-products/new",
-    loadComponent: () =>
-      import("./pages/admin-adult-product-form/admin-adult-product-form.component").then(
-        (m) => m.AdminAdultProductFormComponent,
-      ),
-    data: { title: "Add Adult Product" },
-  },
-  {
-    path: "adult-products/edit/:id",
-    loadComponent: () =>
-      import("./pages/admin-adult-product-form/admin-adult-product-form.component").then(
-        (m) => m.AdminAdultProductFormComponent,
-      ),
-    data: { title: "Edit Adult Product" },
-  },
-  {
     path: "security",
     loadComponent: () =>
       import("./pages/admin-blocked-ips/admin-blocked-ips.component").then(

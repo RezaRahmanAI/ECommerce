@@ -3,8 +3,8 @@ using ECommerce.Core.DTOs;
 using ECommerce.Core.Entities;
 using ECommerce.Core.Interfaces;
 using ECommerce.Core.Specifications;
+using ECommerce.Core.Caching;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Caching.Memory;
 using Microsoft.AspNetCore.OutputCaching;
 using ECommerce.Core.Constants;
 
@@ -12,13 +12,14 @@ namespace ECommerce.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Microsoft.AspNetCore.OutputCaching.OutputCache(Tags = new[] { "home", "storefront" })]
 public class HomeController : ControllerBase
 {
     private readonly IGenericRepository<HeroBanner> _bannerRepo;
     private readonly IGenericRepository<Product> _productRepo;
     private readonly IGenericRepository<Category> _categoryRepo;
     private readonly IMapper _mapper;
-    private readonly IMemoryCache _cache;
+    private readonly ICacheService _cache;
     private readonly IProductService _productService;
 
     public HomeController(
@@ -26,7 +27,7 @@ public class HomeController : ControllerBase
         IGenericRepository<Product> productRepo,
         IGenericRepository<Category> categoryRepo,
         IMapper mapper,
-        IMemoryCache cache,
+        ICacheService cache,
         IProductService productService)
     {
         _bannerRepo = bannerRepo;
@@ -38,15 +39,12 @@ public class HomeController : ControllerBase
     }
 
     [HttpGet]
-    [OutputCache(Tags = new[] { "homepage", "products", "categories", "banners" })]
+    [Microsoft.AspNetCore.OutputCaching.OutputCache(Duration = 600)]
     public async Task<ActionResult<HomePageDto>> GetHomeData()
     {
-        // Execute tasks strictly sequentially. Do not create the Tasks before awaiting them, 
-        // as doing so will trigger concurrent scoped DbContext executions during cache misses.
-        var banners = await _cache.GetOrCreateAsync(CacheConstants.BannersActive, async entry =>
+        // 1. Banners Module
+        var banners = await _cache.GetOrCreateAsync(CacheConstants.BannersActive, async () =>
         {
-            entry.SlidingExpiration = TimeSpan.FromMinutes(30);
-            entry.Size = 1;
             var items = await _bannerRepo.ListAsync(new HeroBannerSpecification(isActive: true));
             return items.Select(b => new HeroBannerDto
             {
@@ -57,42 +55,39 @@ public class HomeController : ControllerBase
                 DisplayOrder = b.DisplayOrder,
                 Type = b.Type
             }).ToList();
-        }) ?? new List<HeroBannerDto>();
+        }, new CacheEntryOptions { AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(60), SlidingExpiration = TimeSpan.FromMinutes(30) });
 
-        var newArrivals = await _cache.GetOrCreateAsync(CacheConstants.NewArrivals, async entry =>
+        // 2. New Arrivals Module
+        var newArrivals = await _cache.GetOrCreateAsync(CacheConstants.NewArrivals, async () =>
         {
-            entry.SlidingExpiration = TimeSpan.FromMinutes(10);
-            entry.Size = 1;
             var items = await _productRepo.ListAsync(new ProductsWithCategoriesSpecification(
                 sort: "id_desc", categoryId: null, categorySlug: null, search: null,
                 isNew: true, skip: 0, take: 10));
             return _mapper.Map<IReadOnlyList<Product>, IReadOnlyList<ProductListDto>>(items);
-        }) ?? new List<ProductListDto>();
+        }, new CacheEntryOptions { AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(15), SlidingExpiration = TimeSpan.FromMinutes(5) });
 
-        var featuredProducts = await _cache.GetOrCreateAsync(CacheConstants.FeaturedProducts, async entry =>
+        // 3. Featured Products Module
+        var featuredProducts = await _cache.GetOrCreateAsync(CacheConstants.FeaturedProducts, async () =>
         {
-            entry.SlidingExpiration = TimeSpan.FromMinutes(10);
-            entry.Size = 1;
             var items = await _productRepo.ListAsync(new ProductsWithCategoriesSpecification(
                 sort: "id_desc", categoryId: null, categorySlug: null, search: null,
                 isNew: null, skip: 0, take: 10));
             return _mapper.Map<IReadOnlyList<Product>, IReadOnlyList<ProductListDto>>(items);
-        }) ?? new List<ProductListDto>();
+        }, new CacheEntryOptions { AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(15), SlidingExpiration = TimeSpan.FromMinutes(5) });
 
-        var categories = await _cache.GetOrCreateAsync(CacheConstants.CategoriesAll, async entry =>
+        // 4. Categories Module
+        var categories = await _cache.GetOrCreateAsync(CacheConstants.CategoriesAll, async () =>
         {
-            entry.SlidingExpiration = TimeSpan.FromHours(1);
-            entry.Size = 1;
             var items = await _categoryRepo.ListAsync(new CategoriesWithSubCategoriesSpec());
             return _mapper.Map<IReadOnlyList<CategoryDto>>(items);
-        }) ?? new List<CategoryDto>();
+        }, new CacheEntryOptions { AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(4), SlidingExpiration = TimeSpan.FromHours(1) });
 
         return Ok(new HomePageDto
         {
-            Banners = banners,
-            NewArrivals = newArrivals,
-            FeaturedProducts = featuredProducts,
-            Categories = categories
+            Banners = banners ?? new List<HeroBannerDto>(),
+            NewArrivals = newArrivals ?? new List<ProductListDto>(),
+            FeaturedProducts = featuredProducts ?? new List<ProductListDto>(),
+            Categories = categories ?? new List<CategoryDto>()
         });
     }
 }

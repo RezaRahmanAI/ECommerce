@@ -89,7 +89,8 @@ public class ImagesController : ControllerBase
         {
             _logger.LogError(ex, "Error processing image: {Path}", path);
             // Fall back to serving original file
-            return PhysicalFile(physicalPath, "image/jpeg");
+            string contentType = Path.GetExtension(physicalPath).ToLower() == ".webp" ? "image/webp" : "image/jpeg";
+            return PhysicalFile(physicalPath, contentType);
         }
     }
 

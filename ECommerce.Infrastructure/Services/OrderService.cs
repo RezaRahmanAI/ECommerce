@@ -202,9 +202,9 @@ public class OrderService : IOrderService
         return false;
     }
 
-    public async Task<(IReadOnlyList<OrderDto> Items, int Total)> GetOrdersForAdminAsync(string? searchTerm, string? status, string? dateRange, int page, int pageSize)
+    public async Task<(IReadOnlyList<OrderDto> Items, int Total)> GetOrdersForAdminAsync(string? searchTerm, string? status, string? dateRange, DateTime? fromDate, DateTime? toDate, int page, int pageSize)
     {
-        var spec = new OrdersWithFiltersForAdminSpecification(searchTerm, status, dateRange);
+        var spec = new OrdersWithFiltersForAdminSpecification(searchTerm, status, dateRange, fromDate, toDate);
         var total = await _unitOfWork.Repository<Order>().CountAsync(spec);
         
         spec.ApplyPaging(pageSize * (page - 1), pageSize);
@@ -228,17 +228,25 @@ public class OrderService : IOrderService
         if (orderUpdateDto.City != null) order.City = orderUpdateDto.City;
         if (orderUpdateDto.Area != null) order.Area = orderUpdateDto.Area;
 
-        // Update Items if provided
+        // Update Items if provided (Product Exchange)
         if (orderUpdateDto.Items != null)
         {
-            // Simple approach: Replace items and handle stock logic if order isn't cancelled
-            // 1. Return old stock if order wasn't cancelled
+            // 1. Fetch all product IDs involved (current items + new items)
+            var currentProductIds = order.Items.Select(i => i.ProductId).ToList();
+            var newProductIds = orderUpdateDto.Items.Select(i => i.ProductId).ToList();
+            var allProductIds = currentProductIds.Concat(newProductIds).Distinct().ToList();
+
+            // 2. Bulk fetch products with tracking
+            var productSpec = new ProductsWithCategoriesSpecification(allProductIds);
+            var products = await _unitOfWork.Repository<Product>().ListAsync(productSpec, track: true);
+            var productDict = products.ToDictionary(p => p.Id);
+
+            // 3. Return old stock if order wasn't cancelled
             if (order.Status != OrderStatus.Cancelled)
             {
                 foreach (var item in order.Items)
                 {
-                    var product = await _unitOfWork.Repository<Product>().GetByIdAsync(item.ProductId);
-                    if (product != null)
+                    if (productDict.TryGetValue(item.ProductId, out var product))
                     {
                         product.StockQuantity += item.Quantity;
                         _unitOfWork.Repository<Product>().Update(product);
@@ -246,17 +254,24 @@ public class OrderService : IOrderService
                 }
             }
 
-            // 2. Clear old items
-            order.Items = new List<OrderItem>();
+            // 4. Explicitly remove old items from repository to avoid orphans
+            foreach (var item in order.Items.ToList())
+            {
+                _unitOfWork.Repository<OrderItem>().Delete(item);
+            }
+            order.Items.Clear();
 
-            // 3. Add new items and deduct stock
+            // 5. Add new items and deduct stock
             foreach (var itemDto in orderUpdateDto.Items)
             {
-                var product = await _unitOfWork.Repository<Product>().GetByIdAsync(itemDto.ProductId);
-                if (product == null) throw new KeyNotFoundException($"Product {itemDto.ProductId} not found");
+                if (!productDict.TryGetValue(itemDto.ProductId, out var product))
+                    throw new KeyNotFoundException($"Product {itemDto.ProductId} not found");
 
                 if (order.Status != OrderStatus.Cancelled)
                 {
+                    if (product.StockQuantity < itemDto.Quantity)
+                        throw new InvalidOperationException($"Insufficient stock for {product.Headline}. Available: {product.StockQuantity}");
+                        
                     product.StockQuantity -= itemDto.Quantity;
                     _unitOfWork.Repository<Product>().Update(product);
                 }
@@ -273,7 +288,7 @@ public class OrderService : IOrderService
                 });
             }
 
-            // 4. Recalculate totals
+            // 6. Recalculate totals
             order.SubTotal = order.Items.Sum(i => i.TotalPrice);
             order.Total = order.SubTotal + order.Tax + order.ShippingCost;
         }

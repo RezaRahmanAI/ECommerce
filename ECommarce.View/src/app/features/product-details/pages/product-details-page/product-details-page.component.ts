@@ -62,6 +62,7 @@ export class ProductDetailsPageComponent {
   readonly settings$ = this.settingsService.getSettings();
 
   currentImageIndex = 0;
+  isVideoPlaying = false;
 
 
   private readonly quantitySubject = new BehaviorSubject<number>(1);
@@ -239,36 +240,45 @@ export class ProductDetailsPageComponent {
 
 
 
-  prevImage(gallery: string[]): void {
+  prevImage(gallery: ProductImage[]): void {
     this.currentImageIndex =
       (this.currentImageIndex - 1 + gallery.length) % gallery.length;
+    this.isVideoPlaying = false;
   }
 
-  nextImage(gallery: string[]): void {
+  nextImage(gallery: ProductImage[]): void {
     this.currentImageIndex = (this.currentImageIndex + 1) % gallery.length;
+    this.isVideoPlaying = false;
   }
 
   goToImage(index: number): void {
     this.currentImageIndex = index;
+    this.isVideoPlaying = false;
   }
 
-  private buildGallery(product: Product): string[] {
-    const primaryImg = product.images?.find(i => i.isPrimary)?.imageUrl || product.imgUrl;
-    const allImages = product.images?.map((i) => i.imageUrl) ?? [];
-    
-    let gallery: string[] = [];
-    if (primaryImg) {
-      gallery.push(primaryImg);
+  toggleVideo(video: HTMLVideoElement): void {
+    if (video.paused) {
+      video.play();
+      this.isVideoPlaying = true;
+    } else {
+      video.pause();
+      this.isVideoPlaying = false;
     }
-    
-    // Add other images, avoiding duplicates
-    allImages.forEach((img) => {
-      if (img !== primaryImg) {
-        gallery.push(img);
-      }
-    });
-    
-    return gallery;
+    this.cdr.detectChanges();
+  }
+
+  onVideoEnded(): void {
+    this.isVideoPlaying = false;
+    this.cdr.detectChanges();
+  }
+
+  private buildGallery(product: Product): ProductImage[] {
+    const images = product.images ?? [];
+    if (images.length === 0 && product.imgUrl) {
+      return [{ id: 0, imageUrl: product.imgUrl, isPrimary: true, type: 'image' }];
+    }
+    // Sort so primary is first
+    return [...images].sort((a, b) => (b.isPrimary ? 1 : 0) - (a.isPrimary ? 1 : 0));
   }
 
   private ensureSelectedMedia(

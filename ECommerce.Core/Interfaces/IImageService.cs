@@ -12,6 +12,11 @@ public interface IImageService
     Task<string> ProcessAndSaveImageAsync(Stream imageStream, string fileName, string folderName);
 
     /// <summary>
+    /// Saves a media file (image or video) to the filesystem without processing if it's a video.
+    /// </summary>
+    Task<string> SaveMediaAsync(Stream mediaStream, string fileName, string folderName);
+
+    /// <summary>
     /// Deletes an image from the filesystem.
     /// </summary>
     Task DeleteImageAsync(string imageUrl);

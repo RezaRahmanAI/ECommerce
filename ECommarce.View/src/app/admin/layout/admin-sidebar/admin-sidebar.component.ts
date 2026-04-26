@@ -36,11 +36,11 @@ export class AdminSidebarComponent implements OnInit {
 
 
   ngOnInit() {
-    // Open menu if we are on a products route
-    if (this.router.url.includes("/admin/products")) {
+    // Open menu if we are on a products or inventory route
+    const catalogRoutes = ["/admin/products", "/admin/inventory"];
+    if (catalogRoutes.some(route => this.router.url.includes(route))) {
       this.isProductsMenuOpen = true;
     }
-
   }
 
   navItems: AdminNavItem[] = [

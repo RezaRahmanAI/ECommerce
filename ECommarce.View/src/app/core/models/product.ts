@@ -3,6 +3,7 @@ export interface ProductImage {
   imageUrl: string;
   altText?: string;
   isPrimary: boolean;
+  type?: string;
 }
 
 export interface Product {

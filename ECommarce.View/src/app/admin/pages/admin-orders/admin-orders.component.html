@@ -272,6 +272,25 @@
             </button>
           </div>
         </div>
+
+        <!-- Custom Date Inputs -->
+        <div *ngIf="selectedDateRange === 'Custom'" class="flex items-center gap-2 animate-in fade-in slide-in-from-left-2 duration-300">
+          <div class="relative">
+            <input 
+              type="date" 
+              [formControl]="fromDateControl" 
+              class="block w-full px-3 py-2 border-gray-200 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-background-dark text-primary dark:text-white text-[10px] font-bold uppercase focus:ring-primary focus:border-primary transition-all outline-none"
+            >
+          </div>
+          <span class="text-gray-400 font-black text-[10px] uppercase">to</span>
+          <div class="relative">
+            <input 
+              type="date" 
+              [formControl]="toDateControl" 
+              class="block w-full px-3 py-2 border-gray-200 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-background-dark text-primary dark:text-white text-[10px] font-bold uppercase focus:ring-primary focus:border-primary transition-all outline-none"
+            >
+          </div>
+        </div>
       </div>
     </div>
 

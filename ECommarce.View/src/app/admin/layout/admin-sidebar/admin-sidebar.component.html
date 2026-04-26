@@ -86,8 +86,8 @@
                 [ngClass]="isProductsMenuOpen ? 'text-white bg-white/5 ring-1 ring-white/5' : 'text-white/50 hover:text-white hover:bg-white/5'"
               >
                 <div class="flex items-center gap-3.5">
-                  <app-icon name="ShoppingBag" className="w-5 h-5 group-hover:scale-110 transition-transform duration-300" [class.text-accent]="isProductsMenuOpen"></app-icon>
-                  <span class="text-sm font-display font-semibold">Inventory</span>
+                  <app-icon name="Package" className="w-5 h-5 group-hover:scale-110 transition-transform duration-300" [class.text-accent]="isProductsMenuOpen"></app-icon>
+                  <span class="text-sm font-display font-semibold">Catalog Center</span>
                 </div>
                 <app-icon
                   [name]="isProductsMenuOpen ? 'ChevronUp' : 'ChevronDown'"
@@ -95,7 +95,7 @@
                 ></app-icon>
               </button>
               
-              <div class="overflow-hidden transition-all duration-500" [style.max-height]="isProductsMenuOpen ? '400px' : '0px'">
+              <div class="overflow-hidden transition-all duration-500" [style.max-height]="isProductsMenuOpen ? '500px' : '0px'">
                 <div class="pl-12 pr-4 py-2 space-y-1 border-l-[1.5px] border-white/5 ml-6.5">
                   <a
                     class="block px-4 py-2 text-xs font-display font-semibold text-white/40 hover:text-accent transition-all duration-300 rounded-lg hover:bg-white/5"
@@ -103,7 +103,7 @@
                     routerLinkActive="nav-sub-active text-accent"
                     [routerLinkActiveOptions]="{ exact: true }"
                   >
-                    Product Catalog
+                    All Products
                   </a>
                   <a
                     class="block px-4 py-2 text-xs font-display font-semibold text-white/40 hover:text-accent transition-all duration-300 rounded-lg hover:bg-white/5"
@@ -115,11 +115,11 @@
                   </a>
                   <a
                     class="block px-4 py-2 text-xs font-display font-semibold text-white/40 hover:text-accent transition-all duration-300 rounded-lg hover:bg-white/5"
-                    routerLink="/admin/adult-products"
+                    routerLink="/admin/inventory"
                     routerLinkActive="nav-sub-active text-accent"
                     [routerLinkActiveOptions]="{ exact: true }"
                   >
-                    Adult Products
+                    Inventory
                   </a>
                 </div>
               </div>

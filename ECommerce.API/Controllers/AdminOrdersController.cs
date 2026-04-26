@@ -25,10 +25,12 @@ public class AdminOrdersController : ControllerBase
         [FromQuery] string? searchTerm,
         [FromQuery] string? status,
         [FromQuery] string? dateRange,
+        [FromQuery] DateTime? fromDate,
+        [FromQuery] DateTime? toDate,
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 10)
     {
-        var (items, total) = await _orderService.GetOrdersForAdminAsync(searchTerm, status, dateRange, page, pageSize);
+        var (items, total) = await _orderService.GetOrdersForAdminAsync(searchTerm, status, dateRange, fromDate, toDate, page, pageSize);
         // Ensure properties are lowercase to match frontend expectations if JSON serialization doesn't do it automatically
         return Ok(new { items, total });
     }
@@ -37,10 +39,12 @@ public class AdminOrdersController : ControllerBase
     public async Task<ActionResult<IEnumerable<OrderDto>>> GetFilteredOrders(
         [FromQuery] string? searchTerm,
         [FromQuery] string? status,
-        [FromQuery] string? dateRange)
+        [FromQuery] string? dateRange,
+        [FromQuery] DateTime? fromDate,
+        [FromQuery] DateTime? toDate)
     {
         // Fetch all matching orders for stats calculation (page 1, max size)
-        var (items, _) = await _orderService.GetOrdersForAdminAsync(searchTerm, status, dateRange, 1, 100000);
+        var (items, _) = await _orderService.GetOrdersForAdminAsync(searchTerm, status, dateRange, fromDate, toDate, 1, 100000);
         return Ok(items);
     }
 

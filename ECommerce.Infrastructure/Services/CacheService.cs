@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using ECommerce.Core.Caching;
 using ECommerce.Core.Interfaces;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 
@@ -15,6 +16,7 @@ namespace ECommerce.Infrastructure.Services;
 public class CacheService : ICacheService
 {
     private readonly IMemoryCache _memoryCache;
+    private readonly IDistributedCache _distributedCache;
     private readonly ILogger<CacheService> _logger;
     private static readonly ConcurrentDictionary<string, byte> _cacheKeys = new();
     
@@ -28,42 +30,84 @@ public class CacheService : ICacheService
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
     };
 
-    public CacheService(IMemoryCache memoryCache, ILogger<CacheService> logger)
+    public CacheService(IMemoryCache memoryCache, IDistributedCache distributedCache, ILogger<CacheService> logger)
     {
         _memoryCache = memoryCache;
+        _distributedCache = distributedCache;
         _logger = logger;
     }
 
     public async Task<T?> GetAsync<T>(string key)
     {
-        if (_memoryCache.TryGetValue(key, out T? result))
+        // Layer 1: Memory
+        if (_memoryCache.TryGetValue(key, out T? memoryResult))
         {
-            return result;
+            _logger.LogDebug("Layer 1 (Memory) Cache hit for key: {Key}", key);
+            return memoryResult;
         }
-        return default;
+
+        // Layer 2: Distributed
+        var distributedResult = await _distributedCache.GetStringAsync(key);
+        if (distributedResult == null)
+        {
+            return default;
+        }
+
+        try
+        {
+            var deserialized = JsonSerializer.Deserialize<T>(distributedResult, _jsonOptions);
+            
+            // Backfill memory cache
+            if (deserialized != null)
+            {
+                _logger.LogDebug("Layer 2 (Distributed) hit. Backfilling Memory for key: {Key}", key);
+                _memoryCache.Set(key, deserialized, new MemoryCacheEntryOptions { 
+                    AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10), // Short backfill TTL
+                    Size = 1
+                });
+            }
+
+            return deserialized;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error deserializing cache key: {Key}", key);
+            return default;
+        }
     }
 
     public async Task SetAsync<T>(string key, T value, TimeSpan? expiration = null)
     {
         if (value == null) return;
 
-        var options = new MemoryCacheEntryOptions
+        var expirationTime = expiration ?? TimeSpan.FromHours(1);
+
+        // Layer 1: Memory
+        var memoryOptions = new MemoryCacheEntryOptions
         {
-            AbsoluteExpirationRelativeToNow = expiration ?? TimeSpan.FromHours(1),
-            Size = 1 // Required because SizeLimit is set in ServiceExtensions
+            AbsoluteExpirationRelativeToNow = expirationTime,
+            Size = 1
         };
+        memoryOptions.RegisterPostEvictionCallback(OnPostEviction);
+        _memoryCache.Set(key, value, memoryOptions);
 
-        options.RegisterPostEvictionCallback(OnPostEviction);
+        // Layer 2: Distributed
+        var distributedOptions = new DistributedCacheEntryOptions
+        {
+            AbsoluteExpirationRelativeToNow = expirationTime
+        };
+        var serialized = JsonSerializer.Serialize(value, _jsonOptions);
+        await _distributedCache.SetStringAsync(key, serialized, distributedOptions);
 
-        _memoryCache.Set(key, value, options);
         _cacheKeys.TryAdd(key, 0);
     }
 
     public async Task RemoveAsync(string key)
     {
         _memoryCache.Remove(key);
+        await _distributedCache.RemoveAsync(key);
         _cacheKeys.TryRemove(key, out _);
-        _logger.LogDebug("Invalidated cache key: {Key}", key);
+        _logger.LogDebug("Invalidated cache key from all layers: {Key}", key);
     }
 
     public async Task RemoveByPrefixAsync(string prefix)
@@ -87,7 +131,8 @@ public class CacheService : ICacheService
 
     public async Task<T> GetOrCreateAsync<T>(string key, Func<Task<T>> factory, CacheEntryOptions options)
     {
-        if (_memoryCache.TryGetValue(key, out T cachedValue))
+        var cachedValue = await GetAsync<T>(key);
+        if (cachedValue != null)
         {
             _logger.LogDebug("Cache hit for key: {Key}", key);
             return cachedValue;
@@ -108,7 +153,8 @@ public class CacheService : ICacheService
             }
 
             // Check again in case another thread populated it while we waited
-            if (_memoryCache.TryGetValue(key, out cachedValue))
+            cachedValue = await GetAsync<T>(key);
+            if (cachedValue != null)
             {
                 _logger.LogDebug("Cache hit (after lock) for key: {Key}", key);
                 return cachedValue;
@@ -177,10 +223,13 @@ public class CacheService : ICacheService
         return Task.FromResult(newVersion);
     }
 
-    private void OnPostEviction(object key, object value, EvictionReason reason, object state)
+    private void OnPostEviction(object key, object? value, EvictionReason reason, object? state)
     {
         var keyStr = key.ToString();
-        _cacheKeys.TryRemove(keyStr, out _);
-        _logger.LogDebug("Evicted cache key: {Key}. Reason: {Reason}", keyStr, reason);
+        if (!string.IsNullOrEmpty(keyStr))
+        {
+            _cacheKeys.TryRemove(keyStr, out _);
+            _logger.LogDebug("Evicted cache key: {Key}. Reason: {Reason}", keyStr, reason);
+        }
     }
 }

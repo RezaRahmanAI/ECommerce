@@ -123,13 +123,13 @@ export class ProductsService {
     );
   }
 
-  uploadProductMedia(files: File[]): Observable<string[]> {
+  uploadProductMedia(files: File[]): Observable<{ url: string, type: string }[]> {
     if (files.length === 0) {
       return of([]);
     }
     const formData = new FormData();
     files.forEach((file) => formData.append("files", file));
-    return this.api.post<string[]>("/admin/products/upload-media", formData);
+    return this.api.post<{ url: string, type: string }[]>("/admin/products/upload-media", formData);
   }
 
   getAvailableSizes(): Observable<string[]> {

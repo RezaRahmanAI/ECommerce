@@ -31,7 +31,10 @@ public class ProductDto
 
     // Media
     public string? ImageUrl { get; set; }
-    public string? ImgUrl => Images?.FirstOrDefault(i => i.IsPrimary)?.ImageUrl ?? Images?.FirstOrDefault()?.ImageUrl ?? ImageUrl; // Alias for frontend
+    public string? ImgUrl => Images?.FirstOrDefault(i => i.IsPrimary && (i.Type == "image" || string.IsNullOrEmpty(i.Type)))?.ImageUrl 
+                          ?? Images?.FirstOrDefault(i => i.Type == "image" || string.IsNullOrEmpty(i.Type))?.ImageUrl 
+                          ?? Images?.FirstOrDefault()?.ImageUrl 
+                          ?? ImageUrl; // Alias for frontend
     public IEnumerable<ProductImageDto> Images { get; set; } = new List<ProductImageDto>();
 }
 

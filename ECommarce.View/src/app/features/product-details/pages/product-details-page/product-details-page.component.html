@@ -38,17 +38,22 @@
               style="max-height: 550px"
             >
               <button
-                *ngFor="let url of vm.gallery; let i = index"
+                *ngFor="let item of vm.gallery; let i = index"
                 (click)="goToImage(i)"
                 class="flex-shrink-0 w-full h-28 border transition-all duration-300 overflow-hidden relative"
                 [class.border-[#1a1a1a]]="i === currentImageIndex"
                 [class.border-transparent]="i !== currentImageIndex"
               >
                 <img
-                  [src]="imageUrlService.getImageUrl(url)"
+                  *ngIf="item.type !== 'video'"
+                  [src]="imageUrlService.getImageUrl(item.imageUrl)"
                   class="w-full h-full object-cover"
                   [class.opacity-60]="i !== currentImageIndex"
                 />
+                <div *ngIf="item.type === 'video'" class="relative w-full h-full bg-black flex items-center justify-center">
+                   <video [src]="imageUrlService.getImageUrl(item.imageUrl)" class="w-full h-full object-cover opacity-60"></video>
+                   <app-icon name="Play" className="absolute w-6 h-6 text-white"></app-icon>
+                </div>
                 <div
                   *ngIf="i === currentImageIndex"
                   class="absolute bottom-0 left-0 w-full h-0.5 bg-[#1a1a1a]"
@@ -61,15 +66,42 @@
               <div
                 class="relative bg-[#ebebeb] overflow-hidden group aspect-[3/4] max-h-[50vh] md:max-h-[60vh] lg:max-h-[550px]"
               >
-                <!-- Images -->
-                <ng-container *ngFor="let url of vm.gallery; let i = index">
+                <!-- Images/Videos -->
+                <ng-container *ngFor="let item of vm.gallery; let i = index">
                   <img
-                    [src]="imageUrlService.getImageUrl(url)"
+                    *ngIf="item.type !== 'video'"
+                    [src]="imageUrlService.getImageUrl(item.imageUrl)"
                     [alt]="vm.product.headline"
                     class="absolute inset-0 w-full h-full object-cover transition-opacity duration-[1200ms] ease-in-out"
                     [class.opacity-100]="i === currentImageIndex"
                     [class.opacity-0]="i !== currentImageIndex"
                   />
+                  <div 
+                    *ngIf="item.type === 'video'"
+                    class="absolute inset-0 w-full h-full transition-opacity duration-[1200ms] ease-in-out"
+                    [class.opacity-100]="i === currentImageIndex"
+                    [class.opacity-0]="i !== currentImageIndex"
+                    [class.z-10]="i === currentImageIndex"
+                    [class.pointer-events-none]="i !== currentImageIndex"
+                  >
+                    <video
+                      #productVideo
+                      [src]="imageUrlService.getImageUrl(item.imageUrl)"
+                      class="w-full h-full object-cover cursor-pointer"
+                      playsinline
+                      (ended)="onVideoEnded()"
+                      (click)="toggleVideo(productVideo)"
+                    ></video>
+                    
+                    <!-- Play Button Overlay -->
+                    <button 
+                      *ngIf="!isVideoPlaying"
+                      (click)="toggleVideo(productVideo)"
+                      class="absolute inset-0 m-auto w-16 h-16 sm:w-20 sm:h-20 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center border border-white/30 hover:bg-white/40 transition-all z-20 group/play shadow-2xl"
+                    >
+                      <app-icon name="Play" className="w-6 h-6 sm:w-8 sm:h-8 text-white fill-current group-hover/play:scale-110 transition-transform ml-1"></app-icon>
+                    </button>
+                  </div>
                 </ng-container>
 
                 <!-- Nav Arrows -->
@@ -96,17 +128,21 @@
               class="flex flex-row md:hidden gap-2 overflow-x-auto scrollbar-hide w-16 flex-shrink-0"
             >
               <button
-                *ngFor="let url of vm.gallery; let i = index"
+                *ngFor="let item of vm.gallery; let i = index"
                 (click)="goToImage(i)"
                 class="flex-shrink-0 w-14 h-16 border transition-all duration-300 overflow-hidden relative"
                 [class.border-[#1a1a1a]]="i === currentImageIndex"
                 [class.border-transparent]="i !== currentImageIndex"
               >
                 <img
-                  [src]="imageUrlService.getImageUrl(url)"
+                  *ngIf="item.type !== 'video'"
+                  [src]="imageUrlService.getImageUrl(item.imageUrl)"
                   class="w-full h-full object-cover"
                   [class.opacity-60]="i !== currentImageIndex"
                 />
+                <div *ngIf="item.type === 'video'" class="relative w-full h-full bg-black flex items-center justify-center">
+                   <app-icon name="Play" className="w-4 h-4 text-white"></app-icon>
+                </div>
               </button>
             </div>
           </div>

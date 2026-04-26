@@ -6,18 +6,18 @@ using ECommerce.Core.DTOs;
 using ECommerce.Core.Entities;
 using ECommerce.Core.Interfaces;
 using ECommerce.Infrastructure.Data;
+using ECommerce.Core.Caching;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Memory;
 
 namespace ECommerce.Infrastructure.Services;
 
 public class DashboardService : IDashboardService
 {
     private readonly ApplicationDbContext _context;
-    private readonly IMemoryCache _cache;
+    private readonly ICacheService _cache;
     private const string DashboardStatsCacheKey = "DashboardStats";
 
-    public DashboardService(ApplicationDbContext context, IMemoryCache cache)
+    public DashboardService(ApplicationDbContext context, ICacheService cache)
     {
         _context = context;
         _cache = cache;
@@ -25,11 +25,8 @@ public class DashboardService : IDashboardService
 
     public async Task<DashboardStatsDto> GetDashboardStatsAsync()
     {
-        return await _cache.GetOrCreateAsync(DashboardStatsCacheKey, async entry =>
+        return await _cache.GetOrCreateAsync(DashboardStatsCacheKey, async () =>
         {
-            entry.Size = 1;
-            entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5);
-
             var validStatuses = new[] { OrderStatus.Pending, OrderStatus.Confirmed, OrderStatus.Processing, OrderStatus.Packed, OrderStatus.Shipped, OrderStatus.Delivered };
 
             // Single combined query for order stats

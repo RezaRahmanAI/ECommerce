@@ -4,7 +4,7 @@ using ECommerce.Infrastructure.Data;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Memory;
+using ECommerce.Core.Caching;
 using ECommerce.Core.Constants;
 using ECommerce.API.Extensions;
 using ECommerce.Core.Interfaces;
@@ -19,9 +19,9 @@ public class AdminReviewsController : ControllerBase
     private readonly ApplicationDbContext _context;
     private readonly IWebHostEnvironment _environment;
     private readonly IConfiguration _config;
-    private readonly IMemoryCache _cache;
+    private readonly ICacheService _cache;
 
-    public AdminReviewsController(ApplicationDbContext context, IWebHostEnvironment environment, IConfiguration config, IMemoryCache cache)
+    public AdminReviewsController(ApplicationDbContext context, IWebHostEnvironment environment, IConfiguration config, ICacheService cache)
     {
         _context = context;
         _environment = environment;
@@ -166,8 +166,8 @@ public class AdminReviewsController : ControllerBase
         review.Comment = dto.Comment;
         await _context.SaveChangesAsync();
 
-        _cache.Remove("storefront_products");
-        _cache.Remove($"product_{review.ProductId}");
+        await _cache.RemoveAsync("storefront_products");
+        await _cache.RemoveAsync($"product_{review.ProductId}");
 
         return Ok(new ReviewDto
         {
@@ -193,7 +193,7 @@ public class AdminReviewsController : ControllerBase
 
         foreach (var key in keysToClear)
         {
-            _cache.Remove(key);
+            await _cache.RemoveAsync(key);
         }
     }
 }

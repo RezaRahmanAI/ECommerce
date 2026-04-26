@@ -53,6 +53,8 @@ export class AdminOrdersComponent implements OnInit, OnDestroy {
 
   isLoading = false;
   searchControl = new FormControl("", { nonNullable: true });
+  fromDateControl = new FormControl("", { nonNullable: true });
+  toDateControl = new FormControl("", { nonNullable: true });
 
   orders: Order[] = [];
   filteredOrders: Order[] = [];
@@ -64,6 +66,12 @@ export class AdminOrdersComponent implements OnInit, OnDestroy {
     "All",
     "Pending",
     "Confirmed",
+    "Processing",
+    "Packed",
+    "Shipped",
+    "Delivered",
+    "Cancelled",
+    "Refund",
   ];
 
   // ... (existing code)
@@ -119,6 +127,7 @@ export class AdminOrdersComponent implements OnInit, OnDestroy {
     "Last 7 Days",
     "Last 30 Days",
     "This Year",
+    "Custom",
     "All Time",
   ];
 
@@ -155,6 +164,24 @@ export class AdminOrdersComponent implements OnInit, OnDestroy {
       .subscribe(() => {
         this.page = 1;
         this.loadOrders();
+      });
+
+    this.fromDateControl.valueChanges
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        if (this.selectedDateRange === "Custom") {
+          this.page = 1;
+          this.loadOrders();
+        }
+      });
+
+    this.toDateControl.valueChanges
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        if (this.selectedDateRange === "Custom") {
+          this.page = 1;
+          this.loadOrders();
+        }
       });
   }
 
@@ -356,6 +383,8 @@ export class AdminOrdersComponent implements OnInit, OnDestroy {
       searchTerm: this.searchControl.value,
       status: this.selectedStatus,
       dateRange: this.selectedDateRange,
+      fromDate: this.fromDateControl.value,
+      toDate: this.toDateControl.value,
       page: this.page,
       pageSize: this.pageSize,
     };
