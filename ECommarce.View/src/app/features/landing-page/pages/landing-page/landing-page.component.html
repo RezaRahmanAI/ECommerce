@@ -64,18 +64,18 @@
         <!-- Stats Section -->
         <div class="flex items-start gap-3 md:gap-12 animate-fade-in delay-500 border-t border-white/10 pt-8 w-full md:w-auto">
           <div class="flex flex-col gap-1">
-            <span class="text-sm md:text-2xl font-serif font-bold text-white leading-none">100%</span>
-            <span class="text-[7px] md:text-[9px] uppercase tracking-widest text-white/40 font-bold leading-tight">Natural<br>Puritas</span>
+            <span class="text-[9px] md:text-2xl font-serif font-bold text-white leading-none">100%</span>
+            <span class="text-[5px] md:text-[9px] uppercase tracking-widest text-white/40 font-bold leading-tight">Natural<br>Puritas</span>
           </div>
           <div class="w-px h-10 bg-white/10 hidden md:block"></div>
           <div class="flex flex-col gap-1">
-            <span class="text-sm md:text-2xl font-serif font-bold text-white leading-none">9k+</span>
-            <span class="text-[7px] md:text-[9px] uppercase tracking-widest text-white/40 font-bold leading-tight">Global<br>Clients</span>
+            <span class="text-[9px] md:text-2xl font-serif font-bold text-white leading-none">9k+</span>
+            <span class="text-[5px] md:text-[9px] uppercase tracking-widest text-white/40 font-bold leading-tight">Global<br>Clients</span>
           </div>
           <div class="w-px h-10 bg-white/10 hidden md:block"></div>
           <div class="flex flex-col gap-1">
-            <span class="text-sm md:text-2xl font-serif font-bold text-white leading-none">No. 1</span>
-            <span class="text-[7px] md:text-[9px] uppercase tracking-widest text-white/40 font-bold leading-tight">Quality<br>Choice</span>
+            <span class="text-[9px] md:text-2xl font-serif font-bold text-white leading-none">No. 1</span>
+            <span class="text-[5px] md:text-[9px] uppercase tracking-widest text-white/40 font-bold leading-tight">Quality<br>Choice</span>
           </div>
         </div>
       </div>
@@ -92,10 +92,17 @@
                    [src]="imageUrlService.getImageUrl(videoUrl)" 
                    class="max-w-full h-auto max-h-[500px] md:max-h-[600px] object-contain block group-hover:scale-105 transition-transform duration-1000"
                    autoplay muted loop playsinline></video>
-            <img *ngIf="product.imgUrl && !videoUrl" 
-                 [src]="imageUrlService.getImageUrl(product.imgUrl)" 
-                 [alt]="product.headline" 
-                 class="max-w-full h-auto max-h-[500px] md:max-h-[600px] object-contain block group-hover:scale-105 transition-transform duration-1000">
+            
+            <div *ngIf="!videoUrl && allProductImages.length > 0" class="relative overflow-hidden">
+              <img *ngFor="let img of allProductImages; let i = index"
+                   [src]="img" 
+                   [alt]="product.headline" 
+                   class="max-w-full h-auto max-h-[500px] md:max-h-[600px] object-contain block group-hover:scale-105 transition-all duration-1000 absolute top-0 left-0"
+                   [class.relative]="i === currentImageIndex"
+                   [class.opacity-100]="i === currentImageIndex"
+                   [class.opacity-0]="i !== currentImageIndex"
+                   [class.z-10]="i === currentImageIndex">
+            </div>
           </div>
           
           <!-- Floating Accent -->
